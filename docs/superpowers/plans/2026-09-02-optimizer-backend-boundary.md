@@ -1,16 +1,16 @@
-# Optimizer Backend Boundary Implementation Plan
+# 优化器后端边界实施计划
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add an owner-controlled optimizer request/result boundary with native equal-weight and HRP baselines.
+**目标：**增加由维护方控制的优化器请求和结果边界，并提供原生等权和 HRP 基线。
 
-**Architecture:** Keep optimization separate from backtest/execution backends. External solver adapters translate to/from pandas/native platform types and never escape third-party objects through public APIs.
+**架构：**让优化与回测、执行后端保持分离。外部求解器适配器负责 pandas 或平台原生类型之间的转换，第三方对象不得通过公共 API 泄漏。
 
-**Tech Stack:** Python 3.12, pandas, NumPy, existing HRP implementation, pytest.
+**技术栈：**Python 3.12、pandas、NumPy、现有 HRP 实现和 pytest。
 
-**Spec:** `docs/superpowers/specs/2026-09-02-optimizer-backend-boundary-design.md`
+**规范：**`docs/superpowers/specs/2026-09-02-optimizer-backend-boundary-design.md`
 
-## Global Constraints
+## 全局约束
 
 - No new runtime dependency.
 - Existing HRP implementation is reused, not copied.

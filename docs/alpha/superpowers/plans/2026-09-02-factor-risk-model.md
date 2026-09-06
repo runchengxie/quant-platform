@@ -1,16 +1,16 @@
-# Factor Risk Model Implementation Plan
+# 因子风险模型实施计划
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add a PIT-safe factor covariance and specific-risk estimate that emits platform-native pandas results.
+**目标：**增加通过 PIT 安全检查的因子协方差和特质风险估计，并输出平台原生 pandas 结果。
 
-**Architecture:** Keep factor construction explicit. The risk-model primitive consumes precomputed exposures/factor returns/specific returns, rejects future observations, and projects `X F X' + D` without importing portfolio code.
+**架构：**明确因子构建过程。风险模型原语消费预先计算的暴露、因子收益和特质收益，拒绝未来观测，并在不导入组合代码的情况下计算 `X F X' + D`。
 
-**Tech Stack:** Python 3.12, pandas, NumPy, pytest.
+**技术栈：**Python 3.12、pandas、NumPy、pytest。
 
-**Spec:** `docs/superpowers/specs/2026-09-02-factor-risk-model-design.md`
+**规范：**`docs/superpowers/specs/2026-09-02-factor-risk-model-design.md`
 
-## Global Constraints
+## 全局约束
 
 - Do not import `portfolio_backtester` or strategy-pipeline.
 - All historical rows must be at or before `as_of`.

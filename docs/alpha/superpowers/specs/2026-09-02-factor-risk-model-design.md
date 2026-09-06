@@ -1,16 +1,16 @@
-# Factor Risk Model Design
+# 因子风险模型设计
 
-## Goal
+## 目标
 
-Add a PIT-safe, framework-neutral factor-risk estimate that can later feed portfolio optimization and attribution without coupling alpha research to the portfolio owner.
+增加通过 PIT 安全检查、与框架无关的因子风险估计，后续可以供组合优化和归因使用，同时保持 alpha 研究与组合维护方解耦。
 
-## Design
+## 设计
 
 The caller supplies as-of exposures, historical factor returns, and historical specific returns. The risk model computes factor covariance with optional diagonal shrinkage, asset-specific risk, and the projected asset covariance `X F X' + D`.
 
 The implementation does not infer factor returns, optimize portfolios, or import `portfolio_backtester`. All history must be at or before the explicit `as_of` date.
 
-## Non-goals
+## 不在本次范围内
 
 - no proprietary RQData data retrieval;
 - no optimizer integration in this PR;
