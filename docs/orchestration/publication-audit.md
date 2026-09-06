@@ -1,15 +1,15 @@
-# Public Publication Audit
+# 公开发布审计
 
-Audit revision: `5964145`
+审计修订：`5964145`
 
 ## 结论
 
 经过审阅的 clean-root 控制面适合公开技术审阅。评估编排和运行摘要新增了公开 owner 依赖，需要在下一次发布审计中一并复核。原仓库不能直接切换为公开仓库。
 公开发布应使用新的根历史，并保留当前仓库作为私有归档。
 
-## Evidence
+## 证据
 
-| Scope | Result | Findings |
+| 范围 | 结果 | 发现数 |
 | --- | --- | ---: |
 | Clean-root export | `direct-public-safe` | 0 |
 | Current private tree and reachable Git history | `clean-history-publication-required` | 790 |
@@ -22,7 +22,7 @@ public-readiness gate。
 私有历史的结果符合预期。保留的仓库包含历史策略名称、研究文档、provider 引用和私有
 workspace 内容。本报告只记录类别和数量，不记录敏感内容。
 
-## Required publication procedure
+## 必须执行的发布流程
 
 1. 从经过审阅的 revision 重新生成 clean-root 导出结果。
 2. 运行 clean-tree audit 和严格的 public-readiness gate。
@@ -30,4 +30,4 @@ workspace 内容。本报告只记录类别和数量，不记录敏感内容。
 4. 在新的根历史上运行 full-history audit。
 5. 在修改仓库可见性前，完成对策略与知识产权、依赖、许可证和 CI 结果的人工审阅。
 
-No repository visibility change is authorized by this audit alone.
+本审计本身不会授权改变仓库可见性。
