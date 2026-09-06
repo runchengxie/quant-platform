@@ -1,6 +1,6 @@
 # quant-platform 工作规则
 
-本目录当前是迁移期的本地开发工作树，不应把它当作旧工作区的临时目录。
+这是公开的可复用量化研究平台仓库。保留 `portfolio_backtester` Python 命名空间，直到完成兼容迁移。
 
 `research-workspace` 处于 sunset 过渡期。新的通用回测、组合构造、风险、执行模拟和公共契约应优先落在本仓库。`market-data-platform` 保持独立，继续负责数据接入、标准化、质量治理、版本和已发布数据资产。本仓库只消费其发布资产。旧 `portfolio-backtester` 和 `quant-execution-engine` 只用于迁移兼容、历史复现和事实核对。
 

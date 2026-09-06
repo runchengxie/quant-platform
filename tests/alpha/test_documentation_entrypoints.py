@@ -134,7 +134,9 @@ def test_framework_backend_docs_match_current_main_surface() -> None:
         ],
     ]
 
+    assert "`NativeDatasetBackend`" in readme
     assert "`NativeDatasetBackend`" in framework_docs
+    assert "Qlib 后端通过可选依赖接入" in readme
     assert "Qlib 适配器" in framework_docs
     assert "concepts/framework-backends.md" in docs_index
     for backend in (
