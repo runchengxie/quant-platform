@@ -1,0 +1,25 @@
+{
+  "component": "microstructure-public-framework",
+  "legacy_repository": "deep-learning-tick-data-prediction",
+  "legacy_commit": "2dd47012487c6fcdb66ef3ca4d4fbf7ca585d203",
+  "target_path": "packages/microstructure/src/ticknet",
+  "scope": "generic event-stream representation, dataset/model interfaces, deterministic training utilities, and synthetic simulator mechanics",
+  "public_source_files": 26,
+  "public_test_files": 10,
+  "public_documentation_files": 3,
+  "status": "public-framework-transferred",
+  "excluded_from_public": [
+    "raw L2 data and manifests",
+    "real-data coverage and diagnostics",
+    "horizon-specific research pipelines",
+    "experiment reports and promoted-model results",
+    "private labels, universes, and configurations"
+  ],
+  "validation": [
+    "tests/microstructure",
+    "45 passed",
+    "uv run ruff check .",
+    "uv run ruff format --check .",
+    "public-ci"
+  ]
+}

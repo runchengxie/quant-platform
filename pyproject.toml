@@ -33,6 +33,7 @@ dev = [
   "ty==0.0.77",
 ]
 qlib = ["pyqlib>=0.9.5"]
+microstructure = ["polars>=1.0", "torch>=2.0"]
 
 [dependency-groups]
 dev = [
@@ -62,6 +63,9 @@ packages = [
   "quant_execution_engine",
   "quant_execution_engine.broker",
   "quant_execution_engine.renderers",
+  "ticknet",
+  "ticknet.eventstream",
+  "ticknet.simulator",
 ]
 [tool.setuptools.package-dir]
 portfolio_backtester = "packages/portfolio-backtester/src/portfolio_backtester"
@@ -71,6 +75,7 @@ alpha_research = "packages/alpha/src/alpha_research"
 research_contracts = "packages/research-contracts"
 strategy_pipeline = "packages/orchestration/src/strategy_pipeline"
 quant_execution_engine = "packages/execution/src/quant_execution_engine"
+ticknet = "packages/microstructure/src/ticknet"
 
 [tool.uv.sources]
 research-code-quality = { git = "https://github.com/runchengxie/research-code-quality.git", rev = "1c754c3" }
@@ -99,8 +104,10 @@ extend-exclude = [
   "packages/orchestration",
   "packages/execution",
   "packages/alpha",
+  "packages/microstructure",
   "tests/orchestration",
   "tests/execution",
+  "tests/microstructure",
   "scripts/dev/public_surface_export.py",
 ]
 
@@ -111,7 +118,7 @@ select = ["E", "F", "I", "UP", "B", "C4", "RET", "SIM", "RUF", "C90"]
 known-first-party = ["portfolio_backtester", "market_data_platform", "strategy_pipeline", "quant_execution_engine"]
 
 [tool.ty.src]
-include = ["packages/portfolio-backtester/src", "packages/orchestration/src", "packages/execution/src", "packages/alpha/src", "scripts"]
+include = ["packages/portfolio-backtester/src", "packages/orchestration/src", "packages/execution/src", "packages/alpha/src", "packages/microstructure/src", "scripts"]
 exclude = [
   ".venv",
   "artifacts",
@@ -131,5 +138,7 @@ include = [
   "packages/alpha/src/**",
   "tests/orchestration/**",
   "tests/execution/**",
+  "packages/microstructure/src/**",
+  "tests/microstructure/**",
 ]
 rules = { all = "warn" }
