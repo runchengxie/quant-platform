@@ -1,7 +1,0 @@
-Metadata-Version: 2.4
-Name: quant-platform-local-prototype
-Version: 0.0.0
-Summary: Local-only quant-platform migration prototype
-Requires-Python: >=3.12
-Requires-Dist: numpy>=2.5.2
-Requires-Dist: pandas>=2.0

@@ -1,2 +1,0 @@
-[console_scripts]
-portfolio-style-factor = portfolio_backtester.style_factor_cli:main
