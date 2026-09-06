@@ -124,13 +124,13 @@ def test_docs_record_current_cost_and_position_limitations() -> None:
     assert "`long_only=False` 不会启用空头回放" in positions_docs
 
 
-def test_docs_record_daily_watch20_compatibility_exception_and_index_new_pages() -> None:
+def test_docs_record_public_private_boundary_and_index_new_pages() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
     index = (ROOT / "docs" / "README.md").read_text(encoding="utf-8")
 
-    assert "`DailyWatch20` 是现有调用方使用的兼容例外" in readme
-    assert "`DailyWatch20` 是为现有调用方保留的兼容例外" in agents
+    assert "私有研究层" in readme
+    assert "策略研究假设、专有特征和晋升规则属于私有研究层" in agents
     assert "guides/execution-simulation.md" in index
     assert "concepts/afml-sizing-and-risk.md" in index
 

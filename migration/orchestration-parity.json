@@ -1,0 +1,22 @@
+{
+  "component": "strategy-pipeline-public-orchestration",
+  "legacy_repository": "strategy-pipeline",
+  "legacy_commit": "87175c67531f0be29f78aeb078046708dbf38ee4",
+  "target_path": "packages/orchestration/src/strategy_pipeline",
+  "scope": "reusable control-plane, publication, contract, and CLI mechanisms",
+  "source_python_files": 27,
+  "test_python_files": 28,
+  "documentation_files": 25,
+  "status": "transferred",
+  "excluded_from_public": [
+    "broker/provider credentials",
+    "private strategy adapters",
+    "private production runtime configuration"
+  ],
+  "validation": [
+    "tests/orchestration",
+    "uv run pytest -q",
+    "uv run ruff check .",
+    "uv run ruff format --check ."
+  ]
+}

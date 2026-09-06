@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "repositories": {
+    "https://github.com/runchengxie/alpha-research.git": "public",
+    "https://github.com/runchengxie/market-data-platform.git": "public",
+    "https://github.com/runchengxie/portfolio-backtester.git": "public",
+    "https://github.com/runchengxie/research-workspace.git": "public",
+    "https://github.com/runchengxie/research-code-quality.git": "public"
+  }
+}

@@ -8,8 +8,10 @@ version = "0.0.1"
 description = "Local-only quant-platform migration prototype"
 requires-python = ">=3.12"
 dependencies = [
+  "duckdb>=1.2",
   "numpy>=1.23",
   "pandas>=2.0",
+  "pandas-ta>=0.3.14b0",
   "pyarrow>=25.0.1",
   "PyYAML>=6.0",
   "scipy>=1.14",
@@ -20,6 +22,7 @@ dependencies = [
 
 [project.scripts]
 portfolio-style-factor = "portfolio_backtester.style_factor_cli:main"
+strategy-pipeline = "strategy_pipeline.cli:main"
 
 [project.optional-dependencies]
 dev = [
@@ -29,6 +32,7 @@ dev = [
   "ruff>=0.8",
   "ty==0.0.77",
 ]
+qlib = ["pyqlib>=0.9.5"]
 
 [dependency-groups]
 dev = [
@@ -40,24 +44,50 @@ dev = [
 ]
 
 [tool.setuptools]
-package-dir = {"" = "packages/portfolio-backtester/src"}
-
-[tool.setuptools.packages.find]
-where = ["packages/portfolio-backtester/src"]
-include = [
+packages = [
   "portfolio_backtester",
-  "portfolio_backtester.*",
+  "portfolio_backtester.backends",
+  "portfolio_backtester.execution_sim",
   "market_data_platform",
-  "market_data_platform.*",
   "quant_platform",
-  "quant_platform.*",
+  "alpha_research",
+  "alpha_research.backends",
+  "alpha_research.contextual",
+  "alpha_research.style_factors",
+  "alpha_research.style_replica",
+  "alpha_research.technical",
   "research_contracts",
-  "research_contracts.*",
+  "strategy_pipeline",
+  "strategy_pipeline.control_plane",
+  "quant_execution_engine",
+  "quant_execution_engine.broker",
+  "quant_execution_engine.renderers",
 ]
+[tool.setuptools.package-dir]
+portfolio_backtester = "packages/portfolio-backtester/src/portfolio_backtester"
+market_data_platform = "packages/portfolio-backtester/src/market_data_platform"
+quant_platform = "packages/portfolio-backtester/src/quant_platform"
+alpha_research = "packages/alpha/src/alpha_research"
+research_contracts = "packages/research-contracts"
+strategy_pipeline = "packages/orchestration/src/strategy_pipeline"
+quant_execution_engine = "packages/execution/src/quant_execution_engine"
 
 [tool.uv.sources]
 research-code-quality = { git = "https://github.com/runchengxie/research-code-quality.git", rev = "1c754c3" }
 research-contracts = { path = "packages/research-contracts" }
+
+[tool.uv]
+override-dependencies = ["research-contracts>=0.1.0"]
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "packages/alpha/src",
+  "packages/orchestration/src",
+  "packages/execution/src",
+  "packages/portfolio-backtester/src",
+  ".",
+]
+markers = ["unit: fast deterministic unit tests"]
 
 [tool.ruff]
 target-version = "py312"
@@ -66,16 +96,22 @@ extend-exclude = [
   "packages/research-contracts",
   "packages/portfolio-backtester/src/portfolio_backtester",
   "packages/portfolio-backtester/src/research_contracts",
+  "packages/orchestration",
+  "packages/execution",
+  "packages/alpha",
+  "tests/orchestration",
+  "tests/execution",
+  "scripts/dev/public_surface_export.py",
 ]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "C4", "RET", "SIM", "RUF", "C90"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["portfolio_backtester", "market_data_platform"]
+known-first-party = ["portfolio_backtester", "market_data_platform", "strategy_pipeline", "quant_execution_engine"]
 
 [tool.ty.src]
-include = ["packages/portfolio-backtester/src", "scripts"]
+include = ["packages/portfolio-backtester/src", "packages/orchestration/src", "packages/execution/src", "packages/alpha/src", "scripts"]
 exclude = [
   ".venv",
   "artifacts",
@@ -87,3 +123,13 @@ exclude = [
 [[tool.ty.overrides]]
 include = ["packages/portfolio-backtester/src/portfolio_backtester/backends/qlib.py"]
 rules = { unresolved-import = "ignore" }
+
+[[tool.ty.overrides]]
+include = [
+  "packages/orchestration/src/**",
+  "packages/execution/src/**",
+  "packages/alpha/src/**",
+  "tests/orchestration/**",
+  "tests/execution/**",
+]
+rules = { all = "warn" }

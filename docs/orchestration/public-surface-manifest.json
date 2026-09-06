@@ -1,0 +1,356 @@
+{
+  "schema_version": 1,
+  "publication_mode": "clean-root",
+  "entries": [
+    {
+      "path": ".github/workflows/public-core.yml",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Included in the reviewed clean-root public surface."
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Included in the reviewed clean-root public surface."
+    },
+    {
+      "path": "AGENTS.md",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Included in the reviewed clean-root public surface."
+    },
+    {
+      "path": "README.md",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Included in the reviewed clean-root public surface."
+    },
+    {
+      "path": "docs/control-plane.md",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Public explanation of the dependency-free control-plane API."
+    },
+    {
+      "path": "docs/evaluation.md",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Public explanation of generic evaluation orchestration using public owner APIs."
+    },
+    {
+      "path": "docs/output-summary.md",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Public explanation of generic run-summary assembly from supplied context and artifacts."
+    },
+    {
+      "path": "docs/output-artifacts.md",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Public explanation of generic artifact writing and owner API boundaries."
+    },
+    {
+      "path": "docs/output-orchestration.md",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Public explanation of generic output lifecycle orchestration with injected owner callbacks."
+    },
+    {
+      "path": "docs/quality-gates.md",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Public explanation of generic quality and release-protocol handoff gates."
+    },
+    {
+      "path": "docs/runtime-helpers.md",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Public explanation of generic runtime helper boundaries."
+    },
+    {
+      "path": "docs/configuration.md",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Public explanation of generic configuration loading and inheritance."
+    },
+    {
+      "path": "docs/evidence-protocol-cli.md",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Public documentation for generic evidence and protocol command entrypoints."
+    },
+    {
+      "path": "docs/cli-helpers.md",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Public documentation for strategy-neutral CLI argument and formatting helpers."
+    },
+    {
+      "path": "docs/e2-promotion-receipt.md",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Public documentation for hash-pinned promotion evidence receipts."
+    },
+    {
+      "path": "docs/development.md",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Public development, testing, and clean-room verification guidance."
+    },
+    {
+      "path": "docs/README.md",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Public documentation index for the control-plane surface."
+    },
+    {
+      "path": "docs/integrating-an-owner.md",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Public adapter guidance using synthetic owner behavior only."
+    },
+    {
+      "path": "SECURITY.md",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Included in the reviewed clean-root public surface."
+    },
+    {
+      "path": "docs/public-publication-manifest.json",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Included in the reviewed clean-root public surface."
+    },
+    {
+      "path": "docs/publication-audit.md",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Included in the reviewed clean-root public surface."
+    },
+    {
+      "path": "pyproject.toml",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Included in the reviewed clean-root public surface."
+    },
+    {
+      "path": "scripts/dev/history_publication_audit.py",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Included in the reviewed clean-root public surface."
+    },
+    {
+      "path": "scripts/dev/public_dependency_registry.json",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Included in the reviewed clean-root public surface."
+    },
+    {
+      "path": "scripts/dev/public_readiness.py",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Included in the reviewed clean-root public surface."
+    },
+    {
+      "path": "scripts/dev/public_readiness_debt.json",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Included in the reviewed clean-root public surface."
+    },
+    {
+      "path": "scripts/dev/public_surface_export.py",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Included in the reviewed clean-root public surface."
+    },
+    {
+      "path": "src/strategy_pipeline/control_plane",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Included in the reviewed clean-root public surface."
+    },
+    {
+      "path": "src/strategy_pipeline/pipeline/output_summary_sections.py",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Generic run-summary assembly that delegates execution descriptions to public owner APIs."
+    },
+    {
+      "path": "src/strategy_pipeline/pipeline/output_artifacts.py",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Generic run artifact writing using public alpha and portfolio owner contracts."
+    },
+    {
+      "path": "src/strategy_pipeline/pipeline/output.py",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Generic output lifecycle ordering with strategy-specific callbacks injected by the owner."
+    },
+    {
+      "path": "src/strategy_pipeline/pipeline/diagnostic_artifacts.py",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Generic persistence helpers for supplied diagnostic summaries and frames."
+    },
+    {
+      "path": "src/strategy_pipeline/pipeline/support.py",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Generic frame, series, JSON, and symbol normalization helpers used by artifact writers."
+    },
+    {
+      "path": "src/strategy_pipeline/pipeline/quality.py",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Generic quality thresholding and release-protocol handoff gates."
+    },
+    {
+      "path": "src/strategy_pipeline/pipeline/runtime.py",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Generic logging, hashing, date-splitting, and purge/embargo runtime helpers."
+    },
+    {
+      "path": "src/strategy_pipeline/config.py",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Generic YAML configuration loading, aliases, inheritance, and merging."
+    },
+    {
+      "path": "tests/test_config.py",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Synthetic tests for public configuration resolution."
+    },
+    {
+      "path": "src/strategy_pipeline/cli.py",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Generic command-line entry point for the public control plane."
+    },
+    {
+      "path": "src/strategy_pipeline/cli_evidence.py",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Generic AFML evidence command handler using public owner APIs."
+    },
+    {
+      "path": "src/strategy_pipeline/cli_protocol.py",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Generic research protocol manifest command handler using alpha-research APIs."
+    },
+    {
+      "path": "src/strategy_pipeline/cli_helpers.py",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Strategy-neutral CLI argument, numeric formatting, and progress display helpers."
+    },
+    {
+      "path": "src/strategy_pipeline/identity.py",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Stable public package identity values used by handoff artifacts."
+    },
+    {
+      "path": "src/strategy_pipeline/e2_promotion_receipt.py",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Generic writer for explicitly supplied, hash-pinned promotion evidence."
+    },
+    {
+      "path": "tests/control_plane",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Included in the reviewed clean-root public surface."
+    },
+    {
+      "path": "tests/test_pipeline_output_summary_sections.py",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Synthetic tests for generic run-summary helper behavior."
+    },
+    {
+      "path": "tests/test_pipeline_output_artifacts.py",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Synthetic tests for artifact persistence behavior."
+    },
+    {
+      "path": "tests/test_pipeline_output.py",
+      "classification": "public-contract",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Synthetic tests for generic output lifecycle ordering and disabled persistence."
+    },
+    {
+      "path": "tests/test_cli_evidence_protocol.py",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Synthetic tests for public evidence and protocol CLI registration."
+    },
+    {
+      "path": "tests/test_cli_helpers.py",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Synthetic tests for public CLI argument and formatting helpers."
+    },
+    {
+      "path": "tests/test_e2_promotion_receipt.py",
+      "classification": "public-control-plane",
+      "owner": "strategy-pipeline maintainers",
+      "sensitivity": "releasable",
+      "reason": "Synthetic tests for receipt materialization and safe lineage paths."
+    }
+  ]
+}

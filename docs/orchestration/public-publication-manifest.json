@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "publication_mode": "clean-root",
+  "source_revision": "5964145",
+  "public_surface_audit": "direct-public-safe",
+  "private_history_audit": "clean-history-publication-required",
+  "public_surface_findings": 0,
+  "private_history_findings": 790,
+  "visibility_change_allowed": false,
+  "required_review": [
+    "strategy-ip",
+    "full-history-secrets",
+    "dependencies",
+    "licensing",
+    "ci-fork-safety"
+  ]
+}

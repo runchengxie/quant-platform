@@ -5,6 +5,6 @@ Keep the `portfolio_backtester` Python namespace unchanged. Only public mechanis
 tests, contracts, and migration evidence belong here. Do not add providers, credentials, real data,
 strategy parameters, orchestration, execution runtime, or research artifacts.
 
-`DailyWatch20` 是为现有调用方保留的兼容例外。本仓库不扩展策略研究假设、特征或晋升规则。
+策略研究假设、专有特征和晋升规则属于私有研究层。本仓库只保留可复用的公开机制。
 
 Run `uv sync --locked --all-groups`, `uv run ruff check .`, and `uv run pytest` from this directory.

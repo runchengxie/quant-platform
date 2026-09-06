@@ -1,0 +1,22 @@
+{
+  "component": "quant-execution-public-foundation",
+  "legacy_repository": "quant-execution-engine",
+  "legacy_commit": "2f0675a4b8946ff4134194e7dd12dc1169fd2be4",
+  "target_path": "packages/execution/src/quant_execution_engine",
+  "scope": "public execution contracts, broker protocols, mocks, factories, and renderers",
+  "source_python_files": 67,
+  "test_python_files": 5,
+  "documentation_files": 1,
+  "status": "public-foundation-transferred",
+  "excluded_from_public": [
+    "concrete broker adapters",
+    "broker SDK integrations",
+    "private execution runtime and credentials"
+  ],
+  "validation": [
+    "tests/execution",
+    "uv run pytest -q",
+    "uv run ruff check .",
+    "uv run ruff format --check ."
+  ]
+}

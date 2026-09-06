@@ -64,8 +64,10 @@ def test_distribution_declares_only_public_registry_dependencies() -> None:
     dev_dependencies = project["dependency-groups"]["dev"]
 
     assert dependencies == [
+        "duckdb>=1.2",
         "numpy>=1.23",
         "pandas>=2.0",
+        "pandas-ta>=0.3.14b0",
         "pyarrow>=25.0.1",
         "PyYAML>=6.0",
         "scipy>=1.14",

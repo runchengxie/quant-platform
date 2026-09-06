@@ -1,0 +1,23 @@
+from __future__ import annotations
+
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+SRC = ROOT / "packages" / "alpha" / "src"
+
+
+def test_owner_native_layout() -> None:
+    assert (SRC / "alpha_research" / "__init__.py").is_file()
+
+
+def test_namespace_boundary_ratchet() -> None:
+    subprocess.run(
+        [
+            sys.executable,
+            "scripts/alpha-research/dev/namespace_boundary.py",
+        ],
+        cwd=ROOT,
+        check=True,
+    )

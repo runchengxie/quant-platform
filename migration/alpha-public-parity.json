@@ -1,0 +1,24 @@
+{
+  "component": "alpha-research-public-framework",
+  "legacy_repository": "alpha-research",
+  "legacy_commit": "631ee150d5125917baebbbb31a673696d1d29230",
+  "target_path": "packages/alpha/src/alpha_research",
+  "scope": "generic alpha research, modeling, diagnostics, signal artifacts, and backend APIs",
+  "source_python_files": 135,
+  "test_python_files": 70,
+  "documentation_files": 31,
+  "status": "public-framework-transferred",
+  "private_edge_moved_to": "quant-research/src/alpha_research",
+  "private_edge_patterns": [
+    "daily_watch20*",
+    "hotsector*",
+    "cross_sectional_strategy_arms.py",
+    "strategy-specific ownership and result interpretation docs"
+  ],
+  "validation": [
+    "tests/alpha",
+    "uv run pytest -q",
+    "uv run ruff check .",
+    "uv run ruff format --check ."
+  ]
+}
