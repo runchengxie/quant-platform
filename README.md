@@ -17,46 +17,34 @@
 
 现金流策略本身属于 `quant-research`。现金流指数权重、基准相对 overlay、组合约束和 D11-H5 分批执行等可复用机制，经过抽象后可以进入本仓库。
 
-This repository is licensed under the Apache License 2.0. See
-[LICENSE](LICENSE). The license applies only to the original public framework
-contents in this repository; it does not grant rights to private strategies,
-proprietary data, credentials, or third-party dependencies.
+本仓库采用 Apache License 2.0，详见 [LICENSE](LICENSE)。许可证只适用于本仓库中的原始公开框架内容，
+不授予私有策略、专有数据、凭证或第三方依赖的使用权。
 
-The alpha framework's native implementation is `NativeDatasetBackend`.
-The Qlib backend is connected through an optional dependency.
+alpha 框架的原生实现是 `NativeDatasetBackend`。Qlib 后端通过可选依赖接入。
 
-Public reusable quant research and portfolio platform. This repository is the
-first published migration slice of the planned platform monorepo; it is not
-yet a complete replacement for every legacy workspace submodule.
+本仓库提供公开、可复用的量化研究和组合平台能力，是规划中平台 monorepo 首个已发布的迁移切片。
+当前版本还没有完全替代旧工作区的所有子模块。
 
-The current release migrates one public vertical slice from `portfolio-backtester`: the standalone
-`portfolio_backtester.style_factors_backtest` quantile-portfolio kernel, a deterministic synthetic
-CSV example, the `portfolio-style-factor` CLI, and the versioned
-`portfolio_backtester.style_factor_backtest.v1` JSON artifact contract. It deliberately excludes
-data providers, alpha generation, real strategy inputs, strategy-specific orchestration, and
-execution runtime.
+当前版本从 `portfolio-backtester` 迁移了一条公开垂直切片，包括独立的
+`portfolio_backtester.style_factors_backtest` 分位数组合内核、确定性的合成 CSV 示例、
+`portfolio-style-factor` CLI，以及带版本的 `portfolio_backtester.style_factor_backtest.v1` JSON 产物契约。
+数据供应商、alpha 生成、真实策略输入、策略专用编排和执行运行时不属于本次迁移范围。
 
-It also provides generic publication helpers under the owned `quant_platform` namespace and the
-versioned `research-contracts` package under `packages/research-contracts/`. These packages own
-manifest formatting, artifact envelopes, relative-path validation, SHA-256 receipts, and clean
-bundle publication. They must not contain strategy-specific selection logic or proprietary
-research inputs. The inherited contract package keeps its existing standalone quality gate while
-the public prototype CI scopes Ruff to the migrated platform slice.
+本仓库还在自有的 `quant_platform` 命名空间下提供通用发布辅助工具，并在
+`packages/research-contracts/` 下提供带版本的 `research-contracts` 包。这些包负责清单格式化、
+产物封装、相对路径校验、SHA-256 回执和整洁的产物包发布。它们不得包含策略专用选股逻辑或私有研究输入。
+继承的契约包继续使用原有的独立质量门禁，公开原型 CI 只对已迁移的平台切片运行 Ruff 检查。
 
-The source checkout at commit `91a4fa4f1d57c074c991546c381a3d90a3b6adfb` remains the rollback source
-for the migrated portfolio slice. The Python namespace is unchanged. The
-Apache-2.0 license applies to this repository's original public framework
-contents only; it does not relicense the legacy source checkout or any
-third-party dependency.
+提交为 `91a4fa4f1d57c074c991546c381a3d90a3b6adfb` 的源代码 checkout 仍是已迁移组合切片的回滚来源。
+Python 命名空间保持不变。Apache-2.0 许可证只适用于本仓库中的原始公开框架内容，不会重新授权旧源代码
+checkout 或任何第三方依赖。
 
-The remaining platform migration—data interfaces, alpha mechanisms,
-microstructure abstractions, orchestration, and execution interfaces—must be
-completed and audited before `research-workspace` switches its authoritative
-sources.
+剩余的平台迁移包括数据接口、alpha 机制、微观结构抽象、任务编排和执行接口。
+这些部分完成审计前，`research-workspace` 不会切换权威来源。
 
 详细迁移矩阵见 [`docs/migration/research-workspace-sunset.md`](docs/migration/research-workspace-sunset.md)。
 
-Run locally:
+本地运行：
 
 ```bash
 uv sync --locked --all-groups
