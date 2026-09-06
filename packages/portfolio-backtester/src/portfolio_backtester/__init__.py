@@ -108,15 +108,21 @@ from .positions_artifact import (
     build_positions_envelope_v2,
     write_positions_by_rebalance_artifact,
 )
-from .rebalance import SessionRebalanceSchedule, get_session_interval_rebalance_dates
+from .rebalance import (
+    SessionRebalanceSchedule,
+    get_rebalance_events,
+    get_session_interval_rebalance_dates,
+)
 from .robust_uncertainty import add_conservative_score, box_worst_case_return, conservative_score
 from .sharpe_inference import (
     annualized_sharpe_to_periodic,
     annualized_variance_to_periodic,
     deflated_sharpe_ratio,
     expected_max_sharpe,
-    probabilistic_sharpe_ratio as probabilistic_sharpe_ratio_from_stats,
     sharpe_standard_error,
+)
+from .sharpe_inference import (
+    probabilistic_sharpe_ratio as probabilistic_sharpe_ratio_from_stats,
 )
 from .staggered_cohort_execution import (
     StaggeredCohortExecutionConfig,
@@ -170,7 +176,6 @@ __all__ = [
     "BacktestPeriodsContract",
     "BacktestReturnSeriesContract",
     "BacktestSpec",
-    "PortfolioConstructionVariant",
     "CostBreakdown",
     "DailyWatch20Config",
     "DailyWatch20PortfolioPolicy",
@@ -190,6 +195,7 @@ __all__ = [
     "IncumbentRequalificationResult",
     "OptimizerRegistry",
     "OutcomeDistributionReport",
+    "PortfolioConstructionVariant",
     "PortfolioOptimizationRequest",
     "PortfolioOptimizationResult",
     "PortfolioOptimizerBackend",
@@ -229,9 +235,9 @@ __all__ = [
     "build_positions_envelope_v2",
     "build_quantile_portfolio_returns",
     "build_rebalance_turnover_report",
-    "build_target_weights",
     "build_sized_weights",
     "build_sizing_receipt",
+    "build_target_weights",
     "build_targets",
     "combine_targets",
     "compute_factor_correlations",
@@ -247,6 +253,7 @@ __all__ = [
     "execution_summary_frame",
     "expected_max_sharpe",
     "get_rebalance_dates",
+    "get_rebalance_events",
     "get_session_interval_rebalance_dates",
     "hierarchical_risk_parity",
     "implementation_shortfall_metrics",

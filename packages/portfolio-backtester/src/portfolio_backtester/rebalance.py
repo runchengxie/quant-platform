@@ -208,6 +208,62 @@ def get_rebalance_dates(dates: Iterable[pd.Timestamp], freq: str) -> list[pd.Tim
     return _period_end_dates(dates_list, freq)
 
 
+def get_rebalance_events(
+    trading_sessions: Iterable[pd.Timestamp],
+    policy: str,
+    *,
+    sleeve_count: int = 5,
+) -> pd.DataFrame:
+    """Return signal and execution events for a research rebalance policy.
+
+    ``d11_h5`` deliberately keeps one signal vintage for five consecutive
+    execution sessions.  It is a scheduling helper only; callers still own
+    target construction and return simulation.
+    """
+
+    sessions = _clean_dates(trading_sessions)
+    columns = ["signal_date", "execution_date", "sleeve_id", "sleeve_count", "policy"]
+    if not sessions:
+        return pd.DataFrame(columns=columns)
+    normalized_policy = str(policy).strip().lower()
+    if normalized_policy in {"monthly", "quarterly"}:
+        frequency = "M" if normalized_policy == "monthly" else "Q"
+        dates = get_rebalance_dates(sessions, frequency)
+        return pd.DataFrame(
+            [
+                {
+                    "signal_date": date,
+                    "execution_date": date,
+                    "sleeve_id": 0,
+                    "sleeve_count": 1,
+                    "policy": normalized_policy,
+                }
+                for date in dates
+            ],
+            columns=columns,
+        )
+    if normalized_policy != "d11_h5":
+        raise ValueError("policy must be monthly, quarterly, or d11_h5")
+    if sleeve_count != 5:
+        raise ValueError("d11_h5 requires sleeve_count=5")
+    if len(sessions) < sleeve_count or len(sessions) % sleeve_count:
+        raise ValueError("d11_h5 requires a calendar divisible into five-session cycles")
+    events = []
+    for start in range(0, len(sessions), sleeve_count):
+        signal_date = sessions[start]
+        for sleeve_id, execution_date in enumerate(sessions[start : start + sleeve_count]):
+            events.append(
+                {
+                    "signal_date": signal_date,
+                    "execution_date": execution_date,
+                    "sleeve_id": sleeve_id,
+                    "sleeve_count": sleeve_count,
+                    "policy": normalized_policy,
+                }
+            )
+    return pd.DataFrame(events, columns=columns)
+
+
 def _timestamp_set(dates: Iterable[pd.Timestamp]) -> set[pd.Timestamp]:
     return {cast(pd.Timestamp, date) for date in pd.to_datetime(list(dates))}
 
