@@ -47,6 +47,8 @@ where = ["packages/portfolio-backtester/src"]
 include = [
   "portfolio_backtester",
   "portfolio_backtester.*",
+  "market_data_platform",
+  "market_data_platform.*",
   "quant_platform",
   "quant_platform.*",
   "research_contracts",
@@ -70,7 +72,7 @@ extend-exclude = [
 select = ["E", "F", "I", "UP", "B", "C4", "RET", "SIM", "RUF", "C90"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["portfolio_backtester"]
+known-first-party = ["portfolio_backtester", "market_data_platform"]
 
 [tool.ty.src]
 include = ["packages/portfolio-backtester/src", "scripts"]
