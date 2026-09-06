@@ -76,6 +76,8 @@ def test_distribution_declares_only_public_registry_dependencies() -> None:
         "research-contracts>=0.1.0",
     ]
     assert dev_dependencies == [
+        "polars>=1.0",
+        "torch>=2.0",
         "jsonschema>=4.25",
         "pytest>=9.0.3",
         "research-code-quality",
