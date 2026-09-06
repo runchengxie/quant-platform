@@ -1,6 +1,21 @@
 # quant-platform
 
+> 这是新的公共量化平台仓库。新建的通用数据、回测、组合、风险和执行模拟能力应进入这里，不再写回 `research-workspace` 或旧的 `portfolio-backtester` 等 submodule。
+
+如果你第一次接触本项目，先看[迁移说明](docs/migration/research-workspace-sunset.md)，再按下面的新人路径阅读。
+
 策略假设、专有特征和晋升证据属于私有研究层。本仓库只提供可复用的研究、回测和产物接口。
+
+简单说，`quant-platform` 提供可以被多个策略复用的工具。`quant-research` 决定某条具体策略为什么这样做。平台不应知道某个策略的专有选股规则，也不应保存真实策略数据、凭证或部署秘密。
+
+## 新人阅读路径
+
+1. 先看本页，理解平台和研究仓的边界。
+2. 再看 [`docs/README.md`](docs/README.md)，找到概念、指南、编排和测试说明。
+3. 需要理解回测时先看 `docs/concepts/backtest-spec.md` 和 `docs/guides/entry-points.md`。
+4. 需要理解组合权重时看 `docs/concepts/style-factor-portfolio-weighting.md` 和 `docs/guides/sleeve-portfolio.md`。
+
+现金流策略本身属于 `quant-research`。现金流指数权重、基准相对 overlay、组合约束和 D11-H5 分批执行等可复用机制，经过抽象后可以进入本仓库。
 
 This repository is licensed under the Apache License 2.0. See
 [LICENSE](LICENSE). The license applies only to the original public framework
@@ -38,6 +53,8 @@ The remaining platform migration—data interfaces, alpha mechanisms,
 microstructure abstractions, orchestration, and execution interfaces—must be
 completed and audited before `research-workspace` switches its authoritative
 sources.
+
+详细迁移矩阵见 [`docs/migration/research-workspace-sunset.md`](docs/migration/research-workspace-sunset.md)。
 
 Run locally:
 
