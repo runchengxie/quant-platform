@@ -12,9 +12,42 @@ from portfolio_backtester.rebalance import (
     SessionRebalanceSchedule,
     estimate_rebalance_gap,
     get_rebalance_dates,
+    get_rebalance_events,
     get_session_interval_rebalance_dates,
     sample_rebalance_frame,
 )
+
+
+def test_get_rebalance_events_monthly_uses_period_end_dates() -> None:
+    sessions = pd.date_range("2024-01-01", periods=65, freq="D")
+
+    events = get_rebalance_events(sessions, "monthly")
+
+    assert events["execution_date"].tolist() == [
+        pd.Timestamp("2024-01-31"),
+        pd.Timestamp("2024-02-29"),
+        pd.Timestamp("2024-03-05"),
+    ]
+    assert events["signal_date"].tolist() == events["execution_date"].tolist()
+    assert events["sleeve_id"].tolist() == [0, 0, 0]
+
+
+def test_get_rebalance_events_d11_h5_keeps_one_signal_vintage_per_cycle() -> None:
+    sessions = pd.date_range("2024-01-01", periods=10, freq="D")
+
+    events = get_rebalance_events(sessions, "d11_h5")
+
+    assert events["signal_date"].nunique() == 2
+    assert events.groupby("signal_date")["sleeve_id"].apply(list).tolist() == [
+        list(range(5)),
+        list(range(5)),
+    ]
+    assert events["execution_date"].is_unique
+
+
+def test_get_rebalance_events_rejects_short_d11_h5_calendar() -> None:
+    with pytest.raises(ValueError, match="five"):
+        get_rebalance_events(pd.date_range("2024-01-01", periods=4, freq="D"), "d11_h5")
 
 
 def _ts(value: str | pd.Timestamp) -> pd.Timestamp:
