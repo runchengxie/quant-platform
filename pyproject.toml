@@ -20,11 +20,22 @@ package-dir = {"" = "packages/portfolio-backtester/src"}
 
 [tool.setuptools.packages.find]
 where = ["packages/portfolio-backtester/src"]
-include = ["portfolio_backtester", "portfolio_backtester.*", "quant_platform", "quant_platform.*"]
+include = [
+  "portfolio_backtester",
+  "portfolio_backtester.*",
+  "quant_platform",
+  "quant_platform.*",
+  "research_contracts",
+  "research_contracts.*",
+]
 
 [tool.ruff]
 target-version = "py312"
 line-length = 100
+extend-exclude = [
+  "packages/research-contracts",
+  "packages/portfolio-backtester/src/research_contracts",
+]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "C4", "RET", "SIM", "RUF", "C90"]

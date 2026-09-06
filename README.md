@@ -11,9 +11,12 @@ CSV example, the `portfolio-style-factor` CLI, and the versioned
 data providers, alpha generation, real strategy inputs, strategy-specific orchestration, and
 execution runtime.
 
-It also stages the generic `research_contracts` publication helper. This package owns manifest
-formatting, relative-path validation, SHA-256 receipts, and clean bundle publication. It must not
-contain strategy-specific selection logic or proprietary research inputs.
+It also stages generic publication helpers under the owned `quant_platform` namespace and the
+versioned `research-contracts` package under `packages/research-contracts/`. These packages own
+manifest formatting, artifact envelopes, relative-path validation, SHA-256 receipts, and clean
+bundle publication. They must not contain strategy-specific selection logic or proprietary
+research inputs. The inherited contract package keeps its existing standalone quality gate while
+the public prototype CI scopes Ruff to the migrated platform slice.
 
 The source checkout at commit `91a4fa4f1d57c074c991546c381a3d90a3b6adfb` remains the rollback source.
 The Python namespace is unchanged. The source repository contains no `LICENSE` or `LICENSE.md`, so
