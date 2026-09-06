@@ -2,18 +2,18 @@
 
 ## 目标
 
-增加通过 PIT 安全检查、与框架无关的因子风险估计，后续可以供组合优化和归因使用，同时保持 alpha 研究与组合维护方解耦。
+增加符合 PIT 要求且与框架无关的因子风险估计，未来可供组合优化和归因使用，同时保持 alpha 研究与组合能力归属方解耦。
 
 ## 设计
 
-The caller supplies as-of exposures, historical factor returns, and historical specific returns. The risk model computes factor covariance with optional diagonal shrinkage, asset-specific risk, and the projected asset covariance `X F X' + D`.
+调用方提供截至指定日期的暴露、历史因子收益和历史特质收益。风险模型计算带可选对角收缩的因子协方差、资产特质风险，以及投影后的资产协方差 `X F X' + D`。
 
-The implementation does not infer factor returns, optimize portfolios, or import `portfolio_backtester`. All history must be at or before the explicit `as_of` date.
+实现不会推断因子收益，不优化组合，也不导入 `portfolio_backtester`。所有历史数据都必须不晚于明确指定的 `as_of` 日期。
 
-## 不在本次范围内
+## 不在范围内
 
-- no proprietary RQData data retrieval;
-- no optimizer integration in this PR;
-- no factor-selection policy;
-- no claim that this simple covariance estimator is production-optimal;
-- no external risk-model object in public artifacts.
+- 不获取专有 RQData 数据
+- 本 PR 不集成优化器
+- 不制定因子选择规则
+- 不声称这个简单协方差估计已经达到生产最优
+- 公开产物不包含外部风险模型对象
