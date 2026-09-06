@@ -1,19 +1,17 @@
-# Cashflow Feishu shadow publication
+# 现金流飞书影子发布
 
-`strategy_pipeline.cashflow_publication` is the boundary between the
-`strategy-app` cashflow runner and the Feishu delivery adapter.
+`strategy_pipeline.cashflow_publication` 是 `strategy-app` 现金流运行器和飞书投递适配器之间的边界。
 
-It accepts a `strategy_app.cashflow.selection.v1` artifact only when:
+只有满足以下条件时，才能接收 `strategy_app.cashflow.selection.v1` 产物：
 
-- the selection is passed and belongs to `cashflow_quality_top50_v1`;
-- the readiness receipt says `eligible_for_gray_push: true`;
-- `production_eligible` remains false and `eligible_for_live` is false;
-- the target list is non-empty.
+- 选股结果通过检查，并且属于 `cashflow_quality_top50_v1`。
+- readiness 回执中的 `eligible_for_gray_push: true`。
+- `production_eligible` 保持为 false，`eligible_for_live` 为 false。
+- 目标列表非空。
 
-The command writes an immutable `publications/<signal>_<hash>/` directory with
-`targets.json` and `receipt.json`, then updates the safe `latest` symlink. The
-receipt pins both the selection and readiness file hashes. A modified existing
-publication is rejected.
+命令会写入包含 `targets.json` 和 `receipt.json` 的不可变目录
+`publications/<signal>_<hash>/`，然后更新安全的 `latest` 符号链接。
+回执会固定选股文件和 readiness 文件的 hash。已有发布内容被修改时，命令会拒绝操作。
 
 ```bash
 strategy-pipeline cashflow-publish-shadow \
@@ -22,5 +20,4 @@ strategy-pipeline cashflow-publish-shadow \
   --output-root /path/to/cashflow-publications
 ```
 
-This is a shadow publication contract; it does not grant production eligibility
-and does not send a Feishu message by itself.
+这是影子发布契约，不会授予生产资格，也不会自行发送飞书消息。
