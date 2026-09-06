@@ -1,49 +1,35 @@
-# Matched model and risk comparisons
+# 匹配模型和风险比较
 
-These research helpers separate estimator comparisons from portfolio accounting.
-They do not implement a trading strategy or certify point-in-time source data.
+这些研究辅助工具把估计器比较与组合核算分开。它们不实现交易策略，也不负责证明数据源具备点时可用性。
 
-## Chronological fitting
+## 按时间顺序拟合
 
-`alpha_research.matched_rank_models.fit_matched_rank_models` accepts training and
-inference DataFrames, feature names, a decision date and registry configurations.
-Training keys are `formation_date`, `symbol`, `label_end_date`, and `target`.
-Inference rows require `formation_date`, `symbol`, and the same feature columns.
-All training formation dates and label maturity dates must precede the decision
-strictly. Every inference row must belong to that decision date.
+`alpha_research.matched_rank_models.fit_matched_rank_models` 接收训练和推理 DataFrame、特征名、
+决策日期和注册配置。训练键为 `formation_date`、`symbol`、`label_end_date` 和 `target`。
+推理行需要包含 `formation_date`、`symbol` 和相同的特征列。所有训练形成日期和标签成熟日期都必须严格早于决策日期，
+每一行推理数据都必须属于该决策日期。
 
-Missing features use training-column medians, with zero for entirely missing
-training columns. Targets must be finite. The default target transform is
-within-formation percentile rank with average ties; `identity` preserves numeric
-risk targets. Supported estimators are Ridge, standardized Ridge, random forest,
-pointwise XGBoost, and pairwise XGBoost. Pairwise requires rank targets and the
-`rank:pairwise` objective; it groups training observations by formation date.
+缺失特征使用训练列中位数，训练列完全缺失时使用零。目标值必须是有限值。
+默认目标变换是在每个形成期内计算百分位排名，并对并列值取平均。`identity` 保留数值型风险目标。
+支持的估计器包括 Ridge、标准化 Ridge、随机森林、pointwise XGBoost 和 pairwise XGBoost。
+Pairwise 需要排名目标和 `rank:pairwise` 目标函数，并按形成日期对训练观测分组。
 
-The return value contains predictions and a receipt with imputation medians,
-resolved configurations, maturity bounds and a hash of the actual training rows.
-Matching hashes support a same-input comparison; they do not prove the source
-features were historically available. Scores are neither calibrated expected
-returns nor probabilities. Callers own PIT provenance, OOS split construction,
-frozen experiment specifications, weight conversion and execution-cost evaluation.
+返回值包含预测结果和回执，回执记录填补中位数、解析后的配置、成熟度边界以及实际训练行的 hash。
+匹配 hash 可以支持相同输入比较，但不能证明源特征在历史上确实已经可用。
+分数不是经过校准的预期收益，也不是概率。PIT 血缘、OOS 切分、冻结实验规格、权重转换和执行成本评估由调用方负责。
 
-## Risk targets and gating
+## 风险目标和门禁
 
-`alpha_research.downside_target.next_close_downside_target` measures daily downside
-RMS over a fixed number of supplied exchange sessions after next-close entry.
-Positive-return sessions remain in the denominator. Missing or nonpositive marks
-produce an unavailable target, not a longer horizon or an assumed zero return.
-`trailing_downside_rms` provides the corresponding observed-history control.
+`alpha_research.downside_target.next_close_downside_target` 在次日收盘价入场后，
+根据给定数量的交易所交易时段计算每日下行 RMS。正收益时段仍保留在分母中。
+缺失或非正的价格标记会产生不可用目标，不会延长计算周期，也不会假设收益为零。
+`trailing_downside_rms` 提供对应的历史观测控制指标。
 
-`alpha_research.forecast_skill_gate.forecast_skill_gate` compares previously
-generated OOF model and control forecasts with realized targets. Entire formations
-must be mature strictly before the decision. The fixed heuristic requires eight
-formations, twenty matched finite observations per formation, positive average
-formation-level MSE improvement and a winning-formation fraction of at least 60%.
-It cannot establish that caller-supplied forecasts are genuinely out of fold.
-Its boolean output is not a confidence probability or a significance test.
+`alpha_research.forecast_skill_gate.forecast_skill_gate` 将之前生成的 OOF 模型预测和控制预测与实际目标比较。
+所有形成期都必须严格在决策日前成熟。固定启发式门禁要求至少 8 个形成期，每个形成期至少有 20 个匹配且有限的观测，
+形成期平均 MSE 改善为正，获胜形成期比例至少为 60%。它不能证明调用方提供的预测确实来自折外数据。
+布尔输出不是置信概率，也不是显著性检验。
 
-Always compare learned risk weights with simple exposure controls. Lower
-volatility alone does not demonstrate forecasting skill, and an ex-post
-volatility-matched comparison is a hindsight diagnostic rather than an executable
-allocation rule. Drawdown depth, unrecovered episodes, recovery duration, turnover
-and net returns remain portfolio-layer evaluations.
+始终要把学习得到的风险权重与简单暴露控制进行比较。波动率降低本身不能证明预测能力，
+事后匹配波动率的比较属于回看式诊断，不是可执行的配置规则。回撤深度、未恢复区间、恢复时长、
+换手率和净收益仍由组合层评估。

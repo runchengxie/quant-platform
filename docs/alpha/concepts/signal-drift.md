@@ -1,16 +1,18 @@
-# Signal distribution drift
+# 信号分布漂移
 
-`alpha_research.signal_drift` provides small, framework-neutral distribution diagnostics for comparing a frozen research/reference signal population with a later paper/live population.
+`alpha_research.signal_drift` 提供轻量且与框架无关的分布诊断，用于比较冻结的研究或参考信号总体与后续纸面或实盘信号总体。
 
-The first report includes:
+首份报告包括：
 
-- PSI using reference quantile bins;
-- empirical two-sample KS statistic;
-- mean shift in reference-standard-deviation units;
-- current/reference standard-deviation ratio;
-- reference/current finite observation counts;
-- explicit constant-reference status.
+- 使用参考分位数分箱计算 PSI。
+- 经验双样本 KS 统计量。
+- 以参考标准差为单位的均值偏移。
+- 当前标准差与参考标准差的比值。
+- 参考样本和当前样本的有限观测数量。
+- 明确的常量参考状态。
 
-The module deliberately does not convert these metrics into a strategy lifecycle verdict. Thresholds, invalidation conditions, claims, and stop/continue decisions remain in the workspace evidence/decision-governance layer.
+本模块不会把这些指标直接转换为策略生命周期结论。阈值、失效条件、对外声明以及停止或继续的决定，
+仍由工作区证据和决策治理层负责。
 
-Evidently can later be evaluated as an optional differential/monitoring backend. Any adapter should normalize results back to the platform drift contract rather than making Evidently's project model a cross-repository dependency.
+未来可以评估 Evidently 作为可选的差异或监控后端。适配器应将结果标准化回平台漂移契约，
+不要把 Evidently 的项目模型变成跨仓库依赖。
