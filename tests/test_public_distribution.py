@@ -21,7 +21,7 @@ def _assert_allowed_package_sources(lock: dict[str, object]) -> None:
     for package in packages:
         assert isinstance(package, dict)
         source = package["source"]
-        if package["name"] == "quant-platform-local-prototype":
+        if package["name"] == "quant-platform":
             assert source == {"editable": "."}
         else:
             assert source == {"registry": "https://pypi.org/simple"}
@@ -57,7 +57,7 @@ def test_distribution_declares_only_public_registry_dependencies() -> None:
     dependencies = project["project"]["dependencies"]
     dev_dependencies = project["dependency-groups"]["dev"]
 
-    assert dependencies == ["numpy>=2.5.2", "pandas>=2.0"]
+    assert dependencies == ["numpy>=1.23", "pandas>=2.0"]
     assert dev_dependencies == ["jsonschema>=4.25", "pytest>=9.0.3", "ruff>=0.8"]
     assert "tool" not in project or "uv" not in project["tool"]
 

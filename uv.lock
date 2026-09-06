@@ -239,7 +239,7 @@ wheels = [
 ]
 
 [[package]]
-name = "quant-platform-local-prototype"
+name = "quant-platform"
 version = "0.0.0"
 source = { editable = "." }
 dependencies = [
@@ -256,7 +256,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "numpy", specifier = ">=2.5.2" },
+    { name = "numpy", specifier = ">=1.23" },
     { name = "pandas", specifier = ">=2.0" },
 ]
 
