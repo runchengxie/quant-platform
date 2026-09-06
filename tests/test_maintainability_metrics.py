@@ -36,7 +36,7 @@ def test_maintainability_metrics_cli_outputs_json():
     repo_root = _repo_root()
     result = subprocess.run(
         [
-            "python",
+            sys.executable,
             "scripts/dev/maintainability_metrics.py",
             "--json",
             "--limit",
@@ -59,7 +59,7 @@ def test_maintainability_metrics_cli_outputs_markdown():
     repo_root = _repo_root()
     result = subprocess.run(
         [
-            "python",
+            sys.executable,
             "scripts/dev/maintainability_metrics.py",
             "--markdown",
             "--limit",
