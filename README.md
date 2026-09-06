@@ -1,5 +1,10 @@
 # quant-platform
 
+This repository is licensed under the Apache License 2.0. See
+[LICENSE](LICENSE). The license applies only to the original public framework
+contents in this repository; it does not grant rights to private strategies,
+proprietary data, credentials, or third-party dependencies.
+
 Public reusable quant research and portfolio platform. This repository is the
 first published migration slice of the planned platform monorepo; it is not
 yet a complete replacement for every legacy workspace submodule.
@@ -20,9 +25,9 @@ the public prototype CI scopes Ruff to the migrated platform slice.
 
 The source checkout at commit `91a4fa4f1d57c074c991546c381a3d90a3b6adfb` remains the rollback source
 for the migrated portfolio slice. The Python namespace is unchanged. The
-repository currently has no `LICENSE` or `LICENSE.md`; public visibility does
-not by itself grant redistribution rights. Add an explicit license before
-describing this repository as an open-source release.
+Apache-2.0 license applies to this repository's original public framework
+contents only; it does not relicense the legacy source checkout or any
+third-party dependency.
 
 The remaining platform migration—data interfaces, alpha mechanisms,
 microstructure abstractions, orchestration, and execution interfaces—must be
