@@ -1,5 +1,7 @@
 # quant-platform
 
+`DailyWatch20` 是现有调用方使用的兼容例外。本仓库只保留其公开组合与回测能力，研究假设、特征和晋升证据属于私有研究层。
+
 This repository is licensed under the Apache License 2.0. See
 [LICENSE](LICENSE). The license applies only to the original public framework
 contents in this repository; it does not grant rights to private strategies,

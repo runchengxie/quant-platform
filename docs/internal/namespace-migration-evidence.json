@@ -1,0 +1,12 @@
+{
+  "canonical_package": "portfolio_backtester",
+  "canonical_contract_prefix": "portfolio_backtester",
+  "compatibility_facade_present": false,
+  "distribution": "portfolio-backtester",
+  "legacy_source_tree_present": false,
+  "namespace_boundary_gate": "scripts/dev/namespace_boundary.py",
+  "shared_namespace_mechanism_present": false,
+  "removal_release": "workspace-2.0",
+  "schema": "owner_native_namespace_evidence.v2",
+  "status": "removed"
+}

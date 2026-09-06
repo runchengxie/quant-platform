@@ -36,7 +36,7 @@ def build_artifact(input_path: Path, *, signal: str, n_quantiles: int) -> dict[s
     long_short = cast(pd.Series, result["long_short"])
     rows = [
         {
-            "period_end": pd.Timestamp(date).date().isoformat(),
+            "period_end": pd.Timestamp(str(date)).date().isoformat(),
             "long_return": _rounded(long_returns.loc[date]),
             "short_return": _rounded(short_returns.loc[date]),
             "long_short_return": _rounded(value),

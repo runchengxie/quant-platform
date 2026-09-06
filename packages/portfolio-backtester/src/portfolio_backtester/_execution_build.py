@@ -272,7 +272,7 @@ def build_exit_policy(
         raise ValueError("exit_policy.fallback must be one of: ffill, none.")
     if not price_col:
         raise ValueError("exit_policy.price_col cannot be empty.")
-    return ExitPolicy(cast(ExitPricePolicy, price), cast(ExitFallbackPolicy, fallback), price_col)
+    return ExitPolicy(price, fallback, price_col)
 
 
 def build_execution_model(

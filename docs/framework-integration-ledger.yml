@@ -1,0 +1,102 @@
+schema_version: portfolio_backtester.framework_integration.v2
+policy:
+  current_registry_only:
+    - native.position_replay
+  native_default_until_parity: true
+  no_new_generic_framework_features:
+    - event_engine
+    - gateway
+    - generic_oms
+    - strategy_lifecycle
+    - parameter_optimizer
+    - generic_data_feed
+    - market_agnostic_broker_simulator
+  forbidden_public_result_types:
+    - backtrader.*
+    - lean.*
+    - qlib.*
+    - vnpy.*
+  required_canonical_outputs:
+    - performance
+    - positions
+    - orders
+    - fills
+    - daily_ledger
+    - summary
+    - metadata
+
+backends:
+  native:
+    registry_name: native.position_replay
+    implementation: src/portfolio_backtester/backends/native.py
+    owner: portfolio-backtester
+    status: canonical
+    scope:
+      - cross_sectional_targets
+      - deterministic_position_replay
+      - a_share_execution_rules
+      - capacity_and_cost_research
+    rollback: keep native.position_replay as the default backend
+
+historical_candidates:
+  qlib:
+    status: not_merged_to_main
+    current_role: none
+    note: historical candidate work did not enter the main branch
+  lean:
+    status: not_merged_to_main
+    current_role: reference_only
+    note: architecture reference only with no adapter or runtime dependency
+
+planned_integrations:
+  backtrader:
+    status: planning_only
+    current_role: none
+    adoption_gates:
+      - optional_dependency_only
+      - canonical_order_and_fill_translation
+      - explicit_simulation_clock
+      - deterministic_golden_parity
+      - adapter_code_smaller_than_replaced_native_surface
+    rollback: retain native.position_replay and remove the optional adapter
+
+out_of_scope:
+  vnpy:
+    status: out_of_scope
+    reason: gateway and live transport are execution-system concerns
+
+replacement_gates:
+  coverage_ratio_minimum: 0.90
+  requirements:
+    - all_golden_scenarios_pass
+    - canonical_outputs_match_or_differences_are_classified
+    - performance_meets_documented_threshold
+    - no_loss_of_a_share_domain_semantics
+    - migration_and_rollback_are_documented
+  action: delete_or_freeze_replaced_native_generic_implementation
+
+golden_scenarios:
+  - id: liquid_long_only
+    purpose: generic fully liquid parity
+    required_comparisons:
+      - positions
+      - turnover
+      - gross_return
+      - costs
+      - nav
+  - id: a_share_market_rules
+    purpose: preserve native market semantics
+    required_features:
+      - t_plus_one
+      - directional_price_limits
+      - suspension
+      - round_lot_and_odd_lot_sell
+      - minimum_commission
+  - id: capacity_partial_fill
+    purpose: validate order lifecycle and accounting
+    required_features:
+      - multi_day_partial_fill
+      - cancel_replace
+      - insufficient_cash
+      - nonlinear_minimum_commission
+      - cash_and_position_conservation

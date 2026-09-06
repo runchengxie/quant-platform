@@ -25,6 +25,10 @@ def _assert_allowed_package_sources(lock: dict[str, object]) -> None:
             assert source == {"editable": "."}
         elif package["name"] == "research-contracts":
             assert source == {"directory": "packages/research-contracts"}
+        elif package["name"] == "research-code-quality":
+            assert source["git"].startswith(
+                "https://github.com/runchengxie/research-code-quality.git"
+            )
         else:
             assert source == {"registry": "https://pypi.org/simple"}
 
@@ -59,8 +63,23 @@ def test_distribution_declares_only_public_registry_dependencies() -> None:
     dependencies = project["project"]["dependencies"]
     dev_dependencies = project["dependency-groups"]["dev"]
 
-    assert dependencies == ["numpy>=1.23", "pandas>=2.0", "research-contracts>=0.1.0"]
-    assert dev_dependencies == ["jsonschema>=4.25", "pytest>=9.0.3", "ruff>=0.8"]
+    assert dependencies == [
+        "numpy>=1.23",
+        "pandas>=2.0",
+        "pyarrow>=25.0.1",
+        "PyYAML>=6.0",
+        "scipy>=1.14",
+        "scikit-learn>=1.9.0",
+        "xgboost>=1.7",
+        "research-contracts>=0.1.0",
+    ]
+    assert dev_dependencies == [
+        "jsonschema>=4.25",
+        "pytest>=9.0.3",
+        "research-code-quality",
+        "ruff>=0.8",
+        "ty==0.0.77",
+    ]
     assert project["tool"]["uv"]["sources"]["research-contracts"] == {
         "path": "packages/research-contracts"
     }

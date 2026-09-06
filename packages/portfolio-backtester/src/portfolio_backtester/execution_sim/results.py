@@ -272,10 +272,12 @@ def _build_cost_breakdown(fills: pd.DataFrame, daily: pd.DataFrame) -> pd.DataFr
         if c in data
     ]
     if fee_cols:
-        data["fee_cost"] = [float(sum(data[c][i] for c in fee_cols)) for i in range(len(labels))]
+        data["fee_cost"] = [
+            sum(float(data[c][i]) for c in fee_cols) for i in range(len(labels))
+        ]
     if slip_cols:
         data["slippage_cost"] = [
-            float(sum(data[c][i] for c in slip_cols)) for i in range(len(labels))
+            sum(float(data[c][i]) for c in slip_cols) for i in range(len(labels))
         ]
     # Legacy ``transaction_cost`` alias: aggregate of every sub-item so existing
     # consumers (and conservation assertions) keep working.

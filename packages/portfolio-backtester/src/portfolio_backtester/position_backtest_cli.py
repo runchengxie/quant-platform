@@ -76,8 +76,8 @@ def _config_from_run(
         trading_days_per_year=int(backtest.get("trading_days_per_year") or 252),
         long_only=bool(backtest.get("long_only", True)),
         preserve_gross_exposure=preserve,
-        exit_price_policy=resolved_exit_policy,  # ty: ignore[invalid-argument-type]
-        exit_fallback_policy=resolved_fallback,  # ty: ignore[invalid-argument-type]
+        exit_price_policy=resolved_exit_policy,
+        exit_fallback_policy=resolved_fallback,
         tradable_col=tradable_col or backtest.get("tradable_col"),
     )
 
