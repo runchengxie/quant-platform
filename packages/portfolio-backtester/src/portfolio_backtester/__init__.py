@@ -26,6 +26,7 @@ from .backtest_contracts import (
     validate_tradable_flags_frame,
 )
 from .backtest_spec import BacktestSpec
+from .benchmark_enhancement import PortfolioConstructionVariant, build_target_weights
 from .bet_sizing import (
     SizingConfig,
     average_active_bets,
@@ -169,6 +170,7 @@ __all__ = [
     "BacktestPeriodsContract",
     "BacktestReturnSeriesContract",
     "BacktestSpec",
+    "PortfolioConstructionVariant",
     "CostBreakdown",
     "DailyWatch20Config",
     "DailyWatch20PortfolioPolicy",
@@ -227,6 +229,7 @@ __all__ = [
     "build_positions_envelope_v2",
     "build_quantile_portfolio_returns",
     "build_rebalance_turnover_report",
+    "build_target_weights",
     "build_sized_weights",
     "build_sizing_receipt",
     "build_targets",
