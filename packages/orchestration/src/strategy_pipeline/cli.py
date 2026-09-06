@@ -33,6 +33,10 @@ def build_parser() -> argparse.ArgumentParser:
     cashflow.add_argument("--readiness", required=True)
     cashflow.add_argument("--output-root", required=True)
     cashflow.add_argument("--allow-reconstructed-pit", action="store_true")
+    cashflow.add_argument("--producer-repository")
+    cashflow.add_argument("--producer-commit")
+    cashflow.add_argument("--platform-repository")
+    cashflow.add_argument("--platform-commit")
     return parser
 
 
@@ -57,6 +61,10 @@ def main(argv: list[str] | None = None) -> int:
             readiness_path=args.readiness,
             output_root=args.output_root,
             allow_reconstructed_pit=args.allow_reconstructed_pit,
+            producer_repository=args.producer_repository,
+            producer_commit=args.producer_commit,
+            platform_repository=args.platform_repository,
+            platform_commit=args.platform_commit,
         )
         print(
             json.dumps(
