@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quant-platform"
-version = "0.0.0"
+version = "0.0.1"
 description = "Local-only quant-platform migration prototype"
 requires-python = ">=3.12"
-dependencies = ["numpy>=1.23", "pandas>=2.0"]
+dependencies = ["numpy>=1.23", "pandas>=2.0", "research-contracts>=0.1.0"]
 
 [project.scripts]
 portfolio-style-factor = "portfolio_backtester.style_factor_cli:main"
@@ -29,11 +29,15 @@ include = [
   "research_contracts.*",
 ]
 
+[tool.uv.sources]
+research-contracts = { path = "packages/research-contracts" }
+
 [tool.ruff]
 target-version = "py312"
 line-length = 100
 extend-exclude = [
   "packages/research-contracts",
+  "packages/portfolio-backtester/src/portfolio_backtester",
   "packages/portfolio-backtester/src/research_contracts",
 ]
 

@@ -23,6 +23,8 @@ def _assert_allowed_package_sources(lock: dict[str, object]) -> None:
         source = package["source"]
         if package["name"] == "quant-platform":
             assert source == {"editable": "."}
+        elif package["name"] == "research-contracts":
+            assert source == {"directory": "packages/research-contracts"}
         else:
             assert source == {"registry": "https://pypi.org/simple"}
 
@@ -57,9 +59,11 @@ def test_distribution_declares_only_public_registry_dependencies() -> None:
     dependencies = project["project"]["dependencies"]
     dev_dependencies = project["dependency-groups"]["dev"]
 
-    assert dependencies == ["numpy>=1.23", "pandas>=2.0"]
+    assert dependencies == ["numpy>=1.23", "pandas>=2.0", "research-contracts>=0.1.0"]
     assert dev_dependencies == ["jsonschema>=4.25", "pytest>=9.0.3", "ruff>=0.8"]
-    assert "tool" not in project or "uv" not in project["tool"]
+    assert project["tool"]["uv"]["sources"]["research-contracts"] == {
+        "path": "packages/research-contracts"
+    }
 
 
 def test_cli_artifact_validates_against_draft_2020_12_schema(tmp_path: Path) -> None:
