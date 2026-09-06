@@ -20,7 +20,7 @@ package-dir = {"" = "packages/portfolio-backtester/src"}
 
 [tool.setuptools.packages.find]
 where = ["packages/portfolio-backtester/src"]
-include = ["portfolio_backtester", "portfolio_backtester.*"]
+include = ["portfolio_backtester", "portfolio_backtester.*", "research_contracts", "research_contracts.*"]
 
 [tool.ruff]
 target-version = "py312"

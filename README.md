@@ -8,7 +8,12 @@ The prototype migrates one public vertical slice from `portfolio-backtester`: th
 `portfolio_backtester.style_factors_backtest` quantile-portfolio kernel, a deterministic synthetic
 CSV example, the `portfolio-style-factor` CLI, and the versioned
 `portfolio_backtester.style_factor_backtest.v1` JSON artifact contract. It deliberately excludes
-data providers, alpha generation, real strategy inputs, orchestration, and execution runtime.
+data providers, alpha generation, real strategy inputs, strategy-specific orchestration, and
+execution runtime.
+
+It also stages the generic `research_contracts` publication helper. This package owns manifest
+formatting, relative-path validation, SHA-256 receipts, and clean bundle publication. It must not
+contain strategy-specific selection logic or proprietary research inputs.
 
 The source checkout at commit `91a4fa4f1d57c074c991546c381a3d90a3b6adfb` remains the rollback source.
 The Python namespace is unchanged. The source repository contains no `LICENSE` or `LICENSE.md`, so
