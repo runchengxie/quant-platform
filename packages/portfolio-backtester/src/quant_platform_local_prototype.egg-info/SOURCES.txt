@@ -1,0 +1,14 @@
+README.md
+pyproject.toml
+packages/portfolio-backtester/src/portfolio_backtester/__init__.py
+packages/portfolio-backtester/src/portfolio_backtester/style_factor_cli.py
+packages/portfolio-backtester/src/portfolio_backtester/style_factors_backtest.py
+packages/portfolio-backtester/src/quant_platform_local_prototype.egg-info/PKG-INFO
+packages/portfolio-backtester/src/quant_platform_local_prototype.egg-info/SOURCES.txt
+packages/portfolio-backtester/src/quant_platform_local_prototype.egg-info/dependency_links.txt
+packages/portfolio-backtester/src/quant_platform_local_prototype.egg-info/entry_points.txt
+packages/portfolio-backtester/src/quant_platform_local_prototype.egg-info/requires.txt
+packages/portfolio-backtester/src/quant_platform_local_prototype.egg-info/top_level.txt
+tests/test_public_distribution.py
+tests/test_style_factor_slice.py
+tests/test_style_factors_backtest.py
