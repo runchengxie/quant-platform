@@ -1,46 +1,59 @@
 # quant-platform
 
-`quant-platform` 是公开的通用量化平台，提供可以被多条策略共同使用的研究、回测和组合工具。
+`quant-platform` 是公开的量化研究与投资组合基础平台。
 
-这里关注通用能力，不保存某一条策略的专有规则和真实研究数据。
+它提供可复用的回测、组合、执行模拟、风险分析和研究产物接口，供研究项目调用。策略假设、专有特征、真实策略输入和晋升证据属于 `quant-research` 等研究仓库，本仓库不保存这些内容。
 
-策略假设、专有特征和晋升证据属于私有研究层，由 `quant-research` 维护。
+## 适合谁使用
 
-## 这里提供什么
+- 想运行示例回测的研究者
+- 需要复用组合、风险或产物接口的开发者
+- 需要了解公开量化基础能力边界的维护者
 
-- 数据集和研究产物的通用接口
-- 回测、组合构造、风险分析和执行模拟
-- 公开的研究契约和发布工具
-- 可复现的测试、示例和质量检查
+## 快速开始
 
-## 这里不放什么
+安装开发依赖并运行检查：
 
-- 数据供应商接入、凭证和原始数据
-- 某条策略的选股规则、特征、标签和模型参数
-- 私有实验结果、生产配置和部署密钥
+```bash
+uv sync --locked --all-groups
+uv run ruff check .
+uv run pytest
+```
 
-市场数据由独立的 [`market-data-platform`](https://github.com/runchengxie/market-data-platform) 负责生产和发布。
-策略研究由 [`quant-research`](https://github.com/runchengxie/quant-research) 负责。
-两者的详细边界见[迁移说明](docs/migration/research-workspace-sunset.md)。
+运行一个公开示例：
 
-## 新人阅读路径
+```bash
+uv run portfolio-style-factor \
+  --input examples/synthetic-style-factor.csv \
+  --output /tmp/style-factor-report.json \
+  --signal size \
+  --quantiles 2
+```
 
-1. 阅读[文档入口](docs/README.md)，了解目录和推荐顺序。
-2. 阅读[回测入口](docs/guides/entry-points.md)，运行一个最小示例。
-3. 根据任务查看[概念文档](docs/concepts/)或对应的专题目录。
-4. 运行[测试和质量检查](docs/testing.md)。
+## 去哪里找详细说明
 
-如果你要研究现金流策略，请先从 `quant-research` 开始。这里可以承载抽象后的组合、风险和发布能力，
-不负责保存现金流策略本身。
+- [文档总览](docs/README.md)
+- [开发约定](AGENTS.md)
+- [回测与组合说明](docs/concepts/backtest-spec.md)
+- [研究产物与公开接口](docs/reference/public-api.md)
+- [迁移与边界说明](docs/migration/research-workspace-sunset.md)
 
-## 当前状态
+文档中的技术说明以当前代码和测试为准。README 只保留项目定位、使用入口和导航，具体接口、架构、兼容性和迁移记录请查看 `docs/`。
 
-本仓库处于从 `research-workspace` 和旧平台子模块迁移的阶段。当前版本已经提供一部分公开回测和组合能力，
-完整迁移范围、兼容期规则和回滚信息见[迁移说明](docs/migration/research-workspace-sunset.md)。
+## 仓库边界
 
-## 开发规范
+`quant-platform` 负责通用能力，例如回测、组合构造、风险和成本、执行模拟，以及可复用的研究产物契约。
 
-并行开发时，每项改动都使用独立 worktree、功能分支和 PR。测试、依赖、发布和文档维护规则见
-[`AGENTS.md`](AGENTS.md) 和 [`docs/README.md`](docs/README.md)。
+以下内容由其他仓库负责：
 
-本仓库采用 Apache License 2.0，详见 [LICENSE](LICENSE)。许可证只适用于本仓库中的原始公开框架内容。
+- `market-data-platform`：数据采集、清洗、质量检查、版本和发布
+- `quant-research`：策略、特征、机器学习、实验和研究结论
+- `market-intel`：报告、看板和研究结果交付
+
+研究项目通过已发布的数据资产和版本化产物与本仓库协作。`quant-platform` 不接入数据供应商，不保存真实策略输入，也不承载专有策略逻辑。
+
+## 许可证
+
+本仓库采用 Apache License 2.0。许可范围仅包括本仓库中的公开框架代码，不包含私有策略、专有数据、凭证和第三方依赖。
+
+详见 [LICENSE](LICENSE)。
