@@ -26,6 +26,7 @@ from .backtest_contracts import (
     validate_tradable_flags_frame,
 )
 from .backtest_spec import BacktestSpec
+from .benchmark_comparison import build_comparison_receipt, compare_portfolio_returns
 from .benchmark_enhancement import PortfolioConstructionVariant, build_target_weights
 from .bet_sizing import (
     SizingConfig,
@@ -229,6 +230,7 @@ __all__ = [
     "box_worst_case_return",
     "build_backtest_periods_frame",
     "build_backtest_return_frame",
+    "build_comparison_receipt",
     "build_factor_returns",
     "build_portfolio_sizing_receipt",
     "build_position_replay_periods",
@@ -240,6 +242,7 @@ __all__ = [
     "build_target_weights",
     "build_targets",
     "combine_targets",
+    "compare_portfolio_returns",
     "compute_factor_correlations",
     "compute_summary",
     "compute_trade_summary",
