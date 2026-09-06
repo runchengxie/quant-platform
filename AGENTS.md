@@ -1,11 +1,10 @@
 # quant-platform 工作规则
 
-本目录当前是迁移期的本地 staging checkout，不应把它当作旧工作区的临时目录。
+本目录当前是迁移期的本地开发工作树，不应把它当作旧工作区的临时目录。
 
-`research-workspace` 处于 sunset 过渡期。新的通用回测、组合构造、风险、执行模拟和公共 contracts 应优先落在本仓库。`market-data-platform` 保持独立，继续负责数据接入、标准化、质量治理、版本和 published asset。本仓库只消费其发布资产。旧 `portfolio-backtester` 和 `quant-execution-engine` 只用于迁移兼容、历史复现和事实核对。
-Keep the `portfolio_backtester` Python namespace unchanged. Only public mechanisms, synthetic data,
-tests, contracts, and migration evidence belong here. Do not add providers, credentials, real data,
-strategy parameters, orchestration, execution runtime, or research artifacts.
+`research-workspace` 处于 sunset 过渡期。新的通用回测、组合构造、风险、执行模拟和公共契约应优先落在本仓库。`market-data-platform` 保持独立，继续负责数据接入、标准化、质量治理、版本和已发布数据资产。本仓库只消费其发布资产。旧 `portfolio-backtester` 和 `quant-execution-engine` 只用于迁移兼容、历史复现和事实核对。
+
+`portfolio_backtester` Python 命名空间暂时保持不变。本仓库只接收公开机制、合成数据、测试、契约和迁移证据，不接收数据供应商、凭证、真实数据、策略参数、任务编排、执行运行时或研究产物。
 
 策略研究假设、专有特征和晋升规则属于私有研究层。本仓库只保留可复用的公开机制。
 
