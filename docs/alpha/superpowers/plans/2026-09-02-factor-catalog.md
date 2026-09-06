@@ -1,14 +1,14 @@
-# 因子目录实施计划
+# 因子目录实现计划
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox syntax for tracking.
+> 给智能体开发者：必须使用 `superpowers:subagent-driven-development` 或 `superpowers:executing-plans`，按任务逐项执行。步骤使用复选框跟踪。
 
-**目标：**增加稳定的版本化因子身份和带日期的证据摘要，供 workspace 发布和 Dashboard 检查。
+目标：增加稳定的因子版本身份和按日期记录的证据摘要，供工作区发布和 Dashboard 检查。
 
-**规范：**`docs/superpowers/specs/2026-09-02-factor-catalog-design.md`
+设计说明：`docs/superpowers/specs/2026-09-02-factor-catalog-design.md`
 
-- [x] Add tests for round-trip, duplicate versions, invalid dependencies/hash, and non-finite evidence.
-- [ ] Run focused tests and confirm RED before implementation.
-- [x] Implement `FactorSpec`, `FactorEvidenceSummary`, and `FactorCatalog`.
-- [x] Document the RQFactor/Alphalens relationship and ownership boundary.
-- [ ] Run `uv run --extra dev pytest tests/test_factor_catalog.py -q`.
-- [ ] Run repository lint, format, typecheck, full test, and maintainability gates.
+- [x] 为往返序列化、重复版本、无效依赖或哈希，以及非有限证据增加测试。
+- [ ] 运行专项测试，并确认实现前测试按预期失败。
+- [x] 实现 `FactorSpec`、`FactorEvidenceSummary` 和 `FactorCatalog`。
+- [x] 记录 RQFactor 与 Alphalens 的关系及归属边界。
+- [ ] 运行 `uv run --extra dev pytest tests/test_factor_catalog.py -q`。
+- [ ] 运行仓库 lint、格式、类型、完整测试和可维护性检查。
