@@ -135,8 +135,8 @@ def test_framework_backend_docs_match_current_main_surface() -> None:
         ],
     ]
 
-    assert "native implementation is `NativeDatasetBackend`" in readme
-    assert "Qlib backend is connected through an optional dependency" in readme
+    assert "`NativeDatasetBackend`" in readme
+    assert "Qlib 后端通过可选依赖接入" in readme
     assert "concepts/framework-backends.md" in docs_index
     for backend in (
         "`NativeDatasetBackend`",

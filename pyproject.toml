@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "quant-platform"
 version = "0.0.1"
-description = "Local-only quant-platform migration prototype"
+description = "Public reusable quant research and portfolio platform"
 requires-python = ">=3.12"
 dependencies = [
   "duckdb>=1.2",

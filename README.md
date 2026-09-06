@@ -2,42 +2,30 @@
 
 策略假设、专有特征和晋升证据属于私有研究层。本仓库只提供可复用的研究、回测和产物接口。
 
-This repository is licensed under the Apache License 2.0. See
-[LICENSE](LICENSE). The license applies only to the original public framework
-contents in this repository; it does not grant rights to private strategies,
-proprietary data, credentials, or third-party dependencies.
+本仓库按 Apache License 2.0 授权，详见 [LICENSE](LICENSE)。许可证只适用于本仓库中的公开框架代码，
+不授予私有策略、专有数据、凭证或第三方依赖的使用权。
 
-The alpha framework's native implementation is `NativeDatasetBackend`.
-The Qlib backend is connected through an optional dependency.
+alpha 框架的原生实现是 `NativeDatasetBackend`。Qlib 后端通过可选依赖接入。
 
-Public reusable quant research and portfolio platform. This repository is the
-first published migration slice of the planned platform monorepo; it is not
-yet a complete replacement for every legacy workspace submodule.
+这是公开的可复用量化研究与组合平台。当前仓库仍处于分阶段迁移中，旧工作区的其他职责尚未全部迁入。
 
-The current release migrates one public vertical slice from `portfolio-backtester`: the standalone
-`portfolio_backtester.style_factors_backtest` quantile-portfolio kernel, a deterministic synthetic
-CSV example, the `portfolio-style-factor` CLI, and the versioned
-`portfolio_backtester.style_factor_backtest.v1` JSON artifact contract. It deliberately excludes
-data providers, alpha generation, real strategy inputs, strategy-specific orchestration, and
-execution runtime.
+当前版本从 `portfolio-backtester` 迁入一组独立的公开能力，包括
+`portfolio_backtester.style_factors_backtest` 分位数组合内核、确定性的合成 CSV 示例、
+`portfolio-style-factor` 命令行入口，以及版本化的
+`portfolio_backtester.style_factor_backtest.v1` JSON 产物契约。数据供应商、alpha 生成、真实策略输入、
+策略专属编排和执行运行时仍不属于本仓库。
 
-It also provides generic publication helpers under the owned `quant_platform` namespace and the
-versioned `research-contracts` package under `packages/research-contracts/`. These packages own
-manifest formatting, artifact envelopes, relative-path validation, SHA-256 receipts, and clean
-bundle publication. They must not contain strategy-specific selection logic or proprietary
-research inputs. The inherited contract package keeps its existing standalone quality gate while
-the public prototype CI scopes Ruff to the migrated platform slice.
+仓库还在自有的 `quant_platform` 命名空间下提供通用发布辅助工具，并提供
+`packages/research-contracts/` 下的版本化 `research-contracts` 包。这些包负责清单格式化、
+产物封装、相对路径校验、SHA-256 回执和干净的 bundle 发布，不应包含策略专属选股逻辑或私有研究输入。
+继承而来的契约包保留独立质量门禁，公开 CI 只对已迁入的平台代码执行 Ruff 检查。
 
-The source checkout at commit `91a4fa4f1d57c074c991546c381a3d90a3b6adfb` remains the rollback source
-for the migrated portfolio slice. The Python namespace is unchanged. The
-Apache-2.0 license applies to this repository's original public framework
-contents only; it does not relicense the legacy source checkout or any
-third-party dependency.
+具体迁移来源提交为 `91a4fa4f1d57c074c991546c381a3d90a3b6adfb`，用于回滚核对。
+Python 命名空间保持不变。Apache-2.0 许可证只适用于本仓库原有的公开框架代码，
+不会改变旧来源代码或第三方依赖的许可证。
 
-The remaining platform migration—data interfaces, alpha mechanisms,
-microstructure abstractions, orchestration, and execution interfaces—must be
-completed and audited before `research-workspace` switches its authoritative
-sources.
+数据接口、alpha 机制、微观结构抽象、编排和执行接口仍在分阶段迁移与审计。
+`research-workspace` 已进入 sunset 阶段，迁移完成前只用于历史核对和兼容验证。
 
 Run locally:
 
