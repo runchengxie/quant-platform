@@ -3838,7 +3838,7 @@ requires-dist = [
     { name = "pyqlib", marker = "extra == 'qlib'", specifier = ">=0.9.5" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.3" },
     { name = "pyyaml", specifier = ">=6.0" },
-    { name = "research-code-quality", marker = "extra == 'dev'", git = "https://github.com/runchengxie/research-code-quality.git?rev=1c754c3" },
+    { name = "research-code-quality", marker = "extra == 'dev'", git = "https://github.com/runchengxie/quant-code-quality.git?rev=1c754c3" },
     { name = "research-contracts", directory = "packages/research-contracts" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8" },
     { name = "scikit-learn", specifier = ">=1.9.0" },
@@ -3854,7 +3854,7 @@ dev = [
     { name = "jsonschema", specifier = ">=4.25" },
     { name = "polars", specifier = ">=1.0" },
     { name = "pytest", specifier = ">=9.0.3" },
-    { name = "research-code-quality", git = "https://github.com/runchengxie/research-code-quality.git?rev=1c754c3" },
+    { name = "research-code-quality", git = "https://github.com/runchengxie/quant-code-quality.git?rev=1c754c3" },
     { name = "ruff", specifier = ">=0.8" },
     { name = "torch", specifier = ">=2.0" },
     { name = "ty", specifier = "==0.0.77" },
@@ -3901,7 +3901,7 @@ wheels = [
 [[package]]
 name = "research-code-quality"
 version = "0.2.0"
-source = { git = "https://github.com/runchengxie/research-code-quality.git?rev=1c754c3#1c754c307610ac61a289d728ea79df82677c1034" }
+source = { git = "https://github.com/runchengxie/quant-code-quality.git?rev=1c754c3#1c754c307610ac61a289d728ea79df82677c1034" }
 
 [[package]]
 name = "research-contracts"

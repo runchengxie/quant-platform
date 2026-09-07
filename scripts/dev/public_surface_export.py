@@ -85,7 +85,7 @@ PUBLIC_DEPENDENCY_REGISTRY = """{
   \"schema_version\": 1,
   \"repositories\": {
     \"https://github.com/runchengxie/alpha-research.git\": \"public\",
-    \"https://github.com/runchengxie/market-data-platform.git\": \"public\",
+    \"https://github.com/runchengxie/quant-market-data-platform.git\": \"public\",
     \"https://github.com/runchengxie/portfolio-backtester.git\": \"public\"
   }
 }

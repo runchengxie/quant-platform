@@ -80,7 +80,7 @@ quant_execution_engine = "packages/execution/src/quant_execution_engine"
 ticknet = "packages/microstructure/src/ticknet"
 
 [tool.uv.sources]
-research-code-quality = { git = "https://github.com/runchengxie/research-code-quality.git", rev = "1c754c3" }
+research-code-quality = { git = "https://github.com/runchengxie/quant-code-quality.git", rev = "1c754c3" }
 research-contracts = { path = "packages/research-contracts" }
 
 [tool.uv]
