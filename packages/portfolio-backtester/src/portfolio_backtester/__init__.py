@@ -139,15 +139,6 @@ from .strategy_risk import (
     strategy_failure_probability,
     summarize_strategy_risk,
 )
-from .style_factors_backtest import (
-    available_factor_names,
-    build_factor_returns,
-    build_quantile_portfolio_returns,
-    compute_factor_correlations,
-    compute_summary,
-    compute_yearly_breakdown,
-    get_rebalance_dates,
-)
 from .trade_accounting import compute_trade_summary, drift_previous_weights
 from .turnover import (
     RebalanceTurnoverReport,

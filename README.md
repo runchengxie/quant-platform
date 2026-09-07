@@ -21,18 +21,14 @@ alpha 框架的原生实现是 `NativeDatasetBackend`。Qlib 后端通过可选�
 
 这是公开的可复用量化研究与组合平台。当前仓库仍处于分阶段迁移中，旧工作区的其他职责尚未全部迁入。
 
-当前版本从 `portfolio-backtester` 迁入一组独立的公开能力，包括
-`portfolio_backtester.style_factors_backtest` 分位数组合内核、确定性的合成 CSV 示例、
-`portfolio-style-factor` 命令行入口，以及版本化的
-`portfolio_backtester.style_factor_backtest.v1` JSON 产物契约。数据供应商、alpha 生成、真实策略输入、
-策略专属编排和执行运行时仍不属于本仓库。
+当前版本不公开发布 portfolio-backtester 的 style-factor slice。该 slice 的来源许可证与历史
+授权尚未确认，已登记为私有目标迁移项。通用回测、组合、风险和执行模拟能力仍由本仓库提供。
 
 仓库还在自有的 `quant_platform` 命名空间下提供通用发布辅助工具，并提供
 `packages/research-contracts/` 下的版本化 `research-contracts` 包。这些包负责清单格式化、
 产物封装、相对路径校验、SHA-256 回执和干净的 bundle 发布，不应包含策略专属选股逻辑或私有研究输入。
 继承而来的契约包保留独立质量门禁，公开 CI 只对已迁入的平台代码执行 Ruff 检查。
 
-具体迁移来源提交为 `91a4fa4f1d57c074c991546c381a3d90a3b6adfb`，用于回滚核对。
 Python 命名空间保持不变。Apache-2.0 许可证只适用于本仓库原有的公开框架代码，
 不会改变旧来源代码或第三方依赖的许可证。
 
@@ -45,16 +41,6 @@ Run locally:
 uv sync --locked --all-groups
 uv run ruff check .
 uv run pytest
-```
-
-运行一个公开示例：
-
-```bash
-uv run portfolio-style-factor \
-  --input docs/examples/synthetic-style-factor.csv \
-  --output /tmp/style-factor-report.json \
-  --signal size \
-  --quantiles 2
 ```
 
 ## 去哪里找详细说明

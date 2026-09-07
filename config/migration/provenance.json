@@ -1,5 +1,5 @@
 {
-  "status": "local-staging-only",
+  "status": "publicly-excluded-private-target-required",
   "source_repository": "portfolio-backtester",
   "source_commit": "91a4fa4f1d57c074c991546c381a3d90a3b6adfb",
   "source_exact_tag": null,
@@ -11,18 +11,26 @@
     "commit_records": 8,
     "blob_records": 9,
     "imported": false,
-    "ruling": "The export was verified in /tmp only; importing requires an independently authorized repository."
+    "ruling": "Public release exclusion approved for this migration: do not distribute the staged slice from quant-platform. Preserve the source in the legacy/private boundary until an independently authorized private target is available."
   },
   "files": [
     {
       "source": "src/portfolio_backtester/style_factors_backtest.py",
       "target": "packages/portfolio-backtester/src/portfolio_backtester/style_factors_backtest.py",
-      "sha256": "1282301429a9f0ace377e18c2a72407446a212fee4204423b1abd06121e21d04"
+      "sha256": "1282301429a9f0ace377e18c2a72407446a212fee4204423b1abd06121e21d04",
+      "release_action": "excluded"
     },
     {
       "source": "tests/test_style_factors_backtest.py",
       "target": "tests/test_style_factors_backtest.py",
-      "sha256": "a2ab0a7d893c62ad0fa1faf814d624e997101ca8e5689b93ddbc7110d55252ac"
+      "sha256": "a2ab0a7d893c62ad0fa1faf814d624e997101ca8e5689b93ddbc7110d55252ac",
+      "release_action": "excluded"
     }
-  ]
+  ],
+  "private_target": {
+    "required": true,
+    "repository": "portfolio-backtester-private",
+    "status": "not_created",
+    "owner": "quant-platform owner"
+  }
 }

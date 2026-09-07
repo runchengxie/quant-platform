@@ -1,18 +1,11 @@
 from __future__ import annotations
 
-import json
-import subprocess
-import sys
 import tomllib
-from copy import deepcopy
 from pathlib import Path
 
 import pytest
-from jsonschema import Draft202012Validator, FormatChecker
-from jsonschema.exceptions import ValidationError
 
 ROOT = Path(__file__).resolve().parents[1]
-EXAMPLE = ROOT / "docs" / "examples" / "synthetic-style-factor.csv"
 
 
 def _assert_allowed_package_sources(lock: dict[str, object]) -> None:
@@ -29,31 +22,6 @@ def _assert_allowed_package_sources(lock: dict[str, object]) -> None:
             assert source["git"].startswith("https://github.com/runchengxie/quant-code-quality.git")
         else:
             assert source == {"registry": "https://pypi.org/simple"}
-
-
-def _cli_artifact(tmp_path: Path) -> dict[str, object]:
-    output = tmp_path / "style-factor-report.json"
-    completed = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "portfolio_backtester.style_factor_cli",
-            "--input",
-            str(EXAMPLE),
-            "--output",
-            str(output),
-            "--signal",
-            "size",
-            "--quantiles",
-            "2",
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    assert completed.returncode == 0, completed.stderr
-    return json.loads(output.read_text(encoding="utf-8"))
 
 
 def test_distribution_declares_only_public_registry_dependencies() -> None:
@@ -85,42 +53,6 @@ def test_distribution_declares_only_public_registry_dependencies() -> None:
     assert project["tool"]["uv"]["sources"]["research-contracts"] == {
         "path": "packages/research-contracts"
     }
-
-
-def test_cli_artifact_validates_against_draft_2020_12_schema(tmp_path: Path) -> None:
-    schema = json.loads(
-        (ROOT / "config" / "contracts" / "style-factor-backtest-v1.schema.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    validator = Draft202012Validator(schema, format_checker=FormatChecker())
-
-    validator.validate(_cli_artifact(tmp_path))
-
-
-@pytest.mark.parametrize(
-    "mutation",
-    [
-        lambda artifact: artifact.update({"unexpected": True}),
-        lambda artifact: artifact.update({"observations": "1"}),
-        lambda artifact: artifact["returns"][0].update({"long_return": "0.01"}),
-        lambda artifact: artifact["returns"][0].update({"period_end": "not-a-date"}),
-    ],
-)
-def test_schema_rejects_additional_properties_and_type_drift(
-    tmp_path: Path,
-    mutation,
-) -> None:
-    schema = json.loads(
-        (ROOT / "config" / "contracts" / "style-factor-backtest-v1.schema.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    artifact = deepcopy(_cli_artifact(tmp_path))
-    mutation(artifact)
-
-    with pytest.raises(ValidationError):
-        Draft202012Validator(schema, format_checker=FormatChecker()).validate(artifact)
 
 
 def test_lock_allows_only_pypi_and_the_project_editable_source() -> None:
