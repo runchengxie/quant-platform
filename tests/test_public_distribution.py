@@ -12,7 +12,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 from jsonschema.exceptions import ValidationError
 
 ROOT = Path(__file__).resolve().parents[1]
-EXAMPLE = ROOT / "examples" / "synthetic-style-factor.csv"
+EXAMPLE = ROOT / "docs" / "examples" / "synthetic-style-factor.csv"
 
 
 def _assert_allowed_package_sources(lock: dict[str, object]) -> None:
@@ -89,7 +89,9 @@ def test_distribution_declares_only_public_registry_dependencies() -> None:
 
 def test_cli_artifact_validates_against_draft_2020_12_schema(tmp_path: Path) -> None:
     schema = json.loads(
-        (ROOT / "contracts" / "style-factor-backtest-v1.schema.json").read_text(encoding="utf-8")
+        (ROOT / "config" / "contracts" / "style-factor-backtest-v1.schema.json").read_text(
+            encoding="utf-8"
+        )
     )
     validator = Draft202012Validator(schema, format_checker=FormatChecker())
 
@@ -110,7 +112,9 @@ def test_schema_rejects_additional_properties_and_type_drift(
     mutation,
 ) -> None:
     schema = json.loads(
-        (ROOT / "contracts" / "style-factor-backtest-v1.schema.json").read_text(encoding="utf-8")
+        (ROOT / "config" / "contracts" / "style-factor-backtest-v1.schema.json").read_text(
+            encoding="utf-8"
+        )
     )
     artifact = deepcopy(_cli_artifact(tmp_path))
     mutation(artifact)

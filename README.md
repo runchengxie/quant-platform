@@ -51,7 +51,7 @@ uv run pytest
 
 ```bash
 uv run portfolio-style-factor \
-  --input examples/synthetic-style-factor.csv \
+  --input docs/examples/synthetic-style-factor.csv \
   --output /tmp/style-factor-report.json \
   --signal size \
   --quantiles 2

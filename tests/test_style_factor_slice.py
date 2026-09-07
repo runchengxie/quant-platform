@@ -14,7 +14,7 @@ from portfolio_backtester.style_factors_backtest import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
-EXAMPLE = ROOT / "examples" / "synthetic-style-factor.csv"
+EXAMPLE = ROOT / "docs" / "examples" / "synthetic-style-factor.csv"
 
 
 def test_quantile_backtest_keeps_the_portfolio_backtester_namespace() -> None:
