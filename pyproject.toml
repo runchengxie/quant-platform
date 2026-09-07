@@ -21,7 +21,6 @@ dependencies = [
 ]
 
 [project.scripts]
-portfolio-style-factor = "portfolio_backtester.style_factor_cli:main"
 strategy-pipeline = "strategy_pipeline.cli:main"
 
 [project.optional-dependencies]
