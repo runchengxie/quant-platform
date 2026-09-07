@@ -1,6 +1,6 @@
 # 测试和质量检查
 
-本页说明 `portfolio-backtester` 的本地测试入口、保留的远程检查模板和实际检查范围。
+本页说明 `quant-platform` 的本地测试入口、公开 CI 和实际检查范围。
 
 ## 安装开发依赖
 
@@ -60,7 +60,7 @@ coverage 按高风险模块逐步提高，不设置统一阈值。
 
 ## 推送前检查
 
-在 `research-workspace` 受管检出中，顶层共享 `pre-push` 会按照工作区清单运行本仓库的导入检查、Ruff、格式检查、`ty` 和完整测试集。
+在包含工作区治理的检出中，顶层共享 `pre-push` 会按照工作区清单运行本仓库的导入检查、Ruff、格式检查、`ty` 和完整测试集。
 
 单独克隆本仓库时不会继承共享钩子。推送前应手动运行上方列出的 `lint`、`format`、`typecheck`、`all` 和 `maintainability`。
 
