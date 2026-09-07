@@ -110,6 +110,10 @@ def publish_cashflow_shadow(
     readiness_path: str | Path,
     output_root: str | Path,
     allow_reconstructed_pit: bool = False,
+    producer_repository: str | None = None,
+    producer_commit: str | None = None,
+    platform_repository: str | None = None,
+    platform_commit: str | None = None,
 ) -> CashflowPublication:
     """Publish a readiness-approved selection for Feishu shadow delivery."""
     selection_file = Path(selection_path)
@@ -128,6 +132,16 @@ def publish_cashflow_shadow(
         "selection_sha256": selection_sha,
         "readiness_sha256": readiness_sha,
     }
+    provenance = {
+        "producer_repository": producer_repository,
+        "producer_commit": producer_commit,
+        "platform_repository": platform_repository,
+        "platform_commit": platform_commit,
+    }
+    if any(value is not None for value in provenance.values()):
+        if any(not value for value in provenance.values()):
+            raise ValueError("cashflow publication provenance must be complete")
+        identity.update(provenance)
     publication_hash = hashlib.sha256(
         json.dumps(identity, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()

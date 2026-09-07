@@ -26,9 +26,7 @@ def _assert_allowed_package_sources(lock: dict[str, object]) -> None:
         elif package["name"] == "research-contracts":
             assert source == {"directory": "packages/research-contracts"}
         elif package["name"] == "research-code-quality":
-            assert source["git"].startswith(
-                "https://github.com/runchengxie/quant-code-quality.git"
-            )
+            assert source["git"].startswith("https://github.com/runchengxie/quant-code-quality.git")
         else:
             assert source == {"registry": "https://pypi.org/simple"}
 
