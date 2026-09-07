@@ -1,10 +1,5 @@
-# Public market-data capability
+# 公开市场数据能力
 
-`market_data_platform` in `quant-platform` contains reusable dataset contracts,
-market/provider boundary helpers, published-asset metadata types, and
-deterministic file/ordering utilities.
+`quant-platform` 中的 `market_data_platform` 提供可复用的数据集契约、市场和数据供应商边界辅助工具、已发布资产元数据类型，以及确定性的文件和排序工具。
 
-Provider adapters, credentials, raw datasets, local data roots, and production
-manifests remain in the private research repository or deployment environment.
-The public package must remain usable with synthetic fixtures and without
-provider credentials.
+供应商适配器、凭证、原始数据集、本地数据根目录和生产清单由私有研究仓库或部署环境负责。公开包必须能够使用合成夹具运行，不依赖数据供应商凭证。

@@ -3818,9 +3818,11 @@ qlib = [
 [package.dev-dependencies]
 dev = [
     { name = "jsonschema" },
+    { name = "polars" },
     { name = "pytest" },
     { name = "research-code-quality" },
     { name = "ruff" },
+    { name = "torch" },
     { name = "ty" },
 ]
 
@@ -3850,9 +3852,11 @@ provides-extras = ["dev", "qlib", "microstructure"]
 [package.metadata.requires-dev]
 dev = [
     { name = "jsonschema", specifier = ">=4.25" },
+    { name = "polars", specifier = ">=1.0" },
     { name = "pytest", specifier = ">=9.0.3" },
     { name = "research-code-quality", git = "https://github.com/runchengxie/research-code-quality.git?rev=1c754c3" },
     { name = "ruff", specifier = ">=0.8" },
+    { name = "torch", specifier = ">=2.0" },
     { name = "ty", specifier = "==0.0.77" },
 ]
 

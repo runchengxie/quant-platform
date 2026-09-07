@@ -22,6 +22,8 @@
 | 持仓产物写入 | `CANONICAL_POSITIONS_BY_REBALANCE_META_FILE`、`write_positions_by_rebalance_artifact`、`build_positions_envelope_v2` |
 | 成本与滑点 | `DetailedTradeFeeModel`、`l2_price_tiered_slippage` |
 | 交易会话调仓 | `SessionRebalanceSchedule`、`get_session_interval_rebalance_dates` |
+| 指数增强构造 | `PortfolioConstructionVariant`、`build_target_weights` |
+| 组合比较与错峰调仓 | `build_comparison_receipt`、`compare_portfolio_returns`、`get_rebalance_events` |
 | 换手与成本 | `TurnoverBreakdown`、`RebalanceTurnoverReport`、`CostBreakdown`、`name_turnover`、`annualize_turnover`、`turnover_from_trade_weights`、`build_rebalance_turnover_report` |
 | Trade accounting | `compute_trade_summary`, `drift_previous_weights` |
 | 收益汇总 | `summarize_period_returns` |

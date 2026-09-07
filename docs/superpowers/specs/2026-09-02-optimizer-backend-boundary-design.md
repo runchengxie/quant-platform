@@ -1,20 +1,20 @@
-# Optimizer Backend Boundary Design
+# 优化器后端边界设计
 
-## Goal
+## 目标
 
-Create a stable portfolio-optimization boundary owned by `portfolio-backtester` so external solvers can be evaluated without leaking framework objects or replacing existing A-share execution semantics.
+建立由 `portfolio-backtester` 负责的稳定组合优化边界，让外部求解器可以被评估，同时避免框架对象外泄，也不替换现有 A 股执行语义。
 
-## Design
+## 设计
 
-`PortfolioOptimizationRequest` carries pandas/native inputs: return history, optional expected returns, optional previous/benchmark weights, long-only bounds, and covariance shrinkage. `PortfolioOptimizationResult` returns only normalized weights and JSON-compatible diagnostics.
+`PortfolioOptimizationRequest` 携带 pandas 或平台原生输入，包括收益历史、可选预期收益、可选前期或基准权重、只做多边界和协方差收缩。`PortfolioOptimizationResult` 只返回归一化权重和兼容 JSON 的诊断信息。
 
-`OptimizerRegistry` provides explicit registration with no plugin discovery. Initial native baselines are equal weight and the repository's existing HRP implementation. Third-party adapters remain future optional dependencies and must emit the canonical result.
+`OptimizerRegistry` 提供明确注册，不使用插件自动发现。首批原生基线为等权和仓库现有 HRP 实现。第三方适配器以后以可选依赖接入，并且必须输出标准结果。
 
-## Constraints
+## 约束
 
-- No new runtime dependency in this PR.
-- Native baselines remain deterministic and framework-neutral.
-- No alpha-research or strategy-pipeline runtime import.
-- Long-short optimization is outside this first boundary.
-- A-share order execution, T+1, fees, market rules, and capacity remain in existing replay/execution layers.
-- Future external adapters require fixed-scenario differential evidence and rollback instructions.
+- 本 PR 不增加新的运行时依赖。
+- 原生基线保持确定性，并与框架无关。
+- 不导入 alpha-research 或 strategy-pipeline 运行时依赖。
+- 多空优化不属于首个边界。
+- A 股订单执行、T+1、费用、市场规则和容量继续由现有回放和执行层负责。
+- 未来外部适配器必须提供固定场景的差异证据和回滚说明。

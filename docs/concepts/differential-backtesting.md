@@ -1,15 +1,15 @@
-# Differential backtesting
+# 差异化回测
 
-External backtest frameworks are most useful here as independent references, not as new sources of truth. Every adapter first normalizes its output to `CanonicalBacktestResult`; `compare_backtest_results()` then compares that result against a chosen reference backend.
+外部回测框架在这里主要用于独立对照，不作为新的事实来源。每个适配器先把输出归一化为 `CanonicalBacktestResult`，然后由 `compare_backtest_results()` 与指定参考后端比较。
 
-The current report localizes:
+当前报告会按以下维度定位差异：
 
-- shared numeric performance metrics by `period_end`;
-- portfolio weight differences by `rebalance_date + symbol`;
-- cash / positions value / NAV differences by `trade_date` when both backends expose a daily ledger;
-- row-count differences for every canonical frame;
-- capability differences, including declared market-rule coverage.
+- 按 `period_end` 比较共同的数值表现指标
+- 按 `rebalance_date + symbol` 比较组合权重
+- 两个后端都提供日频台账时，按 `trade_date` 比较现金、持仓市值和净值
+- 比较每个标准数据框的行数
+- 比较能力差异，包括声明的市场规则覆盖范围
 
-This is the groundwork for an RQAlpha A-share differential adapter. A future RQAlpha PR should use fixed fixtures and explain every remaining difference by market-rule semantics, fill timing, fees, cash accounting, or unsupported capabilities. Similar adapters can use the same report without adding framework-specific comparison code.
+这是 RQAlpha A 股差异化适配器的基础。未来的 RQAlpha PR 应使用固定夹具，并解释剩余差异来自市场规则、成交时间、费用、现金核算还是未支持能力。其他适配器也可以复用同一报告，不需要在平台中增加框架专属的比较代码。
 
-Orders and fills are currently summarized by row-count difference because canonical IDs are backend-local. A later execution-differential extension should define stable semantic matching keys before claiming fill-by-fill equivalence.
+当前订单和成交只比较行数，因为标准化编号仍属于各后端内部编号。以后扩展执行差异比较时，需要先定义稳定的语义匹配键，再讨论逐笔成交是否等价。

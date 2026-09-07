@@ -1,13 +1,13 @@
 # 文档入口
 
 > status: active
-> owner: portfolio-backtester
+> owner: quant-platform
 > audience: human and agent
 > last_verified: 2026-09-06
 > source_of_truth: yes
 > superseded_by: n/a
 
-本目录记录 `portfolio-backtester` 的输入约定、执行假设、输出契约和开发检查。
+本目录记录 `quant-platform` 的输入约定、执行假设、输出契约和开发检查。
 
 ## 推荐阅读顺序
 
@@ -25,7 +25,7 @@
 12. [换手率口径](concepts/turnover.md)
 13. [成本口径](concepts/cost-breakdown.md)
 14. [回测结果解读](concepts/backtest-interpretation.md)
-15. [市场 benchmark 阶梯](concepts/benchmark-ladder.md)
+15. [市场基准阶梯](concepts/benchmark-ladder.md)
 16. [持仓输出约定](reference/outputs/positions.md)
 17. [回测输出契约](reference/outputs/backtest-outputs.md)
 18. [执行分配参考资产](reference/allocation-reference.md)

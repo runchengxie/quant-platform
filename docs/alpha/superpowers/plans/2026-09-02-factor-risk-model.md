@@ -1,48 +1,49 @@
-# Factor Risk Model Implementation Plan
+# 因子风险模型实现计划
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> 给智能体开发者：必须使用 `superpowers:subagent-driven-development` 或 `superpowers:executing-plans`，按任务逐项执行。步骤使用复选框跟踪。
 
-**Goal:** Add a PIT-safe factor covariance and specific-risk estimate that emits platform-native pandas results.
+目标：增加符合 PIT 要求的因子协方差和特质风险估计，并输出平台原生的 pandas 结果。
 
-**Architecture:** Keep factor construction explicit. The risk-model primitive consumes precomputed exposures/factor returns/specific returns, rejects future observations, and projects `X F X' + D` without importing portfolio code.
+架构：明确保留因子构造过程。风险模型原语接收预先计算的暴露、因子收益和特质收益，拒绝未来观测，并在不导入组合代码的前提下计算 `X F X' + D`。
 
-**Tech Stack:** Python 3.12, pandas, NumPy, pytest.
+技术栈：Python 3.12、pandas、NumPy、pytest。
 
-**Spec:** `docs/superpowers/specs/2026-09-02-factor-risk-model-design.md`
+设计说明：`docs/superpowers/specs/2026-09-02-factor-risk-model-design.md`
 
-## Global Constraints
+## 全局约束
 
-- Do not import `portfolio_backtester` or strategy-pipeline.
-- All historical rows must be at or before `as_of`.
-- No proprietary provider object or data fetcher is introduced.
-- Risk-model and optimizer evidence remain separate.
+- 不得导入 `portfolio_backtester` 或 `strategy-pipeline`。
+- 所有历史行的日期必须不晚于 `as_of`。
+- 不新增专有供应商对象或数据获取器。
+- 风险模型证据与优化器证据分开保存。
 
----
+### 任务 1：定义风险模型测试
 
-### Task 1: Define risk-model tests
+涉及文件：
 
-**Files:**
-- Create: `tests/test_risk_model.py`
+- 新建：`tests/test_risk_model.py`
 
-- [x] Add tests for projected covariance, positive specific risk, future-data rejection, factor mismatch, and covariance shrinkage.
-- [ ] Run `scripts/dev/run_tests.sh` or `uv run --extra dev pytest tests/test_risk_model.py -q` and confirm RED before implementation.
+- [x] 增加投影协方差、正特质风险、未来数据拒绝、因子不匹配和协方差收缩测试。
+- [ ] 运行 `scripts/dev/run_tests.sh` 或 `uv run --extra dev pytest tests/test_risk_model.py -q`，确认实现前测试按预期失败。
 
-### Task 2: Implement and export the risk model
+### 任务 2：实现并导出风险模型
 
-**Files:**
-- Create: `src/alpha_research/risk_model.py`
-- Modify: `src/alpha_research/__init__.py`
-- Modify: `tests/test_package_smoke.py`
+涉及文件：
 
-- [x] Implement `FactorRiskModelEstimate` and `build_factor_risk_model()`.
-- [x] Enforce finite data, exact factor/asset identity, explicit `as_of`, minimum observations, and optional diagonal shrinkage.
-- [x] Export the API and register the owned module in smoke tests.
-- [ ] Run `uv run --extra dev pytest tests/test_risk_model.py tests/test_package_smoke.py -q`.
+- 新建：`src/alpha_research/risk_model.py`
+- 修改：`src/alpha_research/__init__.py`
+- 修改：`tests/test_package_smoke.py`
 
-### Task 3: Document and verify
+- [x] 实现 `FactorRiskModelEstimate` 和 `build_factor_risk_model()`。
+- [x] 强制检查有限值、精确的因子和资产身份、明确的 `as_of`、最小观测数量和可选对角收缩。
+- [x] 导出 API，并在包冒烟测试中登记自有模块。
+- [ ] 运行 `uv run --extra dev pytest tests/test_risk_model.py tests/test_package_smoke.py -q`。
 
-**Files:**
-- Create: `docs/concepts/factor-risk-model.md`
+### 任务 3：记录并验证
 
-- [x] Document ownership, model equation, PIT behavior, and future integration.
-- [ ] Run lint, format, typecheck, full tests, and maintainability gates using `scripts/dev/run_tests.sh`.
+涉及文件：
+
+- 新建：`docs/concepts/factor-risk-model.md`
+
+- [x] 记录归属、模型公式、PIT 行为和未来集成方式。
+- [ ] 使用 `scripts/dev/run_tests.sh` 运行 lint、格式、类型、完整测试和可维护性检查。

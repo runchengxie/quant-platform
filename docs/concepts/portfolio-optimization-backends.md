@@ -1,49 +1,37 @@
-# Portfolio optimization backend boundary
+# 组合优化后端边界
 
-`portfolio-backtester` now exposes a framework-neutral optimization request/result boundary before adopting any third-party solver.
+`portfolio-backtester` 先提供与框架无关的优化请求和结果边界，再评估是否接入第三方求解器。
 
-## Why this exists
+## 设计原因
 
-The repository already owns portfolio construction, HRP, turnover, execution costs, capacity, exposures, and A-share replay semantics. External optimizers should therefore plug into an owner-controlled boundary instead of exporting CVXPY, PyPortfolioOpt, cvxportfolio, Riskfolio, or Ricequant-specific objects into calling repositories.
+仓库已经负责组合构造、HRP、换手率、执行成本、容量、暴露和 A 股回放语义。因此，外部优化器应接入由平台管理的边界，不能把 CVXPY、PyPortfolioOpt、cvxportfolio、Riskfolio 或 Ricequant 的对象直接暴露给调用仓库。
 
-The first two backends are deliberately boring baselines:
+首批后端保持简单，作为固定基线：
 
 - `native.equal_weight`
 - `native.hrp`
 
-They provide fixed reference behavior and reuse the existing HRP implementation. No new solver dependency is introduced.
+它们提供固定参考行为，并复用现有 HRP 实现。当前不新增求解器依赖。
 
-## Stable request
+## 稳定请求
 
-`PortfolioOptimizationRequest` carries only platform types:
+`PortfolioOptimizationRequest` 只携带平台类型：历史收益、可选预期收益、可选前期权重、可选基准权重、只做多的权重边界，以及协方差收缩参数。
 
-- historical returns;
-- optional expected returns;
-- optional previous weights;
-- optional benchmark weights;
-- long-only weight bounds;
-- covariance shrinkage.
+现在保留 alpha、前期权重和基准权重，是为了让后续受约束优化器能够复用同一请求类型。原生基线不会假装使用自己不需要的输入。
 
-The optional alpha/previous/benchmark inputs are included now so later constrained optimizers do not need to invent incompatible request types. Native baselines do not pretend to use inputs they do not need.
+## 稳定结果
 
-## Stable result
+`PortfolioOptimizationResult` 包含后端名称、归一化组合权重、兼容 JSON 的诊断信息和带版本的结果模式。
 
-`PortfolioOptimizationResult` contains:
+验证会检查资产身份、权重是否有限、权重和是否为 1、是否满足只做多语义，以及是否满足请求中的边界。
 
-- backend name;
-- normalized portfolio weights;
-- JSON-compatible diagnostics;
-- versioned result schema.
+## 采用顺序
 
-Validation enforces asset identity, finite weights, sum-to-one, long-only semantics, and request bounds.
+1. 保留等权、秩、分组和 HRP 作为基线。
+2. 为优化边界增加固定场景测试。
+3. 评估 PyPortfolioOpt 适配器，用于常规受约束优化。
+4. 完成许可证审查后，再评估 cvxportfolio 的成本感知和多期研究能力。
+5. 将 Riskfolio-Lib 保留为研究比较后端，直到预先登记更大模型面的使用场景。
+6. 把 RQOptimizer 作为基准、风格和行业、跟踪误差、换手率及交易成本约束的领域设计参考，不把专有对象放入公开契约。
 
-## Adoption order
-
-1. Keep equal weight / rank / sleeve / HRP as baselines.
-2. Add fixed-scenario tests for the optimizer boundary.
-3. Evaluate a PyPortfolioOpt adapter for conventional constrained optimization.
-4. Evaluate cvxportfolio for cost-aware and multi-period research after license review.
-5. Keep Riskfolio-Lib as a research comparison backend until its larger model surface has pre-registered use cases.
-6. Treat RQOptimizer as a domain-design reference for benchmark, style/industry, tracking-error, turnover, and transaction-cost constraints; do not put proprietary objects in public contracts.
-
-A new adapter must remain optional, emit `PortfolioOptimizationResult`, document its solver/version, have fixed-scenario differential evidence, and leave native baselines runnable when the dependency is absent.
+新增适配器必须保持可选，输出 `PortfolioOptimizationResult`，记录求解器和版本，提供固定场景的差异证据，并在缺少依赖时保证原生基线仍可运行。

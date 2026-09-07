@@ -1,12 +1,7 @@
-# Execution interfaces
+# 执行接口
 
-`quant_execution_engine` contributes the public execution domain: target-file
-normalization, typed order/portfolio models, wire codecs, broker-neutral
-capability contracts, and deterministic mock execution.
+`quant_execution_engine` 提供公开的执行领域能力，包括目标文件标准化、类型化订单和组合模型、线缆编解码器、与券商无关的能力契约，以及确定性的模拟执行。
 
-Concrete broker SDK adapters, credentials, live configuration, audit storage,
-and production runtime remain private in `quant-research`.
+具体券商 SDK 适配器、凭证、实盘配置、审计存储和生产运行时由 `quant-research` 等私有环境负责。
 
-The migrated compatibility namespace is intentionally preserved while the
-workspace transitions away from the legacy execution repository.
-
+迁移期间会暂时保留兼容命名空间，直到工作区完成从旧执行仓库的迁移。

@@ -26,6 +26,8 @@ from .backtest_contracts import (
     validate_tradable_flags_frame,
 )
 from .backtest_spec import BacktestSpec
+from .benchmark_comparison import build_comparison_receipt, compare_portfolio_returns
+from .benchmark_enhancement import PortfolioConstructionVariant, build_target_weights
 from .bet_sizing import (
     SizingConfig,
     average_active_bets,
@@ -107,15 +109,21 @@ from .positions_artifact import (
     build_positions_envelope_v2,
     write_positions_by_rebalance_artifact,
 )
-from .rebalance import SessionRebalanceSchedule, get_session_interval_rebalance_dates
+from .rebalance import (
+    SessionRebalanceSchedule,
+    get_rebalance_events,
+    get_session_interval_rebalance_dates,
+)
 from .robust_uncertainty import add_conservative_score, box_worst_case_return, conservative_score
 from .sharpe_inference import (
     annualized_sharpe_to_periodic,
     annualized_variance_to_periodic,
     deflated_sharpe_ratio,
     expected_max_sharpe,
-    probabilistic_sharpe_ratio as probabilistic_sharpe_ratio_from_stats,
     sharpe_standard_error,
+)
+from .sharpe_inference import (
+    probabilistic_sharpe_ratio as probabilistic_sharpe_ratio_from_stats,
 )
 from .staggered_cohort_execution import (
     StaggeredCohortExecutionConfig,
@@ -188,6 +196,7 @@ __all__ = [
     "IncumbentRequalificationResult",
     "OptimizerRegistry",
     "OutcomeDistributionReport",
+    "PortfolioConstructionVariant",
     "PortfolioOptimizationRequest",
     "PortfolioOptimizationResult",
     "PortfolioOptimizerBackend",
@@ -221,6 +230,7 @@ __all__ = [
     "box_worst_case_return",
     "build_backtest_periods_frame",
     "build_backtest_return_frame",
+    "build_comparison_receipt",
     "build_factor_returns",
     "build_portfolio_sizing_receipt",
     "build_position_replay_periods",
@@ -229,8 +239,10 @@ __all__ = [
     "build_rebalance_turnover_report",
     "build_sized_weights",
     "build_sizing_receipt",
+    "build_target_weights",
     "build_targets",
     "combine_targets",
+    "compare_portfolio_returns",
     "compute_factor_correlations",
     "compute_summary",
     "compute_trade_summary",
@@ -244,6 +256,7 @@ __all__ = [
     "execution_summary_frame",
     "expected_max_sharpe",
     "get_rebalance_dates",
+    "get_rebalance_events",
     "get_session_interval_rebalance_dates",
     "hierarchical_risk_parity",
     "implementation_shortfall_metrics",

@@ -1,11 +1,11 @@
-# Signal Drift Design
+# 信号漂移设计
 
-## Goal
+## 目标
 
-Add a minimal, auditable research-vs-paper/live population drift report without giving a monitoring library authority over strategy lifecycle decisions.
+增加一份最小且可审计的研究信号与纸面或实盘信号群体漂移报告，不让监控库替策略生命周期决定。
 
-## Design
+## 设计
 
-The alpha owner computes PSI, an empirical two-sample KS statistic, reference-standardized mean shift, and volatility ratio from finite reference/current samples. Constant reference distributions are explicit. The result is a small platform-owned receipt.
+alpha 负责人从有限的参考样本和当前样本计算 PSI、经验双样本 KS 统计量、按参考标准化的均值变化和波动率比值，并明确记录参考分布为常数的情况。结果是一份由平台负责的小型回执。
 
-Evidently remains a possible optional monitoring/differential backend. Any future adapter must normalize to the platform result and must not replace workspace claims, invalidation conditions, evidence gates, or human review.
+Evidently 可以作为可选监控或差异分析后端。未来适配器必须归一化为平台结果，不能替代工作区声明、失效条件、证据门禁或人工审查。

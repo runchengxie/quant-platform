@@ -1,11 +1,11 @@
-# Factor Catalog Design
+# 因子目录设计
 
-## Goal
+## 目标
 
-Give reusable factors stable, versioned identity plus dated evidence so dependencies, PIT semantics, preprocessing, implementation identity, and lifecycle are inspectable without reading implementation code.
+为可复用因子提供稳定且带版本的身份，以及按日期记录的证据。这样无需阅读实现代码，也能检查依赖、PIT 语义、预处理、实现身份和生命周期。
 
-## Design
+## 设计
 
-`FactorSpec` is immutable identity metadata. `FactorEvidenceSummary` is a small dated evidence record. `FactorCatalog` registers exact `(factor_id, version)` pairs, rejects duplicates, and serializes to a platform-owned schema.
+`FactorSpec` 是不可变的身份元数据。`FactorEvidenceSummary` 是小型的按日期记录的证据。`FactorCatalog` 登记准确的 `(factor_id, version)` 对，拒绝重复项，并序列化为平台负责的模式。
 
-Raw factor values, model objects, provider objects, and full tear sheets remain outside the catalog. Alphalens/RQFactor-style analysis can feed evidence after normalization, but neither owns factor identity.
+原始因子值、模型对象、供应商对象和完整分析报告不放入目录。RQFactor 或 Alphalens 风格的分析可以在归一化后提供证据，但两者都不负责因子身份。

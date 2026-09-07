@@ -37,6 +37,8 @@ microstructure = ["polars>=1.0", "torch>=2.0"]
 
 [dependency-groups]
 dev = [
+  "polars>=1.0",
+  "torch>=2.0",
   "jsonschema>=4.25",
   "pytest>=9.0.3",
   "research-code-quality",

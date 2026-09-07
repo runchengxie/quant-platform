@@ -1,18 +1,18 @@
-# Factor Attribution Design
+# 因子归因设计
 
-## Goal
+## 目标
 
-Add a framework-neutral active return and active risk attribution primitive that can consume a platform risk model and later feed Dashboard evidence.
+增加与框架无关的主动收益和主动风险归因原语，可以使用平台风险模型，并在未来提供给 Dashboard 作为证据。
 
-## Design
+## 设计
 
-Return attribution decomposes net active return into factor contributions, a residual specific term, and explicit transaction-cost drag. Risk attribution decomposes active variance into per-factor variance contributions plus independent specific variance.
+收益归因把净主动收益分解为因子贡献、特质残差和明确的交易成本拖累。风险归因把主动方差分解为各因子方差贡献和独立特质方差。
 
-The module accepts weights, benchmark weights, exposures, factor returns/covariance, and specific risk as plain pandas objects. It does not estimate the risk model, choose a benchmark, or implement Brinson allocation/selection attribution.
+模块接收权重、基准权重、暴露、因子收益或协方差，以及特质风险等普通 pandas 对象。它不估计风险模型，不选择基准，也不实现 Brinson 配置或选股归因。
 
-## Non-goals
+## 不在范围内
 
-- no proprietary RQPAttr dependency;
-- no blending of Brinson and multifactor attribution semantics;
-- no estimation of factor covariance/specific risk;
-- no Dashboard-side recomputation.
+- 不引入专有 `RQPAttr` 依赖
+- 不混合 Brinson 与多因子归因语义
+- 不估计因子协方差或特质风险
+- 不在 Dashboard 端重新计算

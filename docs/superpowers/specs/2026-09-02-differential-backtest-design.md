@@ -1,18 +1,18 @@
-# Differential Backtest Design
+# 差异化回测设计
 
-## Goal
+## 目标
 
-Provide framework-neutral evidence for comparing a native backtest with an external backend such as RQAlpha.
+提供与框架无关的证据，用于比较原生回测和 RQAlpha 等外部后端。
 
-## Design
+## 设计
 
-Both backends must first emit validated `CanonicalBacktestResult` objects. The differential layer compares shared numeric performance metrics, weights, daily ledger accounting, frame row counts, and capability declarations. It returns localized dataframes plus a machine-readable summary.
+两个后端都必须先生成经过验证的 `CanonicalBacktestResult`。差异层比较共同的数值表现指标、权重、日频台账核算、数据框行数和能力声明，并返回局部化数据框及机器可读摘要。
 
-Backend-local order/fill identifiers are not treated as semantic keys. This first version reports their row-count deltas only; fill-level equivalence requires a later explicit semantic matching contract.
+后端内部的订单和成交编号不作为语义键处理。第一版只报告它们的行数差异，逐笔成交等价性需要后续明确的语义匹配契约。
 
-## Non-goals
+## 不在本次范围内
 
-- no RQAlpha dependency in this PR;
-- no external framework object in the report;
-- no tolerance-based declaration that two strategies are economically equivalent;
-- no bypass of A-share native market-rule ownership.
+- 本 PR 不引入 RQAlpha 依赖
+- 报告不包含外部框架对象
+- 不根据容差声明两个策略在经济意义上等价
+- 不绕过 A 股原生市场规则的归属边界
