@@ -15,3 +15,12 @@ jobs:
           .venv/bin/ty check --exit-zero-on-warning
           packages/alpha/src packages/orchestration/src packages/execution/src
       - run: .venv/bin/pytest -q
+      - name: Audit public dependencies
+        run: >-
+          uvx --from pip-audit pip-audit --strict
+          -r <(uv export --locked --all-groups --extra dev
+          --extra microstructure --format requirements-txt --no-hashes
+          --no-emit-project --no-emit-local
+          --no-emit-package quant-platform
+          --no-emit-package research-contracts
+          --no-emit-package research-code-quality)

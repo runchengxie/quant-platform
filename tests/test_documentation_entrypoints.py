@@ -65,6 +65,20 @@ def test_testing_docs_match_script_modes() -> None:
         assert mode in script
 
 
+def test_typecheck_script_registers_all_source_roots() -> None:
+    script = (ROOT / "scripts" / "dev" / "run_tests.sh").read_text(encoding="utf-8")
+
+    for source_root in (
+        "packages/portfolio-backtester/src",
+        "packages/orchestration/src",
+        "packages/execution/src",
+        "packages/alpha/src",
+        "packages/microstructure/src",
+    ):
+        assert source_root in script
+    assert 'search_path_args+=(--extra-search-path "$source_root")' in script
+
+
 def test_ty_is_the_only_configured_type_checker() -> None:
     legacy_checker = "".join(("based", "py", "right"))
     pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8").lower()

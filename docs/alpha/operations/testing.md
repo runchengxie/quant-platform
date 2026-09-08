@@ -77,7 +77,7 @@ uv run --extra dev python -m pytest tests/test_cpcv.py -q
 
 单独克隆本仓库时不会继承共享钩子。推送前应手动运行上方列出的 `lint`、`format`、`typecheck`、`all` 和 `maintainability`。
 
-`typecheck-release` 与 `typecheck` 使用相同的 `ty` 配置。`[tool.ty.src]` 已合并原发布检查范围，迁移后没有缩小类型检查覆盖。
+`typecheck-release` 与 `typecheck` 使用相同的 `ty` 配置。两个入口都会加入五个源码根目录，避免内部相对导入因项目布局产生误报。`[tool.ty.src]` 已合并原发布检查范围，迁移后没有缩小类型检查覆盖。
 
 ## 测试重点
 

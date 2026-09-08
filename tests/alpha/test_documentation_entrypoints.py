@@ -96,6 +96,22 @@ def test_testing_docs_match_script_modes() -> None:
         assert mode in script
 
 
+def test_typecheck_script_registers_all_source_roots() -> None:
+    script = (ROOT / "scripts" / "alpha-research" / "dev" / "run_tests.sh").read_text(
+        encoding="utf-8"
+    )
+
+    for source_root in (
+        "packages/portfolio-backtester/src",
+        "packages/orchestration/src",
+        "packages/execution/src",
+        "packages/alpha/src",
+        "packages/microstructure/src",
+    ):
+        assert source_root in script
+    assert 'search_path_args+=(--extra-search-path "$source_root")' in script
+
+
 def test_ty_is_the_only_configured_type_checker() -> None:
     legacy_checker = "".join(("based", "py", "right"))
     pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8").lower()
@@ -194,7 +210,7 @@ def test_minute_and_signal_contract_docs_are_indexed_and_complete() -> None:
 def test_overfitting_docs_use_owner_relative_source_path() -> None:
     docs = (ALPHA_DOCS / "concepts" / "overfitting-controls.md").read_text(encoding="utf-8")
 
-    assert "`src/alpha_research/split.py`" in docs
+    assert "`packages/alpha/src/alpha_research/split.py`" in docs
     assert "../alpha-research/src/alpha_research/split.py" not in docs
     assert "根目录 `docs/platform-workflow.md`" in docs
 

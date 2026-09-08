@@ -25,7 +25,7 @@
 | 指数增强构造 | `PortfolioConstructionVariant`、`build_target_weights` |
 | 组合比较与错峰调仓 | `build_comparison_receipt`、`compare_portfolio_returns`、`get_rebalance_events` |
 | 换手与成本 | `TurnoverBreakdown`、`RebalanceTurnoverReport`、`CostBreakdown`、`name_turnover`、`annualize_turnover`、`turnover_from_trade_weights`、`build_rebalance_turnover_report` |
-| Trade accounting | `compute_trade_summary`, `drift_previous_weights` |
+| 交易会计 | `compute_trade_summary`、`drift_previous_weights` |
 | 收益汇总 | `summarize_period_returns` |
 | A 股风格因子回测 | `available_factor_names`、`get_rebalance_dates`、`build_factor_returns`、`build_quantile_portfolio_returns`、`compute_summary`、`compute_factor_correlations`、`compute_yearly_breakdown` |
 | 信号腿归因 | `leg_attribution_frame`、`summarize_leg_attribution` |
@@ -39,7 +39,7 @@
 | 策略风险 | `StrategyRiskReport`、`implementation_shortfall_metrics`、`return_concentration`、`strategy_failure_probability`、`summarize_strategy_risk` |
 | 证据回执 | `build_portfolio_sizing_receipt`、`series_sha256`、`sha256_file`、`write_receipt` |
 
-Canonical 回测 bundle 以现有 `UnifiedLedger` 为唯一账本来源，不重新实现订单、成交或现金模型。
+标准回测 bundle 以现有 `UnifiedLedger` 为唯一账本来源，不重新实现订单、成交或现金模型。
 `diagnostic` 允许缺少可执行证据。`execution_aware` 要求 backend 明确支持订单生命周期和 daily ledger，
 要求完整 `research.clock.v1` 执行窗口，并且账户对账满足 `nav = cash + positions_value`。
 `write_backtest_bundle` 使用临时同级目录写入 Parquet/JSON，为文件生成 SHA-256 inventory，再原子切换为最终目录。
@@ -50,13 +50,13 @@ Canonical 回测 bundle 以现有 `UnifiedLedger` 为唯一账本来源，不重
 
 鲁棒不确定性入口只做调用方显式提供的 box uncertainty 变换：`conservative_score` 计算
 `score - aversion * uncertainty`，`box_worst_case_return` 计算固定权重下的线性最坏情形收益。
-它们不会从 alpha 分数反推不确定性，也不执行 DRO、MILP 或组合优化。用于正式研究时，
+它们不从 alpha 分数反推不确定性，也不执行 DRO、MILP 或组合优化。用于正式研究时，
 `uncertainty` / `uncertainty_radius` 应来自严格样本外证据，并与调仓时点保持 PIT 语义。
 
 结果分布入口只汇总已经实现的交易或持仓结果。`summarize_outcome_distribution` 同时接收
 realized return、MFE、MAE、peak giveback 和 holding period，返回收益分位数、亏损概率、
 5% CVaR 以及路径和持有期摘要。接口会拒绝空输入、非有限数值、长度不一致和不符合路径
-语义的数据。它不预测未来，也不判断某个目标结果在理论上可实现。
+语义的数据。它不预测未来，也不判断某个目标结果是否具备理论可实现性。
 
 `DailyWatch20` 是现有调用方使用的兼容例外。新增研究假设、特征和晋升规则由研究层与编排层维护。
 
@@ -70,4 +70,4 @@ realized return、MFE、MAE、peak giveback 和 holding period，返回收益分
 
 未列在顶层导出中的模块仍可供仓库内部使用，其接口稳定性低于上表中的公开入口。
 
-完整导出列表见 `src/portfolio_backtester/__init__.py`。
+完整导出列表见 `packages/portfolio-backtester/src/portfolio_backtester/__init__.py`。

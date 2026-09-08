@@ -75,11 +75,11 @@
 
 已完成（执行路径已真实拆分，8 个互不重复子项全部接入。无模型的子项用 0 占位）。
 
-`CostBreakdown`（`src/portfolio_backtester/types.py`）包含 8 个互不重复的子项：佣金、印花税、过户费、价差成本、临时冲击、永久冲击、机会成本、融资成本。聚合关系保持为 `fee_cost = 佣金 + 印花税 + 过户费`，`slippage_cost = 价差成本 + 临时冲击 + 永久冲击 + 机会成本 + 融资成本`，`total_cost = fee_cost + slippage_cost`（即 8 个子项之和）。原有 `fee_cost`/`slippage_cost`/`total_cost` 语义与 `to_dict` 全部保留。`from_components` 在有分项数据时构造，`to_unified_ledger()` 的 `cost_breakdown` 现在输出各子项，并额外给出 `fee_cost`/`slippage_cost`/`transaction_cost` 聚合列。
+`CostBreakdown`（`packages/portfolio-backtester/src/portfolio_backtester/types.py`）包含 8 个互不重复的子项：佣金、印花税、过户费、价差成本、临时冲击、永久冲击、机会成本、融资成本。聚合关系保持为 `fee_cost = 佣金 + 印花税 + 过户费`，`slippage_cost = 价差成本 + 临时冲击 + 永久冲击 + 机会成本 + 融资成本`，`total_cost = fee_cost + slippage_cost`（即 8 个子项之和）。原有 `fee_cost`/`slippage_cost`/`total_cost` 语义与 `to_dict` 全部保留。`from_components` 在有分项数据时构造，`to_unified_ledger()` 的 `cost_breakdown` 现在输出各子项，并额外给出 `fee_cost`/`slippage_cost`/`transaction_cost` 聚合列。
 
 ### 执行路径真实接入（本阶段落地）
 
-- `DetailedTradeFeeModel`（`src/portfolio_backtester/_execution_models.py`）新增 `notional_cost_breakdown(notional, side)`，按 A 股口径返回 `commission`/`stamp_tax`/`transfer_fee`/`spread_cost` 四项，且四项之和恒等于 `notional_cost`（守恒）。
+- `DetailedTradeFeeModel`（`packages/portfolio-backtester/src/portfolio_backtester/_execution_models.py`）新增 `notional_cost_breakdown(notional, side)`，按 A 股口径返回 `commission`/`stamp_tax`/`transfer_fee`/`spread_cost` 四项，且四项之和恒等于 `notional_cost`（守恒）。
 - 执行引擎的每笔成交成本由单值 `_trade_fee` 改为返回 `CostBreakdown`：`orders_ideal.py`、`orders_nav.py` 的 ideal/adjusted-nav 路径均按子项累加，并通过 `_record_nav_fill` 把子项写入 `fills` 的 `cost_*` 列。每日 `daily` 行也带 `cost_*` 子项。
 - `UnifiedLedger.to_unified_ledger()`（`execution_sim/results.py`）的 `cost_breakdown` 改为按买卖方向聚合并填入子项，再派生 `fee_cost`/`slippage_cost`/`transaction_cost`，保证 8 子项之和 == 旧 `fee_cost + slippage_cost` == 旧 `transaction_cost`。
 
