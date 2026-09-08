@@ -54,99 +54,99 @@ exclude_docs: |
   **/*.yml
 
 nav:
-  - Overview: README.md
-  - Getting Started:
-      - Entry Points: guides/entry-points.md
-      - Sleeve Portfolio: guides/sleeve-portfolio.md
-      - Execution Simulation: guides/execution-simulation.md
-      - Diagnostic Close Replay: guides/diagnostic-close-replay.md
-      - Incumbent Requalification: guides/incumbent-requalification.md
-      - Incumbent Requalification OOS Controls: guides/incumbent-requalification-oos-controls.md
-      - Promotion Sidecar: guides/promotion-sidecar.md
-  - Concepts:
-      - Backtest Specification: concepts/backtest-spec.md
-      - Backtest Configuration: concepts/backtest-configuration.md
-      - Backend Architecture: concepts/backend-architecture.md
-      - Backtest Interpretation: concepts/backtest-interpretation.md
-      - Canonical Backtest Bundle: concepts/canonical-backtest-bundle.md
-      - Portfolio Optimization Backends: concepts/portfolio-optimization-backends.md
-      - Style Factor Portfolio Weighting: concepts/style-factor-portfolio-weighting.md
-      - AFML Sizing and Risk: concepts/afml-sizing-and-risk.md
-      - Factor Attribution: concepts/factor-attribution.md
-      - Benchmark Ladder: concepts/benchmark-ladder.md
-      - Turnover: concepts/turnover.md
-      - Execution Costs: concepts/execution-costs.md
-      - Cost Breakdown: concepts/cost-breakdown.md
-      - Differential Backtesting: concepts/differential-backtesting.md
-      - Additional Risk and Research Topics:
-          - Contextual Factors: alpha/concepts/contextual-factors.md
-          - Fundamental State Forecasting: alpha/concepts/fundamental-state-forecasting.md
-          - Matched Model Risk: alpha/concepts/matched-model-risk.md
-          - Minute Factors: alpha/concepts/minute-factors.md
-          - Model Landscape: alpha/concepts/model-landscape.md
-          - Research Protocols: alpha/concepts/research-protocols.md
-          - Style Factor Cross Sections: alpha/concepts/style-factor-cross-sections.md
+  - 项目概览: README.md
+  - 快速开始:
+      - 常用入口: guides/entry-points.md
+      - 袖套组合: guides/sleeve-portfolio.md
+      - 执行模拟: guides/execution-simulation.md
+      - 收盘诊断回放: guides/diagnostic-close-replay.md
+      - 旧仓再资格: guides/incumbent-requalification.md
+      - 旧仓再资格 OOS 控制: guides/incumbent-requalification-oos-controls.md
+      - 晋升旁路: guides/promotion-sidecar.md
+  - 核心概念:
+      - 回测规范: concepts/backtest-spec.md
+      - 回测配置: concepts/backtest-configuration.md
+      - 后端架构: concepts/backend-architecture.md
+      - 回测结果解读: concepts/backtest-interpretation.md
+      - 标准回测包: concepts/canonical-backtest-bundle.md
+      - 组合优化后端: concepts/portfolio-optimization-backends.md
+      - 风格因子组合权重: concepts/style-factor-portfolio-weighting.md
+      - AFML 仓位与风险: concepts/afml-sizing-and-risk.md
+      - 因子归因: concepts/factor-attribution.md
+      - 基准阶梯: concepts/benchmark-ladder.md
+      - 换手率: concepts/turnover.md
+      - 执行成本: concepts/execution-costs.md
+      - 成本拆解: concepts/cost-breakdown.md
+      - 差分回测: concepts/differential-backtesting.md
+      - 其他风险与研究主题:
+          - Contextual 因子: alpha/concepts/contextual-factors.md
+          - 基本面状态预测: alpha/concepts/fundamental-state-forecasting.md
+          - 匹配模型风险: alpha/concepts/matched-model-risk.md
+          - 分钟因子: alpha/concepts/minute-factors.md
+          - 模型版图: alpha/concepts/model-landscape.md
+          - 研究协议: alpha/concepts/research-protocols.md
+          - 风格因子截面: alpha/concepts/style-factor-cross-sections.md
           - Style Replica: alpha/concepts/style-replica.md
-  - Research and Alpha:
-      - Alpha Overview: alpha/README.md
-      - AFML Methodology: alpha/concepts/afml-methodology.md
-      - Factor Catalog: alpha/concepts/factor-catalog.md
-      - Factor Risk Model: alpha/concepts/factor-risk-model.md
-      - Feature Research Protocol: alpha/concepts/feature-research-protocol.md
-      - Model Selection: alpha/concepts/model-selection.md
-      - Overfitting Controls: alpha/concepts/overfitting-controls.md
-      - Signal Drift: alpha/concepts/signal-drift.md
-      - Framework Backends: alpha/concepts/framework-backends.md
-      - Namespace Migration: alpha/namespace-migration.md
-      - Testing: alpha/testing.md
-      - Research Template Design: alpha/guides/research-template-design.md
-      - Research Template Playbook: alpha/playbooks/research-template-design.md
-      - Operations Testing: alpha/operations/testing.md
-      - Research Outputs: alpha/reference/research-outputs.md
-      - Signal Artifacts: alpha/reference/signal-artifacts.md
-  - Execution and Microstructure:
-      - Execution Overview: execution/README.md
-      - Microstructure Overview: microstructure/README.md
-      - Data Boundary: microstructure/data-boundary.md
-      - Development Guide: microstructure/development-guide.md
-  - Orchestration:
-      - Orchestration Overview: orchestration/README.md
-      - Configuration: orchestration/configuration.md
-      - Control Plane: orchestration/control-plane.md
-      - Evaluation: orchestration/evaluation.md
-      - Output Artifacts: orchestration/output-artifacts.md
-      - Quality Gates: orchestration/quality-gates.md
-      - Integrating an Owner: orchestration/integrating-an-owner.md
-      - Targets: orchestration/targets.md
-      - Cashflow Publication: orchestration/cashflow-publication.md
-      - CLI Helpers: orchestration/cli-helpers.md
-      - Development: orchestration/development.md
-      - Evidence Protocol CLI: orchestration/evidence-protocol-cli.md
-      - E2 Promotion Receipt: orchestration/e2-promotion-receipt.md
-      - Output Orchestration: orchestration/output-orchestration.md
-      - Output Summary: orchestration/output-summary.md
-      - Runtime Helpers: orchestration/runtime-helpers.md
-      - Operations:
-          - Overview: orchestration/operations/README.md
-          - Quality Gates: orchestration/operations/quality-gates.md
-      - Reference:
-          - Overview: orchestration/reference/README.md
-          - CLI Helpers: orchestration/reference/cli-helpers.md
-          - Configuration: orchestration/reference/configuration.md
-          - Runtime Helpers: orchestration/reference/runtime-helpers.md
-  - Reference:
-      - Public API: reference/public-api.md
-      - Allocation Reference: reference/allocation-reference.md
-      - Positions: reference/outputs/positions.md
-      - Backtest Outputs: reference/outputs/backtest-outputs.md
-      - Data Boundary: data/README.md
-  - Development:
-      - Testing: testing.md
-      - Grid Support: grid-support.md
-      - Namespace Migration: namespace-migration.md
-      - Ownership Migration: ownership-migration.md
-      - Accounting and Execution Roadmap: accounting_execution_roadmap.md
-      - Publication Audit: orchestration/publication-audit.md
-  - Governance and Migration:
-      - Research Workspace Sunset: migration/research-workspace-sunset.md
-      - Accounting and Execution Roadmap: governance/accounting-execution-roadmap.md
+  - Alpha 与研究:
+      - Alpha 概览: alpha/README.md
+      - AFML 方法论: alpha/concepts/afml-methodology.md
+      - 因子目录: alpha/concepts/factor-catalog.md
+      - 因子风险模型: alpha/concepts/factor-risk-model.md
+      - 特征研究协议: alpha/concepts/feature-research-protocol.md
+      - 模型选择: alpha/concepts/model-selection.md
+      - 过拟合控制: alpha/concepts/overfitting-controls.md
+      - 信号漂移: alpha/concepts/signal-drift.md
+      - 框架后端: alpha/concepts/framework-backends.md
+      - 命名空间迁移: alpha/namespace-migration.md
+      - 测试: alpha/testing.md
+      - 研究模板设计: alpha/guides/research-template-design.md
+      - 研究模板操作手册: alpha/playbooks/research-template-design.md
+      - 运维测试: alpha/operations/testing.md
+      - 研究输出: alpha/reference/research-outputs.md
+      - 信号产物: alpha/reference/signal-artifacts.md
+  - 执行与微观结构:
+      - 执行概览: execution/README.md
+      - 微观结构概览: microstructure/README.md
+      - 数据边界: microstructure/data-boundary.md
+      - 开发指南: microstructure/development-guide.md
+  - 编排:
+      - 编排概览: orchestration/README.md
+      - 配置: orchestration/configuration.md
+      - 控制平面: orchestration/control-plane.md
+      - 评估: orchestration/evaluation.md
+      - 输出产物: orchestration/output-artifacts.md
+      - 质量门禁: orchestration/quality-gates.md
+      - 接入负责人: orchestration/integrating-an-owner.md
+      - 目标文件: orchestration/targets.md
+      - 现金流发布: orchestration/cashflow-publication.md
+      - CLI 辅助工具: orchestration/cli-helpers.md
+      - 开发: orchestration/development.md
+      - 证据协议 CLI: orchestration/evidence-protocol-cli.md
+      - E2 晋升回执: orchestration/e2-promotion-receipt.md
+      - 输出编排: orchestration/output-orchestration.md
+      - 输出摘要: orchestration/output-summary.md
+      - 运行时辅助工具: orchestration/runtime-helpers.md
+      - 运维:
+          - 概览: orchestration/operations/README.md
+          - 质量门禁: orchestration/operations/quality-gates.md
+      - 参考:
+          - 概览: orchestration/reference/README.md
+          - CLI 辅助工具: orchestration/reference/cli-helpers.md
+          - 配置: orchestration/reference/configuration.md
+          - 运行时辅助工具: orchestration/reference/runtime-helpers.md
+  - 参考:
+      - 公开 API: reference/public-api.md
+      - 分配参考: reference/allocation-reference.md
+      - 持仓: reference/outputs/positions.md
+      - 回测输出: reference/outputs/backtest-outputs.md
+      - 数据边界: data/README.md
+  - 开发:
+      - 测试: testing.md
+      - 网格辅助工具: grid-support.md
+      - 命名空间迁移: namespace-migration.md
+      - 归属迁移: ownership-migration.md
+      - 会计与执行路线图: accounting_execution_roadmap.md
+      - 发布审计: orchestration/publication-audit.md
+  - 治理与迁移:
+      - research-workspace 退出计划: migration/research-workspace-sunset.md
+      - 会计与执行路线图: governance/accounting-execution-roadmap.md
