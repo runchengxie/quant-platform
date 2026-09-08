@@ -82,7 +82,7 @@ workflow 使用路径过滤和并发控制取消同一 pull request 的旧运行
 
 ## 类型检查范围
 
-本地 `scripts/dev/run_tests.sh typecheck` 会按 `pyproject.toml` 的 `[tool.ty.src]` 配置检查迁移后的源码和脚本。当前完整入口仍会报告部分历史类型问题，不能把它当作全仓类型检查通过。
+本地 `scripts/dev/run_tests.sh typecheck` 会按 `pyproject.toml` 的 `[tool.ty.src]` 配置检查迁移后的源码和脚本，并显式加入五个源码根目录供 ty 解析内部导入。当前完整入口仍会报告 429 条历史 warning，不能把它当作全仓类型检查通过。
 
 公开 CI 使用较窄的阻断范围，只检查下面三个迁移包，并将警告保留为提示，错误仍会使任务失败：
 
@@ -91,7 +91,7 @@ uv run --locked --extra dev ty check --exit-zero-on-warning \
   packages/alpha/src packages/orchestration/src packages/execution/src
 ```
 
-`packages/portfolio-backtester`、`packages/microstructure` 和测试目录中的类型问题目前属于分层治理范围。扩大阻断范围前，应先修复目标模块的类型问题，并同步更新 CI、脚本和本页说明。
+`packages/portfolio-backtester`、`packages/microstructure` 和测试目录中的类型问题目前属于分层治理范围。加入源码根目录后，原先由路径配置造成的 unresolved-import 错误已消除，剩余 warning 仍需按模块分层治理。扩大阻断范围前，应先修复目标模块的类型问题，并同步更新 CI、脚本和本页说明。
 
 扩大类型覆盖时，应先修复目标模块，再更新配置和测试说明。新后端边界先由运行时契约测试保护，后续在共享账本迁移时纳入完整静态检查。
 
