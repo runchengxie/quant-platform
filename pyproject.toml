@@ -44,6 +44,9 @@ dev = [
   "ruff>=0.8",
   "ty==0.0.77",
 ]
+docs = [
+  "mkdocs-material>=9.6,<10",
+]
 
 [tool.setuptools]
 packages = [

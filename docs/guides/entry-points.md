@@ -1,6 +1,6 @@
 # 常用入口
 
-`portfolio-backtester` 提供五种调用方式，从高层规范到低层持仓回放逐步深入。刚接触项目时，建议从入口 1 开始。
+`portfolio-backtester` 提供五类调用入口，覆盖从高层回测规范到低层持仓回放的不同需求。初次使用时，建议从入口 1 开始。
 
 ## 1. 使用组合规范运行回测（推荐）
 
@@ -41,9 +41,9 @@ spec = BacktestSpec(
 result = run_backtest(scores, spec)
 ```
 
-`BacktestSpec.to_mapping()` 可以生成适合写入 JSON 或 YAML 的配置，`BacktestSpec.from_mapping()` 可以恢复规范。行情表不进入配置。信号和定价数据在运行时传给 `run_backtest`。
+`BacktestSpec.to_mapping()` 可以生成适合写入 JSON 或 YAML 的配置，`BacktestSpec.from_mapping()` 可以恢复规范。行情表不写入配置，信号和定价数据在运行时传给 `run_backtest`。
 
-研究低换手策略时，可以设置 `selection_min_score` 和 `max_new_names_per_rebalance`。需要严格限制新证券排名并让未填满的槽位持币时，组合使用 `entry_rank_cutoff` 和 `target_weight_policy="fixed_slot"`。需要避免开仓日价格或可交易性反过来改变目标名单时，设置 `selection_price_policy="target_first"`。这些字段默认关闭，不改变历史结果。完整语义见[组合式回测规范](../concepts/backtest-spec.md)。
+研究低换手策略时，可以设置 `selection_min_score` 和 `max_new_names_per_rebalance`。如果需要限制新证券排名，并让未填满的槽位保留现金，可以组合使用 `entry_rank_cutoff` 和 `target_weight_policy="fixed_slot"`。如果目标名单不应受开仓日价格或可交易性影响，可以设置 `selection_price_policy="target_first"`。这些字段默认关闭，不改变历史结果。完整语义见[组合式回测规范](../concepts/backtest-spec.md)。
 
 输入数据通常需要以下字段：
 
@@ -55,7 +55,7 @@ result = run_backtest(scores, spec)
 
 ## 2. 使用历史 Top-K 兼容入口
 
-`backtest_topk` 保留原有签名和默认行为，并把参数转换为 `StrategySpec`、`ExecutionModel` 和 `BacktestSpec` 后调用同一条执行路径。现阶段该入口不会发出弃用警告。
+`backtest_topk` 保留原有签名和默认行为。它会把参数转换为 `StrategySpec`、`ExecutionModel` 和 `BacktestSpec`，再调用统一的执行路径。现阶段该入口不会发出弃用警告。
 
 ```python
 from portfolio_backtester import backtest_topk

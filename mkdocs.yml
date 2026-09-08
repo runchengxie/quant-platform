@@ -1,0 +1,152 @@
+site_name: quant-platform
+site_description: Public reusable quant research and portfolio platform
+site_url: https://runchengxie.github.io/quant-platform/
+repo_name: runchengxie/quant-platform
+repo_url: https://github.com/runchengxie/quant-platform
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  language: en
+  font: false
+  features:
+    - navigation.instant
+    - navigation.sections
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+
+exclude_docs: |
+  internal/**
+  alpha/internal/**
+  superpowers/**
+  alpha/superpowers/**
+  **/*.json
+  **/*.yml
+
+nav:
+  - Overview: README.md
+  - Getting Started:
+      - Entry Points: guides/entry-points.md
+      - Sleeve Portfolio: guides/sleeve-portfolio.md
+      - Execution Simulation: guides/execution-simulation.md
+      - Diagnostic Close Replay: guides/diagnostic-close-replay.md
+      - Incumbent Requalification: guides/incumbent-requalification.md
+      - Incumbent Requalification OOS Controls: guides/incumbent-requalification-oos-controls.md
+      - Promotion Sidecar: guides/promotion-sidecar.md
+  - Concepts:
+      - Backtest Specification: concepts/backtest-spec.md
+      - Backtest Configuration: concepts/backtest-configuration.md
+      - Backend Architecture: concepts/backend-architecture.md
+      - Backtest Interpretation: concepts/backtest-interpretation.md
+      - Canonical Backtest Bundle: concepts/canonical-backtest-bundle.md
+      - Portfolio Optimization Backends: concepts/portfolio-optimization-backends.md
+      - Style Factor Portfolio Weighting: concepts/style-factor-portfolio-weighting.md
+      - AFML Sizing and Risk: concepts/afml-sizing-and-risk.md
+      - Factor Attribution: concepts/factor-attribution.md
+      - Benchmark Ladder: concepts/benchmark-ladder.md
+      - Turnover: concepts/turnover.md
+      - Execution Costs: concepts/execution-costs.md
+      - Cost Breakdown: concepts/cost-breakdown.md
+      - Differential Backtesting: concepts/differential-backtesting.md
+      - Additional Risk and Research Topics:
+          - Contextual Factors: alpha/concepts/contextual-factors.md
+          - Fundamental State Forecasting: alpha/concepts/fundamental-state-forecasting.md
+          - Matched Model Risk: alpha/concepts/matched-model-risk.md
+          - Minute Factors: alpha/concepts/minute-factors.md
+          - Model Landscape: alpha/concepts/model-landscape.md
+          - Research Protocols: alpha/concepts/research-protocols.md
+          - Style Factor Cross Sections: alpha/concepts/style-factor-cross-sections.md
+          - Style Replica: alpha/concepts/style-replica.md
+  - Research and Alpha:
+      - Alpha Overview: alpha/README.md
+      - AFML Methodology: alpha/concepts/afml-methodology.md
+      - Factor Catalog: alpha/concepts/factor-catalog.md
+      - Factor Risk Model: alpha/concepts/factor-risk-model.md
+      - Feature Research Protocol: alpha/concepts/feature-research-protocol.md
+      - Model Selection: alpha/concepts/model-selection.md
+      - Overfitting Controls: alpha/concepts/overfitting-controls.md
+      - Signal Drift: alpha/concepts/signal-drift.md
+      - Framework Backends: alpha/concepts/framework-backends.md
+      - Namespace Migration: alpha/namespace-migration.md
+      - Testing: alpha/testing.md
+      - Research Template Design: alpha/guides/research-template-design.md
+      - Research Template Playbook: alpha/playbooks/research-template-design.md
+      - Operations Testing: alpha/operations/testing.md
+      - Research Outputs: alpha/reference/research-outputs.md
+      - Signal Artifacts: alpha/reference/signal-artifacts.md
+  - Execution and Microstructure:
+      - Execution Overview: execution/README.md
+      - Microstructure Overview: microstructure/README.md
+      - Data Boundary: microstructure/data-boundary.md
+      - Development Guide: microstructure/development-guide.md
+  - Orchestration:
+      - Orchestration Overview: orchestration/README.md
+      - Configuration: orchestration/configuration.md
+      - Control Plane: orchestration/control-plane.md
+      - Evaluation: orchestration/evaluation.md
+      - Output Artifacts: orchestration/output-artifacts.md
+      - Quality Gates: orchestration/quality-gates.md
+      - Integrating an Owner: orchestration/integrating-an-owner.md
+      - Targets: orchestration/targets.md
+      - Cashflow Publication: orchestration/cashflow-publication.md
+      - CLI Helpers: orchestration/cli-helpers.md
+      - Development: orchestration/development.md
+      - Evidence Protocol CLI: orchestration/evidence-protocol-cli.md
+      - E2 Promotion Receipt: orchestration/e2-promotion-receipt.md
+      - Output Orchestration: orchestration/output-orchestration.md
+      - Output Summary: orchestration/output-summary.md
+      - Runtime Helpers: orchestration/runtime-helpers.md
+      - Operations:
+          - Overview: orchestration/operations/README.md
+          - Quality Gates: orchestration/operations/quality-gates.md
+      - Reference:
+          - Overview: orchestration/reference/README.md
+          - CLI Helpers: orchestration/reference/cli-helpers.md
+          - Configuration: orchestration/reference/configuration.md
+          - Runtime Helpers: orchestration/reference/runtime-helpers.md
+  - Reference:
+      - Public API: reference/public-api.md
+      - Allocation Reference: reference/allocation-reference.md
+      - Positions: reference/outputs/positions.md
+      - Backtest Outputs: reference/outputs/backtest-outputs.md
+      - Data Boundary: data/README.md
+  - Development:
+      - Testing: testing.md
+      - Grid Support: grid-support.md
+      - Namespace Migration: namespace-migration.md
+      - Ownership Migration: ownership-migration.md
+      - Accounting and Execution Roadmap: accounting_execution_roadmap.md
+      - Publication Audit: orchestration/publication-audit.md
+  - Governance and Migration:
+      - Research Workspace Sunset: migration/research-workspace-sunset.md
+      - Accounting and Execution Roadmap: governance/accounting-execution-roadmap.md

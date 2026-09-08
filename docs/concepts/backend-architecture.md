@@ -40,7 +40,7 @@ Backtrader 仍处于规划阶段。任何后续实现都需要独立设计评审
 
 vn.py 属于本仓库范围外。本仓库不维护 Gateway、实时订单传输或券商账户状态。
 
-机器可读状态见 [框架状态账本](../framework-integration-ledger.yml)。账本把当前后端、历史候选、规划项和范围外项目分开记录。
+机器可读状态见 [框架状态账本](https://github.com/runchengxie/quant-platform/blob/main/docs/framework-integration-ledger.yml)。账本把当前后端、历史候选、规划项和范围外项目分开记录。
 
 ## 稳定边界
 
