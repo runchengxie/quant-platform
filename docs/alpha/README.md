@@ -13,7 +13,7 @@
 
 | 主题 | 文档 |
 | --- | --- |
-| 项目定位和安装 | [根目录 README](../../README.md) |
+| 项目定位和安装 | [根目录 README](https://github.com/runchengxie/quant-platform/blob/main/README.md) |
 | 模型选择 | [concepts/model-selection.md](concepts/model-selection.md) |
 | 模型版图 | [concepts/model-landscape.md](concepts/model-landscape.md) |
 | 过拟合控制 | [concepts/overfitting-controls.md](concepts/overfitting-controls.md) |
@@ -45,4 +45,4 @@
 
 通用组合回测、交易成本和容量分析由 `portfolio-backtester` 维护。运行编排、CLI、配置合成、运行目录和目标文件导出由 `strategy-pipeline` 维护。
 
-从其他仓库迁入文档时，应同时更新旧页面的跳转说明，避免形成两份活跃版本。pipeline 侧只保留命令、配置、运行编排和交接入口。编码代理默认只读取本页、相关分类入口和目标页面。
+从其他仓库迁入文档时，应同时更新旧页面的跳转说明，避免出现多个活跃版本。pipeline 侧只保留命令、配置、运行编排和交接入口。编码代理默认只读取本页、相关分类入口和目标页面。

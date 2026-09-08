@@ -2,6 +2,8 @@
 
 `quant-platform` 是公开的量化研究与投资组合基础平台。
 
+[在线文档](https://runchengxie.github.io/quant-platform/)
+
 它提供可复用的回测、组合、执行模拟、风险分析和研究产物接口，供研究项目调用。策略假设、专有特征、真实策略输入和晋升证据属于 `quant-research` 等私有研究层，本仓库不保存这些内容。
 
 ## 适合谁使用
@@ -14,28 +16,28 @@
 
 安装开发依赖并运行检查：
 
-本仓库按 Apache License 2.0 授权，详见 [LICENSE](LICENSE)。许可证只适用于本仓库中的公开框架代码，
-不授予私有策略、专有数据、凭证或第三方依赖的使用权。
+本仓库采用 Apache License 2.0，详见 [LICENSE](LICENSE)。许可证仅适用于本仓库中的公开框架代码，
+不包含私有策略、专有数据、凭证和第三方依赖。
 
 alpha 框架的原生实现是 `NativeDatasetBackend`。Qlib 后端通过可选依赖接入。
 
-这是公开的可复用量化研究与组合平台。当前仓库仍处于分阶段迁移中，旧工作区的其他职责尚未全部迁入。
+本仓库仍处于分阶段迁移阶段，旧工作区的部分职责尚未迁入。
 
-当前版本不公开发布 portfolio-backtester 的 style-factor slice。该 slice 的来源许可证与历史
-授权尚未确认，已登记为私有目标迁移项。通用回测、组合、风险和执行模拟能力仍由本仓库提供。
+当前版本暂不公开发布 `portfolio-backtester` 的 style-factor slice。其来源许可证和历史授权尚未确认，
+已登记为私有迁移项。通用回测、组合、风险和执行模拟能力仍由本仓库提供。
 
-仓库还在自有的 `quant_platform` 命名空间下提供通用发布辅助工具，并提供
+仓库还在 `quant_platform` 命名空间下提供通用发布辅助工具，并提供
 `packages/research-contracts/` 下的版本化 `research-contracts` 包。这些包负责清单格式化、
-产物封装、相对路径校验、SHA-256 回执和干净的 bundle 发布，不应包含策略专属选股逻辑或私有研究输入。
-继承而来的契约包保留独立质量门禁，公开 CI 只对已迁入的平台代码执行 Ruff 检查。
+产物封装、相对路径校验、SHA-256 回执和干净的 bundle 发布，不包含策略专属选股逻辑或私有研究输入。
+继承而来的契约包保留独立质量门禁，公开 CI 只检查已迁入的平台代码。
 
 Python 命名空间保持不变。Apache-2.0 许可证只适用于本仓库原有的公开框架代码，
 不会改变旧来源代码或第三方依赖的许可证。
 
-数据接口、alpha 机制、微观结构抽象、编排和执行接口仍在分阶段迁移与审计。
-`research-workspace` 已进入 sunset 阶段，迁移完成前只用于历史核对和兼容验证。
+数据接口、alpha 机制、微观结构抽象、编排和执行接口仍在分阶段迁移和审计。
+`research-workspace` 已进入 sunset 阶段，迁移完成前仅用于历史核对和兼容验证。
 
-Run locally:
+本地运行：
 
 ```bash
 uv sync --locked --all-groups
