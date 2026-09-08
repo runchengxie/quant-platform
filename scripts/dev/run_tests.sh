@@ -28,11 +28,23 @@ run_ruff() {
 }
 
 run_ty() {
+  local -a source_roots=(
+    "packages/portfolio-backtester/src"
+    "packages/orchestration/src"
+    "packages/execution/src"
+    "packages/alpha/src"
+    "packages/microstructure/src"
+  )
+  local -a search_path_args=()
+  for source_root in "${source_roots[@]}"; do
+    search_path_args+=(--extra-search-path "$source_root")
+  done
   if [[ "${PORTFOLIO_BACKTESTER_NO_PROJECT_TOOLS:-0}" == "1" ]]; then
-    uv run --no-project --with "ty>=0.0.55" ty check --extra-search-path typings "$@"
+    uv run --no-project --with "ty>=0.0.55" ty check \
+      --extra-search-path typings "${search_path_args[@]}" "$@"
     return
   fi
-  uv run --extra dev ty check "$@"
+  uv run --extra dev ty check "${search_path_args[@]}" "$@"
 }
 
 mode="${1:-all}"
