@@ -23,8 +23,8 @@ alpha 框架的原生实现是 `NativeDatasetBackend`。Qlib 后端通过可选�
 
 本仓库仍处于分阶段迁移阶段，旧工作区的部分职责尚未迁入。
 
-当前版本暂不公开发布 `portfolio-backtester` 的 style-factor slice。其来源许可证和历史授权尚未确认，
-已登记为私有迁移项。通用回测、组合、风险和执行模拟能力仍由本仓库提供。
+当前版本不公开发布 portfolio-backtester 的 style-factor slice。该 slice 的来源许可证与历史
+授权尚未确认，已登记为私有目标迁移项。通用回测、组合、风险和执行模拟能力仍由本仓库提供。
 
 仓库还在 `quant_platform` 命名空间下提供通用发布辅助工具，并提供
 `packages/research-contracts/` 下的版本化 `research-contracts` 包。这些包负责清单格式化、
