@@ -39,7 +39,7 @@
 | 层级 | 机制 | 当前入口 | 使用方式 |
 | --- | --- | --- | --- |
 | 数据 | PIT 股票池和资产契约 | `strategy-pipeline/configs/presets/a_share.yml` | 固定历史可见数据和资产版本 |
-| 切分 | 日期间隔和事件窗口样本清理 | `src/alpha_research/split.py`、`eval.cv_purge_mode` | 防止训练标签窗口与测试区间重叠 |
+| 切分 | 日期间隔和事件窗口样本清理 | `packages/alpha/src/alpha_research/split.py`、`eval.cv_purge_mode` | 防止训练标签窗口与测试区间重叠 |
 | 训练窗口 | 滚动或扩展窗口 | `model.train_window` | 检查历史长度和市场状态混杂 |
 | 前推验证 | Walk-forward | `eval.walk_forward` | 检查信号能否跨时间窗口延续 |
 | 最终留出 | 冻结样本外区间 | `eval.final_oos` | 为最后复核保留未参与选择的数据 |

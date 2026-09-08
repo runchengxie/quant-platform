@@ -210,7 +210,7 @@ def test_minute_and_signal_contract_docs_are_indexed_and_complete() -> None:
 def test_overfitting_docs_use_owner_relative_source_path() -> None:
     docs = (ALPHA_DOCS / "concepts" / "overfitting-controls.md").read_text(encoding="utf-8")
 
-    assert "`src/alpha_research/split.py`" in docs
+    assert "`packages/alpha/src/alpha_research/split.py`" in docs
     assert "../alpha-research/src/alpha_research/split.py" not in docs
     assert "根目录 `docs/platform-workflow.md`" in docs
 
