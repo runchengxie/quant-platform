@@ -37,7 +37,7 @@ deep-learning-tick-data-prediction
 
 门禁包含两层：
 
-- `src/ticknet` 禁止直接 import `market_data_platform`、`tushare` 和 `rqdatac`。
+- `packages/microstructure/src/ticknet` 禁止直接 import `market_data_platform`、`tushare` 和 `rqdatac`。
 - 项目 runtime dependencies 禁止声明 `market-data-platform`、`tushare` 和 `rqdatac`。
 
 第一层防止模型代码直接依赖平台实现或 provider SDK。第二层防止 provider runtime 先进入模型项目依赖，再逐步形成新的数据接入职责。未来若出现独立的 schema-only distribution，应单独评审并显式调整白名单。
