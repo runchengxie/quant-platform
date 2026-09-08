@@ -52,6 +52,7 @@ uv run pytest
 - [回测与组合说明](docs/concepts/backtest-spec.md)
 - [研究产物与公开接口](docs/reference/public-api.md)
 - [迁移与边界说明](docs/migration/research-workspace-sunset.md)
+- [market-research 边界说明](docs/migration/market-research-boundary.md)
 
 文档中的技术说明以当前代码和测试为准。README 只保留项目定位、使用入口和导航，具体接口、架构、兼容性和迁移记录请查看 `docs/`。
 
