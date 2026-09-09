@@ -245,6 +245,10 @@ def _prepare_execution_tables(
         price_col=price_col,
         tradable_col=tradable_col if tradable_col in pricing.columns else None,
     )
+    # An explicitly requested control must not silently become unrestricted.
+    required_cols.update(
+        col for col in (tradable_col, buy_tradable_col, sell_tradable_col) if col is not None
+    )
     # Phase 4: 市场规则依赖列缺失时, 若规则已开启则终止 (约束 #7).
     market_rule_cols = {
         col
@@ -536,6 +540,8 @@ def _process_adjusted_nav_trade_day(
         t1_available=ledger.t1_available,
     )
     ledger.cash = float(cash_box["cash"])
+    # Include newly acquired positions before a later missing quote needs this mark.
+    _refresh_last_prices(ledger.last_prices, ledger.shares, trade_date, plan.tables.price_table)
     _retain_open_adjusted_nav_orders(
         ledger,
         trade_date=trade_date,
