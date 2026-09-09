@@ -10,6 +10,13 @@ The split is behavior-preserving; external imports from this module are unchange
 
 from __future__ import annotations
 
+from .dated_fees import (
+    DatedFeeQuote as DatedFeeQuote,
+    DatedFeeSchedule as DatedFeeSchedule,
+    DatedTradeFeeModel as DatedTradeFeeModel,
+    FeeQuoteContext as FeeQuoteContext,
+    FeeSchedulePeriod as FeeSchedulePeriod,
+)
 from ._execution_build import (
     build_cost_model as build_cost_model,
     build_entry_policy as build_entry_policy,
@@ -47,11 +54,16 @@ __all__ = [
     "BpsSlippageModel",
     "CostModel",
     "DetailedTradeFeeModel",
+    "DatedFeeQuote",
+    "DatedFeeSchedule",
+    "DatedTradeFeeModel",
     "EntryPolicy",
     "ExecutionModel",
     "ExitFallbackPolicy",
     "ExitPolicy",
     "ExitPricePolicy",
+    "FeeQuoteContext",
+    "FeeSchedulePeriod",
     "NoCostModel",
     "NoSlippageModel",
     "ParticipationSlippageModel",

@@ -3,16 +3,19 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
 from typing import Any
 
 import numpy as np
 import pandas as pd
 
 from ..execution import DetailedTradeFeeModel, SlippageModel
+from ..dated_fees import DatedFeeQuote, DatedTradeFeeModel, FeeQuoteContext
 from ..types import CostBreakdown
 from .config import ExecutionSimConfig
 
 TradeFeeModel = DetailedTradeFeeModel
+SupportedTradeFeeModel = DetailedTradeFeeModel | DatedTradeFeeModel
 
 __all__ = [
     "_AdjustedNavLedger",
@@ -22,17 +25,22 @@ __all__ = [
     "_NavOrder",
     "_OrderSink",
     "_trade_fee",
+    "_quote_trade_fee",
     "describe_trade_fee_model",
 ]
 
 
 def describe_trade_fee_model(
-    fee_model: TradeFeeModel | None,
+    fee_model: SupportedTradeFeeModel | None,
     *,
     portfolio_value: float | None = None,
 ) -> dict[str, Any]:
     if fee_model is None:
         return {"name": "bps"}
+    if isinstance(fee_model, DatedTradeFeeModel):
+        return fee_model.describe()
+    if not isinstance(fee_model, DetailedTradeFeeModel):
+        raise TypeError(f"unsupported trade_fee_model type: {type(fee_model).__name__}")
     effective_portfolio_value = (
         float(portfolio_value)
         if portfolio_value is not None and np.isfinite(portfolio_value) and portfolio_value > 0
@@ -51,17 +59,46 @@ def describe_trade_fee_model(
     }
 
 
-def _trade_fee(
+@dataclass(frozen=True)
+class _TradeFeeQuote:
+    breakdown: CostBreakdown
+    market: str | None = None
+    period_start: date | None = None
+    period_end: date | None = None
+    cumulative_group_notional_before: float | None = None
+    cumulative_group_notional_after: float | None = None
+
+
+def _with_dated_fee_context(
+    breakdown: CostBreakdown,
+    dated_quote: DatedFeeQuote | None,
+) -> _TradeFeeQuote:
+    return _TradeFeeQuote(
+        breakdown=breakdown,
+        market=None if dated_quote is None else dated_quote.market,
+        period_start=None if dated_quote is None else dated_quote.period_start,
+        period_end=None if dated_quote is None else dated_quote.period_end,
+        cumulative_group_notional_before=(
+            None if dated_quote is None else dated_quote.cumulative_group_notional_before
+        ),
+        cumulative_group_notional_after=(
+            None if dated_quote is None else dated_quote.cumulative_group_notional_after
+        ),
+    )
+
+
+def _quote_trade_fee(
     notional: float,
     *,
     side: str,
     cost_rate: float,
-    fee_model: TradeFeeModel | None,
+    fee_model: SupportedTradeFeeModel | None,
     slippage_model: SlippageModel | None = None,
     symbol: str | None = None,
     pricing_row: pd.Series | None = None,
     portfolio_value: float | None = None,
-) -> CostBreakdown:
+    dated_context: FeeQuoteContext | None = None,
+) -> _TradeFeeQuote:
     """Per-fill transaction cost split into stage-3 sub-items.
 
     With a :class:`DetailedTradeFeeModel` the commission/stamp/transfer/spread
@@ -70,10 +107,11 @@ def _trade_fee(
     (slippage-like), so ``total_cost`` stays identical to the old scalar path.
     Impact/opportunity/financing sub-items are left at 0 (no model yet).
     """
+    dated_quote = None
     if fee_model is None:
         spread = max(float(notional), 0.0) * max(float(cost_rate), 0.0)
         breakdown = CostBreakdown.from_components(spread_cost=spread)
-    else:
+    elif isinstance(fee_model, DetailedTradeFeeModel):
         fee_breakdown = fee_model.notional_cost_breakdown(notional, side=side)
         breakdown = CostBreakdown.from_components(
             commission=fee_breakdown["commission"],
@@ -81,8 +119,22 @@ def _trade_fee(
             transfer_fee=fee_breakdown["transfer_fee"],
             spread_cost=fee_breakdown["spread_cost"],
         )
+    elif isinstance(fee_model, DatedTradeFeeModel):
+        if dated_context is None:
+            raise TypeError(
+                "dated trade_fee_model requires explicit date, symbol, market, and group context"
+            )
+        dated_quote = fee_model.quote(dated_context)
+        breakdown = CostBreakdown.from_components(
+            commission=dated_quote.commission,
+            stamp_tax=dated_quote.stamp_tax,
+            transfer_fee=dated_quote.transfer_fee,
+            spread_cost=dated_quote.spread_cost,
+        )
+    else:
+        raise TypeError(f"unsupported trade_fee_model type: {type(fee_model).__name__}")
     if slippage_model is None or symbol is None or portfolio_value is None or portfolio_value <= 0:
-        return breakdown
+        return _with_dated_fee_context(breakdown, dated_quote)
     trade_weights = pd.Series({symbol: float(notional) / float(portfolio_value)})
     impact = slippage_model.cost(
         trade_weights,
@@ -91,8 +143,8 @@ def _trade_fee(
         side=side,
     ) * float(portfolio_value)
     if not np.isfinite(impact) or impact <= 0:
-        return breakdown
-    return CostBreakdown.from_components(
+        return _with_dated_fee_context(breakdown, dated_quote)
+    breakdown = CostBreakdown.from_components(
         commission=breakdown.commission,
         stamp_tax=breakdown.stamp_tax,
         transfer_fee=breakdown.transfer_fee,
@@ -102,6 +154,32 @@ def _trade_fee(
         opportunity_cost=breakdown.opportunity_cost,
         financing_cost=breakdown.financing_cost,
     )
+    return _with_dated_fee_context(breakdown, dated_quote)
+
+
+def _trade_fee(
+    notional: float,
+    *,
+    side: str,
+    cost_rate: float,
+    fee_model: SupportedTradeFeeModel | None,
+    slippage_model: SlippageModel | None = None,
+    symbol: str | None = None,
+    pricing_row: pd.Series | None = None,
+    portfolio_value: float | None = None,
+    dated_context: FeeQuoteContext | None = None,
+) -> CostBreakdown:
+    return _quote_trade_fee(
+        notional,
+        side=side,
+        cost_rate=cost_rate,
+        fee_model=fee_model,
+        slippage_model=slippage_model,
+        symbol=symbol,
+        pricing_row=pricing_row,
+        portfolio_value=portfolio_value,
+        dated_context=dated_context,
+    ).breakdown
 
 
 def _add_breakdown(total: CostBreakdown, other: CostBreakdown) -> CostBreakdown:
@@ -241,6 +319,7 @@ class _AdjustedNavLedger:
     order_rows: list[dict[str, Any]]
     fill_rows: list[dict[str, Any]]
     daily_rows: list[dict[str, Any]]
+    fee_group_notionals: dict[str, float]
     # Phase 4 T+1 ledger: shares available to sell on the current trade date
     # (previous close position; same-day buys are excluded). Refreshed at the
     # start of each trade day before orders execute.

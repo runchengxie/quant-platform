@@ -7,13 +7,13 @@ from typing import Any, cast
 import numpy as np
 import pandas as pd
 
-from ..execution import DetailedTradeFeeModel
 from ..metrics import summarize_period_returns
 from .config import (
     ExecutionSimConfig,
     describe_execution_sim_config,
 )
 from .models import (
+    SupportedTradeFeeModel,
     describe_trade_fee_model,
 )
 from .results import (
@@ -21,7 +21,7 @@ from .results import (
     ExecutionSimResult,
 )
 
-TradeFeeModel = DetailedTradeFeeModel
+TradeFeeModel = SupportedTradeFeeModel
 
 __all__ = [
     "_daily_period_info",
@@ -406,6 +406,13 @@ def _nav_fill_columns() -> list[str]:
         "cost_permanent_impact",
         "cost_opportunity",
         "cost_financing",
+        "fee_market",
+        "fee_period_start",
+        "fee_period_end",
+        "fee_order_id",
+        "fee_group_id",
+        "fee_group_notional_before",
+        "fee_group_notional_after",
         "signal_time",
         "decision_time",
         "order_time",
