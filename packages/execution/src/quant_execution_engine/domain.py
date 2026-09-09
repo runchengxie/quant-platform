@@ -35,6 +35,7 @@ from ._domain_models import (
     OrderIntent,
     PortfolioTarget,
 )
+from .lifecycle import OrderLifecycleError, validate_order_transition
 
 __all__ = [
     "ApprovedTarget",
@@ -55,4 +56,6 @@ __all__ = [
     "portfolio_target_capability_violations",
     "validate_order_intent_capabilities",
     "validate_portfolio_target_capabilities",
+    "OrderLifecycleError",
+    "validate_order_transition",
 ]

@@ -10,6 +10,7 @@ from .research_clock import ResearchClock, validate_research_clock
 
 RESEARCH_RUN_MANIFEST_SCHEMA_VERSION = "research.backtest-run.v1"
 RESEARCH_EVIDENCE_TIERS = frozenset({"diagnostic", "execution_aware"})
+PROVENANCE_FIELDS = ("data_vintage", "calendar_version", "strategy_version", "engine_version", "execution_policy", "cost_model", "random_seed")
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
 
@@ -115,6 +116,21 @@ def _mapping_list(value: object, field: str) -> list[Mapping[str, Any]]:
     return list(value)
 
 
+def _provenance(value: object, *, required: bool) -> dict[str, str]:
+    if value is None:
+        if required:
+            raise ValueError("provenance is required for execution_aware runs")
+        return {}
+    if not isinstance(value, Mapping):
+        raise ValueError("provenance must be an object")
+    result = {str(key): _required_text(item, f"provenance.{key}") for key, item in value.items()}
+    if required:
+        missing = [field for field in PROVENANCE_FIELDS if field not in result]
+        if missing:
+            raise ValueError(f"provenance missing required fields: {', '.join(missing)}")
+    return result
+
+
 def _artifact_refs(value: object, field: str) -> tuple[ArtifactRef, ...]:
     refs = tuple(_artifact_ref_from_mapping(item, field) for item in _mapping_list(value, field))
     ids = [item.artifact_id for item in refs]
@@ -148,6 +164,7 @@ class ResearchRunManifest:
     created_at: datetime
     benchmark_ref: ArtifactRef | None = None
     evidence_refs: tuple[ArtifactRef, ...] = ()
+    provenance: Mapping[str, str] | None = None
     schema_version: str = RESEARCH_RUN_MANIFEST_SCHEMA_VERSION
 
     def __post_init__(self) -> None:
@@ -160,6 +177,8 @@ class ResearchRunManifest:
             raise ValueError(f"unsupported evidence_tier {self.evidence_tier!r}")
         _sha256(self.configuration_sha256, "configuration_sha256")
         _aware_datetime(self.created_at, "created_at")
+        normalized = _provenance(self.provenance, required=self.evidence_tier == "execution_aware")
+        object.__setattr__(self, "provenance", normalized)
 
     @classmethod
     def from_mapping(cls, payload: Mapping[str, Any]) -> ResearchRunManifest:
@@ -204,6 +223,7 @@ class ResearchRunManifest:
             ),
             evidence_refs=_artifact_refs(payload.get("evidence_refs", []), "evidence_refs"),
             created_at=_aware_datetime(payload.get("created_at"), "created_at"),
+            provenance=_provenance(payload.get("provenance"), required=evidence_tier == "execution_aware"),
         )
 
     def to_mapping(self) -> dict[str, Any]:
@@ -221,6 +241,7 @@ class ResearchRunManifest:
             "portfolio_result_ref": self.portfolio_result_ref.to_mapping(),
             "evidence_refs": [item.to_mapping() for item in self.evidence_refs],
             "created_at": self.created_at.isoformat(),
+            "provenance": dict(self.provenance or {}),
         }
         if self.benchmark_ref is not None:
             result["benchmark_ref"] = self.benchmark_ref.to_mapping()
