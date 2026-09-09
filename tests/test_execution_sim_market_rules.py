@@ -124,6 +124,36 @@ def test_round_lot_buy_skips_sub_lot():
     assert buy_fills.empty or (buy_fills["filled_notional"] <= 1e-6).all()
 
 
+def test_legacy_bps_cash_scaling_still_happens_before_round_lot_quantization():
+    positions = pd.DataFrame(
+        {
+            "rebalance_date": ["20200102", "20200102"],
+            "entry_date": ["20200102", "20200102"],
+            "symbol": ["AAA", "BBB"],
+            "weight": [0.5, 0.5],
+            "side": ["long", "long"],
+        }
+    )
+    config = _config(
+        portfolio_value=2_000.0,
+        participation_rate=1.0,
+        round_lot=100,
+        buy_max_days=1,
+    )
+
+    result = simulate_execution_adjusted_nav(
+        positions,
+        _pricing_frame(["2020-01-02"], ["AAA", "BBB"], amount=10_000.0, price=10.0),
+        config,
+        price_col="open",
+        transaction_cost_bps=10.0,
+    )
+
+    assert result.fills.empty
+    assert result.daily["cash"].tolist() == [2_000.0]
+    assert result.daily["invested_value"].tolist() == [0.0]
+
+
 def test_odd_lot_sell_allowed():
     # 卖出路径不受整手约束: 先整手买入 10000 股, 再减仓到 9500 股 (卖出 500 零股),
     # 卖出应全部成交 (卖出不限整手).

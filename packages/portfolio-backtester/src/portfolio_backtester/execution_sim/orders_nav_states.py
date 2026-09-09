@@ -9,7 +9,7 @@ import pandas as pd
 
 from ..types import CostBreakdown
 from .config import ExecutionSimConfig
-from .models import _NavOrder
+from .models import _NavOrder, _TradeFeeQuote
 from .reporting import _format_date
 
 # Phase 4 审计时间戳统一时区 (A 股交易时段归属上海时区).
@@ -110,6 +110,9 @@ def _record_nav_fill(
     order_time: str | None = None,
     fill_time: str | None = None,
     valuation_time: str | None = None,
+    fee_quote: _TradeFeeQuote | None = None,
+    fee_order_id: str | None = None,
+    fee_group_id: str | None = None,
 ) -> None:
     fill_rows.append(
         {
@@ -135,6 +138,25 @@ def _record_nav_fill(
             "cost_permanent_impact": float(getattr(cost_breakdown, "permanent_impact", 0.0)),
             "cost_opportunity": float(getattr(cost_breakdown, "opportunity_cost", 0.0)),
             "cost_financing": float(getattr(cost_breakdown, "financing_cost", 0.0)),
+            "fee_market": None if fee_quote is None else fee_quote.market,
+            "fee_period_start": (
+                None
+                if fee_quote is None or fee_quote.period_start is None
+                else fee_quote.period_start.isoformat()
+            ),
+            "fee_period_end": (
+                None
+                if fee_quote is None or fee_quote.period_end is None
+                else fee_quote.period_end.isoformat()
+            ),
+            "fee_order_id": fee_order_id,
+            "fee_group_id": fee_group_id,
+            "fee_group_notional_before": (
+                None if fee_quote is None else fee_quote.cumulative_group_notional_before
+            ),
+            "fee_group_notional_after": (
+                None if fee_quote is None else fee_quote.cumulative_group_notional_after
+            ),
             "signal_time": signal_time,
             "decision_time": decision_time,
             "order_time": order_time,
@@ -156,6 +178,9 @@ def _record_nav_fill_audit(
     cost_breakdown: CostBreakdown | None = None,
     remaining_before_notional: float | None = None,
     valuation_time: pd.Timestamp | None = None,
+    fee_quote: _TradeFeeQuote | None = None,
+    fee_order_id: str | None = None,
+    fee_group_id: str | None = None,
 ) -> None:
     """Phase 4: record a nav fill and attach audit timestamps explicitly.
 
@@ -178,6 +203,9 @@ def _record_nav_fill_audit(
         order_time=ts["order_time"],
         fill_time=ts["fill_time"],
         valuation_time=ts["valuation_time"],
+        fee_quote=fee_quote,
+        fee_order_id=fee_order_id,
+        fee_group_id=fee_group_id,
     )
 
 

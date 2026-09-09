@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 
 from ..execution import DetailedTradeFeeModel, SlippageModel
+from ..dated_fees import DatedTradeFeeModel
 from ..types import CostBreakdown
 from .capacity import (
     _positions_value,
@@ -24,6 +25,7 @@ from .models import (
     _MarketRules,
     _NavOrder,
     _OrderSink,
+    SupportedTradeFeeModel,
 )
 from .orders import (
     _append_nav_order_row,
@@ -56,7 +58,7 @@ from .results import (
     ExecutionSimResult,
 )
 
-TradeFeeModel = DetailedTradeFeeModel
+TradeFeeModel = SupportedTradeFeeModel
 
 
 def simulate_capacity_execution(
@@ -356,6 +358,7 @@ def _initial_adjusted_nav_ledger(config: ExecutionSimConfig) -> _AdjustedNavLedg
         order_rows=[],
         fill_rows=[],
         daily_rows=[],
+        fee_group_notionals={},
     )
 
 
@@ -536,6 +539,7 @@ def _process_adjusted_nav_trade_day(
         trade_fee_model=trade_fee_model,
         slippage_model=plan.slippage_model,
         fill_rows=ledger.fill_rows,
+        fee_group_notionals=ledger.fee_group_notionals,
         market_rules=market_rules,
         t1_available=ledger.t1_available,
     )
@@ -647,6 +651,12 @@ def simulate_execution_adjusted_nav(
     if status is not None or plan is None:
         return _empty_adjusted_nav_result(config, status=status or "no_executable_entry_dates")
 
+    _validate_continuous_trade_fee_model(
+        trade_fee_model,
+        work_positions=work_positions,
+        trade_dates=tables.trade_dates[plan.start_idx :],
+    )
+
     daily, orders, fills = _run_adjusted_nav_ledger(
         plan=plan,
         config=config,
@@ -664,6 +674,28 @@ def simulate_execution_adjusted_nav(
     return ExecutionAdjustedNavResult(summary=summary, daily=daily, orders=orders, fills=fills)
 
 
+def _validate_continuous_trade_fee_model(
+    trade_fee_model: TradeFeeModel | None,
+    *,
+    work_positions: pd.DataFrame,
+    trade_dates: list[pd.Timestamp],
+) -> None:
+    if trade_fee_model is None or isinstance(trade_fee_model, DetailedTradeFeeModel):
+        return
+    if not isinstance(trade_fee_model, DatedTradeFeeModel):
+        raise TypeError(f"unsupported trade_fee_model type: {type(trade_fee_model).__name__}")
+    symbols = sorted(
+        {
+            str(symbol)
+            for symbol in work_positions.loc[work_positions["weight"] > 0, "symbol"].tolist()
+        }
+    )
+    markets = {trade_fee_model.market_for(symbol) for symbol in symbols}
+    for market in markets:
+        for trade_date in trade_dates:
+            trade_fee_model.schedule.resolve(trade_date, market=market)
+
+
 def simulate_ideal_daily_nav(
     positions: pd.DataFrame | None,
     pricing_data: pd.DataFrame | None,
@@ -675,7 +707,7 @@ def simulate_ideal_daily_nav(
     transaction_cost_bps: float = 0.0,
     trading_days_per_year: int = 252,
     portfolio_value: float = 1_000_000.0,
-    trade_fee_model: TradeFeeModel | None = None,
+    trade_fee_model: DetailedTradeFeeModel | None = None,
 ) -> ExecutionAdjustedNavResult:
     """Daily NAV for immediate, fully liquid rebalances to target weights.
 
@@ -683,6 +715,13 @@ def simulate_ideal_daily_nav(
     disabled (it models a frictionless rebalance), so only the audit
     timestamps are populated when the caller supplies the columns.
     """
+    if isinstance(trade_fee_model, DatedTradeFeeModel):
+        raise TypeError(
+            "DatedTradeFeeModel is not supported by simulate_ideal_daily_nav; "
+            "use simulate_execution_adjusted_nav so fill date and group context are preserved"
+        )
+    if trade_fee_model is not None and not isinstance(trade_fee_model, DetailedTradeFeeModel):
+        raise TypeError(f"unsupported trade_fee_model type: {type(trade_fee_model).__name__}")
     config = ExecutionSimConfig(
         enabled=True,
         portfolio_value=float(portfolio_value),
@@ -788,7 +827,7 @@ def _run_ideal_daily_nav_ledger(
     tables: _ExecutionTables | None,
     targets_by_entry: dict[pd.Timestamp, tuple[pd.Timestamp, dict[str, float]]],
     cost_rate: float,
-    trade_fee_model: TradeFeeModel | None = None,
+    trade_fee_model: DetailedTradeFeeModel | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     if tables is None:
         return (

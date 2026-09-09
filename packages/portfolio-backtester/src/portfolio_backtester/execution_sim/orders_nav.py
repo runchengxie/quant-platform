@@ -7,7 +7,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from ..execution import DetailedTradeFeeModel, SlippageModel
+from ..dated_fees import DatedTradeFeeModel, FeeQuoteContext
+from ..execution import SlippageModel
 from ..types import CostBreakdown
 from .capacity import (
     _capacity_notional,
@@ -27,7 +28,9 @@ from .models import (
     _MarketRules,
     _NavOrder,
     _OrderSink,
-    _trade_fee,
+    _quote_trade_fee,
+    _TradeFeeQuote,
+    SupportedTradeFeeModel,
 )
 from .orders_nav_states import (
     _append_nav_order_row,  # noqa: F401  re-exported for core/ideal
@@ -42,7 +45,23 @@ from .orders_nav_states import (
     _update_state,
 )
 
-TradeFeeModel = DetailedTradeFeeModel
+TradeFeeModel = SupportedTradeFeeModel
+
+
+def _nav_fee_order_id(order: _NavOrder) -> str:
+    return "|".join(
+        (
+            order.rebalance_date.strftime("%Y%m%d"),
+            order.entry_date.strftime("%Y%m%d"),
+            order.side,
+            order.symbol,
+            str(order.start_idx),
+        )
+    )
+
+
+def _nav_fee_group_id(order: _NavOrder, trade_date: pd.Timestamp) -> str:
+    return f"{_nav_fee_order_id(order)}|{trade_date.strftime('%Y%m%d')}"
 
 
 def _slippage_pricing_row(
@@ -64,30 +83,54 @@ def _slippage_pricing_row(
 def _nav_trade_fee(
     fill: float,
     *,
-    side: str,
-    symbol: str,
+    order: _NavOrder,
     trade_date: pd.Timestamp,
     tables: _ExecutionTables,
     config: ExecutionSimConfig,
     cost_rate: float,
     trade_fee_model: TradeFeeModel | None,
     slippage_model: SlippageModel | None,
-) -> CostBreakdown:
-    return _trade_fee(
+    fee_group_notionals: dict[str, float],
+) -> tuple[_TradeFeeQuote, str]:
+    fee_group_id = _nav_fee_group_id(order, trade_date)
+    dated_context = None
+    if isinstance(trade_fee_model, DatedTradeFeeModel):
+        market = trade_fee_model.market_for(order.symbol)
+        dated_context = FeeQuoteContext(
+            trade_date=trade_date,
+            side=order.side,
+            symbol=order.symbol,
+            market=market,
+            executed_notional=fill,
+            cumulative_group_notional=fee_group_notionals.get(fee_group_id, 0.0),
+        )
+    quote = _quote_trade_fee(
         fill,
-        side=side,
+        side=order.side,
         cost_rate=cost_rate,
         fee_model=trade_fee_model,
         slippage_model=slippage_model,
-        symbol=symbol,
+        symbol=order.symbol,
         pricing_row=_slippage_pricing_row(
-            symbol=symbol,
+            symbol=order.symbol,
             trade_date=trade_date,
             tables=tables,
             slippage_model=slippage_model,
         ),
         portfolio_value=config.portfolio_value,
+        dated_context=dated_context,
     )
+    return quote, fee_group_id
+
+
+def _accrue_nav_fee_quote(
+    fee_group_notionals: dict[str, float],
+    *,
+    fee_group_id: str,
+    fee_quote: _TradeFeeQuote,
+) -> None:
+    if fee_quote.cumulative_group_notional_after is not None:
+        fee_group_notionals[fee_group_id] = fee_quote.cumulative_group_notional_after
 
 
 def _apply_nav_sell_fill(
@@ -108,23 +151,35 @@ def _apply_nav_sell_fill(
     trade_fee_model: TradeFeeModel | None,
     slippage_model: SlippageModel | None,
     fill_rows: list[dict[str, Any]],
-) -> CostBreakdown:
-    shares[order.symbol] = max(held_quantity - fill_quantity, 0.0)
-    if shares[order.symbol] <= 1e-10:
-        shares.pop(order.symbol, None)
-    cost = _nav_trade_fee(
+    fee_group_notionals: dict[str, float],
+) -> CostBreakdown | None:
+    fee_quote, fee_group_id = _nav_trade_fee(
         fill,
-        side="sell",
-        symbol=order.symbol,
+        order=order,
         trade_date=trade_date,
         tables=tables,
         config=config,
         cost_rate=cost_rate,
         trade_fee_model=trade_fee_model,
         slippage_model=slippage_model,
+        fee_group_notionals=fee_group_notionals,
     )
+    cost = fee_quote.breakdown
+    if (
+        isinstance(trade_fee_model, DatedTradeFeeModel)
+        and float(cash_ref.get("cash", 0.0)) + fill - cost.total_cost < -1e-8
+    ):
+        return None
+    shares[order.symbol] = max(held_quantity - fill_quantity, 0.0)
+    if shares[order.symbol] <= 1e-10:
+        shares.pop(order.symbol, None)
     cash_ref["cash"] = float(cash_ref.get("cash", 0.0)) + fill - cost.total_cost
     _update_nav_order(order, trade_date, fill, filled_quantity=fill_quantity)
+    _accrue_nav_fee_quote(
+        fee_group_notionals,
+        fee_group_id=fee_group_id,
+        fee_quote=fee_quote,
+    )
     _record_nav_fill_audit(
         fill_rows,
         order=order,
@@ -136,6 +191,9 @@ def _apply_nav_sell_fill(
         cost_breakdown=cost,
         remaining_before_notional=remaining_before_notional,
         valuation_time=trade_date,
+        fee_quote=fee_quote,
+        fee_order_id=_nav_fee_order_id(order),
+        fee_group_id=fee_group_id,
     )
     return cost
 
@@ -156,22 +214,32 @@ def _apply_nav_buy_fill(
     trade_fee_model: TradeFeeModel | None,
     slippage_model: SlippageModel | None,
     fill_rows: list[dict[str, Any]],
+    fee_group_notionals: dict[str, float],
 ) -> CostBreakdown:
-    cost = _nav_trade_fee(
+    fee_quote, fee_group_id = _nav_trade_fee(
         fill,
-        side="buy",
-        symbol=order.symbol,
+        order=order,
         trade_date=trade_date,
         tables=tables,
         config=config,
         cost_rate=cost_rate,
         trade_fee_model=trade_fee_model,
         slippage_model=slippage_model,
+        fee_group_notionals=fee_group_notionals,
     )
+    cost = fee_quote.breakdown
     quantity = fill / float(price)
     shares[order.symbol] = float(shares.get(order.symbol, 0.0)) + quantity
-    cash_ref["cash"] = float(cash_ref.get("cash", 0.0)) - fill - cost.total_cost
+    cash_after = float(cash_ref.get("cash", 0.0)) - fill - cost.total_cost
+    if cash_after < -1e-8:
+        raise RuntimeError("fee-inclusive affordability invariant violated")
+    cash_ref["cash"] = max(cash_after, 0.0)
     _update_nav_order(order, trade_date, fill)
+    _accrue_nav_fee_quote(
+        fee_group_notionals,
+        fee_group_id=fee_group_id,
+        fee_quote=fee_quote,
+    )
     order.zero_fill_days = 0
     _record_nav_fill_audit(
         fill_rows,
@@ -183,6 +251,9 @@ def _apply_nav_buy_fill(
         transaction_cost=cost.total_cost,
         cost_breakdown=cost,
         valuation_time=trade_date,
+        fee_quote=fee_quote,
+        fee_order_id=_nav_fee_order_id(order),
+        fee_group_id=fee_group_id,
     )
     return cost
 
@@ -196,22 +267,82 @@ def _nav_buy_cash_required(
     cost_rate: float,
     trade_fee_model: TradeFeeModel | None,
     slippage_model: SlippageModel | None,
+    fee_group_notionals: dict[str, float],
 ) -> float:
     return sum(
         item[3]
         + _nav_trade_fee(
             item[3],
-            side="buy",
-            symbol=item[0].symbol,
+            order=item[0],
             trade_date=trade_date,
             tables=tables,
             config=config,
             cost_rate=cost_rate,
             trade_fee_model=trade_fee_model,
             slippage_model=slippage_model,
-        ).total_cost
+            fee_group_notionals=fee_group_notionals,
+        )[0].breakdown.total_cost
         for item in raw_fills.values()
     )
+
+
+def _affordable_nav_buy_fill(
+    candidate_fill: float,
+    *,
+    order: _NavOrder,
+    price: float,
+    cash: float,
+    round_lot: int | None,
+    trade_date: pd.Timestamp,
+    tables: _ExecutionTables,
+    config: ExecutionSimConfig,
+    cost_rate: float,
+    trade_fee_model: TradeFeeModel | None,
+    slippage_model: SlippageModel | None,
+    fee_group_notionals: dict[str, float],
+) -> float:
+    """Find the largest candidate whose pure fee preview fits available cash."""
+
+    def required(fill: float) -> float:
+        quote, _ = _nav_trade_fee(
+            fill,
+            order=order,
+            trade_date=trade_date,
+            tables=tables,
+            config=config,
+            cost_rate=cost_rate,
+            trade_fee_model=trade_fee_model,
+            slippage_model=slippage_model,
+            fee_group_notionals=fee_group_notionals,
+        )
+        return fill + quote.breakdown.total_cost
+
+    candidate = max(float(candidate_fill), 0.0)
+    available = max(float(cash), 0.0)
+    if candidate <= 0.0 or available <= 0.0:
+        return 0.0
+    if required(candidate) <= available + 1e-9:
+        return candidate
+    if round_lot is not None and round_lot > 0 and price > 0:
+        lot_notional = float(round_lot) * float(price)
+        low_lots = 0
+        high_lots = int(candidate // lot_notional)
+        while low_lots < high_lots:
+            mid_lots = (low_lots + high_lots + 1) // 2
+            if required(mid_lots * lot_notional) <= available + 1e-9:
+                low_lots = mid_lots
+            else:
+                high_lots = mid_lots - 1
+        return float(low_lots) * lot_notional
+    lower = 0.0
+    upper = candidate
+    for _ in range(64):
+        midpoint = (lower + upper) / 2.0
+        if required(midpoint) <= available:
+            lower = midpoint
+        else:
+            upper = midpoint
+    return lower
 
 
 def _execute_sell_orders(
@@ -398,6 +529,7 @@ def _execute_nav_orders_for_day(
     trade_fee_model: TradeFeeModel | None,
     slippage_model: SlippageModel | None,
     fill_rows: list[dict[str, Any]],
+    fee_group_notionals: dict[str, float],
     market_rules: _MarketRules | None = None,
     t1_available: dict[str, float] | None = None,
 ) -> tuple[float, CostBreakdown]:
@@ -415,6 +547,7 @@ def _execute_nav_orders_for_day(
         trade_fee_model=trade_fee_model,
         slippage_model=slippage_model,
         fill_rows=fill_rows,
+        fee_group_notionals=fee_group_notionals,
         market_rules=market_rules,
         t1_available=t1_available,
     )
@@ -433,6 +566,7 @@ def _execute_nav_orders_for_day(
         trade_fee_model=trade_fee_model,
         slippage_model=slippage_model,
         fill_rows=fill_rows,
+        fee_group_notionals=fee_group_notionals,
         market_rules=market_rules,
     )
     traded_notional += buy_traded
@@ -453,6 +587,7 @@ def _execute_nav_sell_orders_for_day(
     trade_fee_model: TradeFeeModel | None,
     slippage_model: SlippageModel | None,
     fill_rows: list[dict[str, Any]],
+    fee_group_notionals: dict[str, float],
     market_rules: _MarketRules | None = None,
     t1_available: dict[str, float] | None = None,
 ) -> tuple[float, CostBreakdown]:
@@ -527,7 +662,10 @@ def _execute_nav_sell_orders_for_day(
             trade_fee_model=trade_fee_model,
             slippage_model=slippage_model,
             fill_rows=fill_rows,
+            fee_group_notionals=fee_group_notionals,
         )
+        if cost is None:
+            continue
         traded_notional += fill
         transaction_cost = _add_breakdown(transaction_cost, cost)
     return float(traded_notional), transaction_cost
@@ -546,6 +684,7 @@ def _execute_nav_buy_orders_for_day(
     trade_fee_model: TradeFeeModel | None,
     slippage_model: SlippageModel | None,
     fill_rows: list[dict[str, Any]],
+    fee_group_notionals: dict[str, float],
     market_rules: _MarketRules | None = None,
 ) -> tuple[float, CostBreakdown]:
     candidates = [
@@ -589,6 +728,7 @@ def _execute_nav_buy_orders_for_day(
         cost_rate=cost_rate,
         trade_fee_model=trade_fee_model,
         slippage_model=slippage_model,
+        fee_group_notionals=fee_group_notionals,
     )
     scale = min(1.0, cash / total_cash_required) if total_cash_required > 0 else 0.0
     if scale <= 1e-12:
@@ -597,11 +737,21 @@ def _execute_nav_buy_orders_for_day(
     traded_notional = 0.0
     transaction_cost = CostBreakdown()
     for _, (order, price, capacity, raw_fill) in sorted(raw_fills.items()):
-        fill = raw_fill * scale
+        round_lot = market_rules.round_lot if market_rules is not None else None
+        dated_fees_alone_require_scaling = (
+            isinstance(trade_fee_model, DatedTradeFeeModel)
+            and total_raw_fill <= cash + 1e-9
+        )
+        fill = (
+            raw_fill
+            if round_lot is not None
+            and round_lot > 0
+            and dated_fees_alone_require_scaling
+            else raw_fill * scale
+        )
         if fill <= 1e-8:
             continue
         # Phase 4: 整手买入 — 成交数量向下取整到整手股数, 不足一手则当日不买.
-        round_lot = market_rules.round_lot if market_rules is not None else None
         lot_tolerance = market_rules.lot_tolerance if market_rules is not None else 0.0
         if round_lot is not None and round_lot > 0 and price > 0:
             lot = float(round_lot)
@@ -614,6 +764,23 @@ def _execute_nav_buy_orders_for_day(
             if fill <= 1e-8:
                 order.zero_fill_days += 1
                 continue
+        fill = _affordable_nav_buy_fill(
+            fill,
+            order=order,
+            price=price,
+            cash=float(cash_ref.get("cash", 0.0)),
+            round_lot=round_lot,
+            trade_date=trade_date,
+            tables=tables,
+            config=config,
+            cost_rate=cost_rate,
+            trade_fee_model=trade_fee_model,
+            slippage_model=slippage_model,
+            fee_group_notionals=fee_group_notionals,
+        )
+        if fill <= 1e-8:
+            order.zero_fill_days += 1
+            continue
         cost = _apply_nav_buy_fill(
             order=order,
             fill=fill,
@@ -629,6 +796,7 @@ def _execute_nav_buy_orders_for_day(
             trade_fee_model=trade_fee_model,
             slippage_model=slippage_model,
             fill_rows=fill_rows,
+            fee_group_notionals=fee_group_notionals,
         )
         traded_notional += fill
         transaction_cost = _add_breakdown(transaction_cost, cost)
