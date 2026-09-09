@@ -1,6 +1,9 @@
 from datetime import UTC, datetime, timedelta
+
 import pytest
+
 from market_data_platform.ports import MarketDataView
+
 
 def test_pit_view_accepts_records_known_at_cutoff() -> None:
     now = datetime.now(UTC)
