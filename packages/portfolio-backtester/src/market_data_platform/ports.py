@@ -1,4 +1,5 @@
 """Point-in-time market data boundary contracts."""
+
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime
@@ -22,6 +23,7 @@ class MarketDataView:
             effective = record.get("effective_time")
             if isinstance(effective, datetime) and effective > self.knowledge_time:
                 raise ValueError("market data contains information after knowledge_time")
+
 
 class MarketDataPort(Protocol):
     def bars(
