@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from ..corporate_actions import CorporateAction as CorporateAction
 from .config import (
     SELL_UNTIL_NEXT_REBALANCE as SELL_UNTIL_NEXT_REBALANCE,
     ExecutionSimConfig as ExecutionSimConfig,
@@ -28,6 +29,7 @@ from .results import (
 )
 
 __all__ = [
+    "CorporateAction",
     "SELL_UNTIL_NEXT_REBALANCE",
     "ExecutionAdjustedNavResult",
     "ExecutionSimConfig",

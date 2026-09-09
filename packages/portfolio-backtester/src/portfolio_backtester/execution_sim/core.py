@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from typing import Any
 
 import numpy as np
 import pandas as pd
 
-from ..execution import DetailedTradeFeeModel, SlippageModel
+from ..corporate_actions import CorporateAction, normalize_corporate_actions
 from ..dated_fees import DatedTradeFeeModel
+from ..execution import DetailedTradeFeeModel, SlippageModel
 from ..types import CostBreakdown
 from .capacity import (
     _positions_value,
@@ -18,14 +20,19 @@ from .config import (
     ExecutionSimConfig,
     required_execution_sim_columns,
 )
+from .corporate_actions import (
+    RECEIVABLE_COLUMNS,
+    _action_conventions,
+    _CorporateActionLedger,
+)
 from .models import (
+    SupportedTradeFeeModel,
     _AdjustedNavLedger,
     _AdjustedNavPlan,
     _ExecutionTables,
     _MarketRules,
     _NavOrder,
     _OrderSink,
-    SupportedTradeFeeModel,
 )
 from .orders import (
     _append_nav_order_row,
@@ -381,6 +388,14 @@ def _start_adjusted_nav_target_orders(
     ledger.open_orders = []
     rebalance_date, target_weights = plan.targets_by_entry[trade_date]
     ledger.target_cash_notional = _target_cash_notional(target_weights, nav_before_orders)
+    if ledger.corporate_actions is not None:
+        # Pending stock already contributes to economic exposure. Reduce only
+        # the held-share target; never put untradable rights in execution shares.
+        target_weights = dict(target_weights)
+        for symbol, quantity in ledger.corporate_actions.stock_by_symbol().items():
+            value = quantity * float(plan.tables.price_table.at[trade_date, symbol])
+            weight = value / nav_before_orders if nav_before_orders > 0 else 0.0
+            target_weights[symbol] = max(target_weights.get(symbol, 0.0) - weight, 0.0)
     ledger.open_orders = _build_nav_orders_for_target(
         rebalance_date=rebalance_date,
         entry_date=trade_date,
@@ -451,6 +466,11 @@ def _append_adjusted_nav_daily_row(
         ledger.last_prices,
     )
     nav_after_orders = ledger.cash + current_value
+    receipts: dict[str, float] = {}
+    if ledger.corporate_actions is not None:
+        cash_right, stock_right = ledger.corporate_actions.values(trade_date, plan.tables)
+        nav_after_orders += cash_right + stock_right
+        receipts = dict(zip(RECEIVABLE_COLUMNS, (cash_right, stock_right), strict=True))
     daily_return = (
         nav_after_orders / ledger.previous_nav - 1.0 if ledger.previous_nav > 0 else np.nan
     )
@@ -485,6 +505,7 @@ def _append_adjusted_nav_daily_row(
             "cost_opportunity": float(transaction_cost.opportunity_cost),
             "cost_financing": float(transaction_cost.financing_cost),
             "open_orders": len(ledger.open_orders),
+            **receipts,
         }
     )
 
@@ -498,6 +519,21 @@ def _process_adjusted_nav_trade_day(
     trade_fee_model: TradeFeeModel | None,
 ) -> None:
     trade_date = plan.tables.trade_dates[trade_idx]
+    actions = ledger.corporate_actions
+    if actions is not None:
+        affected = actions.open_day(ledger, trade_date)
+        actions.validate_marks(ledger, trade_date, plan.tables)
+        _finalize_open_nav_orders(
+            [order for order in ledger.open_orders if order.symbol in affected],
+            ledger.order_rows,
+            trade_date=trade_date,
+            participation_rate=config.participation_rate,
+            status_by_side={
+                "buy": "cancelled_corporate_action",
+                "sell": "cancelled_corporate_action",
+            },
+        )
+        ledger.open_orders = [order for order in ledger.open_orders if order.symbol not in affected]
     _refresh_last_prices(ledger.last_prices, ledger.shares, trade_date, plan.tables.price_table)
     nav_before_orders = ledger.cash + _positions_value(
         ledger.shares,
@@ -505,6 +541,8 @@ def _process_adjusted_nav_trade_day(
         plan.tables.price_table,
         ledger.last_prices,
     )
+    if actions is not None:
+        nav_before_orders += sum(actions.values(trade_date, plan.tables))
     if trade_date in plan.targets_by_entry:
         _start_adjusted_nav_target_orders(
             ledger,
@@ -544,6 +582,10 @@ def _process_adjusted_nav_trade_day(
         t1_available=ledger.t1_available,
     )
     ledger.cash = float(cash_box["cash"])
+    if actions is not None:
+        actions.validate_marks(ledger, trade_date, plan.tables)
+        actions.capture_close(ledger, trade_date)
+        actions.snapshot(ledger, trade_date, plan.tables)
     # Include newly acquired positions before a later missing quote needs this mark.
     _refresh_last_prices(ledger.last_prices, ledger.shares, trade_date, plan.tables.price_table)
     _retain_open_adjusted_nav_orders(
@@ -567,8 +609,10 @@ def _run_adjusted_nav_ledger(
     plan: _AdjustedNavPlan,
     config: ExecutionSimConfig,
     trade_fee_model: TradeFeeModel | None,
+    corporate_actions: _CorporateActionLedger | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     ledger = _initial_adjusted_nav_ledger(config)
+    ledger.corporate_actions = corporate_actions
     for trade_idx in range(plan.start_idx, len(plan.tables.trade_dates)):
         _process_adjusted_nav_trade_day(
             ledger,
@@ -588,7 +632,10 @@ def _run_adjusted_nav_ledger(
             status_by_side={"buy": "cancelled_buy_deadline", "sell": "delayed_sell"},
         )
 
-    daily = pd.DataFrame(ledger.daily_rows, columns=_executed_daily_columns())
+    columns = _executed_daily_columns() + (
+        RECEIVABLE_COLUMNS if corporate_actions is not None else []
+    )
+    daily = pd.DataFrame(ledger.daily_rows, columns=columns)
     orders = pd.DataFrame(ledger.order_rows, columns=_nav_order_columns())
     fills = pd.DataFrame(ledger.fill_rows, columns=_nav_fill_columns())
     return daily, orders, fills
@@ -611,7 +658,10 @@ def simulate_execution_adjusted_nav(
     trade_fee_model: TradeFeeModel | None = None,
     slippage_model: SlippageModel | None = None,
     prepared_tables: _ExecutionTables | None = None,
+    corporate_actions: Iterable[CorporateAction] | None = None,
+    price_basis: str | None = None,
 ) -> ExecutionAdjustedNavResult:
+    events = normalize_corporate_actions(corporate_actions, price_basis)
     if not config.enabled:
         return _empty_adjusted_nav_result(config, status="disabled")
     if positions is None or positions.empty:
@@ -657,10 +707,16 @@ def simulate_execution_adjusted_nav(
         trade_dates=tables.trade_dates[plan.start_idx :],
     )
 
+    action_ledger = (
+        _CorporateActionLedger(events, tables.trade_dates[plan.start_idx :])
+        if events is not None
+        else None
+    )
     daily, orders, fills = _run_adjusted_nav_ledger(
         plan=plan,
         config=config,
         trade_fee_model=trade_fee_model,
+        corporate_actions=action_ledger,
     )
     summary = _summarize_adjusted_nav(
         config,
@@ -671,7 +727,18 @@ def simulate_execution_adjusted_nav(
         status="ok",
         trade_fee_model=trade_fee_model,
     )
-    return ExecutionAdjustedNavResult(summary=summary, daily=daily, orders=orders, fills=fills)
+    action_frame, holdings = None, None
+    if action_ledger is not None:
+        summary["corporate_actions"] = _action_conventions()
+        action_frame, holdings = action_ledger.frames()
+    return ExecutionAdjustedNavResult(
+        summary=summary,
+        daily=daily,
+        orders=orders,
+        fills=fills,
+        actions=action_frame,
+        holdings=holdings,
+    )
 
 
 def _validate_continuous_trade_fee_model(

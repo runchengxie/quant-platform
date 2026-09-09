@@ -34,6 +34,8 @@ class ExecutionAdjustedNavResult:
     daily: pd.DataFrame
     orders: pd.DataFrame
     fills: pd.DataFrame
+    actions: pd.DataFrame | None = None
+    holdings: pd.DataFrame | None = None
 
     def to_unified_ledger(
         self,
