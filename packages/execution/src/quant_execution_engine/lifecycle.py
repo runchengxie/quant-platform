@@ -16,7 +16,9 @@ _TRANSITIONS: dict[tuple[OrderStatus, ExecutionEventType], OrderStatus] = {
     (OrderStatus.PENDING_NEW, ExecutionEventType.ORDER_ACKNOWLEDGED): OrderStatus.ACCEPTED,
     (OrderStatus.NEW, ExecutionEventType.ORDER_ACKNOWLEDGED): OrderStatus.ACCEPTED,
     (OrderStatus.ACCEPTED, ExecutionEventType.PARTIALLY_FILLED): OrderStatus.PARTIALLY_FILLED,
-    (OrderStatus.PARTIALLY_FILLED, ExecutionEventType.PARTIALLY_FILLED): OrderStatus.PARTIALLY_FILLED,
+    (OrderStatus.PARTIALLY_FILLED, ExecutionEventType.PARTIALLY_FILLED): (
+        OrderStatus.PARTIALLY_FILLED
+    ),
     (OrderStatus.ACCEPTED, ExecutionEventType.FILLED): OrderStatus.FILLED,
     (OrderStatus.PARTIALLY_FILLED, ExecutionEventType.FILLED): OrderStatus.FILLED,
     (OrderStatus.ACCEPTED, ExecutionEventType.CANCELLED): OrderStatus.CANCELLED,
@@ -27,7 +29,15 @@ _TRANSITIONS: dict[tuple[OrderStatus, ExecutionEventType], OrderStatus] = {
     (OrderStatus.ACCEPTED, ExecutionEventType.REJECTED): OrderStatus.REJECTED,
 }
 
-_TERMINAL = frozenset({OrderStatus.FILLED, OrderStatus.CANCELLED, OrderStatus.REJECTED, OrderStatus.EXPIRED, OrderStatus.FAILED})
+_TERMINAL = frozenset(
+    {
+        OrderStatus.FILLED,
+        OrderStatus.CANCELLED,
+        OrderStatus.REJECTED,
+        OrderStatus.EXPIRED,
+        OrderStatus.FAILED,
+    }
+)
 
 
 def validate_order_transition(
@@ -49,4 +59,6 @@ def validate_order_transition(
     try:
         return _TRANSITIONS[(current, event)]
     except KeyError as exc:
-        raise OrderLifecycleError(f"invalid order transition: {current.value} + {event.value}") from exc
+        raise OrderLifecycleError(
+            f"invalid order transition: {current.value} + {event.value}"
+        ) from exc
