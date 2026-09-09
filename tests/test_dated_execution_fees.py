@@ -319,6 +319,27 @@ def test_continuous_ledger_uses_actual_delayed_fill_date_and_records_fee_context
     assert "20200106" in sell["fee_group_id"]
 
 
+def test_dated_sell_defers_when_fee_exceeds_cash_and_proceeds_then_fills_later():
+    result = _run_continuous(
+        amounts={"2020-01-02": 10_000.0, "2020-01-03": 1.0, "2020-01-06": 10_000.0},
+        model=_ledger_model(),
+        second_target=True,
+        portfolio_value=1_005.01,
+    )
+
+    sell_fills = result.fills.loc[result.fills["side"].eq("sell")]
+    assert sell_fills["trade_date"].tolist() == ["20200106"]
+    assert sell_fills["filled_notional"].tolist() == pytest.approx([1_000.0])
+    assert sell_fills["fee_group_notional_before"].tolist() == [0.0]
+    deferred_day = result.daily.loc[result.daily["trade_date"].eq("20200103")].iloc[0]
+    assert deferred_day["traded_notional"] == 0.0
+    assert deferred_day["transaction_cost"] == 0.0
+    assert deferred_day["cash"] == pytest.approx(0.0)
+    sell_order = result.orders.loc[result.orders["side"].eq("sell")].iloc[0]
+    assert sell_order["status"] == "filled"
+    assert sell_order["first_fill_date"] == "20200106"
+
+
 def test_one_order_split_across_days_gets_one_minimum_per_execution_day():
     result = _run_continuous(
         amounts={"2020-01-02": 500.0, "2020-01-03": 500.0},

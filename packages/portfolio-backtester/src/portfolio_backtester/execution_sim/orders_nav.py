@@ -152,7 +152,7 @@ def _apply_nav_sell_fill(
     slippage_model: SlippageModel | None,
     fill_rows: list[dict[str, Any]],
     fee_group_notionals: dict[str, float],
-) -> CostBreakdown:
+) -> CostBreakdown | None:
     fee_quote, fee_group_id = _nav_trade_fee(
         fill,
         order=order,
@@ -165,6 +165,11 @@ def _apply_nav_sell_fill(
         fee_group_notionals=fee_group_notionals,
     )
     cost = fee_quote.breakdown
+    if (
+        isinstance(trade_fee_model, DatedTradeFeeModel)
+        and float(cash_ref.get("cash", 0.0)) + fill - cost.total_cost < -1e-8
+    ):
+        return None
     shares[order.symbol] = max(held_quantity - fill_quantity, 0.0)
     if shares[order.symbol] <= 1e-10:
         shares.pop(order.symbol, None)
@@ -659,6 +664,8 @@ def _execute_nav_sell_orders_for_day(
             fill_rows=fill_rows,
             fee_group_notionals=fee_group_notionals,
         )
+        if cost is None:
+            continue
         traded_notional += fill
         transaction_cost = _add_breakdown(transaction_cost, cost)
     return float(traded_notional), transaction_cost
@@ -731,10 +738,15 @@ def _execute_nav_buy_orders_for_day(
     transaction_cost = CostBreakdown()
     for _, (order, price, capacity, raw_fill) in sorted(raw_fills.items()):
         round_lot = market_rules.round_lot if market_rules is not None else None
-        fees_alone_require_scaling = total_raw_fill <= cash + 1e-9
+        dated_fees_alone_require_scaling = (
+            isinstance(trade_fee_model, DatedTradeFeeModel)
+            and total_raw_fill <= cash + 1e-9
+        )
         fill = (
             raw_fill
-            if round_lot is not None and round_lot > 0 and fees_alone_require_scaling
+            if round_lot is not None
+            and round_lot > 0
+            and dated_fees_alone_require_scaling
             else raw_fill * scale
         )
         if fill <= 1e-8:

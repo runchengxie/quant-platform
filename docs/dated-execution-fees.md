@@ -94,6 +94,9 @@ generic broker-grouping assumption: fills for the same order on different days
 receive separate daily minimums. Affordability checks are pure previews; only a
 recorded fill advances its group notional. Fee-inclusive cash checks are repeated
 after round-lot adjustment, and an unaffordable fill is not debited.
+If a dated sale's fee would exceed current cash plus its proceeds, that sale is
+deferred without changing holdings, order progress, fee accrual, or receipts;
+the pending order may fill on a later affordable execution day.
 
 Fill receipts include component costs plus `fee_market`, period boundaries,
 `fee_order_id`, `fee_group_id`, and cumulative group notional before and after
