@@ -13,6 +13,7 @@ from ..execution import DetailedTradeFeeModel, SlippageModel
 from ..dated_fees import DatedFeeQuote, DatedTradeFeeModel, FeeQuoteContext
 from ..types import CostBreakdown
 from .config import ExecutionSimConfig
+from .corporate_actions import _CorporateActionLedger
 
 TradeFeeModel = DetailedTradeFeeModel
 SupportedTradeFeeModel = DetailedTradeFeeModel | DatedTradeFeeModel
@@ -324,3 +325,4 @@ class _AdjustedNavLedger:
     # (previous close position; same-day buys are excluded). Refreshed at the
     # start of each trade day before orders execute.
     t1_available: dict[str, float] | None = None
+    corporate_actions: _CorporateActionLedger | None = None
