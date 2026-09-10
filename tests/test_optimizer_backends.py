@@ -184,7 +184,7 @@ def test_inverse_vol_backend_rejects_zero_volatility() -> None:
     returns = _returns()
     returns["A"] = 0.0
 
-    with pytest.raises(ValueError, match="positive finite volatility.*A"):
+    with pytest.raises(ValueError, match=r"positive finite volatility.*A"):
         InverseVolOptimizerBackend(InverseVolConfig(lookback=60)).run(
             PortfolioOptimizationRequest(returns=returns),
         )

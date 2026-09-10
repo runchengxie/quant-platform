@@ -90,4 +90,3 @@ research 测试覆盖：
 4. adapter 源码不复制平台 inverse-vol 实现。
 
 验证顺序为平台定向测试、平台全套 `ruff`/`pytest`，然后 research 定向测试、相关静态检查和完整研究测试；provider 未提交前不在 research 中引用未发布的开发路径。
-

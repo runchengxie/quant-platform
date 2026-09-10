@@ -31,11 +31,11 @@
 - Consumes: `PortfolioOptimizationRequest.returns`, request bounds, `InverseVolConfig`.
 - Produces: `InverseVolConfig`, `InverseVolOptimizerBackend`, backend name `native.inverse_vol`.
 
-- [ ] **Step 1: Write failing tests for configuration and weighting behavior**
+- [x] **Step 1: Write failing tests for configuration and weighting behavior**
 
 Add tests that construct deterministic returns with one lower-volatility asset and assert the backend gives it a higher weight without bounds; assert configured bounds and sum-to-one; assert diagnostics expose method/configuration. Add tests for invalid lookback, exponent, min_periods, insufficient observations, zero volatility, and single-asset behavior.
 
-- [ ] **Step 2: Run the focused tests and verify the expected failure**
+- [x] **Step 2: Run the focused tests and verify the expected failure**
 
 Run:
 
@@ -45,13 +45,13 @@ uv run --locked --extra dev python -m pytest tests/test_optimizer_backends.py -q
 
 Expected: collection or assertion failures because `InverseVolConfig` and `InverseVolOptimizerBackend` do not exist yet.
 
-- [ ] **Step 3: Implement the smallest production API**
+- [x] **Step 3: Implement the smallest production API**
 
 Add a frozen `InverseVolConfig` validating positive integer `lookback`, positive finite `exponent`, and `min_periods` in `[1, lookback]`. Add `InverseVolOptimizerBackend` that uses the last `lookback` rows, checks each asset has at least `min_periods` finite observations, computes `std(ddof=1)`, rejects non-finite or non-positive volatilities, computes `volatility.pow(-exponent)`, and passes those preferences to `_project_weights_to_bounds`. Preserve request asset order and return JSON-safe diagnostics. Return 100% for a single asset after request validation.
 
 Export the new public symbols from both `optimization.py` and the package `__init__.py`.
 
-- [ ] **Step 4: Run the focused tests and existing optimizer regression tests**
+- [x] **Step 4: Run the focused tests and existing optimizer regression tests**
 
 Run:
 
@@ -61,7 +61,7 @@ uv run --locked --extra dev python -m pytest tests/test_optimizer_backends.py -q
 
 Expected: all optimizer tests pass.
 
-- [ ] **Step 5: Commit the provider backend**
+- [x] **Step 5: Commit the provider backend**
 
 ```bash
 git add packages/portfolio-backtester/src/portfolio_backtester/optimization.py \
@@ -81,11 +81,11 @@ git commit -m "feat: add inverse volatility optimizer backend"
 - Consumes: target and previous fully-invested long-only `pd.Series`, `min_turnover`.
 - Produces: `EconomicRebalanceResult` and `apply_no_trade_band`.
 
-- [ ] **Step 1: Write failing tests for no-trade decisions and validation**
+- [x] **Step 1: Write failing tests for no-trade decisions and validation**
 
 Cover below-threshold, exactly-at-threshold, and above-threshold half-L1 turnover; missing previous weights; preservation of asset order and input immutability; mismatched assets, negative/non-finite weights, wrong budget, and invalid threshold.
 
-- [ ] **Step 2: Run the focused test file and verify it fails for the missing module**
+- [x] **Step 2: Run the focused test file and verify it fails for the missing module**
 
 Run:
 
@@ -95,11 +95,11 @@ uv run --locked --extra dev python -m pytest tests/test_economic_rebalance.py -q
 
 Expected: import failure for the not-yet-created module.
 
-- [ ] **Step 3: Implement the pure no-trade function**
+- [x] **Step 3: Implement the pure no-trade function**
 
 Validate both Series are finite, non-negative, same-index, and sum to one within `1e-8`. Validate finite non-negative `min_turnover`. Compute `0.5 * abs(target - previous).sum()`. Return an independent copy of previous when turnover is at or below the threshold, otherwise an independent copy of target. For missing previous, return target with `previous_weights_missing=True`. Include the required diagnostics fields and keep them JSON-compatible.
 
-- [ ] **Step 4: Run focused and public-surface tests**
+- [x] **Step 4: Run focused and public-surface tests**
 
 Run:
 
@@ -109,7 +109,7 @@ uv run --locked --extra dev python -m pytest tests/test_economic_rebalance.py te
 
 Expected: all selected tests pass and package exports are available.
 
-- [ ] **Step 5: Commit the provider rebalance primitive**
+- [x] **Step 5: Commit the provider rebalance primitive**
 
 ```bash
 git add packages/portfolio-backtester/src/portfolio_backtester/economic_rebalance.py \
@@ -128,11 +128,11 @@ git commit -m "feat: add no-trade economic rebalance baseline"
 - Consumes: published `portfolio_backtester.InverseVolConfig` and `InverseVolOptimizerBackend`.
 - Produces: `FROZEN_PORTFOLIO_RECIPES`, `frozen_portfolio_optimizer(name)`.
 
-- [ ] **Step 1: Write failing contract tests**
+- [x] **Step 1: Write failing contract tests**
 
 Assert `w025` maps to lookback `252`, exponent `0.5`, bounds `0.01`/`0.03`; `w089` maps to `252`, `1.0`, `0.005`/`0.04`; both return a `native.inverse_vol` backend; unknown names raise `ValueError`; and the adapter source does not contain a second inverse-vol calculation.
 
-- [ ] **Step 2: Run the focused tests and verify the expected import failure**
+- [x] **Step 2: Run the focused tests and verify the expected import failure**
 
 Run:
 
@@ -142,11 +142,11 @@ uv run --locked --extra dev python -m pytest tests/strategy_research/test_portfo
 
 Expected: import failure because the adapter does not exist yet.
 
-- [ ] **Step 3: Implement the research-owned recipe map and thin factory**
+- [x] **Step 3: Implement the research-owned recipe map and thin factory**
 
 Define an immutable recipe record containing `name`, `config`, `min_weight`, and `max_weight`; define the two frozen recipes as constants; implement `frozen_portfolio_optimizer(name)` by normalizing the name, looking it up, and returning `InverseVolOptimizerBackend(config=recipe.config)`. Keep bounds as backend/request configuration at the call site rather than reimplementing weight construction. Do not import private platform helpers.
 
-- [ ] **Step 4: Run the focused research tests**
+- [x] **Step 4: Run the focused research tests**
 
 Run:
 
@@ -163,7 +163,7 @@ PYTHONPATH=/home/richard/code/.worktrees/quant-platform-portfolio-construction/p
 
 Expected: all adapter contract tests pass against the provider worktree's public package; the committed research code must not contain this path.
 
-- [ ] **Step 5: Commit the consumer adapter**
+- [x] **Step 5: Commit the consumer adapter**
 
 ```bash
 git add src/strategy_research/portfolio_construction.py \
@@ -174,9 +174,10 @@ git commit -m "feat: expose frozen portfolio weighting recipes"
 ### Task 4: Verify both repositories and prepare handoff
 
 **Files:**
+- Modify: `docs/reference/public-api.md` to document new root exports.
 - Modify: `docs/superpowers/plans/2026-09-10-portfolio-construction-p0.md` to check completed steps only after evidence.
 
-- [ ] **Step 1: Run platform formatting, static checks, and full tests**
+- [x] **Step 1: Run platform formatting, static checks, and full tests**
 
 From `/home/richard/code/.worktrees/quant-platform-portfolio-construction`, run:
 
@@ -188,7 +189,7 @@ uv run --locked --extra dev python -m pytest tests -q
 
 Record exact exit codes and any pre-existing warnings; do not claim success from a partial command.
 
-- [ ] **Step 2: Run research formatting, static checks, and relevant tests**
+- [x] **Step 2: Run research formatting, static checks, and relevant tests**
 
 From `/home/richard/code/.worktrees/quant-research-portfolio-construction`, run:
 
@@ -198,7 +199,7 @@ uv run --locked --extra dev ruff check src/strategy_research/portfolio_construct
 PYTHONPATH=src:. uv run --locked --extra dev python -m pytest tests/strategy_research/test_portfolio_construction.py tests/strategy_research -q
 ```
 
-- [ ] **Step 3: Inspect diffs and branch state**
+- [x] **Step 3: Inspect diffs and branch state**
 
 Run `git diff origin/main...HEAD`, `git status --short --branch`, and confirm only intended files changed in each repository.
 
