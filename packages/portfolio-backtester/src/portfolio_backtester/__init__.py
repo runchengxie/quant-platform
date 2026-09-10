@@ -67,6 +67,7 @@ from .execution_summary import (
     execution_summary_frame,
     summarize_staggered_execution,
 )
+from .economic_rebalance import EconomicRebalanceResult, apply_no_trade_band
 from .hrp import HrpConfig, HrpResult, hierarchical_risk_parity, rolling_hrp_weights
 from .incumbent_requalification import (
     INCUMBENT_REQUALIFICATION_SCHEMA,
@@ -177,6 +178,7 @@ __all__ = [
     "DailyWatch20Result",
     "DailyWatch20SelectionError",
     "DetailedTradeFeeModel",
+    "EconomicRebalanceResult",
     "EqualWeightOptimizerBackend",
     "GroupCap",
     "GuardFactorSpec",
@@ -213,6 +215,7 @@ __all__ = [
     "annualize_turnover",
     "annualized_sharpe_to_periodic",
     "annualized_variance_to_periodic",
+    "apply_no_trade_band",
     "assert_backtest_periods_frame",
     "assert_backtest_return_frame",
     "assert_positions_by_rebalance_frame",
