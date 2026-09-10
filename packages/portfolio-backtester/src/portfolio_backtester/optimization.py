@@ -194,6 +194,29 @@ class PortfolioOptimizerBackend(Protocol):
     def run(self, request: PortfolioOptimizationRequest) -> PortfolioOptimizationResult: ...
 
 
+@dataclass(frozen=True)
+class InverseVolConfig:
+    """Configuration for inverse-volatility preference weighting."""
+
+    lookback: int = 252
+    exponent: float = 0.5
+    min_periods: int | None = None
+
+    def __post_init__(self) -> None:
+        if isinstance(self.lookback, bool) or not isinstance(self.lookback, int) or self.lookback <= 0:
+            raise ValueError("lookback must be a positive integer")
+        if not np.isfinite(self.exponent) or self.exponent <= 0:
+            raise ValueError("exponent must be finite and positive")
+        min_periods = self.lookback if self.min_periods is None else self.min_periods
+        if (
+            isinstance(min_periods, bool)
+            or not isinstance(min_periods, int)
+            or not 1 <= min_periods <= self.lookback
+        ):
+            raise ValueError("min_periods must be an integer in [1, lookback]")
+        object.__setattr__(self, "min_periods", min_periods)
+
+
 class OptimizerRegistry:
     """Explicit registry; external optimizer adapters never leak their native objects."""
 
@@ -277,6 +300,65 @@ class HrpOptimizerBackend:
         return result
 
 
+class InverseVolOptimizerBackend:
+    """Allocate by inverse recent volatility, then project into requested bounds."""
+
+    name = "native.inverse_vol"
+
+    def __init__(self, config: InverseVolConfig | None = None) -> None:
+        self.config = config or InverseVolConfig()
+
+    def run(self, request: PortfolioOptimizationRequest) -> PortfolioOptimizationResult:
+        if len(request.assets) == 1:
+            result = PortfolioOptimizationResult(
+                backend_name=self.name,
+                weights=pd.Series(1.0, index=request.assets, dtype=float),
+                diagnostics={
+                    "method": "inverse_volatility",
+                    "lookback": self.config.lookback,
+                    "exponent": self.config.exponent,
+                    "min_periods": self.config.min_periods,
+                    "bounds_projected": request.min_weight > 0 or request.max_weight is not None,
+                    "fallback": "single_asset",
+                },
+            )
+            result.validate(request)
+            return result
+
+        window = request.returns.tail(self.config.lookback)
+        observations = window.notna().sum()
+        insufficient = observations[observations < self.config.min_periods]
+        if not insufficient.empty:
+            assets = ", ".join(map(str, insufficient.index))
+            raise ValueError(f"insufficient observations for inverse volatility: {assets}")
+
+        volatility = window.std(ddof=1)
+        invalid = volatility[~np.isfinite(volatility) | (volatility <= 0)]
+        if not invalid.empty:
+            assets = ", ".join(map(str, invalid.index))
+            raise ValueError(f"assets must have positive finite volatility: {assets}")
+
+        preference = volatility.pow(-self.config.exponent)
+        weights = _project_weights_to_bounds(
+            preference,
+            min_weight=request.min_weight,
+            max_weight=request.max_weight,
+        )
+        result = PortfolioOptimizationResult(
+            backend_name=self.name,
+            weights=weights,
+            diagnostics={
+                "method": "inverse_volatility",
+                "lookback": self.config.lookback,
+                "exponent": self.config.exponent,
+                "min_periods": self.config.min_periods,
+                "bounds_projected": request.min_weight > 0 or request.max_weight is not None,
+            },
+        )
+        result.validate(request)
+        return result
+
+
 def _validate_json_scalars(value: Any) -> None:
     if value is None or isinstance(value, (str, bool, int)):
         return
@@ -303,6 +385,8 @@ __all__ = [
     "PORTFOLIO_OPTIMIZATION_RESULT_SCHEMA",
     "EqualWeightOptimizerBackend",
     "HrpOptimizerBackend",
+    "InverseVolConfig",
+    "InverseVolOptimizerBackend",
     "OptimizerRegistry",
     "PortfolioOptimizationRequest",
     "PortfolioOptimizationResult",
