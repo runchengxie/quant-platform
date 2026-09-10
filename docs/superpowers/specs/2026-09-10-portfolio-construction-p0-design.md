@@ -35,6 +35,7 @@ class InverseVolConfig:
     exponent: float = 0.5
     min_periods: int | None = None
 
+
 class InverseVolOptimizerBackend:
     name = "native.inverse_vol"
 
@@ -51,6 +52,7 @@ class InverseVolOptimizerBackend:
 class EconomicRebalanceResult:
     weights: pd.Series
     diagnostics: Mapping[str, Any] = field(default_factory=dict)
+
 
 def apply_no_trade_band(
     target_weights: pd.Series,
