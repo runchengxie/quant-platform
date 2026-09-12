@@ -202,13 +202,9 @@ def estimate_factor_returns(
     dates = pd.Index(sorted(set(exposures.index.get_level_values("as_of_date"))))
     factor_rows: list[pd.Series] = []
     diagnostic_rows: list[dict[str, object]] = []
-    residual = pd.DataFrame(
-        {
-            "total_return": return_series.astype(float),
-            "fitted_return": np.nan,
-            "residual_return": np.nan,
-        }
-    )
+    total_return_values = return_series.to_numpy(dtype=float)
+    fitted_values = np.full(len(return_series), np.nan, dtype=float)
+    residual_values = np.full(len(return_series), np.nan, dtype=float)
 
     for date in dates:
         exposure_day = exposures.xs(date, level="as_of_date")
@@ -243,8 +239,11 @@ def estimate_factor_returns(
             [np.repeat(date, len(joined)), joined.index],
             names=_EXPOSURE_INDEX_NAMES,
         )
-        residual.loc[joined_index, "fitted_return"] = fitted
-        residual.loc[joined_index, "residual_return"] = target - fitted
+        positions = return_series.index.get_indexer(joined_index)
+        if (positions < 0).any():
+            raise RuntimeError("factor regression produced an unknown return index")
+        fitted_values[positions] = fitted
+        residual_values[positions] = target - fitted
         weighted_mean = float(np.average(target, weights=observation_weights))
         weighted_sst = float(np.sum(observation_weights * (target - weighted_mean) ** 2))
         weighted_sse = float(np.sum(observation_weights * (target - fitted) ** 2))
@@ -256,6 +255,14 @@ def estimate_factor_returns(
         factor_rows.append(pd.Series(coefficients, index=factors, name=date))
         diagnostic_rows.append(diagnostic)
 
+    residual = pd.DataFrame(
+        {
+            "total_return": total_return_values,
+            "fitted_return": fitted_values,
+            "residual_return": residual_values,
+        },
+        index=return_series.index,
+    )
     factor_returns = pd.DataFrame(factor_rows, columns=factors)
     factor_returns.index.name = "as_of_date"
     diagnostics = pd.DataFrame(diagnostic_rows).set_index("as_of_date")
