@@ -239,8 +239,12 @@ def estimate_factor_returns(
             design, target, observation_weights, config.ridge
         )
         fitted = design @ coefficients
-        residual.loc[(date, joined.index), "fitted_return"] = fitted
-        residual.loc[(date, joined.index), "residual_return"] = target - fitted
+        joined_index = pd.MultiIndex.from_arrays(
+            [np.repeat(date, len(joined)), joined.index],
+            names=_EXPOSURE_INDEX_NAMES,
+        )
+        residual.loc[joined_index, "fitted_return"] = fitted
+        residual.loc[joined_index, "residual_return"] = target - fitted
         weighted_mean = float(np.average(target, weights=observation_weights))
         weighted_sst = float(np.sum(observation_weights * (target - weighted_mean) ** 2))
         weighted_sse = float(np.sum(observation_weights * (target - fitted) ** 2))
