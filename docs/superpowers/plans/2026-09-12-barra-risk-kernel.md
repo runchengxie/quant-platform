@@ -29,11 +29,13 @@
        ewma_halflife: float = 60.0
        covariance_shrinkage: float = 0.10
 
+
    @dataclass(frozen=True)
    class FactorReturnResult:
        factor_returns: pd.DataFrame
        residual_returns: pd.DataFrame
        diagnostics: pd.DataFrame
+
 
    @dataclass(frozen=True)
    class RiskModelResult:
@@ -41,6 +43,7 @@
        factor_covariance: pd.DataFrame
        specific_variance: pd.Series
        diagnostics: pd.DataFrame
+
 
    @dataclass(frozen=True)
    class PortfolioRiskAttribution:

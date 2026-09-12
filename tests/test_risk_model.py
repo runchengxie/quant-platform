@@ -39,16 +39,12 @@ def test_validate_risk_inputs_accepts_canonical_panel() -> None:
     ("mutate", "message"),
     [
         (
-            lambda e, r: e.set_axis(
-                pd.MultiIndex.from_tuples(e.index, names=["date", "symbol"])
-            ),
+            lambda e, r: e.set_axis(pd.MultiIndex.from_tuples(e.index, names=["date", "symbol"])),
             "index names",
         ),
         (
             lambda e, r: e.set_axis(
-                pd.MultiIndex.from_tuples(
-                    [e.index[0]] * len(e), names=["as_of_date", "symbol"]
-                )
+                pd.MultiIndex.from_tuples([e.index[0]] * len(e), names=["as_of_date", "symbol"])
             ),
             "duplicate",
         ),
