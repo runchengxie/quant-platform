@@ -53,6 +53,7 @@ from .daily_watch20 import (
     select_daily_watch20,
 )
 from .daily_watch20_policy import PORTFOLIO_POLICY_SCHEMA, DailyWatch20PortfolioPolicy
+from .economic_rebalance import EconomicRebalanceResult, apply_no_trade_band
 from .evidence_receipts import (
     build_portfolio_sizing_receipt,
     series_sha256,
@@ -67,7 +68,6 @@ from .execution_summary import (
     execution_summary_frame,
     summarize_staggered_execution,
 )
-from .economic_rebalance import EconomicRebalanceResult, apply_no_trade_band
 from .hrp import HrpConfig, HrpResult, hierarchical_risk_parity, rolling_hrp_weights
 from .incumbent_requalification import (
     INCUMBENT_REQUALIFICATION_SCHEMA,
@@ -93,10 +93,13 @@ from .optimization import (
     HrpOptimizerBackend,
     InverseVolConfig,
     InverseVolOptimizerBackend,
+    LinearExposureConstraint,
     OptimizerRegistry,
     PortfolioOptimizationRequest,
     PortfolioOptimizationResult,
     PortfolioOptimizerBackend,
+    PortfolioQpConfig,
+    QpMinVarianceOptimizerBackend,
 )
 from .outcome_metrics import OutcomeDistributionReport, summarize_outcome_distribution
 from .position_backtest import (
@@ -185,22 +188,25 @@ __all__ = [
     "HrpConfig",
     "HrpOptimizerBackend",
     "HrpResult",
-    "InverseVolConfig",
-    "InverseVolOptimizerBackend",
     "IncumbentRequalificationConfig",
     "IncumbentRequalificationPolicy",
     "IncumbentRequalificationReceipt",
     "IncumbentRequalificationResult",
+    "InverseVolConfig",
+    "InverseVolOptimizerBackend",
+    "LinearExposureConstraint",
     "OptimizerRegistry",
     "OutcomeDistributionReport",
     "PortfolioConstructionVariant",
     "PortfolioOptimizationRequest",
     "PortfolioOptimizationResult",
     "PortfolioOptimizerBackend",
+    "PortfolioQpConfig",
     "PositionBacktestConfig",
     "PositionBacktestEvaluation",
     "PositionBacktestResult",
     "PositionsByRebalanceFrameContract",
+    "QpMinVarianceOptimizerBackend",
     "RebalanceTurnoverReport",
     "SelectionSpec",
     "SessionRebalanceSchedule",

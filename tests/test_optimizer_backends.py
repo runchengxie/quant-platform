@@ -9,8 +9,11 @@ from portfolio_backtester.optimization import (
     HrpOptimizerBackend,
     InverseVolConfig,
     InverseVolOptimizerBackend,
+    LinearExposureConstraint,
     OptimizerRegistry,
     PortfolioOptimizationRequest,
+    PortfolioQpConfig,
+    QpMinVarianceOptimizerBackend,
 )
 
 
@@ -198,3 +201,90 @@ def test_inverse_vol_backend_returns_full_weight_for_single_asset() -> None:
     assert result.backend_name == "native.inverse_vol"
     assert result.weights.to_dict() == {"A": 1.0}
     assert result.diagnostics["fallback"] == "single_asset"
+
+
+def test_qp_backend_preserves_linear_score_exposure_while_reducing_risk() -> None:
+    returns = pd.DataFrame(
+        {
+            "LOW_RISK": np.tile([0.01, -0.01], 40),
+            "HIGH_RISK": np.tile([0.04, -0.04], 40),
+            "SCORE_LEADER": np.tile([0.02, -0.02], 40),
+        }
+    )
+    score = pd.Series({"LOW_RISK": 0.2, "HIGH_RISK": 0.4, "SCORE_LEADER": 1.0})
+    anchor = pd.Series(1 / 3, index=returns.columns)
+    request = PortfolioOptimizationRequest(
+        returns=returns,
+        anchor_weights=anchor,
+        linear_constraints=(
+            LinearExposureConstraint(
+                name="model_score",
+                values=score,
+                lower=float(score @ anchor) - 0.01,
+            ),
+        ),
+    )
+
+    result = QpMinVarianceOptimizerBackend(
+        PortfolioQpConfig(anchor_penalty=0.01)
+    ).run(request)
+
+    result.validate(request)
+    assert result.weights["SCORE_LEADER"] >= anchor["SCORE_LEADER"] - 1e-8
+    assert result.diagnostics["solver_status"] == "optimal"
+    assert result.diagnostics["constraint_residuals"]["model_score"] >= -1e-7
+    assert result.diagnostics["risk_variance"] < float(anchor @ request.returns.cov() @ anchor)
+
+
+def test_qp_backend_uses_explicit_covariance_and_previous_weight_penalty() -> None:
+    returns = _returns()
+    covariance = pd.DataFrame(
+        [[0.01, 0.0, 0.0], [0.0, 0.04, 0.0], [0.0, 0.0, 0.09]],
+        index=returns.columns,
+        columns=returns.columns,
+    )
+    previous = pd.Series({"A": 0.2, "B": 0.3, "C": 0.5})
+    request = PortfolioOptimizationRequest(
+        returns=returns,
+        covariance=covariance,
+        previous_weights=previous,
+    )
+
+    result = QpMinVarianceOptimizerBackend(
+        PortfolioQpConfig(previous_penalty=10.0)
+    ).run(request)
+
+    assert result.weights["C"] > result.weights["A"]
+    assert result.diagnostics["covariance_source"] == "request"
+    assert result.diagnostics["previous_distance_squared"] < 1e-3
+
+
+def test_qp_backend_applies_requested_diagonal_covariance_shrinkage() -> None:
+    returns = _returns()
+    covariance = pd.DataFrame(
+        [[0.04, 0.02, 0.01], [0.02, 0.04, 0.02], [0.01, 0.02, 0.04]],
+        index=returns.columns,
+        columns=returns.columns,
+    )
+    request = PortfolioOptimizationRequest(
+        returns=returns,
+        covariance=covariance,
+        covariance_shrinkage=1.0,
+    )
+
+    result = QpMinVarianceOptimizerBackend().run(request)
+
+    assert result.diagnostics["covariance_source"] == "request"
+    assert result.weights.to_dict() == pytest.approx(dict.fromkeys(request.assets, 1 / 3))
+
+
+def test_qp_backend_returns_feasible_equal_weight_fallback_when_solver_fails() -> None:
+    request = PortfolioOptimizationRequest(returns=_returns())
+
+    result = QpMinVarianceOptimizerBackend(
+        PortfolioQpConfig(max_iterations=0)
+    ).run(request)
+
+    assert result.weights.to_dict() == pytest.approx(dict.fromkeys(request.assets, 1 / 3))
+    assert result.diagnostics["fallback"] == "equal_weight"
+    assert result.diagnostics["solver_status"] == "failed"

@@ -15,6 +15,29 @@ from .hrp import HrpConfig, hierarchical_risk_parity
 PORTFOLIO_OPTIMIZATION_RESULT_SCHEMA = "portfolio_optimization_result.v1"
 
 
+@dataclass(frozen=True)
+class LinearExposureConstraint:
+    """Bounds on a generic linear portfolio exposure."""
+
+    name: str
+    values: pd.Series
+    lower: float | None = None
+    upper: float | None = None
+
+    def __post_init__(self) -> None:
+        if not str(self.name).strip():
+            raise ValueError("linear exposure constraint name must be non-empty")
+        if self.lower is None and self.upper is None:
+            raise ValueError("linear exposure constraint needs a lower or upper bound")
+        for label, value in (("lower", self.lower), ("upper", self.upper)):
+            if value is not None and (not np.isfinite(value)):
+                raise ValueError(f"linear exposure constraint {label} must be finite")
+        if self.lower is not None and self.upper is not None and self.lower > self.upper:
+            raise ValueError("linear exposure constraint lower must be <= upper")
+        if not isinstance(self.values, pd.Series):
+            raise TypeError("linear exposure constraint values must be a pandas Series")
+
+
 def _numeric_series_for_assets(
     value: pd.Series | None,
     assets: tuple[str, ...],
@@ -101,12 +124,15 @@ class PortfolioOptimizationRequest:
     expected_returns: pd.Series | None = None
     previous_weights: pd.Series | None = None
     benchmark_weights: pd.Series | None = None
+    anchor_weights: pd.Series | None = None
+    covariance: pd.DataFrame | None = None
+    linear_constraints: tuple[LinearExposureConstraint, ...] = ()
     min_weight: float = 0.0
     max_weight: float | None = None
     covariance_shrinkage: float = 0.0
     long_only: bool = True
 
-    def __post_init__(self) -> None:
+    def __post_init__(self) -> None:  # noqa: C901
         if not isinstance(self.returns, pd.DataFrame):
             raise TypeError("returns must be a pandas DataFrame")
         if self.returns.empty or self.returns.shape[1] == 0:
@@ -133,6 +159,47 @@ class PortfolioOptimizationRequest:
             "benchmark_weights",
             _numeric_series_for_assets(self.benchmark_weights, assets, label="benchmark_weights"),
         )
+        object.__setattr__(
+            self,
+            "anchor_weights",
+            _numeric_series_for_assets(self.anchor_weights, assets, label="anchor_weights"),
+        )
+        if self.covariance is not None:
+            if not isinstance(self.covariance, pd.DataFrame):
+                raise TypeError("covariance must be a pandas DataFrame")
+            covariance = self.covariance.copy()
+            covariance.index = covariance.index.map(str)
+            covariance.columns = covariance.columns.map(str)
+            if (
+                covariance.index.tolist() != list(assets)
+                or covariance.columns.tolist() != list(assets)
+            ):
+                raise ValueError("covariance assets must match returns columns in order")
+            numeric_covariance = covariance.apply(pd.to_numeric, errors="coerce")
+            if not np.isfinite(numeric_covariance.to_numpy(dtype=float)).all():
+                raise ValueError("covariance must contain finite values")
+            if not np.allclose(numeric_covariance, numeric_covariance.T):
+                raise ValueError("covariance must be symmetric")
+            object.__setattr__(self, "covariance", numeric_covariance.astype(float))
+        normalized_constraints: list[LinearExposureConstraint] = []
+        names: set[str] = set()
+        for constraint in self.linear_constraints:
+            if not isinstance(constraint, LinearExposureConstraint):
+                raise TypeError("linear_constraints must contain LinearExposureConstraint values")
+            values = _numeric_series_for_assets(constraint.values, assets, label=constraint.name)
+            assert values is not None
+            if constraint.name in names:
+                raise ValueError(f"duplicate linear exposure constraint: {constraint.name}")
+            names.add(constraint.name)
+            normalized_constraints.append(
+                LinearExposureConstraint(
+                    name=constraint.name,
+                    values=values,
+                    lower=constraint.lower,
+                    upper=constraint.upper,
+                )
+            )
+        object.__setattr__(self, "linear_constraints", tuple(normalized_constraints))
         if self.min_weight < 0:
             raise ValueError("min_weight must be >= 0")
         if self.max_weight is not None and self.max_weight <= 0:
@@ -203,7 +270,11 @@ class InverseVolConfig:
     min_periods: int | None = None
 
     def __post_init__(self) -> None:
-        if isinstance(self.lookback, bool) or not isinstance(self.lookback, int) or self.lookback <= 0:
+        if (
+            isinstance(self.lookback, bool)
+            or not isinstance(self.lookback, int)
+            or self.lookback <= 0
+        ):
             raise ValueError("lookback must be a positive integer")
         if not np.isfinite(self.exponent) or self.exponent <= 0:
             raise ValueError("exponent must be finite and positive")
@@ -215,6 +286,26 @@ class InverseVolConfig:
         ):
             raise ValueError("min_periods must be an integer in [1, lookback]")
         object.__setattr__(self, "min_periods", min_periods)
+
+
+@dataclass(frozen=True)
+class PortfolioQpConfig:
+    """Objective controls for the native convex quadratic risk optimizer."""
+
+    anchor_penalty: float = 0.0
+    previous_penalty: float = 0.0
+    max_iterations: int = 1_000
+    tolerance: float = 1e-9
+
+    def __post_init__(self) -> None:
+        for name in ("anchor_penalty", "previous_penalty"):
+            value = getattr(self, name)
+            if not np.isfinite(value) or value < 0:
+                raise ValueError(f"{name} must be finite and non-negative")
+        if isinstance(self.max_iterations, bool) or self.max_iterations < 0:
+            raise ValueError("max_iterations must be a non-negative integer")
+        if not np.isfinite(self.tolerance) or self.tolerance <= 0:
+            raise ValueError("tolerance must be finite and positive")
 
 
 class OptimizerRegistry:
@@ -359,6 +450,182 @@ class InverseVolOptimizerBackend:
         return result
 
 
+def _qp_covariance(request: PortfolioOptimizationRequest) -> tuple[np.ndarray, str]:
+    if request.covariance is not None:
+        covariance = request.covariance.to_numpy(dtype=float)
+        source = "request"
+    else:
+        observations = request.returns.dropna(how="any")
+        if len(observations) < 2:
+            raise ValueError("at least two complete return observations are required for QP")
+        covariance = observations.cov(ddof=1).to_numpy(dtype=float)
+        source = "sample"
+    covariance = (covariance + covariance.T) / 2.0
+    if request.covariance_shrinkage:
+        diagonal = np.diag(np.diag(covariance))
+        covariance = (
+            (1.0 - request.covariance_shrinkage) * covariance
+            + request.covariance_shrinkage * diagonal
+        )
+    minimum_eigenvalue = float(np.linalg.eigvalsh(covariance).min())
+    if minimum_eigenvalue < -1e-10:
+        raise ValueError("covariance must be positive semidefinite")
+    return covariance, source
+
+
+def _qp_constraint_residuals(
+    weights: np.ndarray,
+    constraints: tuple[LinearExposureConstraint, ...],
+) -> dict[str, float]:
+    residuals: dict[str, float] = {}
+    for constraint in constraints:
+        exposure = float(weights @ constraint.values.to_numpy(dtype=float))
+        if constraint.lower is not None:
+            residuals[constraint.name] = exposure - constraint.lower
+        if constraint.upper is not None:
+            residuals[f"{constraint.name}.upper"] = constraint.upper - exposure
+    return residuals
+
+
+class QpMinVarianceOptimizerBackend:
+    """Minimize covariance risk while preserving optional portfolio structure.
+
+    The backend deliberately treats scores, sectors, styles, and other model
+    outputs as anonymous linear exposures. Strategy-specific meaning stays in
+    the caller; the platform only solves and validates the QP.
+    """
+
+    name = "native.qp_min_variance"
+
+    def __init__(self, config: PortfolioQpConfig | None = None) -> None:
+        self.config = config or PortfolioQpConfig()
+
+    def run(self, request: PortfolioOptimizationRequest) -> PortfolioOptimizationResult:  # noqa: C901
+        try:
+            from scipy.optimize import minimize
+        except ImportError as exc:  # pragma: no cover - depends on environment packaging
+            raise ImportError("native.qp_min_variance requires scipy") from exc
+
+        covariance, covariance_source = _qp_covariance(request)
+        assets = request.assets
+        count = len(assets)
+        equal = np.full(count, 1.0 / count, dtype=float)
+        anchor = (
+            request.anchor_weights.to_numpy(dtype=float)
+            if request.anchor_weights is not None
+            else equal
+        )
+        previous = (
+            request.previous_weights.to_numpy(dtype=float)
+            if request.previous_weights is not None
+            else None
+        )
+        q = covariance.copy()
+        if self.config.anchor_penalty:
+            q += 2.0 * self.config.anchor_penalty * np.eye(count)
+        if self.config.previous_penalty:
+            q += 2.0 * self.config.previous_penalty * np.eye(count)
+        linear_term = np.zeros(count, dtype=float)
+        if self.config.anchor_penalty:
+            linear_term -= 2.0 * self.config.anchor_penalty * anchor
+        if previous is not None and self.config.previous_penalty:
+            linear_term -= 2.0 * self.config.previous_penalty * previous
+
+        def objective(weights: np.ndarray) -> float:
+            return float(
+                0.5 * weights @ q @ weights
+                + linear_term @ weights
+                + self.config.anchor_penalty * anchor @ anchor
+                + (
+                    self.config.previous_penalty * previous @ previous
+                    if previous is not None
+                    else 0.0
+                )
+            )
+
+        def gradient(weights: np.ndarray) -> np.ndarray:
+            return q @ weights + linear_term
+
+        constraints: list[dict[str, Any]] = [{"type": "eq", "fun": lambda w: float(w.sum() - 1.0)}]
+        for constraint in request.linear_constraints:
+            values = constraint.values.to_numpy(dtype=float)
+            if constraint.lower is not None:
+                constraints.append(
+                    {
+                        "type": "ineq",
+                        "fun": lambda w, v=values, lower=constraint.lower: float(w @ v - lower),
+                    }
+                )
+            if constraint.upper is not None:
+                constraints.append(
+                    {
+                        "type": "ineq",
+                        "fun": lambda w, v=values, upper=constraint.upper: float(upper - w @ v),
+                    }
+                )
+        bounds = [(request.min_weight, request.max_weight or 1.0)] * count
+        solution = minimize(
+            objective,
+            equal,
+            jac=gradient,
+            method="SLSQP",
+            bounds=bounds,
+            constraints=constraints,
+            options={
+                "maxiter": self.config.max_iterations,
+                "ftol": self.config.tolerance,
+                "disp": False,
+            },
+        )
+        feasible = bool(
+            solution.success
+            and np.isfinite(solution.x).all()
+            and abs(float(solution.x.sum()) - 1.0) <= 1e-7
+            and min(
+                _qp_constraint_residuals(solution.x, request.linear_constraints).values(),
+                default=0.0,
+            )
+            >= -1e-7
+        )
+        fallback = None
+        weights = solution.x if feasible else equal
+        if not feasible:
+            residuals = _qp_constraint_residuals(equal, request.linear_constraints)
+            equal_feasible = (
+                min(residuals.values(), default=0.0) >= -1e-7
+                and equal.min() >= request.min_weight - 1e-12
+                and equal.max() <= (request.max_weight or 1.0) + 1e-12
+            )
+            if not equal_feasible:
+                raise ValueError(
+                    f"QP solver failed and equal-weight fallback is infeasible: {solution.message}"
+                )
+            fallback = "equal_weight"
+
+        result = PortfolioOptimizationResult(
+            backend_name=self.name,
+            weights=pd.Series(weights, index=assets, dtype=float),
+            diagnostics={
+                "method": "minimum_variance_qp",
+                "solver": "scipy_slsqp",
+                "solver_status": "optimal" if feasible else "failed",
+                "solver_message": str(solution.message),
+                "covariance_source": covariance_source,
+                "risk_variance": float(weights @ covariance @ weights),
+                "anchor_distance_squared": float(np.sum((weights - anchor) ** 2)),
+                "previous_distance_squared": float(
+                    np.sum((weights - previous) ** 2) if previous is not None else 0.0
+                ),
+                "constraint_residuals": _qp_constraint_residuals(
+                    weights, request.linear_constraints
+                ),
+                **({"fallback": fallback} if fallback else {}),
+            },
+        )
+        result.validate(request)
+        return result
+
+
 def _validate_json_scalars(value: Any) -> None:
     if value is None or isinstance(value, (str, bool, int)):
         return
@@ -387,8 +654,11 @@ __all__ = [
     "HrpOptimizerBackend",
     "InverseVolConfig",
     "InverseVolOptimizerBackend",
+    "LinearExposureConstraint",
     "OptimizerRegistry",
     "PortfolioOptimizationRequest",
     "PortfolioOptimizationResult",
     "PortfolioOptimizerBackend",
+    "PortfolioQpConfig",
+    "QpMinVarianceOptimizerBackend",
 ]
