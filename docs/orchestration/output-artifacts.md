@@ -11,3 +11,7 @@ artifacts = write_run_artifacts(context=context)
 ```
 
 调用方需要提供运行上下文，并由配置决定是否写入具体产物。函数不会读取凭证，也不会生成策略信号或修改组合逻辑。
+
+周度组合的历史净值由策略或回测 owner 生成。调用方如显式提供
+`weekly_basket_performance_path`，pipeline 只把该路径登记到产物清单，不读取文件、
+扫描运行目录、计算净值或导入策略代码。未提供时，该字段为 `None`。

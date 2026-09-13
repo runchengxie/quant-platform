@@ -225,9 +225,7 @@ def test_qp_backend_preserves_linear_score_exposure_while_reducing_risk() -> Non
         ),
     )
 
-    result = QpMinVarianceOptimizerBackend(
-        PortfolioQpConfig(anchor_penalty=0.01)
-    ).run(request)
+    result = QpMinVarianceOptimizerBackend(PortfolioQpConfig(anchor_penalty=0.01)).run(request)
 
     result.validate(request)
     assert result.weights["SCORE_LEADER"] >= anchor["SCORE_LEADER"] - 1e-8
@@ -250,9 +248,7 @@ def test_qp_backend_uses_explicit_covariance_and_previous_weight_penalty() -> No
         previous_weights=previous,
     )
 
-    result = QpMinVarianceOptimizerBackend(
-        PortfolioQpConfig(previous_penalty=10.0)
-    ).run(request)
+    result = QpMinVarianceOptimizerBackend(PortfolioQpConfig(previous_penalty=10.0)).run(request)
 
     assert result.weights["C"] > result.weights["A"]
     assert result.diagnostics["covariance_source"] == "request"
@@ -281,9 +277,7 @@ def test_qp_backend_applies_requested_diagonal_covariance_shrinkage() -> None:
 def test_qp_backend_returns_feasible_equal_weight_fallback_when_solver_fails() -> None:
     request = PortfolioOptimizationRequest(returns=_returns())
 
-    result = QpMinVarianceOptimizerBackend(
-        PortfolioQpConfig(max_iterations=0)
-    ).run(request)
+    result = QpMinVarianceOptimizerBackend(PortfolioQpConfig(max_iterations=0)).run(request)
 
     assert result.weights.to_dict() == pytest.approx(dict.fromkeys(request.assets, 1 / 3))
     assert result.diagnostics["fallback"] == "equal_weight"
