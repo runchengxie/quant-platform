@@ -69,9 +69,7 @@ def test_benchmark_score_tilt_accepts_an_arbitrary_score_column() -> None:
 def test_benchmark_score_tilt_zero_strength_reproduces_benchmark() -> None:
     frame = _frame().rename(columns={"ml_score": "fcf_score"})
 
-    weights = build_target_weights(
-        frame, "benchmark_score_tilt", score_col="fcf_score"
-    )
+    weights = build_target_weights(frame, "benchmark_score_tilt", score_col="fcf_score")
 
     assert weights.tolist() == pytest.approx([0.5, 0.3, 0.2])
 
@@ -95,8 +93,7 @@ def test_score_tilt_rejects_invalid_score_column_and_non_finite_values() -> None
 
     with pytest.raises(ValueError, match="fcf_score"):
         build_target_weights(
-            _frame().rename(columns={"ml_score": "fcf_score"})
-            .assign(fcf_score=[1.0, np.nan, 0.0]),
+            _frame().rename(columns={"ml_score": "fcf_score"}).assign(fcf_score=[1.0, np.nan, 0.0]),
             "benchmark_score_tilt",
             score_col="fcf_score",
         )
