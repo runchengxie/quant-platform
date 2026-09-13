@@ -6,6 +6,7 @@ from typing import Any
 
 import pandas as pd
 from alpha_research.signal_artifact import CANONICAL_SIGNAL_FILE, write_signal_artifact
+
 from portfolio_backtester.backtest_contracts import (
     assert_backtest_periods_frame,
     assert_backtest_return_frame,
@@ -71,6 +72,7 @@ def _initial_artifacts() -> dict[str, Any]:
         "walk_forward_feature_stability_path": None,
         "dataset_path": None,
         "pricing_path": None,
+        "weekly_basket_performance_path": None,
         "signals_path": None,
         "signals_meta_path": None,
         "signals_summary": None,
@@ -141,6 +143,10 @@ def _write_dataset_artifacts(
     run_dir: Path,
     artifacts: dict[str, Any],
 ) -> None:
+    if ctx.get("weekly_basket_performance_path") is not None:
+        artifacts["weekly_basket_performance_path"] = Path(
+            ctx["weekly_basket_performance_path"]
+        )
     if ctx["SAVE_DATASET"]:
         artifacts["dataset_path"] = run_dir / "dataset.parquet"
         save_parquet(ctx["dataset"].as_multiindex(), artifacts["dataset_path"])

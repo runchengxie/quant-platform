@@ -64,6 +64,21 @@ def test_signal_artifact_is_not_written_by_default(tmp_path):
     assert not (tmp_path / "signals.meta.json").exists()
 
 
+def test_weekly_performance_artifact_path_is_registered_when_provided(tmp_path):
+    performance = tmp_path / "basket_performance.json"
+    context = _context(save_signal_artifact=False)
+    context["weekly_basket_performance_path"] = performance
+    artifacts = _initial_artifacts()
+
+    _write_dataset_artifacts(ctx=context, run_dir=tmp_path, artifacts=artifacts)
+
+    assert artifacts["weekly_basket_performance_path"] == performance
+
+
+def test_weekly_performance_artifact_path_is_optional():
+    assert _initial_artifacts()["weekly_basket_performance_path"] is None
+
+
 def test_signal_artifact_writes_when_enabled(tmp_path):
     artifacts = _initial_artifacts()
 
