@@ -10,6 +10,16 @@ uv sync --locked --extra dev
 
 项目使用 Python 3.12，依赖版本由 `uv.lock` 固定。
 
+仓库中的 `research-contracts` 是本地路径依赖。修改这个包后，如果测试仍然读取旧版本，
+重新安装该包：
+
+```bash
+uv sync --locked --all-groups --reinstall-package research-contracts
+```
+
+完整测试和公共发布检查应在干净的任务 worktree 中运行。主检出中的 `.env.local`、`out/`、
+`state/` 和其他 worktree 属于本机环境，可能干扰发布边界检查。
+
 ## 统一入口
 
 ```bash
@@ -63,6 +73,16 @@ coverage 按高风险模块逐步提高，不设置统一阈值。
 在包含工作区治理的检出中，顶层共享 `pre-push` 会按照工作区清单运行本仓库的导入检查、Ruff、格式检查、`ty` 和完整测试集。
 
 单独克隆本仓库时不会继承共享钩子。推送前应手动运行上方列出的 `lint`、`format`、`typecheck`、`all` 和 `maintainability`。
+
+公共发布边界检查使用干净导出目录：
+
+```bash
+bash scripts/public_release/build_clean_export.sh \
+  --revision HEAD \
+  --destination /tmp/quant-platform-public-export
+```
+
+不要把主检出目录中的本地运行产物直接当作公开导出结果。
 
 ## GitHub Actions 状态
 
