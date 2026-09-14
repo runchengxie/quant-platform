@@ -19,7 +19,7 @@ from alpha_research.factor_expression import (
 
 expression = parse_factor("RANK(RETURNS(CLOSE, 20)) * RANK(-STDDEV(CLOSE, 20))")
 expression.required_columns()  # ("CLOSE",)
-expression.lookback()          # 20
+expression.lookback()  # 20
 result = expression.evaluate(frame)
 ```
 
@@ -29,9 +29,9 @@ result = expression.evaluate(frame)
 
 - 输入必须是单个表达式，不接受语句、赋值、导入或任意 Python 模块。
 - 使用 Python `ast` 解析后只允许名称、数值常量、受限函数调用、算术二元运算和一元正负号。
-- 函数名来自 `OperatorRegistry` 白名单；禁止属性访问、下标访问、lambda、comprehension、字符串拼接、关键字参数和双下划线名称。
+- 函数名来自 `OperatorRegistry` 白名单。禁止属性访问、下标访问、lambda、comprehension、字符串拼接、关键字参数和双下划线名称。
 - 不使用 `eval` 或 `exec`。执行器直接解释经过验证的语法树。
-- `DELAY`、`RETURNS`、滚动统计等时间序列算子的窗口必须是正整数常量；不支持负窗口或未来引用。
+- `DELAY`、`RETURNS`、滚动统计等时间序列算子的窗口必须是正整数常量。不支持负窗口或未来引用。
 
 ## 第一批算子
 
@@ -43,15 +43,15 @@ result = expression.evaluate(frame)
 | `STDDEV(x, n)` | 每个 symbol 的滚动样本标准差 | n |
 | `CORRELATION(x, y, n)` | 每个 symbol 的滚动相关系数 | n |
 
-算术运算支持 `+`、`-`、`*`、`/`，除法按 pandas 语义处理；无穷值和缺失值由下游研究诊断负责。跨截面 `RANK` 不增加 lookback。
+算术运算支持 `+`、`-`、`*`、`/`，除法按 pandas 语义处理。无穷值和缺失值由下游研究诊断负责。跨截面 `RANK` 不增加 lookback。
 
 ## 静态元数据
 
 验证后的表达式需要能返回：
 
-- 所需输入列，按首次出现顺序去重；
-- 最大 lookback；
-- 稳定的规范表达式文本，供后续 digest/receipt 使用；
+- 所需输入列，按首次出现顺序去重。
+- 最大 lookback。
+- 稳定的规范表达式文本，供后续 digest/receipt 使用。
 - 操作符名称集合，便于能力声明和审计。
 
 ## 测试策略
