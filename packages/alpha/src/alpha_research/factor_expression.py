@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 import ast
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any
 
 import pandas as pd
 
-
-_UnaryEvaluator = Callable[[Any], Any]
 _BinaryEvaluator = Callable[[Any, Any], Any]
 _OperatorEvaluator = Callable[[list[Any], pd.DataFrame, list[ast.AST]], Any]
 
@@ -60,18 +59,20 @@ def _rolling_std(values: list[Any], frame: pd.DataFrame, args: list[ast.AST]) ->
 
 def _rolling_corr(values: list[Any], frame: pd.DataFrame, args: list[ast.AST]) -> pd.Series:
     window = _constant_window(args, 2)
-    pair = pd.concat(values, axis=1)
-    return pair.groupby(level="symbol", sort=False, group_keys=False).apply(
-        lambda group: group.iloc[:, 0].rolling(window).corr(group.iloc[:, 1])
-    )
+    pair = pd.concat(values[:2], axis=1)
+    result = pd.Series(index=pair.index, dtype="float64")
+    for _, group in pair.groupby(level="symbol", sort=False):
+        result.loc[group.index] = group.iloc[:, 0].rolling(window).corr(group.iloc[:, 1]).to_numpy()
+    return result
 
 
 def _grouped_rolling(
     series: pd.Series, window: int, operation: Callable[[pd.Series], pd.Series]
 ) -> pd.Series:
-    return series.groupby(level="symbol", sort=False, group_keys=False).apply(
-        lambda group: operation(group.rolling(window))
-    )
+    result = pd.Series(index=series.index, dtype="float64")
+    for _, group in series.groupby(level="symbol", sort=False):
+        result.loc[group.index] = operation(group.rolling(window)).to_numpy()
+    return result
 
 
 def _default_operators() -> dict[str, _Operator]:
@@ -154,7 +155,7 @@ def parse_factor(source: str, *, registry: OperatorRegistry | None = None) -> Fa
     )
 
 
-def _validate_node(
+def _validate_node(  # noqa: C901
     node: ast.AST,
     registry: OperatorRegistry,
     required: list[str],
@@ -166,13 +167,15 @@ def _validate_node(
         if node.id not in required:
             required.append(node.id)
         return 0
-    if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+    if (
+        isinstance(node, ast.Constant)
+        and isinstance(node.value, (int, float))
+        and not isinstance(node.value, bool)
+    ):
         return 0
     if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.UAdd, ast.USub)):
         return _validate_node(node.operand, registry, required, operators)
-    if isinstance(node, ast.BinOp) and isinstance(
-        node.op, (ast.Add, ast.Sub, ast.Mult, ast.Div)
-    ):
+    if isinstance(node, ast.BinOp) and isinstance(node.op, (ast.Add, ast.Sub, ast.Mult, ast.Div)):
         return max(
             _validate_node(node.left, registry, required, operators),
             _validate_node(node.right, registry, required, operators),
