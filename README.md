@@ -45,6 +45,15 @@ uv run ruff check .
 uv run pytest
 ```
 
+修改 `packages/research-contracts/` 后，如果本地测试仍读取旧构建产物，执行：
+
+```bash
+uv sync --locked --all-groups --reinstall-package research-contracts
+```
+
+公共发布检查请在干净 worktree 中运行，或使用 `docs/testing.md` 中的 clean export 命令。主检出中的
+`.env.local`、`out/`、`state/` 和其他 worktree 不属于公开导出内容。
+
 ## 去哪里找详细说明
 
 - [文档总览](docs/README.md)

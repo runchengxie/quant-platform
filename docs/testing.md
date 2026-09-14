@@ -10,6 +10,16 @@ uv sync --locked --extra dev
 
 项目使用 Python 3.12，依赖版本由 `uv.lock` 固定。
 
+仓库中的 `research-contracts` 是本地路径依赖。修改这个包后，如果测试仍然读取旧版本，
+重新安装该包：
+
+```bash
+uv sync --locked --all-groups --reinstall-package research-contracts
+```
+
+完整测试和公共发布检查应在干净的任务 worktree 中运行。主检出中的 `.env.local`、`out/`、
+`state/` 和其他 worktree 属于本机环境，可能干扰发布边界检查。
+
 ## 统一入口
 
 ```bash
@@ -64,6 +74,16 @@ coverage 按高风险模块逐步提高，不设置统一阈值。
 
 单独克隆本仓库时不会继承共享钩子。推送前应手动运行上方列出的 `lint`、`format`、`typecheck`、`all` 和 `maintainability`。
 
+公共发布边界检查使用干净导出目录：
+
+```bash
+bash scripts/public_release/build_clean_export.sh \
+  --revision HEAD \
+  --destination /tmp/quant-platform-public-export
+```
+
+不要把主检出目录中的本地运行产物直接当作公开导出结果。
+
 ## GitHub Actions 状态
 
 `.github/workflows/ci.yml` 在公开 PR 上运行公开质量门禁。本地命令和工作区共享 `pre-push` 继续提供提交前的快速反馈。
@@ -82,7 +102,7 @@ workflow 使用路径过滤和并发控制取消同一 pull request 的旧运行
 
 ## 类型检查范围
 
-本地 `scripts/dev/run_tests.sh typecheck` 会按 `pyproject.toml` 的 `[tool.ty.src]` 配置检查迁移后的源码和脚本，并显式加入五个源码根目录供 ty 解析内部导入。当前完整入口仍会报告 429 条历史 warning，不能把它当作全仓类型检查通过。
+本地 `scripts/dev/run_tests.sh typecheck` 会按 `pyproject.toml` 的 `[tool.ty.src]` 配置检查迁移后的源码和脚本，并显式加入五个源码根目录供 ty 解析内部导入。当前完整入口报告 445 条历史诊断，不能把它当作全仓类型检查通过。
 
 公开 CI 使用较窄的阻断范围，只检查下面三个迁移包，并将警告保留为提示，错误仍会使任务失败：
 
