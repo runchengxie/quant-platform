@@ -87,3 +87,22 @@ def test_rolling_correlation_uses_two_series_and_window() -> None:
     assert result.iloc[0] != result.iloc[0]
     assert result.iloc[1] == pytest.approx(1.0)
     assert result.iloc[2] == pytest.approx(1.0)
+
+
+def test_nested_time_series_operators_accumulate_lookback() -> None:
+    assert parse_factor("DELAY(RETURNS(CLOSE, 20), 5)").lookback() == 25
+
+
+def test_time_series_operator_rejects_unsorted_dates() -> None:
+    index = pd.MultiIndex.from_tuples(
+        [("A", "2026-01-02"), ("A", "2026-01-01")], names=["symbol", "date"]
+    )
+    frame = pd.DataFrame({"CLOSE": [2.0, 1.0]}, index=index)
+
+    with pytest.raises(ValueError, match="sorted"):
+        parse_factor("DELAY(CLOSE, 1)").evaluate(frame)
+
+
+def test_parse_factor_rejects_oversized_expression() -> None:
+    with pytest.raises(ValueError, match="too large"):
+        parse_factor("-" * 1000 + "CLOSE")

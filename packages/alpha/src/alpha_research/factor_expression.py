@@ -9,6 +9,10 @@ from typing import Any
 
 import pandas as pd
 
+_MAX_SOURCE_LENGTH = 4096
+_MAX_AST_NODES = 256
+_MAX_AST_DEPTH = 64
+
 _BinaryEvaluator = Callable[[Any, Any], Any]
 _OperatorEvaluator = Callable[[list[Any], pd.DataFrame, list[ast.AST]], Any]
 
@@ -19,6 +23,7 @@ class _Operator:
     lookback: Callable[[list[ast.AST]], int]
     evaluate: _OperatorEvaluator
     requires_symbol_date_index: bool = False
+    cumulative_lookback: bool = False
 
 
 def _constant_window(args: list[ast.AST], position: int) -> int:
@@ -78,10 +83,10 @@ def _grouped_rolling(
 def _default_operators() -> dict[str, _Operator]:
     return {
         "RANK": _Operator(1, _no_lookback, _rank, True),
-        "DELAY": _Operator(2, _window_lookback(1), _delay, True),
-        "RETURNS": _Operator(2, _window_lookback(1), _returns, True),
-        "STDDEV": _Operator(2, _window_lookback(1), _rolling_std, True),
-        "CORRELATION": _Operator(3, _window_lookback(2), _rolling_corr, True),
+        "DELAY": _Operator(2, _window_lookback(1), _delay, True, True),
+        "RETURNS": _Operator(2, _window_lookback(1), _returns, True, True),
+        "STDDEV": _Operator(2, _window_lookback(1), _rolling_std, True, True),
+        "CORRELATION": _Operator(3, _window_lookback(2), _rolling_corr, True, True),
     }
 
 
@@ -137,10 +142,15 @@ def parse_factor(source: str, *, registry: OperatorRegistry | None = None) -> Fa
 
     if not isinstance(source, str) or not source.strip():
         raise ValueError("factor expression must be a non-empty string")
+    if len(source) > _MAX_SOURCE_LENGTH:
+        raise ValueError("factor expression is too large")
     try:
         tree = ast.parse(source, mode="eval")
-    except SyntaxError as exc:
+    except (RecursionError, SyntaxError) as exc:
         raise ValueError("factor expression must contain one expression") from exc
+    nodes = list(ast.walk(tree))
+    if len(nodes) > _MAX_AST_NODES or _ast_depth(tree) > _MAX_AST_DEPTH:
+        raise ValueError("factor expression is too large or deep")
 
     registry = registry or OperatorRegistry()
     required: list[str] = []
@@ -192,7 +202,10 @@ def _validate_node(  # noqa: C901
             (_validate_node(argument, registry, required, operators) for argument in node.args),
             default=0,
         )
-        return max(child_lookback, operator.lookback(node.args))
+        own_lookback = operator.lookback(node.args)
+        if operator.cumulative_lookback:
+            return child_lookback + own_lookback
+        return max(child_lookback, own_lookback)
     raise ValueError(f"unsupported factor expression syntax: {type(node).__name__}")
 
 
@@ -201,6 +214,17 @@ def _validate_index(frame: pd.DataFrame) -> None:
         frame.index.names
     ):
         raise ValueError("time-series factor operators require a symbol/date MultiIndex")
+    index_frame = frame.index.to_frame(index=False)
+    for _, dates in index_frame.groupby("symbol", sort=False)["date"]:
+        if not dates.is_monotonic_increasing:
+            raise ValueError("time-series factor input must be sorted by date")
+
+
+def _ast_depth(node: ast.AST) -> int:
+    children = list(ast.iter_child_nodes(node))
+    if not children:
+        return 1
+    return 1 + max(_ast_depth(child) for child in children)
 
 
 def _evaluate_node(node: ast.AST, frame: pd.DataFrame, registry: OperatorRegistry) -> Any:

@@ -15,7 +15,7 @@ factor.operators()  # ("RANK", "RETURNS")
 result = factor.evaluate(frame)
 ```
 
-`frame` 必须是 pandas DataFrame。使用时间序列算子时，索引需要包含名为 `symbol` 和 `date` 的 MultiIndex 层，每个 symbol 的行应按 date 排序。
+`frame` 必须是 pandas DataFrame。使用时间序列算子时，索引需要包含名为 `symbol` 和 `date` 的 MultiIndex 层，每个 symbol 的行必须按 date 升序排列，否则执行会被拒绝。
 
 ## 支持的算子
 

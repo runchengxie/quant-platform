@@ -32,6 +32,8 @@ result = expression.evaluate(frame)
 - 函数名来自 `OperatorRegistry` 白名单。禁止属性访问、下标访问、lambda、comprehension、字符串拼接、关键字参数和双下划线名称。
 - 不使用 `eval` 或 `exec`。执行器直接解释经过验证的语法树。
 - `DELAY`、`RETURNS`、滚动统计等时间序列算子的窗口必须是正整数常量。不支持负窗口或未来引用。
+- 时间序列执行要求每个 symbol 的 date 升序排列，输入不满足时明确拒绝。
+- 公式源文本、AST 节点数量和 AST 深度都有上限，超限统一返回 `ValueError`。
 
 ## 第一批算子
 
