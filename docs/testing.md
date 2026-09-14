@@ -102,7 +102,7 @@ workflow 使用路径过滤和并发控制取消同一 pull request 的旧运行
 
 ## 类型检查范围
 
-本地 `scripts/dev/run_tests.sh typecheck` 会按 `pyproject.toml` 的 `[tool.ty.src]` 配置检查迁移后的源码和脚本，并显式加入五个源码根目录供 ty 解析内部导入。当前完整入口仍会报告 429 条历史 warning，不能把它当作全仓类型检查通过。
+本地 `scripts/dev/run_tests.sh typecheck` 会按 `pyproject.toml` 的 `[tool.ty.src]` 配置检查迁移后的源码和脚本，并显式加入五个源码根目录供 ty 解析内部导入。当前完整入口报告 445 条历史诊断，不能把它当作全仓类型检查通过。
 
 公开 CI 使用较窄的阻断范围，只检查下面三个迁移包，并将警告保留为提示，错误仍会使任务失败：
 
