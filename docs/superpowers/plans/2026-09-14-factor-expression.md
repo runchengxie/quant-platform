@@ -120,9 +120,7 @@ def test_factor_expression_evaluates_time_series_and_cross_sectional_semantics()
 
     result = parse_factor("RETURNS(CLOSE, 1)").evaluate(frame)
 
-    expected = pd.Series(
-        [np.nan, 1.0, 1.0, np.nan, 1.0, 1.0], index=index, name="factor"
-    )
+    expected = pd.Series([np.nan, 1.0, 1.0, np.nan, 1.0, 1.0], index=index, name="factor")
     pd.testing.assert_series_equal(result, expected)
 
 
