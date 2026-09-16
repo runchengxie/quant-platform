@@ -16,7 +16,7 @@ FitFn = Callable[
     [Any, pd.DataFrame],
     Any,
 ]
-ImportanceFn = Callable[[Any], tuple[np.ndarray, str]]
+ImportanceFn = Callable[[Any], tuple[np.ndarray[Any, Any], str]]
 FactoryFn = Callable[[Mapping[str, Any]], Any]
 
 
@@ -31,7 +31,7 @@ class FixedScoreArtifactModel:
         self.is_fitted_ = True
         return self
 
-    def predict(self, frame: pd.DataFrame) -> np.ndarray:
+    def predict(self, frame: pd.DataFrame) -> np.ndarray[Any, Any]:
         if self.score_col not in frame.columns:
             raise ValueError(f"fixed_score_artifact score column not found: {self.score_col}")
         return pd.to_numeric(frame[self.score_col], errors="coerce").to_numpy(dtype=float)
@@ -43,14 +43,14 @@ def _fit_fixed_score_artifact_model(
     *,
     features: Sequence[str],
     target_col: str,
-    sample_weight: Sequence[float] | np.ndarray | None = None,
+    sample_weight: Sequence[float] | np.ndarray[Any, Any] | None = None,
     date_col: str = "trade_date",
 ) -> FixedScoreArtifactModel:
     del features, target_col, sample_weight, date_col
     return model.fit(train_data)
 
 
-def _fixed_score_feature_importance(model: Any) -> tuple[np.ndarray, str]:
+def _fixed_score_feature_importance(model: Any) -> tuple[np.ndarray[Any, Any], str]:
     del model
     return np.array([], dtype=float), "fixed_score_artifact"
 
@@ -58,11 +58,11 @@ def _fixed_score_feature_importance(model: Any) -> tuple[np.ndarray, str]:
 def _ranker_group_weights(
     train_data: pd.DataFrame,
     train_sorted: pd.DataFrame,
-    sample_weight: Sequence[float] | np.ndarray,
+    sample_weight: Sequence[float] | np.ndarray[Any, Any],
     *,
     date_col: str,
     n_groups: int,
-) -> np.ndarray:
+) -> np.ndarray[Any, Any]:
     weight_values = np.asarray(sample_weight, dtype=float).reshape(-1)
     if weight_values.size == len(train_data):
         weight_series = pd.Series(weight_values, index=train_data.index, dtype=float)
@@ -88,7 +88,7 @@ def _fit_regressor_model(
     *,
     features: Sequence[str],
     target_col: str,
-    sample_weight: Sequence[float] | np.ndarray | None = None,
+    sample_weight: Sequence[float] | np.ndarray[Any, Any] | None = None,
     date_col: str = "trade_date",
 ) -> Any:
     del date_col
@@ -107,7 +107,7 @@ def _fit_ranker_model(
     *,
     features: Sequence[str],
     target_col: str,
-    sample_weight: Sequence[float] | np.ndarray | None = None,
+    sample_weight: Sequence[float] | np.ndarray[Any, Any] | None = None,
     date_col: str = "trade_date",
 ) -> Any:
     train_sorted = train_data.sort_values(date_col, kind="mergesort")
@@ -130,7 +130,7 @@ def _fit_ranker_model(
     return model
 
 
-def _generic_feature_importance(model: Any) -> tuple[np.ndarray, str]:
+def _generic_feature_importance(model: Any) -> tuple[np.ndarray[Any, Any], str]:
     if hasattr(model, "feature_importances_"):
         return (
             np.asarray(model.feature_importances_, dtype=float).reshape(-1),
@@ -313,7 +313,7 @@ def fit_model(
     *,
     features: Sequence[str],
     target_col: str,
-    sample_weight: Sequence[float] | np.ndarray | None = None,
+    sample_weight: Sequence[float] | np.ndarray[Any, Any] | None = None,
     date_col: str = "trade_date",
 ) -> Any:
     spec = _get_model_spec(model_type)
