@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import cast
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -15,7 +15,13 @@ def build_trade_date_slices(
     frame: pd.DataFrame,
     *,
     date_col: str = "trade_date",
-) -> tuple[pd.DataFrame, np.ndarray, np.ndarray, np.ndarray, dict[pd.Timestamp, int]]:
+) -> tuple[
+    pd.DataFrame,
+    np.ndarray[Any, Any],
+    np.ndarray[Any, Any],
+    np.ndarray[Any, Any],
+    dict[pd.Timestamp, int],
+]:
     ordered = frame.sort_values(date_col, kind="mergesort").reset_index(drop=True)
     date_values = ordered[date_col].to_numpy()
     if date_values.size == 0:
@@ -33,28 +39,28 @@ def build_trade_date_slices(
 
 def slice_trade_date_range(
     ordered: pd.DataFrame,
-    start_rows: np.ndarray,
-    end_rows: np.ndarray,
+    start_rows: np.ndarray[Any, Any],
+    end_rows: np.ndarray[Any, Any],
     start_pos: int,
     end_pos: int,
 ) -> pd.DataFrame:
     if start_pos < 0 or end_pos < start_pos:
-        return ordered.iloc[0:0].copy()
-    return ordered.iloc[start_rows[start_pos] : end_rows[end_pos]].copy()
+        return cast(pd.DataFrame, ordered.iloc[0:0].copy())
+    return cast(pd.DataFrame, ordered.iloc[start_rows[start_pos] : end_rows[end_pos]].copy())
 
 
 def slice_trade_dates(
     ordered: pd.DataFrame,
-    start_rows: np.ndarray,
-    end_rows: np.ndarray,
+    start_rows: np.ndarray[Any, Any],
+    end_rows: np.ndarray[Any, Any],
     date_to_pos: dict[pd.Timestamp, int],
-    dates: np.ndarray | list[pd.Timestamp] | tuple[pd.Timestamp, ...],
+    dates: np.ndarray[Any, Any] | list[pd.Timestamp] | tuple[pd.Timestamp, ...],
     *,
     date_col: str = "trade_date",
 ) -> pd.DataFrame:
     del date_col
     if len(dates) == 0:
-        return ordered.iloc[0:0].copy()
+        return cast(pd.DataFrame, ordered.iloc[0:0].copy())
     unique_dates = []
     seen_dates: set[pd.Timestamp] = set()
     for date in pd.to_datetime(dates):
@@ -64,7 +70,7 @@ def slice_trade_dates(
         seen_dates.add(date_ts)
         unique_dates.append(date_ts)
     if not unique_dates:
-        return ordered.iloc[0:0].copy()
+        return cast(pd.DataFrame, ordered.iloc[0:0].copy())
 
     first = unique_dates[0]
     last = unique_dates[-1]
@@ -77,7 +83,7 @@ def slice_trade_dates(
 
     positions = sorted({date_to_pos[date] for date in unique_dates if date in date_to_pos})
     if not positions:
-        return ordered.iloc[0:0].copy()
+        return cast(pd.DataFrame, ordered.iloc[0:0].copy())
 
     ranges: list[tuple[int, int]] = []
     range_start = positions[0]
@@ -93,18 +99,18 @@ def slice_trade_dates(
 
     parts = [ordered.iloc[start_rows[start] : end_rows[end]] for start, end in ranges]
     if len(parts) == 1:
-        return parts[0].copy()
-    return pd.concat(parts, ignore_index=True)
+        return cast(pd.DataFrame, parts[0].copy())
+    return cast(pd.DataFrame, pd.concat(parts, ignore_index=True))
 
 
 def apply_model_train_window(
-    train_dates_input: np.ndarray | list[pd.Timestamp] | tuple[pd.Timestamp, ...],
+    train_dates_input: np.ndarray[Any, Any] | list[pd.Timestamp] | tuple[pd.Timestamp, ...],
     *,
     label: str,
     train_window_mode: str,
     train_window_size: int | None,
     train_window_unit: str,
-) -> np.ndarray:
+) -> np.ndarray[Any, Any]:
     train_dates_array = np.asarray(pd.to_datetime(train_dates_input), dtype="datetime64[ns]")
     if train_dates_array.size == 0:
         return train_dates_array
@@ -132,16 +138,16 @@ def apply_model_train_window(
 
 def slice_with_train_window(
     ordered: pd.DataFrame,
-    start_rows: np.ndarray,
-    end_rows: np.ndarray,
+    start_rows: np.ndarray[Any, Any],
+    end_rows: np.ndarray[Any, Any],
     date_to_pos: dict[pd.Timestamp, int],
-    train_dates_input: np.ndarray | list[pd.Timestamp] | tuple[pd.Timestamp, ...],
+    train_dates_input: np.ndarray[Any, Any] | list[pd.Timestamp] | tuple[pd.Timestamp, ...],
     *,
     label: str,
     train_window_mode: str,
     train_window_size: int | None,
     train_window_unit: str,
-) -> tuple[pd.DataFrame, np.ndarray]:
+) -> tuple[pd.DataFrame, np.ndarray[Any, Any]]:
     windowed_dates = apply_model_train_window(
         train_dates_input,
         label=label,

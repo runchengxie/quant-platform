@@ -1,10 +1,19 @@
 from __future__ import annotations
 
-from typing import cast
+from typing import cast, get_args, get_origin, get_type_hints
 
+import numpy as np
 import pandas as pd
 from alpha_research.dataset import DatasetSchema
 from alpha_research.date_slices import build_trade_date_slices
+
+
+def test_date_slice_array_annotations_include_numpy_type_parameters() -> None:
+    return_hint = get_type_hints(build_trade_date_slices)["return"]
+    arrays = [item for item in get_args(return_hint) if get_origin(item) is np.ndarray]
+
+    assert len(arrays) == 3
+    assert all(len(get_args(item)) == 2 for item in arrays)
 
 
 def test_dataset_schema_preserves_declared_column_order() -> None:
