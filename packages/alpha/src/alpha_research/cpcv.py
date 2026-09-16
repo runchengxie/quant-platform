@@ -55,6 +55,7 @@ from ._cpcv_groups import (
     expected_cpcv_path_count,
 )
 from ._cpcv_report import _path_metric_row, _split_to_row
+from .paths import default_output_path, resolve_output_path
 
 __all__ = [
     "CPCVSplit",
@@ -120,7 +121,7 @@ def run_cpcv_audit(
 
 def _default_out_dir(config_ref: str | Path | None) -> Path:
     tag = "default" if config_ref is None else Path(str(config_ref)).stem.replace(".", "_")
-    return Path("artifacts") / "reports" / f"cpcv_{tag}"
+    return default_output_path(Path("reports") / f"cpcv_{tag}")
 
 
 def add_cpcv_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -138,7 +139,14 @@ def add_cpcv_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     parser.add_argument(
         "--embargo-days", type=int, default=None, help="Optional CPCV embargo days override."
     )
-    parser.add_argument("--out", default=None, help="Output report directory.")
+    parser.add_argument(
+        "--out",
+        default=None,
+        help=(
+            "Output report directory. Defaults outside the checkout under the configured "
+            "owner root."
+        ),
+    )
     parser.add_argument(
         "--include-final-oos",
         action="store_true",
@@ -157,7 +165,11 @@ def add_cpcv_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
 def run(args: argparse.Namespace) -> int:
     from .artifact_cpcv import is_artifact_cpcv_config, run_artifact_cpcv
 
-    out_dir = Path(args.out).expanduser() if args.out else _default_out_dir(args.config)
+    out_dir = (
+        _default_out_dir(args.config)
+        if not args.out
+        else resolve_output_path(args.out, default_relative="reports/cpcv_default")
+    )
     if is_artifact_cpcv_config(args.config):
         summary = run_artifact_cpcv(
             args.config,

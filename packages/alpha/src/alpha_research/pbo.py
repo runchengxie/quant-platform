@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 
 from .experiment_registry import ExperimentRegistry
+from .paths import resolve_output_path
 
 
 def _resolve_path(path_text: str | Path | None) -> Path | None:
@@ -242,9 +243,7 @@ def _build_pbo_rows(
         train_dates = groups[train_group_ids[0]].append(
             [groups[idx] for idx in train_group_ids[1:]]
         )
-        test_dates = groups[test_group_ids[0]].append(
-            [groups[idx] for idx in test_group_ids[1:]]
-        )
+        test_dates = groups[test_group_ids[0]].append([groups[idx] for idx in test_group_ids[1:]])
         rows.append(
             _build_pbo_split_row(
                 split_id=split_id,
@@ -383,7 +382,14 @@ def add_pbo_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         default=None,
         help="JSON registry containing all attempted trials, including failed trials.",
     )
-    parser.add_argument("--out", default="artifacts/reports/pbo", help="Output report directory.")
+    parser.add_argument(
+        "--out",
+        default=None,
+        help=(
+            "Output report directory. Defaults outside the checkout under the configured "
+            "owner root."
+        ),
+    )
     return parser
 
 
@@ -403,7 +409,6 @@ def run(args: argparse.Namespace) -> int:
         periods_per_year=args.periods_per_year,
         trial_registry=registry,
     )
-    out_dir = _resolve_path(args.out)
-    assert out_dir is not None
+    out_dir = resolve_output_path(args.out, default_relative="reports/pbo")
     _write_report(report, out_dir=out_dir)
     return 0

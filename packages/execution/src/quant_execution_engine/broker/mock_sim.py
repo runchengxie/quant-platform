@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Any
 
 from ..models import AccountSnapshot, Position, Quote
+from ..paths import outputs_dir
 from .base import (
     BrokerAdapter,
     BrokerCapabilityMatrix,
@@ -103,7 +104,10 @@ class MockSimBrokerAdapter(BrokerAdapter):
     )
 
     def __init__(self) -> None:
-        self._state_root = Path(_env_str(MOCK_SIM_STATE_DIR_ENV, "outputs/mock-sim")).expanduser()
+        configured = os.getenv(MOCK_SIM_STATE_DIR_ENV)
+        self._state_root = (
+            Path(configured).expanduser().resolve() if configured else outputs_dir() / "mock-sim"
+        )
 
     def _clock(self) -> str:
         return _env_str(MOCK_SIM_CLOCK_ENV, DEFAULT_CLOCK)

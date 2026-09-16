@@ -6,12 +6,20 @@
 
 ## CPCV 稳健性审计报告
 
-`strategy alpha cpcv` 默认写入 `artifacts/reports/cpcv_<tag>/`，也可以通过 `--out` 指定目录。
+`strategy alpha cpcv` 默认写入配置的 alpha 研究产物根目录下的
+`reports/cpcv_<tag>/`，也可以通过 `--out` 指定目录。
+
+研究产物根目录按以下顺序确定：`ALPHA_RESEARCH_OUTPUT_ROOT`、
+`QUANT_PLATFORM_OUTPUT_ROOT`、`DATA_PLATFORM_ROOT/quant-platform/research`，最后使用
+`$XDG_STATE_HOME/quant-platform/research`（未设置时为
+`~/.local/state/quant-platform/research`）。这样从代码仓库运行命令也不会在仓库内创建
+`artifacts` 或 `outputs`。传入相对路径时仍按当前工作目录解析，便于测试和一次性分析显式指定
+临时目录。
 
 输出目录结构：
 
 ```text
-artifacts/reports/cpcv_<tag>/
+<alpha-research-root>/reports/cpcv_<tag>/
   cpcv_splits.csv
   cpcv_path_returns.csv
   cpcv_path_metrics.csv
@@ -41,12 +49,13 @@ path_id,split_ids,test_start,test_end,observation_count,sharpe,total_return,ann_
 
 ## CSCV / PBO / DSR 报告
 
-`strategy alpha pbo` 默认写入 `artifacts/reports/pbo_<tag>/`。
+`strategy alpha pbo` 默认写入 `<alpha-research-root>/reports/pbo/`，也可以通过 `--out`
+指定目录。
 
 输出目录结构：
 
 ```text
-artifacts/reports/pbo_<tag>/
+<alpha-research-root>/reports/pbo/
   pbo_splits.csv
   pbo_summary.json
 ```
@@ -67,6 +76,7 @@ split_id,train_groups,test_groups,selected_candidate,selected_train_sharpe,selec
 ## 动态多信号组合报告
 
 `strategy alpha dynamic-signal-ensemble` 输出到配置里的 `output_dir` 或 `--output-dir`。
+两者都未提供时写入 `<alpha-research-root>/reports/dynamic_signal_ensemble/`。
 
 输出文件：
 
