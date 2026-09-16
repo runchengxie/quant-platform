@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -58,7 +59,7 @@ def _resolve_cv_model_spec(
 
 def _event_window_state(
     *,
-    dates: np.ndarray,
+    dates: np.ndarray[Any, Any],
     purge_mode: str,
     all_trade_dates: object | None,
     label_horizon_mode: str,
@@ -79,16 +80,16 @@ def _event_window_state(
 
 
 def _purged_cv_train_indices(
-    train_idx: np.ndarray,
-    val_idx: np.ndarray,
+    train_idx: np.ndarray[Any, Any],
+    val_idx: np.ndarray[Any, Any],
     *,
-    dates: np.ndarray,
+    dates: np.ndarray[Any, Any],
     purge_mode: str,
     event_window_status: str,
     event_windows: dict[pd.Timestamp, _LabelEventWindow],
     embargo_days: int,
     gap: int,
-) -> np.ndarray | None:
+) -> np.ndarray[Any, Any] | None:
     used_event_window = False
     if purge_mode == "event_window" and event_window_status == "event_window":
         train_idx, used_event_window = _apply_event_window_purge_indices(
@@ -110,20 +111,20 @@ def _purged_cv_train_indices(
 
 def _cv_frame_for_date_indices(
     slices: _CVDateSlices,
-    date_idx: np.ndarray,
+    date_idx: np.ndarray[Any, Any],
     *,
     copy: bool = False,
 ) -> pd.DataFrame:
     start = slices.date_start_rows[date_idx[0]]
     end = slices.date_end_rows[date_idx[-1]]
     frame = slices.sorted_data.iloc[start:end]
-    return frame.copy() if copy else frame
+    return cast(pd.DataFrame, frame.copy() if copy else frame)
 
 
 def _score_cv_fold(
     slices: _CVDateSlices,
-    train_idx: np.ndarray,
-    val_idx: np.ndarray,
+    train_idx: np.ndarray[Any, Any],
+    val_idx: np.ndarray[Any, Any],
     config: _CVFitConfig,
 ) -> float:
     tr_df = _cv_frame_for_date_indices(slices, train_idx)
