@@ -6,7 +6,7 @@ Re-exported from ``alpha_research.cpcv`` so existing imports keep working.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -111,7 +111,7 @@ def _summarize_cpcv(path_metrics: list[dict[str, Any]]) -> dict[str, Any]:
 def _collapse_series_by_date(series: pd.Series) -> pd.Series:
     if series.empty or series.index.is_unique:
         return series
-    return series.groupby(level=0).mean().sort_index()
+    return cast(pd.Series, series.groupby(level=0).mean().sort_index())
 
 
 def _frame_for_dates(request_data: Any, dates: tuple[pd.Timestamp, ...]) -> pd.DataFrame:
@@ -168,7 +168,7 @@ def _sample_rebalance_frame(
     if allowed_dates is not None:
         allowed = set(allowed_dates)
         rebalance_dates = [date for date in rebalance_dates if date in allowed]
-    sampled = frame[frame["trade_date"].isin(rebalance_dates)].copy()
+    sampled = cast(pd.DataFrame, frame[frame["trade_date"].isin(rebalance_dates)].copy())
     return sampled, rebalance_dates
 
 

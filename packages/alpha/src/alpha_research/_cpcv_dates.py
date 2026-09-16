@@ -33,7 +33,10 @@ def _as_date_tuple(dates: Any) -> tuple[pd.Timestamp, ...]:
     cleaned = [
         cast(pd.Timestamp, pd.Timestamp(date)).normalize() for date in values if not pd.isna(date)
     ]
-    return tuple(pd.Index(cleaned).drop_duplicates().sort_values())
+    return tuple(
+        cast(pd.Timestamp, date)
+        for date in pd.Index(cleaned).drop_duplicates().sort_values()
+    )
 
 
 def _format_date(date: Any) -> str:
