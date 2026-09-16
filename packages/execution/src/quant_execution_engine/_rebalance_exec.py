@@ -7,7 +7,6 @@ Builds on :class:`RebalancePlanMixin`: order execution through
 from __future__ import annotations
 
 import json
-import os
 from datetime import datetime
 from pathlib import Path
 
@@ -15,6 +14,7 @@ from ._rebalance_plan import RebalancePlanMixin
 from .execution import OrderLifecycleService
 from .logging import get_logger, get_run_id
 from .models import Order, RebalanceResult
+from .paths import outputs_dir
 from .risk import summarize_risk_decisions
 
 logger = get_logger(__name__)
@@ -73,11 +73,7 @@ class RebalanceExecutionMixin(RebalancePlanMixin):
         Returns:
             Path: Log file path
         """
-        override = os.getenv("QEXEC_OUTPUTS_DIR")
-        if override:
-            log_dir = Path(override).expanduser().resolve() / "orders"
-        else:
-            log_dir = Path("outputs/orders")
+        log_dir = outputs_dir() / "orders"
         log_dir.mkdir(parents=True, exist_ok=True)
 
         timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")

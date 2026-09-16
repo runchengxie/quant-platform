@@ -13,10 +13,14 @@ from pathlib import Path
 
 # This module is already being used elsewhere
 try:
-    from .paths import OUTPUTS_DIR
+    from .paths import OUTPUTS_DIR, outputs_dir
 except Exception:
-    # Fallback, don't crash again due to path module issues
-    OUTPUTS_DIR = Path.cwd() / "outputs"
+    # Keep logging importable during constrained package bootstrap.
+    OUTPUTS_DIR = Path.home() / ".local" / "state" / "quant-platform" / "execution"
+
+    def outputs_dir() -> Path:
+        return OUTPUTS_DIR
+
 
 __all__ = [
     "StrategyLogger",

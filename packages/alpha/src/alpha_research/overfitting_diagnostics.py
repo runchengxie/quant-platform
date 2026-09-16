@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 
 from .metrics import daily_ic_series, summarize_ic
+from .paths import resolve_output_path
 
 
 def _resolve_path(path_text: str | Path | None) -> Path | None:
@@ -367,8 +368,8 @@ def add_overfitting_diagnostics_args(parser: argparse.ArgumentParser) -> argpars
     uniqueness.add_argument("--horizon-days", type=int, default=1)
     uniqueness.add_argument("--bootstrap-samples", type=int, default=0)
     uniqueness.add_argument("--seed", type=int, default=42)
-    uniqueness.add_argument("--output", default="artifacts/reports/event_uniqueness.csv")
-    uniqueness.add_argument("--output-json", default="artifacts/reports/event_uniqueness.json")
+    uniqueness.add_argument("--output", default=None)
+    uniqueness.add_argument("--output-json", default=None)
 
     controls = subparsers.add_parser(
         "negative-controls",
@@ -389,7 +390,7 @@ def add_overfitting_diagnostics_args(parser: argparse.ArgumentParser) -> argpars
     controls.add_argument("--random-universe-frac", type=float, default=0.5)
     controls.add_argument("--sentinel-feature", action="append", default=None)
     controls.add_argument("--seed", type=int, default=42)
-    controls.add_argument("--output", default="artifacts/reports/negative_controls.csv")
+    controls.add_argument("--output", default=None)
 
     scenario = subparsers.add_parser("scenario-backtest", help="Bootstrap scenario return paths.")
     scenario.add_argument("--returns", required=True, help="CSV/parquet returns file.")
@@ -398,7 +399,7 @@ def add_overfitting_diagnostics_args(parser: argparse.ArgumentParser) -> argpars
     scenario.add_argument("--block-size", type=int, default=5)
     scenario.add_argument("--periods-per-year", type=int, default=None)
     scenario.add_argument("--seed", type=int, default=42)
-    scenario.add_argument("--out", default="artifacts/reports/scenario_backtest")
+    scenario.add_argument("--out", default=None)
 
     freeze = subparsers.add_parser(
         "candidate-freeze",
@@ -411,7 +412,7 @@ def add_overfitting_diagnostics_args(parser: argparse.ArgumentParser) -> argpars
     freeze.add_argument("--paper-start-date", default=None)
     freeze.add_argument("--paper-end-date", default=None)
     freeze.add_argument("--note", default=None)
-    freeze.add_argument("--output-json", default="artifacts/reports/candidate_freeze_manifest.json")
+    freeze.add_argument("--output-json", default=None)
     return parser
 
 
@@ -429,9 +430,10 @@ def run(args: argparse.Namespace) -> int:
             bootstrap_samples=args.bootstrap_samples,
             seed=args.seed,
         )
-        output = _resolve_path(args.output)
-        output_json = _resolve_path(args.output_json)
-        assert output is not None and output_json is not None
+        output = resolve_output_path(args.output, default_relative="reports/event_uniqueness.csv")
+        output_json = resolve_output_path(
+            args.output_json, default_relative="reports/event_uniqueness.json"
+        )
         _write_rows(report["rows"], output)
         _write_json(report["summary"], output_json)
         return 0
@@ -452,8 +454,7 @@ def run(args: argparse.Namespace) -> int:
             sentinel_features=args.sentinel_feature,
             seed=args.seed,
         )
-        output = _resolve_path(args.output)
-        assert output is not None
+        output = resolve_output_path(args.output, default_relative="reports/negative_controls.csv")
         _write_rows(rows, output)
         return 0
 
@@ -469,8 +470,7 @@ def run(args: argparse.Namespace) -> int:
             periods_per_year=args.periods_per_year,
             seed=args.seed,
         )
-        out_dir = _resolve_path(args.out)
-        assert out_dir is not None
+        out_dir = resolve_output_path(args.out, default_relative="reports/scenario_backtest")
         _write_rows(report["rows"], out_dir / "scenario_paths.csv")
         _write_json(report["summary"], out_dir / "scenario_summary.json")
         return 0
@@ -487,7 +487,8 @@ def run(args: argparse.Namespace) -> int:
         paper_end_date=args.paper_end_date,
         note=args.note,
     )
-    output_json = _resolve_path(args.output_json)
-    assert output_json is not None
+    output_json = resolve_output_path(
+        args.output_json, default_relative="reports/candidate_freeze_manifest.json"
+    )
     _write_json(manifest, output_json)
     return 0

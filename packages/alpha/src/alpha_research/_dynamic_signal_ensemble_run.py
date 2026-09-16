@@ -64,6 +64,7 @@ from .dynamic_signal_ensemble_types import (
     DynamicSignalEnsembleConfig,
     DynamicSignalEnsembleResult,
 )
+from .paths import resolve_output_path
 
 
 def _align_inputs(
@@ -424,9 +425,11 @@ def run(args: argparse.Namespace) -> DynamicSignalEnsembleResult:
     config = _load_yaml(config_path)
     result, output_meta = _build_from_config(config, config_dir=config_path.parent)
     cfg = _section(config)
-    output_dir = _resolve_path(
-        args.output_dir or cfg.get("output_dir") or "artifacts/reports/dynamic_signal_ensemble",
-        base_dir=config_path.parent,
+    configured_output = args.output_dir or cfg.get("output_dir")
+    output_dir = (
+        _resolve_path(configured_output, base_dir=config_path.parent)
+        if configured_output
+        else resolve_output_path(None, default_relative="reports/dynamic_signal_ensemble")
     )
     assert output_dir is not None
     write_dynamic_ensemble_artifacts(
