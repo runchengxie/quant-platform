@@ -23,7 +23,7 @@ def _time_decay_weights(
     *,
     date_col: str,
     params: Mapping[str, object] | None,
-) -> np.ndarray | None:
+) -> np.ndarray[Any, Any] | None:
     if params is not None and not isinstance(params, Mapping):
         raise ValueError("sample_weight_params must be a mapping.")
     params_map = dict(params or {})
@@ -73,12 +73,12 @@ def _time_decay_weights(
 
 
 def select_train_window_dates(
-    dates: np.ndarray | list[pd.Timestamp],
+    dates: np.ndarray[Any, Any] | list[pd.Timestamp],
     *,
     mode: str | None = None,
     size: int | None = None,
     unit: str = "dates",
-) -> np.ndarray:
+) -> np.ndarray[Any, Any]:
     mode_text = str(mode or "full").strip().lower()
     if mode_text in {"", "full", "all", "expanding"}:
         return np.asarray(pd.to_datetime(dates).unique(), dtype="datetime64[ns]")
@@ -120,9 +120,9 @@ class _LabelEventWindow:
 @dataclass(frozen=True)
 class _CVDateSlices:
     sorted_data: pd.DataFrame
-    dates: np.ndarray
-    date_start_rows: np.ndarray
-    date_end_rows: np.ndarray
+    dates: np.ndarray[Any, Any]
+    date_start_rows: np.ndarray[Any, Any]
+    date_end_rows: np.ndarray[Any, Any]
 
 
 def _date_key(date: object) -> pd.Timestamp:
@@ -136,7 +136,9 @@ def _as_date_tuple(dates: object) -> tuple[pd.Timestamp, ...]:
     cleaned = [
         cast(pd.Timestamp, pd.Timestamp(date)).normalize() for date in values if not pd.isna(date)
     ]
-    return tuple(pd.Index(cleaned).drop_duplicates().sort_values())
+    return tuple(
+        cast(pd.Timestamp, date) for date in pd.Index(cleaned).drop_duplicates().sort_values()
+    )
 
 
 def _lookup_shifted_date(
@@ -210,13 +212,13 @@ def _event_windows_overlap(left: _LabelEventWindow, right: _LabelEventWindow) ->
 
 
 def _apply_event_window_purge_indices(
-    train_idx: np.ndarray,
-    val_idx: np.ndarray,
-    dates: np.ndarray,
+    train_idx: np.ndarray[Any, Any],
+    val_idx: np.ndarray[Any, Any],
+    dates: np.ndarray[Any, Any],
     event_windows: dict[pd.Timestamp, _LabelEventWindow],
     *,
     embargo_days: int,
-) -> tuple[np.ndarray, bool]:
+) -> tuple[np.ndarray[Any, Any], bool]:
     val_dates = [_date_key(dates[idx]) for idx in val_idx]
     test_windows = [event_windows[date] for date in val_dates if date in event_windows]
     if len(test_windows) != len(val_dates):
@@ -275,13 +277,13 @@ def _validate_cv_purge_mode(cv_purge_mode: str) -> str:
 
 
 def _windowed_cv_train_indices(
-    train_idx: np.ndarray,
+    train_idx: np.ndarray[Any, Any],
     *,
-    dates: np.ndarray,
+    dates: np.ndarray[Any, Any],
     train_window_mode: str | None,
     train_window_size: int | None,
     train_window_unit: str,
-) -> np.ndarray | None:
+) -> np.ndarray[Any, Any] | None:
     train_dates = select_train_window_dates(
         dates[train_idx],
         mode=train_window_mode,
