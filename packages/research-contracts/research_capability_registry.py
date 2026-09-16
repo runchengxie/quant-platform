@@ -18,7 +18,7 @@ REGISTRY_VERSION = "research_capability_registry.v1"
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
 OWNER_REPOSITORIES = {
     "research-workspace",
-    "market-data-platform",
+    "quant-market-data-platform",
     "deep-learning-tick-data-prediction",
     "alpha-research",
     "portfolio-backtester",

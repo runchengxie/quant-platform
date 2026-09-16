@@ -1,6 +1,6 @@
 """Pure size-style crowding and relative-strength signal computation.
 
-This module owns the numerical kernel migrated from market-intel. It performs no
+This module owns the numerical kernel migrated from quant-intel-platform. It performs no
 file I/O, report rendering, publication, or delivery: callers supply aligned
 large/small index frames and receive a deterministic result plus bounded series
 for evidence/visualization.

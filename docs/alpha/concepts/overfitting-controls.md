@@ -1,14 +1,14 @@
 # 防过拟合机制总览
 
 > status: active
-> owner: alpha-research
+> owner: quant-market-research
 > last_verified: 2026-07-16
 > source_of_truth: yes
 > superseded_by: n/a
 
-本页汇总研究流程中的数据防泄漏、时间切分、特征证据、多重试验控制和候选晋升要求。具体命令见 `strategy-pipeline/docs/cli-helpers.md`，配置键见 `strategy-pipeline/docs/configuration.md`，输出字段见 `strategy-pipeline/docs/output-artifacts.md`。
+本页汇总研究流程中的数据防泄漏、时间切分、特征证据、多重试验控制和候选晋升要求。具体命令见[CLI 辅助工具](../../orchestration/reference/cli-helpers.md)，配置键见[编排配置](../../orchestration/reference/configuration.md)，输出字段见[输出产物](../../orchestration/output-artifacts.md)。
 
-`alpha-research` 维护模型验证、特征证据、CPCV、PBO 和信号诊断。数据、回测、流程编排和执行边界见根目录 `docs/platform-workflow.md`。
+`quant-market-research` 维护模型验证、特征证据、CPCV、PBO 和信号诊断。数据、回测、流程编排和执行边界见根目录 `docs/platform-workflow.md`。
 
 ## 主要风险
 
@@ -34,11 +34,11 @@
 
 ## 已有机制
 
-下表中的 `strategy` 命令由 `strategy-pipeline` 提供，研究实现位于 `alpha-research`。
+下表中的 `strategy` 命令由本仓库的 `strategy_pipeline` 提供，研究实现位于 alpha 研究层。
 
 | 层级 | 机制 | 当前入口 | 使用方式 |
 | --- | --- | --- | --- |
-| 数据 | PIT 股票池和资产契约 | `strategy-pipeline/configs/presets/a_share.yml` | 固定历史可见数据和资产版本 |
+| 数据 | PIT 股票池和资产契约 | 调用方提供的版本化配置 | 固定历史可见数据和资产版本 |
 | 切分 | 日期间隔和事件窗口样本清理 | `packages/alpha/src/alpha_research/split.py`、`eval.cv_purge_mode` | 防止训练标签窗口与测试区间重叠 |
 | 训练窗口 | 滚动或扩展窗口 | `model.train_window` | 检查历史长度和市场状态混杂 |
 | 前推验证 | Walk-forward | `eval.walk_forward` | 检查信号能否跨时间窗口延续 |

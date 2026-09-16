@@ -1,7 +1,7 @@
 [project]
 name = "research-contracts"
 version = "0.1.0"
-description = "Versioned artifact contracts shared by the research and market-intel systems"
+description = "Versioned artifact contracts shared by the research and quant-intel-platform systems"
 readme = "README.md"
 requires-python = ">=3.11"
 

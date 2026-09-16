@@ -156,7 +156,7 @@ def run_smoke(root: Path, timeout: int) -> list[SmokeResult]:
 
     marketdata = _command_for(
         root,
-        "market-data-platform",
+        "quant-market-data-platform",
         "marketdata",
         "market_data_platform.cli",
     )

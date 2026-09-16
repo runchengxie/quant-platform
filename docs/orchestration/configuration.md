@@ -1,7 +1,7 @@
 # 文档已移动
 
 > status: superseded
-> owner: strategy-pipeline
+> owner: quant-platform
 > audience: human and agent
 > last_verified: 2026-09-06
 > source_of_truth: no

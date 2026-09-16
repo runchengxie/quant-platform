@@ -1,7 +1,7 @@
-"""Inline symbol/path utilities formerly from market-data-platform.
+"""Inline symbol/path utilities formerly from quant-market-data-platform.
 
 Keeping these here makes portfolio-backtester self-contained so external
-users can ``pip install`` and run without cloning market-data-platform.
+users can ``pip install`` and run without cloning quant-market-data-platform.
 """
 
 import os

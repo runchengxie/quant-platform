@@ -10,7 +10,7 @@
 结果变化。
 
 `benchmark-protocol.md` 的其他内容（市场 benchmark 阶梯、晋升门槛、固定分数组合层协议）分别由
-`portfolio-backtester` 和 `strategy-pipeline` 维护。
+由 `quant-platform` 维护，具体 Python 包名仍为 `portfolio_backtester` 和 `strategy_pipeline`。
 
 ## 6.1 先按特征簇组织
 
@@ -55,10 +55,10 @@ HK selected 当前常见 family 可以按下面理解：
 
 ```bash
 strategy alpha feature-evidence generate-ablation \
-  --config strategy-pipeline/configs/experiments/sweeps/a_share__research_protocol_feature_evidence.yml
+  --config configs/experiments/sweeps/a_share__research_protocol_feature_evidence.yml
 
 strategy alpha feature-evidence summarize-ablation \
-  --config strategy-pipeline/configs/experiments/sweeps/a_share__research_protocol_feature_evidence.yml
+  --config configs/experiments/sweeps/a_share__research_protocol_feature_evidence.yml
 ```
 
 `generate-ablation` 只生成配置和 `jobs.csv`。跑完这些配置后，再用 `summarize-ablation` 汇总相对

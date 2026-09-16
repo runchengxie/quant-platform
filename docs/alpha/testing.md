@@ -1,7 +1,7 @@
 # 文档已移动
 
 > status: superseded
-> owner: alpha-research
+> owner: quant-market-research
 > audience: human and agent
 > last_verified: 2026-09-06
 > source_of_truth: no

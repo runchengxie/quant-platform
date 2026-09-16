@@ -32,7 +32,7 @@ def test_owner_adapters_expose_owner_neutral_control_plane_ports() -> None:
     )
 
     assert ports.owner_ids() == (
-        "market-data-platform",
+        "quant-market-data-platform",
         "alpha-research",
         "portfolio-backtester",
         "strategy-pipeline",
@@ -63,7 +63,7 @@ def test_completed_run_receipt_is_serializable_without_owner_imports() -> None:
         "stages": [
             {
                 "stage": "data",
-                "owner_id": "market-data-platform",
+                "owner_id": "quant-market-data-platform",
                 "status": "completed",
                 "metadata": {},
             },
@@ -90,11 +90,13 @@ def test_completed_run_receipt_is_serializable_without_owner_imports() -> None:
 
 
 def test_owner_stage_receipt_serializes_metadata() -> None:
-    receipt = OwnerStageReceipt(stage="data", owner_id="market-data-platform", metadata={"rows": 3})
+    receipt = OwnerStageReceipt(
+        stage="data", owner_id="quant-market-data-platform", metadata={"rows": 3}
+    )
 
     assert receipt.to_dict() == {
         "stage": "data",
-        "owner_id": "market-data-platform",
+        "owner_id": "quant-market-data-platform",
         "status": "completed",
         "metadata": {"rows": 3},
     }

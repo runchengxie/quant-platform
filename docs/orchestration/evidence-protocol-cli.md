@@ -8,5 +8,5 @@ strategy-pipeline research-protocol --level exploratory --init-manifest protocol
 strategy-pipeline afml-evidence --run-dir artifacts/runs/example
 ```
 
-具体证据计算由 `portfolio-backtester` 提供，协议检查由 `alpha-research` 提供。公共仓库只负责
+具体证据计算由 `portfolio-backtester` 提供，协议检查由 `quant-market-research` 提供。公共仓库只负责
 参数解析、文件读写和命令编排。

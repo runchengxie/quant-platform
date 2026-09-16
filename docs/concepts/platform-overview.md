@@ -28,10 +28,11 @@ DataFrame
 
 | 项目 | 主要职责 |
 | --- | --- |
-| `market-data-platform` | 数据采集、清洗、质量检查、版本和发布 |
+| `quant-market-data-platform` | 数据采集、清洗、质量检查、版本和发布 |
 | `quant-research` | 策略、特征、模型、实验和研究结论 |
 | `quant-platform` | 回测、组合构造、风险、成本、执行模拟和公开契约 |
-| `market-intel` | 报告、看板和研究结果交付 |
+| `quant-intel-platform` | 报告、看板和研究结果交付 |
+| `quant-intel-deploy` | 研究结果发布和部署 |
 
 研究项目通过已发布的数据资产和版本化产物与本仓库协作。平台代码保持策略无关，不保存真实策略输入、凭证或专有选股逻辑。
 

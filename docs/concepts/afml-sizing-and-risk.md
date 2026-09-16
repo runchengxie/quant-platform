@@ -28,7 +28,7 @@ weights = build_sized_weights(
 )
 ```
 
-概率校准由 `alpha-research` 负责。组合层不会用训练内概率重新拟合校准器。
+概率校准由 `quant-market-research` 负责。组合层不会用训练内概率重新拟合校准器。
 
 ## Active bets
 
@@ -74,7 +74,7 @@ from portfolio_backtester.afml_evidence import generate_run_afml_evidence
 generate_run_afml_evidence("artifacts/runs/example")
 ```
 
-建议 `strategy-pipeline` 保存：
+建议由当前仓库的 `strategy_pipeline` 保存：
 
 ```text
 sizing_receipt.json

@@ -1,18 +1,18 @@
 # 模型范围与扩展条件
 
 > status: reference
-> owner: alpha-research
+> owner: quant-market-research
 > last_verified: 2026-07-16
 > source_of_truth: yes
 > superseded_by: n/a
 
-本页记录当前模型注册表、尚未覆盖的诊断问题，以及新增模型需要满足的条件。模型选择和配置示例见 [model-selection.md](model-selection.md)。统一比较协议见 `strategy-pipeline/docs/concepts/benchmark-protocol.md`。
+本页记录当前模型注册表、尚未覆盖的诊断问题，以及新增模型需要满足的条件。模型选择和配置示例见 [model-selection.md](model-selection.md)。统一比较协议见[基准阶梯](../../concepts/benchmark-ladder.md)。
 
-模型家族和扩展条件由 `alpha-research` 维护。`strategy-pipeline` 负责配置、命令和实验编排。
+模型家族和扩展条件由 `quant-market-research` 维护。`quant-platform` 中的 `strategy_pipeline` 负责配置、命令和实验编排。
 
 ## 当前模型注册表
 
-当前默认研究主线是 A 股，`strategy-pipeline/configs/presets/a_share.yml` 使用 `xgb_regressor`。注册表共包含五类入口。
+当前默认研究主线是 A 股，示例配置使用 `xgb_regressor`。注册表共包含五类入口。
 
 | 模型类型 | 当前角色 | 主要用途 |
 | --- | --- | --- |

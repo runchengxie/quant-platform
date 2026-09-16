@@ -2,7 +2,7 @@
 
 `alpha_research.style_replica` 只维护 StyleReplica 的因子、研究分类、A/B 分数和标准信号产物。最终槽位分配、主题配额、持仓缓冲、替换限制、重叠处理和持仓权重已经移出 alpha owner。
 
-运行编排和 `targets.json` 导出由 `strategy-pipeline` 负责，StyleReplica 冻结策略政策由 `strategy-app` 负责，通用目标持仓构造、回测、成本和容量由 `portfolio-backtester` 负责。
+运行编排和 `targets.json` 导出由本仓库的 `strategy_pipeline` 负责，StyleReplica 冻结策略政策由 `strategy-app` 负责，通用目标持仓构造、回测、成本和容量由本仓库的 `portfolio_backtester` 负责。
 
 ## 模块入口
 

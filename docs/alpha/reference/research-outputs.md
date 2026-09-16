@@ -1,8 +1,6 @@
 # alpha 研究产物契约
 
-本页记录 alpha 研究层产出的报告文件与字段契约。运行编排和 `summary.json` 顶层结构见
-[`strategy-pipeline` 输出摘要](https://github.com/runchengxie/strategy-pipeline/blob/main/docs/output-summary.md)。跨仓库字段约定见
-[`research-workspace` 产物契约](https://github.com/runchengxie/research-workspace/blob/main/docs/contracts.md)。
+本页记录 alpha 研究层产出的报告文件与字段契约。运行编排和 `summary.json` 顶层结构见[输出摘要](../../orchestration/output-summary.md)。跨项目字段约定见[公开 API 与产物契约](../../reference/public-api.md)。
 
 ## CPCV 稳健性审计报告
 
@@ -19,7 +17,7 @@
 输出目录结构：
 
 ```text
-<alpha-research-root>/reports/cpcv_<tag>/
+<quant-market-research-root>/reports/cpcv_<tag>/
   cpcv_splits.csv
   cpcv_path_returns.csv
   cpcv_path_metrics.csv
@@ -49,13 +47,13 @@ path_id,split_ids,test_start,test_end,observation_count,sharpe,total_return,ann_
 
 ## CSCV / PBO / DSR 报告
 
-`strategy alpha pbo` 默认写入 `<alpha-research-root>/reports/pbo/`，也可以通过 `--out`
+`strategy alpha pbo` 默认写入 `<quant-market-research-root>/reports/pbo/`，也可以通过 `--out`
 指定目录。
 
 输出目录结构：
 
 ```text
-<alpha-research-root>/reports/pbo/
+<quant-market-research-root>/reports/pbo/
   pbo_splits.csv
   pbo_summary.json
 ```
@@ -76,7 +74,7 @@ split_id,train_groups,test_groups,selected_candidate,selected_train_sharpe,selec
 ## 动态多信号组合报告
 
 `strategy alpha dynamic-signal-ensemble` 输出到配置里的 `output_dir` 或 `--output-dir`。
-两者都未提供时写入 `<alpha-research-root>/reports/dynamic_signal_ensemble/`。
+两者都未提供时写入 `<quant-market-research-root>/reports/dynamic_signal_ensemble/`。
 
 输出文件：
 
@@ -130,8 +128,7 @@ schema_version,artifact_type,no_level2,rolling_metrics_shifted,date_count,signal
 ## 模型调参与线性搜索
 
 `strategy alpha tune` 与 `strategy alpha sweep-linear` 输出模型调参搜索产物，默认写入
-`artifacts/sweeps/<tag>/`。字段契约与 pipeline 的[输出产物说明](https://github.com/runchengxie/strategy-pipeline/blob/main/docs/output-artifacts.md)
-一致。
+`artifacts/sweeps/<tag>/`。字段契约见[输出产物说明](../../orchestration/output-artifacts.md)。
 
 ## 信号产物
 

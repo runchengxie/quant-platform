@@ -1,9 +1,7 @@
 # 市场 benchmark 阶梯
 
-本页定义组合回测侧的市场 benchmark 选择与报告层对比协议。特征研究协议、晋升门槛和模型分层见
-`alpha-research/docs/concepts/feature-research-protocol.md` 与
-`alpha-research/docs/concepts/overfitting-controls.md`。运行编排和配置入口见
-`strategy-pipeline/docs/concepts/benchmark-protocol.md`。
+本页定义组合回测侧的市场 benchmark 选择与报告层对比协议。特征研究协议、晋升门槛和模型分层由
+`quant-market-research` 维护。运行编排和配置入口见本仓库的 [配置说明](../orchestration/reference/configuration.md)。
 
 ## 市场 benchmark
 
@@ -36,7 +34,7 @@ alpha，更贴近的做法是自建一个港股通 by-date universe cap-weight b
 
 ```bash
 strategy backtest benchmark-ladder \
-  --config strategy-pipeline/configs/experiments/sweeps/a_share__research_protocol_benchmark_ladder.yml
+  --config configs/experiments/sweeps/a_share__research_protocol_benchmark_ladder.yml
 ```
 
 这层不改变单次 run 的主 benchmark，只读取已有策略收益和 benchmark 收益，输出每条 benchmark 的
@@ -56,7 +54,7 @@ active total return、IR、tracking error、beta、alpha、相关性、可比状
 | 线性 benchmark | 同一 hybrid 单元上的 sanity check |
 | Challenger | 同一 hybrid 单元上的排序模型或稀疏线性模型 |
 
-历史归档配置文件名与复现入口见 `strategy-pipeline/docs/archive/research/hk/README.md`。
+历史归档配置文件名与复现入口见 `quant-market-research` 的归档文档。
 
 这套协议先把问题拆开：
 

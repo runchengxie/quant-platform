@@ -1,9 +1,8 @@
 # 回测结果解读
 
 本页说明组合回测侧的结果如何解读。预测质量、IC、CPCV、PBO 和特征重要度的解读见
-`alpha-research/docs/concepts/result-interpretation.md`。通用运行摘要和产物生命周期见
-[`strategy-pipeline/docs/output-summary.md`](https://github.com/runchengxie/strategy-pipeline/blob/main/docs/output-summary.md)，跨仓库字段约定见
-[`research-workspace/docs/contracts.md`](https://github.com/runchengxie/research-workspace/blob/main/docs/contracts.md)。
+`quant-market-research` 的结果解读文档。通用运行摘要和产物生命周期见
+[输出摘要](../orchestration/output-summary.md)，跨项目字段约定见[公开 API 与产物契约](../reference/public-api.md)。
 
 ## 净收益与毛收益
 

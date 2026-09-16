@@ -1,6 +1,6 @@
 # Control-plane API
 
-`strategy-pipeline` 负责协调 owner 实现和 artifact publication，传递 reference 和
+`quant-platform` 中的 `strategy_pipeline` 负责协调 owner 实现和 artifact publication，传递 reference 和
 receipt，不计算 artifact 的具体内容。
 
 ## Contracts

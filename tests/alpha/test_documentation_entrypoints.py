@@ -217,6 +217,6 @@ def test_overfitting_docs_use_owner_relative_source_path() -> None:
 
 def test_research_output_docs_point_to_current_pipeline_owner() -> None:
     outputs = (ALPHA_DOCS / "reference" / "research-outputs.md").read_text(encoding="utf-8")
-    assert "strategy-pipeline/blob/main/docs/output-summary.md" in outputs
-    assert "research-workspace/blob/main/docs/contracts.md" in outputs
+    assert "../../orchestration/output-summary.md" in outputs
+    assert "../../reference/public-api.md" in outputs
     assert "strategy-pipeline-internal" not in outputs

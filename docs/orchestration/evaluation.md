@@ -2,7 +2,7 @@
 
 `strategy_pipeline.pipeline.eval` 负责把一次评估窗口中的指标计算、组合回放和结果产物连接起来。
 
-它把评分指标交给 `alpha-research`，把持仓、净值、换手和暴露产物交给 `portfolio-backtester`。模块自身只负责统一输入、调用顺序和结果字典结构，不包含具体策略规则。
+它把评分指标交给 `quant-market-research`，把持仓、净值、换手和暴露产物交给 `portfolio-backtester`。模块自身只负责统一输入、调用顺序和结果字典结构，不包含具体策略规则。
 
 ## 公开入口
 

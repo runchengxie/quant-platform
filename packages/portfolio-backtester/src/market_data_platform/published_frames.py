@@ -457,6 +457,6 @@ def _pandas() -> Any:
     except ImportError as exc:  # pragma: no cover - exercised in minimal installations
         raise ImportError(
             "Published Parquet frame loading requires pandas and pyarrow. "
-            "Install market-data-platform[qlib] or market-data-platform[dev]."
+            "Install quant-market-data-platform[qlib] or quant-market-data-platform[dev]."
         ) from exc
     return pd
