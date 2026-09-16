@@ -17,8 +17,8 @@ uv run ruff check src tests scripts
 导出经过审阅的公共 surface：
 
 ```bash
-python scripts/dev/public_surface_export.py --output /tmp/strategy-pipeline-public
-cd /tmp/strategy-pipeline-public
+python scripts/dev/public_surface_export.py --output /tmp/quant-platform-public
+cd /tmp/quant-platform-public
 python scripts/dev/public_readiness.py --strict
 PYTHONPATH=src python -m pytest tests/control_plane -q
 ```

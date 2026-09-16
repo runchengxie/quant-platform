@@ -20,7 +20,7 @@
 运行命令：
 
 ```bash
-strategy-pipeline export-targets \
+strategy export-targets \
   --holdings artifacts/holdings.json \
   --out artifacts/targets.json
 ```

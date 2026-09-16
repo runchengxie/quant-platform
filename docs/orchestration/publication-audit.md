@@ -16,7 +16,7 @@
 
 原审计的 clean-root 导出结果只包含无依赖公共核心、synthetic 测试、公共 readiness 工具、安全与
 贡献政策，以及不含敏感信息的公共 CI workflow。当前仓库另外提供评估编排，它依赖公开的
-`alpha-research` 和 `portfolio-backtester`。这些依赖、新增的评估编排和运行摘要模块必须纳入下一次严格的
+`quant-market-research` 和 `portfolio-backtester`。这些依赖、新增的评估编排和运行摘要模块必须纳入下一次严格的
 public-readiness gate。
 
 私有历史的结果符合预期。保留的仓库包含历史策略名称、研究文档、provider 引用和私有

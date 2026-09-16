@@ -1,6 +1,6 @@
 # 测试和质量检查
 
-本页说明 `alpha-research` 的本地测试入口和检查范围。
+本页说明 `quant-market-research` 的本地测试入口和检查范围。
 
 ## 安装开发依赖
 

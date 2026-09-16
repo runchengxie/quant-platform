@@ -1,6 +1,6 @@
 # AFML 方法组件
 
-本页记录从金融机器学习方法中落地到 `alpha-research` 的研究组件。它们保持 owner-native API，不导入编排层、组合回测层或执行层实现。
+本页记录从金融机器学习方法中落地到 `quant-market-research` 的研究组件。它们保持 owner-native API，不导入编排层、组合回测层或执行层实现。
 
 ## 组件
 

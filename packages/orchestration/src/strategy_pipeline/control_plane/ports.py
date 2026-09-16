@@ -80,7 +80,7 @@ class ExecutionBoundaryPort(Protocol):
 @dataclass(frozen=True)
 class NativeDataOwnerAdapter:
     load_research_panel_fn: StateCallable
-    owner_id: str = "market-data-platform"
+    owner_id: str = "quant-market-data-platform"
 
     def load_research_panel(self, **kwargs: Any) -> State:
         return self.load_research_panel_fn(**kwargs)

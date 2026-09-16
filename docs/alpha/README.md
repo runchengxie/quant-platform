@@ -1,9 +1,9 @@
-# alpha-research 文档入口
+# Alpha 研究文档入口
 
 > status: active
-> owner: alpha-research
+> owner: quant-market-research
 > audience: human and agent
-> last_verified: 2026-09-06
+> last_verified: 2026-09-16
 > source_of_truth: yes
 > superseded_by: n/a
 
@@ -43,6 +43,6 @@
 - 模型专用目标持仓规则
 - 候选晋升中的 alpha 证据
 
-通用组合回测、交易成本和容量分析由 `portfolio-backtester` 维护。运行编排、CLI、配置合成、运行目录和目标文件导出由 `strategy-pipeline` 维护。
+通用组合回测、交易成本、容量分析、运行编排、CLI、配置合成、运行目录和目标文件导出都由本仓库维护。对应的 Python 包和命令仍分别使用 `portfolio_backtester` 与 `strategy_pipeline` 名称。
 
-从其他仓库迁入文档时，应同时更新旧页面的跳转说明，避免出现多个活跃版本。pipeline 侧只保留命令、配置、运行编排和交接入口。编码代理默认只读取本页、相关分类入口和目标页面。
+从其他仓库迁入文档时，应同时更新旧页面的跳转说明，避免出现多个活跃版本。编码代理默认只读取本页、相关分类入口和目标页面。

@@ -90,7 +90,10 @@ nav:
       - 换手率: concepts/turnover.md
       - 执行成本: concepts/execution-costs.md
       - 成本拆解: concepts/cost-breakdown.md
+      - 日期执行费用: dated-execution-fees.md
+      - 公司行动账本: corporate-action-ledger.md
       - 差分回测: concepts/differential-backtesting.md
+      - 运行时内核: architecture/runtime-kernel.md
       - 其他风险与研究主题:
           - Contextual 因子: alpha/concepts/contextual-factors.md
           - 基本面状态预测: alpha/concepts/fundamental-state-forecasting.md
@@ -116,6 +119,7 @@ nav:
       - 运维测试: alpha/operations/testing.md
       - 研究输出: alpha/reference/research-outputs.md
       - 信号产物: alpha/reference/signal-artifacts.md
+      - 风险模型内核: risk-model-kernel.md
   - 执行与微观结构:
       - 执行概览: execution/README.md
       - 微观结构概览: microstructure/README.md
@@ -155,5 +159,6 @@ nav:
       - 归属迁移: ownership-migration.md
       - 发布审计: orchestration/publication-audit.md
   - 治理与迁移:
-      - research-workspace 退出计划: migration/research-workspace-sunset.md
+      - 历史迁移边界: migration/research-workspace-sunset.md
+      - quant-market-research 边界: migration/market-research-boundary.md
       - 会计与执行路线图: governance/accounting-execution-roadmap.md

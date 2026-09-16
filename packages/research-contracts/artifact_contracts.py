@@ -19,7 +19,7 @@ CORE_ARTIFACTS = frozenset(
 KNOWN_REPOS = frozenset(
     {
         "alpha-research",
-        "market-data-platform",
+        "quant-market-data-platform",
         "portfolio-backtester",
         "strategy-pipeline",
         "strategy-pipeline-internal",

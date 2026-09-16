@@ -2,7 +2,7 @@
 
 这是公开的可复用量化研究平台仓库。保留 `portfolio_backtester` Python 命名空间，直到完成兼容迁移。
 
-`research-workspace` 处于 sunset 过渡期。新的通用回测、组合构造、风险、执行模拟和公共契约应优先落在本仓库。`market-data-platform` 保持独立，继续负责数据接入、标准化、质量治理、版本和已发布数据资产。本仓库只消费其发布资产。旧 `portfolio-backtester` 和 `quant-execution-engine` 只用于迁移兼容、历史复现和事实核对。
+公共框架迁移已经完成。新的通用回测、组合构造、风险、执行模拟和公共契约都维护在本仓库。`quant-market-data-platform` 独立负责数据接入、标准化、质量治理、版本和已发布数据资产，本仓库只消费其发布资产。`research-workspace`、旧 `portfolio-backtester` 和旧 `quant-execution-engine` 仅用于历史复现和兼容核对。
 
 `portfolio_backtester` Python 命名空间暂时保持不变。本仓库只接收公开机制、合成数据、测试、契约和迁移证据，不接收数据供应商、凭证、真实数据、策略参数、任务编排、执行运行时或研究产物。
 
@@ -11,7 +11,7 @@
 - 策略假设、现金流 ML、专有特征和模型选择留在 `quant-research`。
 - 平台代码必须保持策略无关，不依赖私有策略模块、真实策略数据或凭证。
 - 不要为了迁移方便复制策略实现。需要兼容时保留薄 adapter，并记录删除条件。
-- 详细规则见 `docs/migration/research-workspace-sunset.md`。
+- 历史边界见 `docs/migration/research-workspace-sunset.md`。
 
 ## 并行开发流程
 

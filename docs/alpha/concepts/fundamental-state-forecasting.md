@@ -24,7 +24,7 @@ portfolio-backtester
 
 ## 标签契约
 
-输入必须已经由数据平台整理成每个 `(symbol, report_period)` 一条 canonical annual observation，并且包含合法的 `available_date`。修订版本选择、原始披露证明和 PIT provenance 继续由 `market-data-platform` 负责。
+输入必须已经由数据平台整理成每个 `(symbol, report_period)` 一条 canonical annual observation，并且包含合法的 `available_date`。修订版本选择、原始披露证明和 PIT provenance 继续由 `quant-market-data-platform` 负责。
 
 示例：
 

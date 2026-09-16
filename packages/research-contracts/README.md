@@ -1,16 +1,15 @@
 # research-contracts
 
-`research-contracts` 是 `research-workspace` 与下游产品仓库共享的轻量契约包。它只包含
+`research-contracts` 是当前平台与研究、数据产品仓库共享的轻量契约包。它只包含
 artifact envelope、schema、SHA-256、lineage、研究时钟、运行清单和文件清单校验，不包含研究算法、
 数据访问或运行时凭证。
 
 ## 发布方式
 
-本包不发布到包索引。它作为 `research-workspace` 仓库的 Git 子目录随仓库一起版本化，消费方
-从 Git 安装并锁定不可变提交：
+本包随当前仓库一起版本化。消费方从 Git 安装并锁定不可变提交：
 
 ```text
-research-contracts @ git+https://github.com/runchengxie/research-workspace.git@<commit>#subdirectory=src/research_contracts
+research-contracts @ git+https://github.com/runchengxie/quant-platform.git@<commit>#subdirectory=packages/research-contracts
 ```
 
 使用 `uv` 时在 `pyproject.toml` 中声明为 git source：
@@ -19,21 +18,21 @@ research-contracts @ git+https://github.com/runchengxie/research-workspace.git@<
 dependencies = ["research-contracts>=0.1.0"]
 
 [tool.uv.sources]
-research-contracts = { git = "https://github.com/runchengxie/research-workspace.git", rev = "<commit>", subdirectory = "src/research_contracts" }
+research-contracts = { git = "https://github.com/runchengxie/quant-platform.git", rev = "<commit>", subdirectory = "packages/research-contracts" }
 ```
 
-每次合约变更先合并到 `research-workspace` 的 `main`，消费方再升级锁定到新的不可变提交。
+每次合约变更先合并到 `quant-platform` 的 `main`，消费方再升级锁定到新的不可变提交。
 `<commit>` 必须是 `main` 上可达的提交，不能指向功能分支的临时提交。
 
 ## 消费范围
 
 `research-contracts` 由 artifact producer 和顶层工作区消费：
 
-- 顶层工作区使用 `smoke_contracts.py` 校验 `docs/artifact-contracts.yml` 与
+- 当前平台使用 `smoke_contracts.py` 校验 `docs/artifact-contracts.yml` 与
   `docs/contracts.md` 的一致性，并校验 `docs/contracts/contract-ownership.yml` 的 owner、consumer
   和兼容策略完整性。ownership registry 与 artifact 明细清单的重叠项必须保持 schema、producer
   和 consumers 一致。
-- 生产方（`alpha-research`、`portfolio-backtester`、`strategy-pipeline`）安装本包后，
+- 生产方（`quant-market-research`、`portfolio-backtester`、`strategy_pipeline`）安装本包后，
   通过 `research_contracts` 公开 API 写入 `research.artifact-envelope.v2`。
 - 研究编排方可以使用 `research.clock.v1` 固化一次运行的信息可见、信号、决策、执行窗口和估值时点，
   并使用 `research.backtest-run.v1` 只引用数据、信号、组合结果和证据 artifact，而不复制业务大表。
@@ -79,7 +78,7 @@ clock = ResearchClock.from_mapping(
 组合或会计结果。`evidence_tier` 第一版只允许 `diagnostic` 与 `execution_aware`。后者会要求完整
 `ResearchClock` 执行窗口。
 
-`research.backtest-run.v1` 目前只发布 schema 与校验器。等 `strategy-pipeline` 的真实 producer 和
+`research.backtest-run.v1` 目前只发布 schema 与校验器。等真实 producer 和
 `portfolio-backtester` 的 canonical bundle 落地后，再把该 artifact 加入 `docs/artifact-contracts.yml`，
 避免在 registry 中登记不存在的 producer entrypoint。
 

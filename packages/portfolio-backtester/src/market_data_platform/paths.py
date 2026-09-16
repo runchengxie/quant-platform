@@ -335,7 +335,8 @@ TUSHARE_A_SHARE_ASSET_PATH_SPECS: dict[str, tuple[str, ...]] = {
     "universe_by_date": ("assets", "universe", "a_share_all_full_by_date.csv"),
     "universe_symbols": ("assets", "universe", "a_share_all_full_symbols.txt"),
     "universe_meta": ("assets", "universe", "a_share_all_full_by_date.meta.yml"),
-    # Reference datasets consolidated from market-intel/src/tushare_jobs (2026-07-29 assessment).
+    # Reference datasets consolidated from quant-intel-platform/src/tushare_jobs
+    # (2026-07-29 assessment).
     "stock_st": (
         "assets",
         "tushare",

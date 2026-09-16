@@ -21,10 +21,10 @@
 
 alpha 框架的原生实现是 `NativeDatasetBackend`。Qlib 后端通过可选依赖接入。
 
-本仓库仍处于分阶段迁移阶段，旧工作区的部分职责尚未迁入。
+公共框架迁移已经完成。仓库继续保留 `portfolio_backtester` Python 命名空间，便于现有调用方平稳升级。
 
-当前版本不公开发布 portfolio-backtester 的 style-factor slice。该 slice 的来源许可证与历史
-授权尚未确认，已登记为私有目标迁移项。通用回测、组合、风险和执行模拟能力仍由本仓库提供。
+`portfolio-backtester` 的 style-factor slice 仍不属于公开发布范围。它的来源许可证和历史授权尚未确认，
+相关内容已归入私有迁移事项。通用回测、组合、风险和执行模拟能力由本仓库提供。
 
 仓库还在 `quant_platform` 命名空间下提供通用发布辅助工具，并提供
 `packages/research-contracts/` 下的版本化 `research-contracts` 包。这些包负责清单格式化、
@@ -34,8 +34,8 @@ alpha 框架的原生实现是 `NativeDatasetBackend`。Qlib 后端通过可选�
 Python 命名空间保持不变。Apache-2.0 许可证只适用于本仓库原有的公开框架代码，
 不会改变旧来源代码或第三方依赖的许可证。
 
-数据接口、alpha 机制、微观结构抽象、编排和执行接口仍在分阶段迁移和审计。
-`research-workspace` 已进入 sunset 阶段，迁移完成前仅用于历史核对和兼容验证。
+数据接口、alpha 机制、微观结构抽象、编排和执行接口已经迁入本仓库并继续接受质量审计。
+`research-workspace` 仅保留为历史来源和兼容核对对象。
 
 本地运行：
 
@@ -61,7 +61,7 @@ uv sync --locked --all-groups --reinstall-package research-contracts
 - [回测与组合说明](docs/concepts/backtest-spec.md)
 - [研究产物与公开接口](docs/reference/public-api.md)
 - [迁移与边界说明](docs/migration/research-workspace-sunset.md)
-- [market-research 边界说明](docs/migration/market-research-boundary.md)
+- [quant-market-research 边界说明](docs/migration/market-research-boundary.md)
 
 文档中的技术说明以当前代码和测试为准。README 只保留项目定位、使用入口和导航，具体接口、架构、兼容性和迁移记录请查看 `docs/`。
 
@@ -71,9 +71,10 @@ uv sync --locked --all-groups --reinstall-package research-contracts
 
 以下内容由其他仓库负责：
 
-- `market-data-platform`：数据采集、清洗、质量检查、版本和发布
+- `quant-market-data-platform`：数据采集、清洗、质量检查、版本和发布
 - `quant-research`：策略、特征、机器学习、实验和研究结论
-- `market-intel`：报告、看板和研究结果交付
+- `quant-intel-platform`：报告、看板和研究结果交付
+- `quant-intel-deploy`：研究结果发布和部署
 
 研究项目通过已发布的数据资产和版本化产物与本仓库协作。`quant-platform` 不接入数据供应商，不保存真实策略输入，也不承载专有策略逻辑。
 

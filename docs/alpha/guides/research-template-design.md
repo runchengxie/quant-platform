@@ -1,6 +1,6 @@
 # 研究模板设计
 
-本页说明何时使用本地派生配置，何时把实验沉淀为仓库模板。配置字段和目录结构由 `strategy-pipeline` 维护，研究问题与验证协议由 `alpha-research` 维护。
+本页说明何时使用本地派生配置，何时把实验沉淀为仓库模板。配置字段和目录结构由当前仓库的 `strategy_pipeline` 维护，研究问题与验证协议由 `quant-market-research` 维护。
 
 ## 快速判断
 
@@ -26,7 +26,7 @@
 
 本地配置适合参数搜索、小范围特征试验、模型比较和临时日期调整。建议放在 `configs/local/`，只改本次实验需要的字段，并使用稳定的 `run_name` 前缀。
 
-特征试验应遵循统一比较协议，固定样本、标签、成本和组合构造。新增一组特征时，先完成覆盖率检查、同族消融和重复字段检查。相关要求见 `strategy-pipeline/docs/concepts/benchmark-protocol.md`。
+特征试验应遵循统一比较协议，固定样本、标签、成本和组合构造。新增一组特征时，先完成覆盖率检查、同族消融和重复字段检查。相关要求见本仓库的 [benchmark 阶梯](../../concepts/benchmark-ladder.md)。
 
 需要团队复用或在文档中作为正式入口时，再将本地配置整理到仓库维护的目录。
 
@@ -39,14 +39,14 @@
 3. 它采用什么样本、标签、成本和验证协议。
 4. 它与现有模板有什么可验证的差异。
 
-新模板的名称应体现市场或股票池、数据路线以及频率或研究重点。A 股实验模板通常放在 `strategy-pipeline/configs/experiments/variants/` 或 `strategy-pipeline/configs/experiments/sweeps/`。历史港股配置只从 `strategy-pipeline/docs/archive/research/hk/README.md` 追溯。
+新模板的名称应体现市场或股票池、数据路线以及频率或研究重点。A 股实验模板通常放在调用方维护的版本化配置目录中。历史港股配置只从 `quant-market-research` 的归档文档追溯。
 
 ## 同步内容
 
 新增仓库模板时，至少同步以下内容：
 
-1. `strategy-pipeline/docs/configuration.md`
-2. `strategy-pipeline/docs/README.md` 中的入口
+1. 本仓库的 [配置说明](../../orchestration/reference/configuration.md)
+2. 本仓库的 [文档入口](../../README.md)
 3. 新资产对应的数据准备说明
 4. 配置加载和模板冒烟测试
 5. 与该路线直接相关的研究或资产测试

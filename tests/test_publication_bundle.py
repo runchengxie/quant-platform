@@ -25,7 +25,7 @@ def test_publication_builder_copies_projection_without_source_path(tmp_path: Pat
                 "schema_version": "strategy.evidence.v1",
                 "media_type": "application/json",
                 "audience": "internal",
-                "consumers": ["market-intel"],
+                "consumers": ["quant-intel-platform"],
             }
         ],
         output_root=bundle,
@@ -55,7 +55,7 @@ def test_publication_manifest_rejects_path_escape(tmp_path: Path) -> None:
                     "schema_version": "bad.v1",
                     "media_type": "application/json",
                     "audience": "internal",
-                    "consumers": ["market-intel"],
+                    "consumers": ["quant-intel-platform"],
                 }
             ],
             output_root=tmp_path / "bundle",
