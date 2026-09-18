@@ -1,0 +1,191 @@
+# AGENTS.md
+
+## 迁移通知
+
+`research-workspace` 处于 sunset 过渡期。新的通用组合、回测、风险和执行模拟应进入 `quant-platform`，策略专属逻辑进入 `quant-research`。本仓库不得新增只服务于旧工作区的核心平台能力。
+
+本文件面向维护者、外部贡献者和代码代理，说明本仓库的协作方式、检查范围和文档要求。
+
+## 仓库职责
+
+本仓库维护 `portfolio_backtester` 包，主要负责：
+
+- Top-K 组合构造
+- 目标持仓生成和校验
+- 持仓回放
+- 交易成本、滑点和退出价格处理
+- 执行容量模拟
+- 换手、容量和暴露分析
+- 回测结果汇总和报告辅助功能
+
+数据下载、因子研究、模型训练、具体策略规则、任务编排和实盘下单不属于本仓库的运行职责。调用方通过公开接口传入信号、持仓和行情数据。
+
+`DailyWatch20` 是为现有调用方保留的兼容例外。本仓库维护其组合选择与回执接口，不在此扩展研究假设、特征或晋升规则。
+
+## 后端与框架边界
+
+- 当前主分支只有 `NativePositionReplayBackend` 后端实现，registry 名称为 `native.position_replay`。
+- Qlib 与 LEAN 的历史候选没有进入 `main`。LEAN 只用于架构参考。
+- Backtrader 仍是规划项，仓库中没有适配器或运行时依赖。
+- vn.py、Gateway、实时传输和券商执行不在本仓库范围内。
+- 文档不得把历史候选、参考框架或规划项写成已注册能力。
+
+## 开始修改前
+
+1. 阅读根目录 `README.md` 和相关的 `docs/` 页面。
+2. 确认修改影响的是公开接口、文件契约、内部实现还是文档。
+3. 确认本地 `main` 已与远端同步。
+4. 保持改动范围集中，避免把无关重构混入同一个提交。
+5. 发现文档与实现不一致时，以当前代码和测试为依据，并同步修正文档。
+
+## 常用命令
+
+安装开发依赖：
+
+```bash
+uv sync --locked --extra dev
+```
+
+运行主要检查：
+
+```bash
+scripts/dev/run_tests.sh lint
+scripts/dev/run_tests.sh format
+scripts/dev/run_tests.sh typecheck
+scripts/dev/run_tests.sh typecheck-release
+scripts/dev/run_tests.sh all
+scripts/dev/run_tests.sh maintainability
+```
+
+`fast` 和 `unit` 目前是 `all` 的兼容别名，都会运行完整的 `pytest` 测试集。不要把它们描述成更快的测试子集。
+
+## 检查范围
+
+| 命令 | 当前范围 | 是否进入本地门禁 |
+| --- | --- | --- |
+| `lint` | 使用 Ruff 检查整个仓库 | 是 |
+| `format` | 使用 Ruff 检查整个仓库的格式 | 是 |
+| `typecheck` | 使用 `ty` 检查 `pyproject.toml` 配置的类型范围 | 是 |
+| `typecheck-release` | `typecheck` 的兼容别名 | 是 |
+| `all` | 运行完整的 `pytest` 测试集 | 是 |
+| `maintainability` | 检查静态可维护性指标是否超过当前阈值 | 是 |
+
+当前类型检查只覆盖配置中列出的范围。不要把通过类型检查表述为整个包已经具备完整类型覆盖。
+
+## GitHub Actions 策略
+
+工作区统一采用以下默认规则：
+
+- public 仓库默认启用 GitHub Actions，用于拉取请求的轻量自动检查。
+- private 仓库默认关闭 GitHub Actions，避免持续占用私有仓库的 Actions 额度。
+- private 仓库如需启用远端 CI，应在仓库文档中记录原因、检查范围和资源成本，并由维护者明确批准。
+- 本地完整门禁继续由仓库自身检查和工作区共享 `pre-push` 承担。
+
+本仓库是 public 仓库，`.github/workflows/ci.yml` 运行拉取请求检查。远端 CI 提供快速反馈，本地门禁仍负责完整检查。
+
+## 代码修改规则
+
+- 保持仓库可以独立安装和测试。
+- 不通过相邻仓库的源码路径补齐导入。
+- 不在运行时导入 `alpha_research` 或 `strategy_pipeline.pipeline`。
+- 修改顶层公开入口时，同步更新 `src/portfolio_backtester/__init__.py`、包级冒烟测试和 `README.md`。
+- 修改 `positions_by_rebalance.csv` 契约时，同步更新 `contracts.py`、契约测试和持仓文档。
+- 修改成本、滑点、交易日历或退出价格逻辑时，补充能够覆盖边界条件的测试。
+- 新增通用组合构造能力时，至少覆盖正常构造、空输入、重复证券、持仓重叠和跨期变化。
+- 对外公开的默认参数需要有测试保护，文档中应说明其用途和局限。
+- 避免在同一次改动中无意改变历史结果。确需改变时，在 PR 中说明影响范围和迁移方式。
+
+## 测试要求
+
+修复缺陷时，先添加能够复现问题的测试。新增功能时，至少覆盖一个正常路径和一个异常或边界路径。
+
+可以按文件运行测试：
+
+```bash
+uv run --extra dev pytest tests/test_position_backtest.py
+uv run --extra dev pytest tests/test_execution.py -k participation
+```
+
+仓库当前未配置覆盖率阈值。不要声称测试覆盖率达到某个比例，除非 PR 同时加入可复现的覆盖率报告。
+
+## 文档要求
+
+中文说明应以中文母语读者为主要对象。
+
+- 使用中文标点
+- 保留必要的行内代码和 API 名称
+- 首次出现的英文术语应给出中文解释
+- 避免把内部迁移记录放在用户指南中
+- 避免中英混杂的长句
+- 避免翻译腔和口号式表达
+- 避免先否定再转折的表达，直接陈述结论
+- 尽量不用双引号、分号、破折号和加粗
+- 示例应能够直接运行，或明确标注省略的输入
+- 文档中的命令、字段和默认值应由代码或测试支持
+
+历史背景、迁移记录和用户操作说明应分开保存。根目录 `README.md` 优先回答项目用途、安装方式、输入要求和快速示例。
+
+## Git 工作流
+
+本仓可能由多个 agent 并行开发。每个改动都必须使用独立 worktree 与功能分支，避免
+多个 agent 在同一检出目录竞争同一组文件。
+
+远端常驻分支只有 `main`。功能分支（`feat/*`、`fix/*`、`hotfix/*`、`release/*`）
+只用于拉取请求流程、临时存在。每个改动遵循以下顺序：
+
+1. 从 `origin/main` 新建 worktree 与功能分支：
+
+   ```bash
+   git fetch origin
+   git worktree add <path> -b feat/<主题> origin/main
+   ```
+
+2. 在独立 worktree 内完成改动，本地质量门禁通过后再提交。
+3. 提交并推送功能分支：
+
+   ```bash
+   git push -u origin feat/<主题>
+   ```
+
+4. 用 `gh pr create` 开拉取请求，合并到 `main`。
+5. 合并完成后删除功能分支并移除 worktree：
+
+   ```bash
+   git push origin --delete feat/<主题>
+   git branch -d feat/<主题>
+   git worktree remove <path>
+   ```
+
+作为 `research-workspace` 子模块时，本仓提交推送合并完成后，再回到顶层更新 gitlink。
+同一仓库的多个 worktree 共享主工作树的 `core.hooksPath` 配置，不要在独立 worktree
+内重装或改写 hook。新的并行任务必须新建 worktree，不要直接在主检出目录的 `main`
+上提交改动。
+
+提交说明至少应包含：
+
+- 修改内容
+- 修改原因
+- 验证方式
+- 对公开接口、输出契约和历史结果的影响
+- 尚未处理的已知问题
+
+## 安全与公开发布
+
+请勿提交以下内容：
+
+- `.env` 或其他本地环境文件
+- API 密钥、访问令牌、私钥和账户凭证
+- 数据提供商的授权数据
+- 客户名称、账户号、订单记录和真实持仓
+- 本地绝对路径、内部主机名和仅内部可访问的仓库地址
+- `artifacts/`、`outputs/`、缓存和临时文件
+
+提交前检查暂存区。准备公开发布时，还应扫描完整 Git 历史，因为删除当前文件中的密钥无法清除旧提交。
+
+本仓库当前没有许可证文件。引入许可证属于项目所有者决策，不应由代码代理自行选择。
+
+## Worktree-first 目录规范
+
+开发和实验使用 `/home/richard/code/.worktrees/` 下的独立 worktree。生产调用只能引用
+`/home/richard/code/production/` 下固定的生产检出或 release，不得依赖开发 worktree。回测产物、
+缓存和大体量数据放在仓库外，清理 worktree 前先确认没有定时任务或 runbook 依赖该路径。
