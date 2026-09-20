@@ -3,3 +3,6 @@
 把沪深 L2 原始委托/成交/快照流无损打包成整数镜像，并采样成模型窗口。
 与 ``nextday``（snapshot 盘口 -> 次日方向）并行，本链路直接消费逐笔数据。
 """
+from ticknet.eventstream.daily import DAILY_STATE_KEYS, aggregate_day
+
+__all__ = ["DAILY_STATE_KEYS", "aggregate_day"]

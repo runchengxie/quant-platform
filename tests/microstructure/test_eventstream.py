@@ -395,3 +395,8 @@ class TestDataset:
     def test_no_packed_days_raises(self, tmp_path):
         with pytest.raises(RuntimeError, match="no packed days"):
             L2WindowDataset([20250101], root=tmp_path / "none")
+def test_daily_state_api_is_exported():
+    from ticknet.eventstream import DAILY_STATE_KEYS, aggregate_day
+
+    assert callable(aggregate_day)
+    assert "trade_amount" in DAILY_STATE_KEYS
