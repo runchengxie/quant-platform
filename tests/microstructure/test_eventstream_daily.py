@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-
 from ticknet.eventstream.config import ORDER_DTYPE, SNAP_DTYPE, TRADE_DTYPE
 from ticknet.eventstream.daily import DAILY_STATE_KEYS, aggregate_day
 

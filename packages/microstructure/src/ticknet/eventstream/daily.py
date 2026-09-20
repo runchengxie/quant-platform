@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import numpy as np
 
-
 DAILY_STATE_KEYS = (
     "order_count",
     "trade_count",
@@ -50,7 +49,11 @@ def _safe_mean(values: np.ndarray) -> tuple[float, float]:
 
 
 def _global_timestamps(order: np.ndarray, trade: np.ndarray, snap: np.ndarray) -> np.ndarray:
-    parts = [values["time_ms"].astype(np.int64, copy=False) for values in (order, trade, snap) if len(values)]
+    parts = [
+        values["time_ms"].astype(np.int64, copy=False)
+        for values in (order, trade, snap)
+        if len(values)
+    ]
     if not parts:
         return np.empty(0, dtype=np.int64)
     return np.concatenate(parts)
@@ -92,7 +95,9 @@ def _split_snapshot_returns(snap: np.ndarray, split: float) -> tuple[float, floa
     return _path_return(early), _path_return(late)
 
 
-def _final_observed_price(order: np.ndarray, trade: np.ndarray, snap: np.ndarray) -> tuple[float, float]:
+def _final_observed_price(
+    order: np.ndarray, trade: np.ndarray, snap: np.ndarray
+) -> tuple[float, float]:
     candidates: list[tuple[int, float]] = []
     for values, field in ((order, "price"), (trade, "price"), (snap, "last")):
         for time_ms, price in zip(values["time_ms"], values[field], strict=False):
@@ -111,11 +116,13 @@ def aggregate_day(
     prev_close_cent: float,
 ) -> dict[str, float]:
     """Aggregate one packed trading day into a finite named state vector."""
-    state = {key: 0.0 for key in DAILY_STATE_KEYS}
+    state = dict.fromkeys(DAILY_STATE_KEYS, 0.0)
     state["order_count"] = float(len(order))
     state["trade_count"] = float(len(trade))
     state["snapshot_count"] = float(len(snap))
-    state["total_event_count"] = state["order_count"] + state["trade_count"] + state["snapshot_count"]
+    state["total_event_count"] = (
+        state["order_count"] + state["trade_count"] + state["snapshot_count"]
+    )
 
     timestamps = _global_timestamps(order, trade, snap)
     if len(timestamps):
@@ -140,8 +147,12 @@ def aggregate_day(
             )
         trade_times = trade["time_ms"].astype(np.float64)
         signed_amount = volumes * signed_side
-        state["early_signed_trade_amount"] = _finite_or_zero(signed_amount[trade_times <= split].sum())
-        state["late_signed_trade_amount"] = _finite_or_zero(signed_amount[trade_times > split].sum())
+        state["early_signed_trade_amount"] = _finite_or_zero(
+            signed_amount[trade_times <= split].sum()
+        )
+        state["late_signed_trade_amount"] = _finite_or_zero(
+            signed_amount[trade_times > split].sum()
+        )
 
     returns, _return_times = _snapshot_returns(snap)
     if len(returns):
@@ -164,7 +175,12 @@ def aggregate_day(
         bid = ordered_snap["bid_px"][:, 0].astype(np.float64)
         ask = ordered_snap["ask_px"][:, 0].astype(np.float64)
         mid = (bid + ask) / 2.0
-        spread = np.divide((ask - bid) * 10_000.0, mid, out=np.full_like(mid, np.nan), where=mid > 0)
+        spread = np.divide(
+            (ask - bid) * 10_000.0,
+            mid,
+            out=np.full_like(mid, np.nan),
+            where=mid > 0,
+        )
         state["spread_bps_mean"], state["spread_bps_observations"] = _safe_mean(spread)
 
         bid_depth = np.maximum(ordered_snap["total_bidvol"].astype(np.float64), 0.0)
@@ -179,7 +195,10 @@ def aggregate_day(
             where=(bid_depth + ask_depth) > 0,
         )
         state["l1_imbalance_mean"], state["l1_imbalance_observations"] = _safe_mean(imbalance)
-        state["early_snapshot_return"], state["late_snapshot_return"] = _split_snapshot_returns(snap, split)
+        (
+            state["early_snapshot_return"],
+            state["late_snapshot_return"],
+        ) = _split_snapshot_returns(snap, split)
 
         final_price, _final_time = _final_observed_price(order, trade, snap)
         last_price = valid_prices[-1] if len(valid_prices) else 0.0
