@@ -35,8 +35,8 @@ def test_aggregate_day_reports_core_state():
     assert state["order_count"] == 2.0
     assert state["trade_count"] == 3.0
     assert state["snapshot_count"] == 3.0
-    assert state["trade_amount"] == 450.0
-    assert state["signed_trade_amount"] == 50.0
+    assert state["trade_amount"] == 452000.0
+    assert state["signed_trade_amount"] == 48000.0
     up = 1010.0 / 1000.0 - 1.0
     down = 1000.0 / 1010.0 - 1.0
     assert state["realized_variance"] == pytest.approx(up**2 + down**2)
@@ -61,8 +61,8 @@ def test_unknown_trade_side_is_not_signed():
     order, trade, snap = make_day_arrays()
     trade[2]["side"] = 0
     state = aggregate_day(order, trade, snap, prev_close_cent=1000.0)
-    assert state["trade_amount"] == 450.0
-    assert state["signed_trade_amount"] == -100.0
+    assert state["trade_amount"] == 452000.0
+    assert state["signed_trade_amount"] == -102000.0
 
 
 def test_aggregate_day_uses_global_timestamp_order():

@@ -138,15 +138,17 @@ def aggregate_day(
 
     if len(trade):
         volumes = np.maximum(trade["volume"].astype(np.float64), 0.0)
+        prices = np.maximum(trade["price"].astype(np.float64), 0.0)
+        amounts = volumes * prices
         signed_side = np.sign(trade["side"].astype(np.float64))
-        state["trade_amount"] = _finite_or_zero(volumes.sum())
-        state["signed_trade_amount"] = _finite_or_zero((volumes * signed_side).sum())
+        state["trade_amount"] = _finite_or_zero(amounts.sum())
+        state["signed_trade_amount"] = _finite_or_zero((amounts * signed_side).sum())
         if state["trade_amount"] > 0:
             state["signed_trade_ratio"] = _finite_or_zero(
                 state["signed_trade_amount"] / state["trade_amount"]
             )
         trade_times = trade["time_ms"].astype(np.float64)
-        signed_amount = volumes * signed_side
+        signed_amount = amounts * signed_side
         state["early_signed_trade_amount"] = _finite_or_zero(
             signed_amount[trade_times <= split].sum()
         )
