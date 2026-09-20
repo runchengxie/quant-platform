@@ -4,7 +4,7 @@
 
 当前统一口径为 `ty check` 阻塞门禁、BasedPyright 建议项、mypy 单独观察项。迁移完成后的 BasedPyright 状态为 `0 errors, 11 warnings`：
 
-- `broker/__init__.py` 的 10 个 warning 来自延迟导出列表；兼容导出仍需保留。
+- `broker/__init__.py` 的 10 个 warning 来自延迟导出列表。兼容导出仍需保留。
 - `config.py` 的 1 个 warning 是 PyYAML source 可见性提示，不影响阻塞类型门禁。
 
 任何新增 `ty check` error 都会阻塞类型门禁。BasedPyright warning 不能用于绕过执行、风控、状态或 targets contract 缺陷。
