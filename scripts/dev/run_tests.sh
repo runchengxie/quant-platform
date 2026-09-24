@@ -57,7 +57,7 @@ case "$mode" in
     exec uv run python -m pytest "$@"
     ;;
   coverage)
-    exec uv run python -m pytest --cov=portfolio_backtester --cov-report=term-missing "$@"
+    exec uv run python -m pytest --cov=packages --cov=scripts --cov-report=term-missing "$@"
     ;;
   lint)
     run_ruff check . "$@"

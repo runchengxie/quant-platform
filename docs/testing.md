@@ -5,7 +5,7 @@
 ## 安装开发依赖
 
 ```bash
-uv sync --locked --extra dev
+uv sync --locked --all-groups
 ```
 
 项目使用 Python 3.12，依赖版本由 `uv.lock` 固定。
@@ -31,7 +31,7 @@ scripts/dev/run_tests.sh <mode> [args...]
 | `all` | 完整 `pytest` 测试集 |
 | `fast` | `all` 的兼容别名 |
 | `unit` | `all` 的兼容别名 |
-| `coverage` | 完整测试集加覆盖率报告 |
+| `coverage` | 完整测试集，并统计 `packages/` 与 `scripts/` 下 Python 源码覆盖率 |
 | `lint` | Ruff 代码检查 |
 | `format` | Ruff 格式检查 |
 | `format-all` | `format` 的兼容别名 |
@@ -56,17 +56,17 @@ scripts/dev/run_tests.sh typecheck-release
 scripts/dev/run_tests.sh maintainability
 ```
 
-## 依赖与安全
+覆盖率依赖 `pytest-cov`。目前只生成报告，不设置最低覆盖率门槛。Python 覆盖率报告不包括 Rust 扩展。
 
-依赖审计和静态安全扫描按仓库运行：
+## 依赖安全检查
+
+公开 CI 使用 `pip-audit` 检查锁定依赖中的已知漏洞。本地可运行同一命令：
 
 ```bash
-uv run --extra dev pip-audit
-uvx deptry .
-uvx bandit -q -r src -lll
+uvx --from pip-audit pip-audit --strict -r <(uv export --locked --all-groups --extra dev --extra microstructure --format requirements-txt --no-hashes --no-emit-project --no-emit-local --no-emit-package quant-platform --no-emit-package research-contracts --no-emit-package research-code-quality)
 ```
 
-coverage 按高风险模块逐步提高，不设置统一阈值。
+当前 CI 不运行 Bandit 或未使用依赖扫描。新增此类门禁前，应先定义实际扫描的源码和依赖范围。
 
 ## 推送前检查
 
@@ -86,7 +86,7 @@ bash scripts/public_release/build_clean_export.sh \
 
 ## GitHub Actions 状态
 
-`.github/workflows/ci.yml` 在公开 PR 上运行公开质量门禁。本地命令和工作区共享 `pre-push` 继续提供提交前的快速反馈。
+`.github/workflows/ci.yml` 在 PR 和主分支推送时运行公开质量门禁。`.github/workflows/docs.yml` 独立构建 MkDocs 并发布在线文档。本地命令和工作区共享 `pre-push` 提交前提供反馈。
 
 PR workflow 覆盖：
 
@@ -98,13 +98,13 @@ PR workflow 覆盖：
 - 持仓回放回归。
 - 包导入检查。
 
-workflow 使用路径过滤和并发控制取消同一 pull request 的旧运行。`ty` 和维护性预算继续由本地或工作区门禁执行。
+Rust 微观结构检查和 Python 主检查分别运行。在线文档 workflow 使用 strict 模式检查导航页面中的相对链接。`ty` 警告和维护性预算由本地门禁检查。
 
 ## 类型检查范围
 
-本地 `scripts/dev/run_tests.sh typecheck` 会按 `pyproject.toml` 的 `[tool.ty.src]` 配置检查迁移后的源码和脚本，并显式加入五个源码根目录供 ty 解析内部导入。当前完整入口报告 445 条历史诊断，不能把它当作全仓类型检查通过。
+本地 `scripts/dev/run_tests.sh typecheck` 按 `pyproject.toml` 的 `[tool.ty.src]` 配置检查源码和脚本，并显式加入五个源码根目录解析内部导入。该命令启用 `--error-on-warning`，目前仍有历史诊断，因此尚不能视为全仓类型检查通过。
 
-公开 CI 使用较窄的阻断范围，只检查下面三个迁移包，并将警告保留为提示，错误仍会使任务失败：
+公开 CI 只检查下面三个迁移包。警告保留为提示，错误仍会使任务失败。最近一次检查在这三个包中报告 306 条诊断，主要是 Pandas 类型信息不足引起的 `Unknown` 推断。CI 会放行这些警告，因此不能把这项结果当成无警告的类型检查：
 
 ```bash
 uv run --locked --extra dev ty check --exit-zero-on-warning \

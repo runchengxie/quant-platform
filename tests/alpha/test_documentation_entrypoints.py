@@ -129,7 +129,7 @@ def test_ty_is_the_only_configured_type_checker() -> None:
 def test_docs_record_current_automation_status() -> None:
     docs = (ALPHA_DOCS / "operations" / "testing.md").read_text(encoding="utf-8")
 
-    assert "本仓库是 public" in docs
+    assert "它位于 `quant-platform` 仓库中" in docs
     assert "GitHub Actions" in docs
     assert "离线测试" in docs
     assert "本地完整质量门禁" in docs
@@ -151,10 +151,9 @@ def test_framework_backend_docs_match_current_main_surface() -> None:
         ],
     ]
 
-    assert "`NativeDatasetBackend`" in readme
     assert "`NativeDatasetBackend`" in framework_docs
-    assert "Qlib 后端通过可选依赖接入" in readme
     assert "Qlib 适配器" in framework_docs
+    assert "Alpha 模块边界见[后端说明]" in readme
     assert "concepts/framework-backends.md" in docs_index
     for backend in (
         "`NativeDatasetBackend`",

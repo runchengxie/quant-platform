@@ -1,85 +1,47 @@
 # quant-platform
 
-`quant-platform` 是公开的量化研究与投资组合基础平台。
+`quant-platform` 提供可复用的量化研究与组合基础能力，包括回测、组合构造、风险分析、执行模拟、微观结构实验和研究产物契约。项目面向研究代码与工具开发，不保存真实策略输入、专有特征、凭证或研究结论。
 
 [在线文档](https://runchengxie.github.io/quant-platform/)
 
-它提供可复用的回测、组合、执行模拟、风险分析和研究产物接口，供研究项目调用。策略假设、专有特征、真实策略输入和晋升证据属于 `quant-research` 等私有研究层，本仓库不保存这些内容。
-
-## 适合谁使用
-
-- 想运行示例回测的研究者
-- 需要复用组合、风险或产物接口的开发者
-- 需要了解公开量化基础能力边界的维护者
-
 ## 快速开始
 
-安装开发依赖并运行检查：
-
-本仓库采用 Apache License 2.0，详见 [LICENSE](LICENSE)。许可证仅适用于本仓库中的公开框架代码，
-不包含私有策略、专有数据、凭证和第三方依赖。
-
-alpha 框架的原生实现是 `NativeDatasetBackend`。Qlib 后端通过可选依赖接入。
-
-公共框架迁移已经完成。仓库继续保留 `portfolio_backtester` Python 命名空间，便于现有调用方平稳升级。
-
-`portfolio-backtester` 的 style-factor slice 仍不属于公开发布范围。它的来源许可证和历史授权尚未确认，
-相关内容已归入私有迁移事项。通用回测、组合、风险和执行模拟能力由本仓库提供。
-
-仓库还在 `quant_platform` 命名空间下提供通用发布辅助工具，并提供
-`packages/research-contracts/` 下的版本化 `research-contracts` 包。这些包负责清单格式化、
-产物封装、相对路径校验、SHA-256 回执和干净的 bundle 发布，不包含策略专属选股逻辑或私有研究输入。
-继承而来的契约包保留独立质量门禁，公开 CI 只检查已迁入的平台代码。
-
-Python 命名空间保持不变。Apache-2.0 许可证只适用于本仓库原有的公开框架代码，
-不会改变旧来源代码或第三方依赖的许可证。
-
-数据接口、alpha 机制、微观结构抽象、编排和执行接口已经迁入本仓库并继续接受质量审计。
-`research-workspace` 仅保留为历史来源和兼容核对对象。
-
-本地运行：
+项目要求 Python 3.12 或更新版本，使用 `uv` 安装锁定依赖：
 
 ```bash
 uv sync --locked --all-groups
 uv run ruff check .
-uv run pytest
+uv run pytest -q
 ```
 
-修改 `packages/research-contracts/` 后，如果本地测试仍读取旧构建产物，执行：
+项目保留 `portfolio_backtester` Python 命名空间，供现有研究代码兼容使用。常用入口和示例见[文档总览](docs/README.md)，Alpha 模块边界见[后端说明](docs/alpha/concepts/framework-backends.md)。
+
+微观结构模型和模拟器位于 `packages/microstructure/`。Python 实现是默认后端。需要 Rust 撮合与批量回放时，可按[微观结构开发说明](docs/development/microstructure-rust.md)单独构建并安装原生扩展。
+
+## 项目边界
+
+- `quant-platform`：通用回测、组合、风险、执行模拟、微观结构机制和公开研究产物接口
+- `quant-market-data-platform`：数据接入、标准化、质量治理、版本管理和数据发布
+- `quant-research`：具体策略、专有特征、模型选择、实验与晋升判断
+- `quant-intel-platform`：研究报告、看板和结果交付
+- `quant-intel-deploy`：研究结果发布与部署
+
+策略研究假设、专有特征和晋升规则由 `quant-research` 等私有研究层维护。
+
+平台通过已发布的数据资产和版本化产物与其他项目协作，不直接接入数据供应商，也不依赖私有策略模块。
+
+## 开发和质量检查
+
+完整测试、覆盖率、类型检查和维护性命令见[测试与质量检查](docs/testing.md)。`ruff check .` 使用仓库 Ruff 配置，其中部分迁移包暂时排除在默认扫描之外，具体范围和类型检查现状见该说明。
+
+修改 `packages/research-contracts/` 后，如果测试仍读取旧构建产物，可重新安装本地包：
 
 ```bash
 uv sync --locked --all-groups --reinstall-package research-contracts
 ```
 
-公共发布检查请在干净 worktree 中运行，或使用 `docs/testing.md` 中的 clean export 命令。主检出中的
-`.env.local`、`out/`、`state/` 和其他 worktree 不属于公开导出内容。
-
-## 去哪里找详细说明
-
-- [文档总览](docs/README.md)
-- [开发约定](AGENTS.md)
-- [回测与组合说明](docs/concepts/backtest-spec.md)
-- [研究产物与公开接口](docs/reference/public-api.md)
-- [迁移与边界说明](docs/migration/research-workspace-sunset.md)
-- [quant-market-research 边界说明](docs/migration/market-research-boundary.md)
-
-文档中的技术说明以当前代码和测试为准。README 只保留项目定位、使用入口和导航，具体接口、架构、兼容性和迁移记录请查看 `docs/`。
-
-## 仓库边界
-
-`quant-platform` 负责通用能力，例如回测、组合构造、风险和成本、执行模拟，以及可复用的研究产物契约。
-
-以下内容由其他仓库负责：
-
-- `quant-market-data-platform`：数据采集、清洗、质量检查、版本和发布
-- `quant-research`：策略、特征、机器学习、实验和研究结论
-- `quant-intel-platform`：报告、看板和研究结果交付
-- `quant-intel-deploy`：研究结果发布和部署
-
-研究项目通过已发布的数据资产和版本化产物与本仓库协作。`quant-platform` 不接入数据供应商，不保存真实策略输入，也不承载专有策略逻辑。
+公开发布边界检查应在干净 worktree 中运行，或按[测试说明](docs/testing.md)执行 clean export。不要把本地运行产物作为公开导出内容。
 
 ## 许可证
 
-本仓库采用 Apache License 2.0。许可范围仅包括本仓库中的公开框架代码，不包含私有策略、专有数据、凭证和第三方依赖。
-
-详见 [LICENSE](LICENSE)。
+仓库采用 Apache License 2.0，许可范围以 [LICENSE](LICENSE) 为准。第三方依赖、真实数据、凭证和私有策略不属于本仓库许可证的覆盖范围。

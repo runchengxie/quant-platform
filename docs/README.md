@@ -3,7 +3,7 @@
 > status: active
 > owner: quant-platform
 > audience: human and agent
-> last_verified: 2026-09-16
+> last_verified: 2026-09-24
 > source_of_truth: yes
 > superseded_by: n/a
 
@@ -41,8 +41,10 @@
 18. [执行分配参考资产](reference/allocation-reference.md)
 19. [公开 API](reference/public-api.md)
 20. [测试和质量检查](testing.md)
-21. [会计与执行路线图](governance/accounting-execution-roadmap.md)
-22. [网格回测辅助函数](grid-support.md)
+21. [微观结构开发说明](microstructure/README.md)
+22. [可选 Rust 模拟内核](development/microstructure-rust.md)
+23. [会计与执行路线图](governance/accounting-execution-roadmap.md)
+24. [网格回测辅助函数](grid-support.md)
 
 编码代理默认读取根 README、本页和一个与任务相关的分类目录，不递归读取全部 Markdown 文件。
 
@@ -64,6 +66,8 @@
 | 晋级证据成交模拟 | `packages/portfolio-backtester/src/portfolio_backtester/promotion_sidecar.py` |
 | 测试入口 | `scripts/dev/run_tests.sh` |
 | 网格回测辅助函数 | `packages/portfolio-backtester/src/portfolio_backtester/grid_support.py` |
+| 微观结构模拟接口 | `packages/microstructure/src/ticknet/simulator/` |
+| Rust 模拟内核 | `packages/microstructure/rust/src/lib.rs` |
 
 代码、测试和文档发生冲突时，应先核对当前实现，再在同一次改动中修正文档。
 
