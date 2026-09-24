@@ -106,12 +106,13 @@
 
 PR 必须保留完整公开 CI。除各自聚焦的测试外，还要运行全量 pytest、全仓 Ruff、格式检查、受影响范围的 `ty`、维护性预算和 `pip-audit`。模块拆分的 PR 不得把行为修改与文件搬迁混在一起。
 
-所有代码 PR 合入后，确认 production 发布源仓库干净、目标 SHA 是 `main` 可达提交且公开 CI 通过。对 `quant-platform` 单独运行部署发布器 dry-run，再以精确 SHA 发布，保留当前版和两个可安全保留的旧版本。发布后核对 manifest 中的提交与 `current`，运行包导入和公开契约 smoke test。异常时按清单原子切回发布前记录的 release。该仓库是公共 Python 库，没有独立常驻服务或消息发送入口，发布验证不应触发研究任务、scheduler 或真实投递。
+所有代码 PR 合入后，确认 production 发布源仓库干净、目标 SHA 是 `main` 可达提交且公开 CI 通过。对 `quant-platform` 单独运行带 `--prepare-python quant-platform` 的部署发布器 dry-run，再以精确 SHA 发布，确保 release 自带锁定依赖环境。发布后核对 manifest 中的提交与 `current`，在 release 的 `.venv` 中运行包导入和公开契约 smoke test。异常时按清单原子切回发布前记录的 release。该仓库是公共 Python 库，没有独立常驻服务或消息发送入口，发布验证不应触发研究任务、scheduler 或真实投递。
 
 ## 不在本设计范围内
 
 - 把研究、数据、执行服务迁移到 Java、Rust 或其他语言。
 - 改写交易算法、费用语义、研究模型或契约 schema。
+- 为策略参数、模型输出增加行为指纹、模型等价类或潜在状态估计通用接口。这些能力需要由具体研究消费者证明需求，再独立设计。
 - 更新 `quant-research`、`quant-intel-platform` 或 `quant-intel-deploy` 的依赖锁和 production 版本。
 - 清理历史生产 release、凭据、状态、日志或本地数据。
 
