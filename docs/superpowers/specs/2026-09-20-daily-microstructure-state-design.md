@@ -29,8 +29,7 @@ def aggregate_day(
     trade: np.ndarray,
     snap: np.ndarray,
     prev_close_cent: float,
-) -> dict[str, float]:
-    ...
+) -> dict[str, float]: ...
 ```
 
 The function accepts the existing dtypes from `eventstream.config`, is deterministic, avoids mutation, and returns the same complete key set for empty or non-empty inputs. Missing or non-finite measurements use `0.0`; a separate `*_observations` count identifies whether a statistic had data.

@@ -5,6 +5,7 @@ __pycache__/
 *.egg-info/
 build/
 dist/
+packages/microstructure/rust/target/
 site/
 .worktrees/
 .coverage
