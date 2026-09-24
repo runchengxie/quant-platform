@@ -7,7 +7,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from a_share_readiness_common import (
+from .a_share_readiness_common import (
     BASELINE_ASSETS,
     COMPLETE_PIT_ASSETS,
     _check,

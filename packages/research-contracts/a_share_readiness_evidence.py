@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from a_share_readiness_common import (
+from .a_share_readiness_common import (
     COMPLETE_PIT_ASSETS,
     HISTORICAL_INDUSTRY_RULES,
     PIT_FUNDAMENTALS_RULES,
@@ -21,7 +21,7 @@ from a_share_readiness_common import (
     _resolve_path,
     _status,
 )
-from a_share_readiness_contract import _contract_checks, _registry_check
+from .a_share_readiness_contract import _contract_checks, _registry_check
 
 
 def _load_evidence_manifest(path: Path | None) -> tuple[dict[str, Any], Path | None]:

@@ -90,7 +90,10 @@ def build_research_run_manifest(
     content = json.dumps(payload.to_mapping(), ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     temporary = destination.with_name(f".{destination.name}.{os.getpid()}.tmp")
     temporary.write_text(content, encoding="utf-8")
-    os.replace(temporary, destination)
+    try:
+        os.replace(temporary, destination)
+    finally:
+        temporary.unlink(missing_ok=True)
     return destination
 
 

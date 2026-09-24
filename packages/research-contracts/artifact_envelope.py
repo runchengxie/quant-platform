@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 ARTIFACT_ENVELOPE_KEY = "artifact_envelope"
@@ -39,6 +39,10 @@ def _aware_datetime(value: object, field: str) -> datetime:
     if parsed.tzinfo is None or parsed.utcoffset() is None:
         raise ValueError(f"{field} must be timezone-aware")
     return parsed
+
+
+def _at_or_before(left: datetime, right: datetime) -> bool:
+    return left.astimezone(UTC) <= right.astimezone(UTC)
 
 
 @dataclass(frozen=True)
@@ -110,7 +114,7 @@ class TargetHandoffContext:
     def __post_init__(self) -> None:
         _aware_datetime(self.valid_from, "target_handoff.valid_from")
         _aware_datetime(self.expires_at, "target_handoff.expires_at")
-        if self.expires_at <= self.valid_from:
+        if _at_or_before(self.expires_at, self.valid_from):
             raise ValueError("target_handoff.expires_at must be after valid_from")
         _required_text(self.portfolio_scope, "target_handoff.portfolio_scope")
         _required_text(self.account_scope, "target_handoff.account_scope")
@@ -121,7 +125,7 @@ class TargetHandoffContext:
     def from_mapping(cls, payload: Mapping[str, Any]) -> TargetHandoffContext:
         valid_from = _aware_datetime(payload.get("valid_from"), "target_handoff.valid_from")
         expires_at = _aware_datetime(payload.get("expires_at"), "target_handoff.expires_at")
-        if expires_at <= valid_from:
+        if _at_or_before(expires_at, valid_from):
             raise ValueError("target_handoff.expires_at must be after valid_from")
         return cls(
             valid_from=valid_from,

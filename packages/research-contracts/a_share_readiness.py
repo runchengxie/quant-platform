@@ -11,7 +11,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from a_share_readiness_common import (
+from .a_share_readiness_common import (
     BASELINE_ASSETS,
     COMPLETE_PIT_ASSETS,
     HISTORICAL_INDUSTRY_RULES,
@@ -19,7 +19,7 @@ from a_share_readiness_common import (
     READINESS_LEVELS,
     SIDE_AWARE_RULES,
 )
-from a_share_readiness_evidence import build_readiness_report
+from .a_share_readiness_evidence import build_readiness_report
 
 __all__ = [
     "BASELINE_ASSETS",
