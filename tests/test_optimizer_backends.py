@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import Any, cast
 
 import numpy as np
@@ -355,8 +356,29 @@ def test_qp_success_respects_simplex_bounds_and_all_exposure_residuals() -> None
     residuals = result.diagnostics["constraint_residuals"]
 
     result.validate(request)
+    assert result.schema_version == "portfolio_optimization_result.v1"
+    assert json.loads(json.dumps(result.diagnostics, allow_nan=False)) == result.diagnostics
     assert result.weights.sum() == pytest.approx(1.0)
     assert result.weights.min() >= request.min_weight - 1e-12
     assert request.max_weight is not None
     assert result.weights.max() <= request.max_weight + 1e-12
     assert min(residuals.values()) >= -1e-7
+
+
+def test_repeated_equalities_do_not_increase_effective_constraint_rank() -> None:
+    budget = np.array([1.0, 1.0, 1.0, 1.0])
+    exposure = np.array([1.0, -1.0, 0.0, 0.0])
+    independent_exposure = np.array([1.0, 0.0, -1.0, 0.0])
+    fixed_weight = np.array([1.0, 0.0, 0.0, 0.0])
+    tolerance = 1e-10
+    repeated = np.vstack([budget, exposure, exposure, fixed_weight])
+    independent = np.vstack([budget, exposure, independent_exposure, fixed_weight])
+
+    repeated_rank = np.linalg.matrix_rank(repeated, tol=tolerance)
+    independent_rank = np.linalg.matrix_rank(independent, tol=tolerance)
+
+    assert repeated_rank == 3
+    assert independent_rank == 4
+    assert repeated_rank < repeated.shape[0]
+    assert len(budget) - repeated_rank == 1
+    assert len(budget) - independent_rank == 0
