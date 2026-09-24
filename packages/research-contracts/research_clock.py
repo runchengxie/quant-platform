@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 RESEARCH_CLOCK_SCHEMA_VERSION = "research.clock.v1"
@@ -35,6 +35,10 @@ def _optional_aware_datetime(value: object, field: str) -> datetime | None:
     if value is None or (isinstance(value, str) and not value.strip()):
         return None
     return _aware_datetime(value, field)
+
+
+def _after(left: datetime, right: datetime) -> bool:
+    return left.astimezone(UTC) > right.astimezone(UTC)
 
 
 @dataclass(frozen=True)
@@ -70,11 +74,11 @@ class ResearchClock:
         self._validate_ordering()
 
     def _validate_ordering(self) -> None:
-        if self.information_cutoff_at > self.signal_at:
+        if _after(self.information_cutoff_at, self.signal_at):
             raise ValueError("information_cutoff_at must be <= signal_at")
-        if self.signal_at > self.decision_at:
+        if _after(self.signal_at, self.decision_at):
             raise ValueError("signal_at must be <= decision_at")
-        if self.decision_at > self.valuation_at:
+        if _after(self.decision_at, self.valuation_at):
             raise ValueError("decision_at must be <= valuation_at")
 
         self._validate_execution_window()
@@ -86,18 +90,18 @@ class ResearchClock:
             raise ValueError(
                 "execution_window_start_at and execution_window_end_at must be provided together"
             )
-        if self.earliest_order_at is not None and self.decision_at > self.earliest_order_at:
+        if self.earliest_order_at is not None and _after(self.decision_at, self.earliest_order_at):
             raise ValueError("decision_at must be <= earliest_order_at")
         if start is None or end is None:
             return
 
-        if self.decision_at > start:
+        if _after(self.decision_at, start):
             raise ValueError("decision_at must be <= execution_window_start_at")
-        if start > end:
+        if _after(start, end):
             raise ValueError("execution_window_start_at must be <= execution_window_end_at")
-        if self.earliest_order_at is not None and self.earliest_order_at > end:
+        if self.earliest_order_at is not None and _after(self.earliest_order_at, end):
             raise ValueError("earliest_order_at must be <= execution_window_end_at")
-        if end > self.valuation_at:
+        if _after(end, self.valuation_at):
             raise ValueError("execution_window_end_at must be <= valuation_at")
 
     @classmethod
