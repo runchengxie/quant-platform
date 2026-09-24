@@ -3,12 +3,14 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: scripts/dev/run_tests.sh [all|fast|unit|coverage|lint|typecheck|typecheck-release|format|format-all|maintainability] [args...]
+Usage: scripts/dev/run_tests.sh [all|fast|unit|coverage|contracts-coverage|lint|typecheck|typecheck-release|format|format-all|maintainability] [args...]
 
 Modes:
   all          Run the pytest suite.
   fast, unit   Run the pytest suite; aliases kept for shared CI ergonomics.
   coverage     Run the pytest suite with coverage reporting.
+  contracts-coverage
+               Run installed research-contracts consumer tests with an 80% coverage floor.
   lint         Run Ruff lint across the repository.
   typecheck, typecheck-release
                Run ty over the configured typed surface.
@@ -58,6 +60,27 @@ case "$mode" in
     ;;
   coverage)
     exec uv run python -m pytest --cov=packages --cov=scripts --cov=research_contracts --cov-report=term-missing "$@"
+    ;;
+  contracts-coverage)
+    exec uv run python -m pytest \
+      --cov=research_contracts.a_share_readiness \
+      --cov=research_contracts.a_share_readiness_common \
+      --cov=research_contracts.a_share_readiness_contract \
+      --cov=research_contracts.a_share_readiness_evidence \
+      --cov=research_contracts.artifact_contracts \
+      --cov=research_contracts.artifact_envelope \
+      --cov=research_contracts.contract_ownership \
+      --cov=research_contracts.file_receipts \
+      --cov=research_contracts.platform_publication \
+      --cov=research_contracts.promotion_evidence_checks \
+      --cov=research_contracts.promotion_evidence_common \
+      --cov=research_contracts.research_clock \
+      --cov=research_contracts.research_run_manifest \
+      --cov=research_contracts.research_run_manifest_writer \
+      --cov=research_contracts.target_lineage \
+      --cov-fail-under=80 \
+      --cov-report=term-missing \
+      tests/contracts "$@"
     ;;
   lint)
     run_ruff check . "$@"

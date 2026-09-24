@@ -4,7 +4,11 @@ import json
 from pathlib import Path
 from typing import Any
 
-from a_share_readiness import READINESS_LEVELS, build_readiness_report
+from research_contracts.a_share_readiness import (
+    READINESS_LEVELS,
+    build_readiness_report,
+    main,
+)
 
 
 def _profile() -> dict[str, Any]:
@@ -91,3 +95,76 @@ def test_a_share_readiness_identifies_missing_pit_and_trading_rules(tmp_path: Pa
     )
     assert profile_checks["profile:side_aware_trading"]["passed"] is False
     assert "t_plus_one" in profile_checks["profile:side_aware_trading"]["details"]["missing_rules"]
+
+
+def test_a_share_readiness_cli_writes_report_and_enforces_requested_level(
+    tmp_path: Path, capsys: Any
+) -> None:
+    evidence_path = tmp_path / "evidence.json"
+    evidence_path.write_text(json.dumps({"research_profile": _profile()}), encoding="utf-8")
+    output_path = tmp_path / "report.json"
+    args = [
+        "--artifacts-root",
+        str(tmp_path / "artifacts"),
+        "--evidence-manifest",
+        str(evidence_path),
+        "--out",
+        str(output_path),
+        "--pretty",
+    ]
+
+    assert main(args) == 0
+    written = json.loads(output_path.read_text(encoding="utf-8"))
+    assert written["market"] == "a_share"
+    assert json.loads(capsys.readouterr().out)["schema_version"] == 1
+    assert main([*args, "--require", "baseline_reproducible"]) == 2
+
+
+def test_a_share_readiness_reads_current_contract_and_registry(tmp_path: Path) -> None:
+    root = tmp_path / "artifacts"
+    current_path = root / "metadata" / "current_assets" / "a_share_current.json"
+    current_path.parent.mkdir(parents=True)
+    asset_names = (
+        "instruments",
+        "daily_clean",
+        "universe_by_date",
+        "universe_symbols",
+        "universe_meta",
+        "pit_fundamentals",
+        "industry_changes",
+    )
+    current_path.write_text(
+        json.dumps(
+            {
+                "contract": {
+                    "market": "a_share",
+                    "provider": "synthetic",
+                    "target_date": "2026-09-24",
+                },
+                "assets": {
+                    name: {
+                        "exists": True,
+                        "manifest_path": f"manifests/{name}.json",
+                        "manifest": {
+                            "status": "completed",
+                            "query": {
+                                "start_date": "2018-01-01",
+                                "end_date": "2026-09-24",
+                            },
+                        },
+                    }
+                    for name in asset_names
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    (root / "metadata" / "dataset_registry.csv").write_text(
+        "dataset_name\na_share_current_contract\n", encoding="utf-8"
+    )
+
+    report = _report(tmp_path, _profile())
+
+    assert report["contract"]["effective_start_date"] == "20180101"
+    assert report["contract"]["effective_end_date"] == "20260924"
+    assert report["contract"]["assets"]["daily_clean"]["manifest_status"] == "completed"

@@ -10,7 +10,15 @@ from .research_clock import ResearchClock, validate_research_clock
 
 RESEARCH_RUN_MANIFEST_SCHEMA_VERSION = "research.backtest-run.v1"
 RESEARCH_EVIDENCE_TIERS = frozenset({"diagnostic", "execution_aware"})
-PROVENANCE_FIELDS = ("data_vintage", "calendar_version", "strategy_version", "engine_version", "execution_policy", "cost_model", "random_seed")
+PROVENANCE_FIELDS = (
+    "data_vintage",
+    "calendar_version",
+    "strategy_version",
+    "engine_version",
+    "execution_policy",
+    "cost_model",
+    "random_seed",
+)
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
 
@@ -223,7 +231,9 @@ class ResearchRunManifest:
             ),
             evidence_refs=_artifact_refs(payload.get("evidence_refs", []), "evidence_refs"),
             created_at=_aware_datetime(payload.get("created_at"), "created_at"),
-            provenance=_provenance(payload.get("provenance"), required=evidence_tier == "execution_aware"),
+            provenance=_provenance(
+                payload.get("provenance"), required=evidence_tier == "execution_aware"
+            ),
         )
 
     def to_mapping(self) -> dict[str, Any]:

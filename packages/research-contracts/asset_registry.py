@@ -133,7 +133,7 @@ class PlatformAssetRegistry:
                     f"platform asset {asset.asset_id} has missing dependency: "
                     + ", ".join(sorted(missing))
                 )
-        indegree = {asset_id: 0 for asset_id in self._assets}
+        indegree = dict.fromkeys(self._assets, 0)
         children: dict[str, list[str]] = {asset_id: [] for asset_id in self._assets}
         for asset in self._assets.values():
             indegree[asset.asset_id] = len(asset.dependencies)

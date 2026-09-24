@@ -178,9 +178,12 @@ def _source_path_issues(
     resolved, error = _resolve_owner_path(root, owner, source)
     if error:
         return [f"{prefix}: source_path {error}"]
-    if maturity in {"experimental", "runnable", "verified"} and resolved is not None:
-        if not resolved.is_file():
-            return [f"{prefix}: source_path does not exist: {source}"]
+    if (
+        maturity in {"experimental", "runnable", "verified"}
+        and resolved is not None
+        and not resolved.is_file()
+    ):
+        return [f"{prefix}: source_path does not exist: {source}"]
     return []
 
 
@@ -274,14 +277,14 @@ def _dependency_cycle_issues(entries: list[dict[str, Any]]) -> list[str]:
 
     def visit(node: str, stack: list[str]) -> None:
         if state.get(node) == 1:
-            issues.append("dependency cycle: " + " -> ".join(stack + [node]))
+            issues.append("dependency cycle: " + " -> ".join([*stack, node]))
             return
         if state.get(node) == 2:
             return
         state[node] = 1
         for dependency in graph.get(node, []):
             if dependency in graph:
-                visit(dependency, stack + [node])
+                visit(dependency, [*stack, node])
         state[node] = 2
 
     for node in graph:
@@ -305,7 +308,7 @@ def validate_registry(path: Path, *, root: Path) -> RegistryCheck:
         issues.append(f"schema_version must be {REGISTRY_VERSION}")
     capabilities = payload.get("capabilities")
     if not isinstance(capabilities, list):
-        return RegistryCheck(str(path), issues + ["capabilities must be a list"])
+        return RegistryCheck(str(path), [*issues, "capabilities must be a list"])
     for index, entry in enumerate(capabilities):
         issues.extend(_entry_issues(entry, index, root.resolve()))
     entries = [entry for entry in capabilities if isinstance(entry, dict)]
