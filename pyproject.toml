@@ -95,7 +95,6 @@ pythonpath = [
   "packages/orchestration/src",
   "packages/execution/src",
   "packages/portfolio-backtester/src",
-  "packages/research-contracts",
   ".",
 ]
 markers = ["unit: fast deterministic unit tests"]
