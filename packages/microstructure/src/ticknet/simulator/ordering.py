@@ -51,8 +51,27 @@ def _timestamp_bucket(events: list[Any]) -> list[Any]:
     return [*non_snapshots, *snapshots]
 
 
-def sort_simulator_events(events: Iterable[Any]) -> list[Any]:
+def sort_simulator_events(events: Iterable[Any], *, backend: str = "python") -> list[Any]:
     """Sort by time; use sequence only where it does not fabricate cross-channel order."""
+    if backend == "rust":
+        from _microstructure_rs import sort_event_indices
+
+        rows = list(events)
+        indices = sort_event_indices(
+            [
+                (
+                    int(event.time_ms),
+                    event.kind,
+                    event.channel,
+                    event.sequence,
+                    event.source_index,
+                )
+                for event in rows
+            ]
+        )
+        return [rows[index] for index in indices]
+    if backend != "python":
+        raise ValueError(f"unknown ordering backend: {backend}")
     buckets: dict[int, list[Any]] = defaultdict(list)
     for event in events:
         buckets[int(event.time_ms)].append(event)

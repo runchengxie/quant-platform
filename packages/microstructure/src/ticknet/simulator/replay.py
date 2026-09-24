@@ -74,6 +74,17 @@ class ReplaySession:
 
     def run(self) -> list[Tick]:
         """按时间顺序消费背景流与干预订单，返回合成轨迹。"""
+        if self.engine.backend == "rust":
+            background = [
+                (o.time_ms, o.side, o.price, o.volume, o.order_id) for o in self._background
+            ]
+            interventions = [
+                (o.time_ms, o.side, o.price, o.volume, o.order_id) for o in self._interventions
+            ]
+            self.ticks.extend(
+                Tick(*row) for row in self.engine.lob.replay(background, interventions)
+            )
+            return self.ticks
         bg = sorted(self._background, key=lambda o: o.time_ms)
         iv = sorted(self._interventions, key=lambda o: o.time_ms)
         bi = ivi = 0

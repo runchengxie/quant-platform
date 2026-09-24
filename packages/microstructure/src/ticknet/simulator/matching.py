@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Literal
 
 from .pack import SimulatorEvent
 
@@ -178,11 +179,22 @@ class LimitOrderBook:
 class MatchingEngine:
     """消费 simulator 事件流并维护 LOB。"""
 
-    def __init__(self) -> None:
-        self.lob = LimitOrderBook()
+    def __init__(self, backend: Literal["python", "rust"] = "python") -> None:
+        self.backend = backend
+        if backend == "rust":
+            from _microstructure_rs import OrderBook
+
+            self.lob = OrderBook()
+        elif backend == "python":
+            self.lob = LimitOrderBook()
+        else:
+            raise ValueError(f"unknown matching backend: {backend}")
 
     def apply_order(self, order_id: str, side: int, price: int, volume: int) -> Trade | None:
-        return self.lob.apply_order(order_id, side, price, volume)
+        result = self.lob.apply_order(order_id, side, price, volume)
+        if self.backend == "rust" and result is not None:
+            return Trade(*result)
+        return result
 
     def cancel_order(self, order_id: str, volume: int | None = None) -> bool:
         return self.lob.cancel_order(order_id, volume)

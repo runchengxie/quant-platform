@@ -1,6 +1,18 @@
 name: public-ci
 on: [push, pull_request]
 jobs:
+  rust-microstructure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - run: uv sync --locked --all-groups --extra dev --extra microstructure
+      - run: cargo fmt --check --manifest-path packages/microstructure/rust/Cargo.toml
+      - run: cargo check --locked --manifest-path packages/microstructure/rust/Cargo.toml
+      - run: uvx --from maturin maturin build --locked --release -m packages/microstructure/rust/Cargo.toml --out /tmp/microstructure-wheels
+      - run: uv pip install --python .venv/bin/python /tmp/microstructure-wheels/*.whl
+      - run: TICKNET_REQUIRE_RUST=1 .venv/bin/pytest tests/microstructure -q
   check:
     runs-on: ubuntu-latest
     steps:
