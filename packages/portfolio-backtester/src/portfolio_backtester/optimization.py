@@ -170,9 +170,8 @@ class PortfolioOptimizationRequest:
             covariance = self.covariance.copy()
             covariance.index = covariance.index.map(str)
             covariance.columns = covariance.columns.map(str)
-            if (
-                covariance.index.tolist() != list(assets)
-                or covariance.columns.tolist() != list(assets)
+            if covariance.index.tolist() != list(assets) or covariance.columns.tolist() != list(
+                assets
             ):
                 raise ValueError("covariance assets must match returns columns in order")
             numeric_covariance = covariance.apply(pd.to_numeric, errors="coerce")
@@ -464,9 +463,8 @@ def _qp_covariance(request: PortfolioOptimizationRequest) -> tuple[np.ndarray, s
     if request.covariance_shrinkage:
         diagonal = np.diag(np.diag(covariance))
         covariance = (
-            (1.0 - request.covariance_shrinkage) * covariance
-            + request.covariance_shrinkage * diagonal
-        )
+            1.0 - request.covariance_shrinkage
+        ) * covariance + request.covariance_shrinkage * diagonal
     minimum_eigenvalue = float(np.linalg.eigvalsh(covariance).min())
     if minimum_eigenvalue < -1e-10:
         raise ValueError("covariance must be positive semidefinite")
@@ -591,14 +589,23 @@ class QpMinVarianceOptimizerBackend:
         weights = solution.x if feasible else equal
         if not feasible:
             residuals = _qp_constraint_residuals(equal, request.linear_constraints)
+            fallback_violations = {
+                name: residual for name, residual in residuals.items() if residual < -1e-7
+            }
+            if equal.min() < request.min_weight - 1e-12:
+                fallback_violations["min_weight"] = float(equal.min() - request.min_weight)
+            upper_bound = request.max_weight or 1.0
+            if equal.max() > upper_bound + 1e-12:
+                fallback_violations["max_weight"] = float(upper_bound - equal.max())
             equal_feasible = (
                 min(residuals.values(), default=0.0) >= -1e-7
                 and equal.min() >= request.min_weight - 1e-12
-                and equal.max() <= (request.max_weight or 1.0) + 1e-12
+                and equal.max() <= upper_bound + 1e-12
             )
             if not equal_feasible:
                 raise ValueError(
-                    f"QP solver failed and equal-weight fallback is infeasible: {solution.message}"
+                    "QP solver failed and equal-weight fallback is infeasible: "
+                    f"{solution.message}; violated constraints: {fallback_violations}"
                 )
             fallback = "equal_weight"
 
