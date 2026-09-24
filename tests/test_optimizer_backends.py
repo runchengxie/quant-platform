@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any, cast
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -173,7 +175,7 @@ def test_inverse_vol_config_rejects_invalid_parameters(
     message: str,
 ) -> None:
     with pytest.raises(ValueError, match=message):
-        InverseVolOptimizerBackend(InverseVolConfig(**kwargs))
+        InverseVolOptimizerBackend(cast(Any, InverseVolConfig)(**kwargs))
 
 
 def test_inverse_vol_backend_rejects_insufficient_observations() -> None:
@@ -282,3 +284,79 @@ def test_qp_backend_returns_feasible_equal_weight_fallback_when_solver_fails() -
     assert result.weights.to_dict() == pytest.approx(dict.fromkeys(request.assets, 1 / 3))
     assert result.diagnostics["fallback"] == "equal_weight"
     assert result.diagnostics["solver_status"] == "failed"
+
+
+def test_request_accepts_exact_simplex_boundaries_and_rejects_infeasible_totals() -> None:
+    boundary = PortfolioOptimizationRequest(
+        returns=_returns(),
+        min_weight=1 / 3,
+        max_weight=1 / 3,
+    )
+
+    assert boundary.min_weight * len(boundary.assets) == pytest.approx(1.0)
+    assert boundary.max_weight is not None
+    assert boundary.max_weight * len(boundary.assets) == pytest.approx(1.0)
+
+    with pytest.raises(ValueError, match="min_weight is infeasible"):
+        PortfolioOptimizationRequest(returns=_returns(), min_weight=0.34)
+    with pytest.raises(ValueError, match="max_weight is infeasible"):
+        PortfolioOptimizationRequest(returns=_returns(), max_weight=0.32)
+
+
+def test_qp_backend_rejects_contradictory_exposure_bounds() -> None:
+    returns = _returns()[["A", "B"]]
+    constraints = (
+        LinearExposureConstraint("upper_cap", pd.Series({"A": 1.0, "B": 0.0}), upper=0.2),
+        LinearExposureConstraint("lower_floor", pd.Series({"A": 1.0, "B": 0.0}), lower=0.8),
+    )
+    request = PortfolioOptimizationRequest(returns=returns, linear_constraints=constraints)
+
+    with pytest.raises(
+        ValueError,
+        match=r"equal-weight fallback is infeasible.*upper_cap.*lower_floor",
+    ):
+        QpMinVarianceOptimizerBackend().run(request)
+
+
+def test_qp_backend_rejects_infeasible_equal_weight_fallback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from scipy.optimize import minimize as scipy_minimize
+
+    def failed_solver(*args: object, **kwargs: object) -> object:
+        kwargs["options"] = {"maxiter": 0}
+        return scipy_minimize(*args, **kwargs)
+
+    monkeypatch.setattr("scipy.optimize.minimize", failed_solver)
+    values = pd.Series({"A": 1.0, "B": 0.0, "C": 0.0})
+    request = PortfolioOptimizationRequest(
+        returns=_returns(),
+        linear_constraints=(LinearExposureConstraint("minimum_a", values, lower=0.6),),
+    )
+
+    with pytest.raises(
+        ValueError,
+        match=r"equal-weight fallback is infeasible.*minimum_a",
+    ):
+        QpMinVarianceOptimizerBackend().run(request)
+
+
+def test_qp_success_respects_simplex_bounds_and_all_exposure_residuals() -> None:
+    returns = _returns()
+    exposure = pd.Series({"A": 1.0, "B": 0.0, "C": -1.0})
+    request = PortfolioOptimizationRequest(
+        returns=returns,
+        min_weight=0.1,
+        max_weight=0.6,
+        linear_constraints=(LinearExposureConstraint("exposure", exposure, lower=-0.1, upper=0.2),),
+    )
+
+    result = QpMinVarianceOptimizerBackend().run(request)
+    residuals = result.diagnostics["constraint_residuals"]
+
+    result.validate(request)
+    assert result.weights.sum() == pytest.approx(1.0)
+    assert result.weights.min() >= request.min_weight - 1e-12
+    assert request.max_weight is not None
+    assert result.weights.max() <= request.max_weight + 1e-12
+    assert min(residuals.values()) >= -1e-7
