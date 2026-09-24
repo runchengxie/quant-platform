@@ -46,6 +46,7 @@ markdown_extensions:
   - tables
 
 exclude_docs: |
+  migration/legacy-materials/**
   internal/**
   alpha/internal/**
   superpowers/**
@@ -125,6 +126,7 @@ nav:
       - 微观结构概览: microstructure/README.md
       - 数据边界: microstructure/data-boundary.md
       - 开发指南: microstructure/development-guide.md
+      - Rust 模拟内核: development/microstructure-rust.md
   - 编排:
       - 编排概览: orchestration/README.md
       - 控制平面: orchestration/control-plane.md

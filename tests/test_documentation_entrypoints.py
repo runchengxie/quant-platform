@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import tomllib
 from pathlib import Path
 
 import portfolio_backtester
@@ -65,6 +66,24 @@ def test_testing_docs_match_script_modes() -> None:
         assert mode in script
 
 
+def test_coverage_mode_scans_project_sources_and_dependency_is_installed() -> None:
+    script = (ROOT / "scripts" / "dev" / "run_tests.sh").read_text(encoding="utf-8")
+    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    dev_dependencies = [
+        *pyproject["project"]["optional-dependencies"]["dev"],
+        *pyproject["dependency-groups"]["dev"],
+    ]
+
+    assert "--cov=packages --cov=scripts" in script
+    assert any(dependency.startswith("pytest-cov") for dependency in dev_dependencies)
+
+
+def test_documentation_build_excludes_historical_archives() -> None:
+    config = (ROOT / "mkdocs.yml").read_text(encoding="utf-8")
+
+    assert "migration/legacy-materials/**" in config
+
+
 def test_typecheck_script_registers_all_source_roots() -> None:
     script = (ROOT / "scripts" / "dev" / "run_tests.sh").read_text(encoding="utf-8")
 
@@ -93,9 +112,10 @@ def test_docs_record_current_automation_status() -> None:
     docs = (ROOT / "docs" / "testing.md").read_text(encoding="utf-8")
 
     assert "`.github/workflows/ci.yml`" in docs
-    assert "PR 上运行公开质量门禁" in docs
-    assert "本地命令和工作区共享 `pre-push` 继续提供提交前的快速反馈" in docs
+    assert "PR 和主分支推送时运行公开质量门禁" in docs
+    assert "`.github/workflows/docs.yml`" in docs
     assert (ROOT / ".github" / "workflows" / "ci.yml").is_file()
+    assert (ROOT / ".github" / "workflows" / "docs.yml").is_file()
 
 
 def test_docs_distinguish_current_backends_from_history_and_plans() -> None:

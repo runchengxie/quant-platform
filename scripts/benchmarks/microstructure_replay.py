@@ -11,6 +11,7 @@ import json
 import random
 import statistics
 import time
+from typing import Literal
 
 from ticknet.simulator.matching import MatchingEngine
 from ticknet.simulator.replay import InterventionOrder, ReplaySession
@@ -26,7 +27,11 @@ def _events(count: int, seed: int) -> tuple[list[tuple], list[InterventionOrder]
     return background, interventions
 
 
-def _run(backend: str, background: list[tuple], interventions: list[InterventionOrder]):
+def _run(
+    backend: Literal["python", "rust"],
+    background: list[tuple],
+    interventions: list[InterventionOrder],
+):
     engine = MatchingEngine(backend=backend)
     session = ReplaySession(engine, (99, 500), (101, 500))
     for row in background:

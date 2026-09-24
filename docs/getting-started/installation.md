@@ -32,7 +32,8 @@ uv run pytest -q
 | 能力 | 安装方式 |
 | --- | --- |
 | Qlib 后端 | `uv sync --locked --all-groups --extra qlib` |
-| 微观结构模块 | `uv sync --locked --all-groups --extra microstructure` |
+| 微观结构模型与 Python 模拟器 | `uv sync --locked --all-groups --extra microstructure` |
+| Rust 微观结构后端 | 按[开发说明](../development/microstructure-rust.md)单独构建和安装 wheel |
 | 文档站 | `uv sync --locked --all-groups` |
 
 仓库的公开平台代码不需要数据供应商凭证，也不要求先接入真实行情数据。新人教程使用合成数据，便于先理解接口和输出。

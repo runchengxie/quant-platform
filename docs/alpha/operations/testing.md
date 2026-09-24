@@ -1,17 +1,17 @@
 # 测试和质量检查
 
-本页说明 `quant-market-research` 的本地测试入口和检查范围。
+本页说明 Alpha 模块自带测试脚本的入口和检查范围。它位于 `quant-platform` 仓库中，根目录统一测试入口见[全仓测试说明](../../testing.md)。
 
 ## 安装开发依赖
 
 ```bash
-uv sync --extra dev
+uv sync --locked --all-groups
 ```
 
 ## 统一入口
 
 ```bash
-scripts/dev/run_tests.sh <mode> [args...]
+scripts/alpha-research/dev/run_tests.sh <mode> [args...]
 ```
 
 | 模式 | 实际范围 |
@@ -19,7 +19,7 @@ scripts/dev/run_tests.sh <mode> [args...]
 | `all` | 完整 `pytest` 测试集 |
 | `fast` | `all` 的兼容别名 |
 | `unit` | `all` 的兼容别名 |
-| `coverage` | 完整测试集加覆盖率报告 |
+| `coverage` | 完整测试集和 `alpha_research` Python 源码覆盖率报告 |
 | `lint` | Ruff 代码检查 |
 | `format` | Ruff 格式检查 |
 | `format-all` | `format` 的兼容别名 |
@@ -32,26 +32,20 @@ scripts/dev/run_tests.sh <mode> [args...]
 ## 常用命令
 
 ```bash
-scripts/dev/run_tests.sh all
-scripts/dev/run_tests.sh coverage
-scripts/dev/run_tests.sh lint
-scripts/dev/run_tests.sh format
-scripts/dev/run_tests.sh typecheck
-scripts/dev/run_tests.sh typecheck-release
-scripts/dev/run_tests.sh maintainability
+scripts/alpha-research/dev/run_tests.sh all
+scripts/alpha-research/dev/run_tests.sh coverage
+scripts/alpha-research/dev/run_tests.sh lint
+scripts/alpha-research/dev/run_tests.sh format
+scripts/alpha-research/dev/run_tests.sh typecheck
+scripts/alpha-research/dev/run_tests.sh typecheck-release
+scripts/alpha-research/dev/run_tests.sh maintainability
 ```
 
-## 依赖与安全
+覆盖率使用 `pytest-cov`，目前不设最低覆盖率门槛。Python 覆盖率报告不包含 Rust 扩展。
 
-依赖审计和静态安全扫描按仓库运行：
+## 依赖安全检查
 
-```bash
-uv run --extra dev pip-audit
-uvx deptry .
-uvx bandit -q -r src -lll
-```
-
-coverage 按高风险模块逐步提高，不设置统一阈值。
+根目录公开 CI 使用 `pip-audit` 检查锁定依赖。本地可按[全仓测试说明](../../testing.md)运行同一检查。
 
 定点测试示例：
 
@@ -95,4 +89,4 @@ uv run --extra dev python -m pytest tests/test_cpcv.py -q
 
 ## 自动化状态
 
-本仓库是 public，GitHub Actions 在拉取请求时运行不依赖私有数据平台的 Ruff 检查、格式检查和离线测试。本地脚本、`pyproject.toml` 和工作区验证记录继续构成本地完整质量门禁，`ty` 当前仍需在本地环境中单独处理可选 Qlib 后端和既有类型债务。需要真实数据平台的分钟源目录测试通过 `market-data` extra 单独运行。
+GitHub Actions 的根目录公开 CI 在 PR 和主分支推送时运行全仓测试。本页脚本提供 Alpha 模块的独立覆盖率、类型和维护性检查。本地完整质量门禁与公开 CI 使用本地构造数据执行离线测试。类型检查目前仍有历史诊断，可选 Qlib 后端需要安装 `qlib` extra 后单独验证。真实数据平台的分钟源目录测试通过 `market-data` extra 单独运行。

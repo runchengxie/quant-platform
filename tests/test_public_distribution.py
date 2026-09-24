@@ -46,6 +46,7 @@ def test_distribution_declares_only_public_registry_dependencies() -> None:
         "torch>=2.0",
         "jsonschema>=4.25",
         "pytest>=9.0.3",
+        "pytest-cov>=6.0",
         "research-code-quality",
         "ruff>=0.8",
         "ty==0.0.77",

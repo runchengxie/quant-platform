@@ -13,6 +13,8 @@
 - 不要为了迁移方便复制策略实现。需要兼容时保留薄 adapter，并记录删除条件。
 - 历史边界见 `docs/migration/research-workspace-sunset.md`。
 
+`packages/microstructure/rust/` 是可选的 PyO3 原生扩展，提供订单簿撮合、批量回放和事件排序。Python 实现仍是默认后端和行为参考。Rust wheel 独立构建，不会随根 Python 包自动安装。只有明确选择 `backend="rust"` 时才需要安装它，详细步骤见 `docs/development/microstructure-rust.md`。
+
 ## 并行开发流程
 
 多个 agent 同时工作时，每项改动都必须使用独立 worktree 和功能分支。推荐流程如下：
