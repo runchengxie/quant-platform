@@ -129,6 +129,7 @@ def test_docs_distinguish_current_backends_from_history_and_plans() -> None:
     assert "registry 只包含 `native.position_replay`" in docs
     assert "Qlib 与 LEAN 的历史候选没有进入 `main`" in docs
     assert "LEAN 只" in docs and "架构参考" in docs
+    assert "no-adoption" in docs
     assert "Backtrader" in docs and "规划" in docs
     assert "vn.py" in docs and "范围外" in docs
 

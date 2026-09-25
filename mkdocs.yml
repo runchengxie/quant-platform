@@ -81,6 +81,7 @@ nav:
       - 回测规范: concepts/backtest-spec.md
       - 回测配置: concepts/backtest-configuration.md
       - 后端架构: concepts/backend-architecture.md
+      - LEAN feasibility spike: concepts/lean-differential-spike-2026-09.md
       - 回测结果解读: concepts/backtest-interpretation.md
       - 标准回测包: concepts/canonical-backtest-bundle.md
       - 组合优化后端: concepts/portfolio-optimization-backends.md
