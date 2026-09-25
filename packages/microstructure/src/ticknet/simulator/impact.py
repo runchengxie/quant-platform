@@ -38,7 +38,6 @@ def _mid(session: ReplaySession) -> float:
     if bid is not None:
         return float(bid[0])
     return 0.0
-    return (bid[0] + ask[0]) / 2.0
 
 
 class ImpactEstimator:
