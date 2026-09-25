@@ -46,15 +46,11 @@ def test_missing_dated_instrument_row_never_falls_back_to_price_history() -> Non
             "list_date": ["20200101"],
         }
     )
-    assert filter_style_replica_universe(
-        prices, instruments, "2025-01-02", min_history=1
-    ).empty
+    assert filter_style_replica_universe(prices, instruments, "2025-01-02", min_history=1).empty
 
 
 def test_unknown_st_and_suspended_status_cannot_form_positions() -> None:
-    prices = pd.DataFrame(
-        {"A": [10.0], "B": [20.0]}, index=pd.to_datetime(["2025-01-02"])
-    )
+    prices = pd.DataFrame({"A": [10.0], "B": [20.0]}, index=pd.to_datetime(["2025-01-02"]))
     instruments = pd.DataFrame(
         {
             "symbol": ["A", "B"],
@@ -64,6 +60,4 @@ def test_unknown_st_and_suspended_status_cannot_form_positions() -> None:
             "list_date": [20200101, 20200101],
         }
     )
-    assert filter_style_replica_universe(
-        prices, instruments, "2025-01-02", min_history=1
-    ).empty
+    assert filter_style_replica_universe(prices, instruments, "2025-01-02", min_history=1).empty
