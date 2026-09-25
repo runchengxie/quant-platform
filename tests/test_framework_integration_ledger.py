@@ -23,11 +23,16 @@ def test_framework_integration_ledger_matches_main_branch_backends() -> None:
 
 def test_framework_history_and_plans_are_not_registered_backends() -> None:
     ledger = yaml.safe_load(LEDGER_PATH.read_text(encoding="utf-8"))
+    root = LEDGER_PATH.parents[1]
 
     assert ledger["historical_candidates"]["qlib"]["status"] == "not_merged_to_main"
     assert ledger["historical_candidates"]["qlib"]["current_role"] == "none"
     assert ledger["historical_candidates"]["lean"]["status"] == "not_merged_to_main"
     assert ledger["historical_candidates"]["lean"]["current_role"] == "reference_only"
+    assert ledger["historical_candidates"]["lean"]["runtime_parity"] == "not_run"
+    report = root / ledger["historical_candidates"]["lean"]["feasibility_report"]
+    assert report.is_file()
+    assert "no-adoption" in report.read_text(encoding="utf-8")
 
     backtrader = ledger["planned_integrations"]["backtrader"]
     assert backtrader["status"] == "planning_only"

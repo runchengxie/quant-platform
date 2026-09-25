@@ -46,7 +46,14 @@ historical_candidates:
   lean:
     status: not_merged_to_main
     current_role: reference_only
-    note: architecture reference only with no adapter or runtime dependency
+    note: architecture reference only; 2026-09 pinned-source feasibility ended in no-adoption because A-share and capacity ledger rules would be duplicated
+    feasibility_report: docs/concepts/lean-differential-spike-2026-09.md
+    pinned_commit: f49bb9623a3e8782bf22bbd2cb51f691058cfdc3
+    build_status: succeeded_0_errors
+    build_warnings: 4450
+    coverage_ratio: not_measured
+    performance: not_measured
+    runtime_parity: not_run
 
 planned_integrations:
   backtrader:

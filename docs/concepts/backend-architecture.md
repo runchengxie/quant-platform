@@ -34,7 +34,7 @@ CanonicalBacktestResult
 | Backtrader | 仍处于规划阶段 | 当前没有适配器、依赖或 registry 项 |
 | vn.py | 属于本仓库范围外 | Gateway、实时传输和券商执行由执行系统决定 |
 
-Qlib 与 LEAN 的历史候选没有进入 `main`。LEAN 只保留架构参考用途。文档和测试不得把这些历史工作描述成可调用能力。
+Qlib 与 LEAN 的历史候选没有进入 `main`。LEAN 只保留架构参考用途。2026-09 的固定版本 feasibility spike 因 A 股和容量账本语义需要重复实现而作出 no-adoption 决策，且没有声称通过运行时 parity。详见 [LEAN feasibility spike](lean-differential-spike-2026-09.md)。文档和测试不得把这些历史工作描述成可调用能力。
 
 Backtrader 仍处于规划阶段。任何后续实现都需要独立设计评审、可选依赖、规范化结果转换和固定场景对照证据。
 
