@@ -3,7 +3,7 @@
 > status: active
 > owner: quant-platform
 > audience: human and agent
-> last_verified: 2026-09-24
+> last_verified: 2026-09-25
 > source_of_truth: yes
 > superseded_by: n/a
 
