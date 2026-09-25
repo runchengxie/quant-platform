@@ -38,7 +38,7 @@ DEFAULT_LIMIT = 10
 PYPROJECT_PATH = Path("pyproject.toml")
 COMMAND_PATH_PREFIX = "src/portfolio_backtester/commands/"
 DEFAULT_RATCHET_BUDGETS = {
-    "long_lines_over_100": 1,
+    "long_lines_over_100": 0,
     "functions_over_100": 0,
     "functions_over_250": 0,
     "functions_over_500": 0,

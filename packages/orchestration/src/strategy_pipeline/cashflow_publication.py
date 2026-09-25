@@ -146,7 +146,7 @@ def publish_cashflow_shadow(
         json.dumps(identity, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
     root = Path(output_root).resolve()
-    run_root = root / "publications" / f'{selection["signal_date"]}_{publication_hash[:16]}'
+    run_root = root / "publications" / f"{selection['signal_date']}_{publication_hash[:16]}"
     targets_path = run_root / "targets.json"
     receipt_path = run_root / "receipt.json"
     receipt = {

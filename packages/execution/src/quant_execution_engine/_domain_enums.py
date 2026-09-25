@@ -9,10 +9,6 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from decimal import Decimal
 from enum import Enum, StrEnum
-from typing import TypeVar
-
-_EnumMember = TypeVar("_EnumMember", bound=Enum)
-_Instance = TypeVar("_Instance")
 
 
 class _StringEnum(StrEnum):
@@ -87,11 +83,11 @@ class ExecutionEventType(_StringEnum):
     RECONCILED = "RECONCILED"
 
 
-def _require_instance(
+def _require_instance[Instance](
     value: object,
-    expected_type: type[_Instance],
+    expected_type: type[Instance],
     field_name: str,
-) -> _Instance:
+) -> Instance:
     if not isinstance(value, expected_type):
         raise TypeError(f"{field_name} must be {expected_type.__name__}")
     return value
@@ -116,11 +112,11 @@ def _optional_string(value: object | None, field_name: str) -> str | None:
     return normalized or None
 
 
-def _require_enum(
+def _require_enum[EnumMember: Enum](
     value: object,
-    enum_type: type[_EnumMember],
+    enum_type: type[EnumMember],
     field_name: str,
-) -> _EnumMember:
+) -> EnumMember:
     if not isinstance(value, enum_type):
         raise TypeError(f"{field_name} must be {enum_type.__name__}")
     return value

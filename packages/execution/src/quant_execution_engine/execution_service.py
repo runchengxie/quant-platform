@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from typing import override
 
 from ._execution_service_trace import (
     _load_broker_history_trace,
@@ -65,6 +66,7 @@ class OrderLifecycleService(OrderLifecycleRecoveryMixin):
         self.risk_chain = risk_chain or RiskGateChain()
         self.last_reconcile_report: BrokerReconcileReport | None = None
 
+    @override
     def execute_orders(
         self,
         orders: list[Order],
@@ -221,6 +223,7 @@ class OrderLifecycleService(OrderLifecycleRecoveryMixin):
             changed_orders=changed_orders,
         )
 
+    @override
     def cancel_order(
         self,
         *,

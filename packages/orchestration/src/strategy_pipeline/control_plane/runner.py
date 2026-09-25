@@ -16,7 +16,7 @@ def run(
 
     try:
         produced = owner.run(request)
-    except Exception:  # noqa: BLE001 - redact all owner implementation failures
+    except Exception:
         return RunReceipt(
             run_id=request.run_id,
             status="failed",
@@ -28,7 +28,7 @@ def run(
         if publisher is None:
             raise RuntimeError("publisher is required")
         published = publisher.publish(PublicationRequest(request.run_id, produced))
-    except Exception:  # noqa: BLE001 - redact all publisher implementation failures
+    except Exception:
         return RunReceipt(
             run_id=request.run_id,
             status="failed",

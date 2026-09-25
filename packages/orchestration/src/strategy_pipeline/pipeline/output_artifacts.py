@@ -144,9 +144,7 @@ def _write_dataset_artifacts(
     artifacts: dict[str, Any],
 ) -> None:
     if ctx.get("weekly_basket_performance_path") is not None:
-        artifacts["weekly_basket_performance_path"] = Path(
-            ctx["weekly_basket_performance_path"]
-        )
+        artifacts["weekly_basket_performance_path"] = Path(ctx["weekly_basket_performance_path"])
     if ctx["SAVE_DATASET"]:
         artifacts["dataset_path"] = run_dir / "dataset.parquet"
         save_parquet(ctx["dataset"].as_multiindex(), artifacts["dataset_path"])

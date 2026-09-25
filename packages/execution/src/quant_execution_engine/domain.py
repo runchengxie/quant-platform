@@ -47,6 +47,7 @@ __all__ = [
     "Money",
     "OrderEvent",
     "OrderIntent",
+    "OrderLifecycleError",
     "OrderSide",
     "OrderStatus",
     "OrderType",
@@ -55,7 +56,6 @@ __all__ = [
     "order_intent_capability_violations",
     "portfolio_target_capability_violations",
     "validate_order_intent_capabilities",
-    "validate_portfolio_target_capabilities",
-    "OrderLifecycleError",
     "validate_order_transition",
+    "validate_portfolio_target_capabilities",
 ]

@@ -18,7 +18,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 
 from ..models import AccountSnapshot, Position, Quote
 from ..paths import outputs_dir
@@ -138,9 +138,11 @@ class MockSimBrokerAdapter(BrokerAdapter):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(book, ensure_ascii=False, indent=2), encoding="utf-8")
 
+    @override
     def resolve_account(self, account_label: str | None = None) -> ResolvedBrokerAccount:
         return ResolvedBrokerAccount(label=str(account_label or "main").strip() or "main")
 
+    @override
     def get_account_snapshot(
         self,
         account: ResolvedBrokerAccount | None = None,
@@ -176,6 +178,7 @@ class MockSimBrokerAdapter(BrokerAdapter):
             base_currency="USD",
         )
 
+    @override
     def get_quotes(self, symbols: list[str], *, include_depth: bool = False) -> dict[str, Quote]:
         clock = self._clock()
         price_override = _env_float(MOCK_SIM_PRICE_ENV, 0.0)
@@ -192,9 +195,11 @@ class MockSimBrokerAdapter(BrokerAdapter):
             )
         return results
 
+    @override
     def lot_size(self, symbol: str) -> int:
         return 100 if _is_cn_symbol(symbol) else 1
 
+    @override
     def submit_order(self, request: BrokerOrderRequest) -> BrokerOrderRecord:
         resolved = request.account or self.resolve_account()
         book = self._load_book(resolved.label)
@@ -312,6 +317,7 @@ class MockSimBrokerAdapter(BrokerAdapter):
             raw=dict(order.get("raw") or {}),
         )
 
+    @override
     def get_order(
         self,
         broker_order_id: str,
@@ -326,6 +332,7 @@ class MockSimBrokerAdapter(BrokerAdapter):
             )
         return self._record_from_book(order, resolved.label)
 
+    @override
     def list_open_orders(
         self,
         account: ResolvedBrokerAccount | None = None,
@@ -341,6 +348,7 @@ class MockSimBrokerAdapter(BrokerAdapter):
             if str(order.get("status") or "").upper() in _OPEN_STATUSES
         ]
 
+    @override
     def list_order_history(
         self,
         account: ResolvedBrokerAccount | None = None,
@@ -363,6 +371,7 @@ class MockSimBrokerAdapter(BrokerAdapter):
             records = [record for record in records if record.broker_order_id == broker_order_id]
         return records
 
+    @override
     def cancel_order(
         self,
         broker_order_id: str,
@@ -381,6 +390,7 @@ class MockSimBrokerAdapter(BrokerAdapter):
         order["updated_at"] = self._clock()
         self._save_book(book)
 
+    @override
     def list_fills(
         self,
         account: ResolvedBrokerAccount | None = None,
@@ -408,6 +418,7 @@ class MockSimBrokerAdapter(BrokerAdapter):
                 )
         return fills
 
+    @override
     def list_fill_history(
         self,
         account: ResolvedBrokerAccount | None = None,
@@ -421,6 +432,7 @@ class MockSimBrokerAdapter(BrokerAdapter):
             fills = [fill for fill in fills if fill.symbol == symbol]
         return fills
 
+    @override
     def reconcile(
         self,
         account: ResolvedBrokerAccount | None = None,

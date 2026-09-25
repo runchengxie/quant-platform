@@ -170,122 +170,19 @@ def render_rebalance_diff(
     )
     lines.append("-" * 90)
 
-    denom_before = total_before if total_before > 0 else max(1.0, result.total_portfolio_value)
-    denom_after = total_after if total_after > 0 else max(1.0, result.total_portfolio_value)
-
-    positions_for_rich: list[dict[str, Any]] = []
-    all_symbols = sorted(set(current_map) | set(target_map))
-    for symbol in all_symbols:
-        current = current_map.get(symbol)
-        target = target_map.get(symbol)
-        cur_val = float(current.estimated_value) if current else 0.0
-        cur_qty = int(current.quantity) if current else 0
-        tgt_val = float(target.estimated_value) if target else 0.0
-        tgt_qty = int(target.quantity) if target else 0
-        cur_weight = cur_val / denom_before if denom_before > 0 else 0.0
-        tgt_weight = tgt_val / denom_after if denom_after > 0 else 0.0
-        delta_qty = tgt_qty - cur_qty
-        if delta_qty > 0:
-            action = f"BUY {delta_qty}"
-        elif delta_qty < 0:
-            action = f"SELL {abs(delta_qty)}"
-        else:
-            action = "HOLD"
-
-        related_orders = [
-            order
-            for order in result.orders
-            if order.symbol.replace(".US", "") == symbol.replace(".US", "")
-        ]
-        first_order = related_orders[0] if related_orders else None
-        target_frac = getattr(first_order, "target_qty_frac", None)
-        rounded = getattr(first_order, "rounded_target_qty", None)
-        rounding_loss = getattr(first_order, "rounding_loss", None)
-        est_fee = getattr(first_order, "est_fees", None)
-
-        target_frac_str = f"{target_frac:.3f}" if isinstance(target_frac, float) else "   -   "
-        rounded_str = f"{rounded:d}" if isinstance(rounded, int) else " - "
-        rounding_loss_str = f"{rounding_loss:.3f}" if isinstance(rounding_loss, float) else "  -  "
-        fee_str = _fmt_money(est_fee) if isinstance(est_fee, (int | float)) else "$0.00"
-        lines.append(
-            f"{symbol[:8]:8s}  {_fmt_pct(cur_weight):>8}  "
-            f"{_fmt_money(cur_val):>12},{cur_qty:>4}  →  "
-            f"{_fmt_pct(tgt_weight):>8}  {_fmt_money(tgt_val):>12},{tgt_qty:>4}  "
-            f"{target_frac_str:>11}  {rounded_str:>7}  "
-            f"{rounding_loss_str:>6}  {fee_str:>8}  {action}"
-        )
-
-        rounding_loss_val = rounding_loss if isinstance(rounding_loss, float) else None
-        est_fee_val = float(est_fee) if isinstance(est_fee, (int | float)) else 0.0
-        positions_for_rich.append(
-            {
-                "symbol": symbol,
-                "cur_weight": cur_weight,
-                "cur_val": cur_val,
-                "cur_qty": cur_qty,
-                "tgt_weight": tgt_weight,
-                "tgt_val": tgt_val,
-                "tgt_qty": tgt_qty,
-                "target_frac": target_frac if isinstance(target_frac, float) else None,
-                "rounded": rounded if isinstance(rounded, int) else None,
-                "rounding_loss": rounding_loss_val,
-                "est_fee": est_fee_val,
-                "action": action,
-            }
-        )
+    positions_for_rich = _append_position_diff_lines(
+        lines,
+        result,
+        current_map,
+        target_map,
+        total_before=total_before,
+        total_after=total_after,
+    )
 
     lines.append("")
     lines.append("--- Orders ---")
 
-    orders_for_rich: list[dict[str, Any]] = []
-    if not result.orders:
-        lines.append("No orders (already aligned or below lot thresholds)")
-    else:
-        sell_first = sorted(
-            result.orders,
-            key=lambda order: (
-                0 if order.side.upper() == "SELL" else 1,
-                -(order.price or 0) * order.quantity,
-            ),
-        )
-        for order in sell_first:
-            est_amount = (order.price or 0.0) * float(order.quantity)
-            price_display = "MKT" if not order.price else _fmt_money(order.price)
-            risk_decision_summary = summarize_risk_decisions(
-                list(getattr(order, "risk_decisions", []) or [])
-            )
-            risk_bypass_summary = format_risk_bypass_summary(risk_decision_summary)
-            order_line = (
-                f"{order.side:4s} {order.symbol[:8]:8s} {order.quantity:>6} @ "
-                f"{price_display:<8} est{_fmt_money(est_amount)} "
-                f"[{order.status}]"
-            )
-            if getattr(order, "broker_status", None):
-                order_line += f" broker={order.broker_status}"
-            if getattr(order, "broker_order_id", None):
-                order_line += f" id={order.broker_order_id}"
-            lines.append(order_line)
-            risk_summary = getattr(order, "risk_summary", None)
-            if order.error_message or risk_summary:
-                lines.append(f"  -> {risk_summary or order.error_message}")
-            if risk_bypass_summary:
-                lines.append(f"  -> Risk BYPASS: {risk_bypass_summary}")
-            rich_detail = (
-                getattr(order, "risk_summary", None)
-                or order.error_message
-                or (f"Risk BYPASS: {risk_bypass_summary}" if risk_bypass_summary else None)
-            )
-            orders_for_rich.append(
-                {
-                    "side": order.side,
-                    "symbol": order.symbol,
-                    "quantity": int(order.quantity),
-                    "price_display": price_display,
-                    "est_amount": est_amount,
-                    "status": order.status,
-                    "detail": rich_detail,
-                }
-            )
+    orders_for_rich = _append_order_diff_lines(lines, result)
 
     text_output = "\n".join(lines)
     rich_renderable = _build_rich_diff(
@@ -301,6 +198,193 @@ def render_rebalance_diff(
     )
 
     return RenderedRebalanceDiff(text=text_output, rich=rich_renderable)
+
+
+def _append_position_diff_lines(
+    lines: list[str],
+    result: RebalanceResult,
+    current_map: dict[str, Position],
+    target_map: dict[str, Position],
+    *,
+    total_before: float,
+    total_after: float,
+) -> list[dict[str, Any]]:
+    denom_before = total_before if total_before > 0 else max(1.0, result.total_portfolio_value)
+    denom_after = total_after if total_after > 0 else max(1.0, result.total_portfolio_value)
+    rows: list[dict[str, Any]] = []
+    for symbol in sorted(set(current_map) | set(target_map)):
+        current = current_map.get(symbol)
+        target = target_map.get(symbol)
+        cur_val = float(current.estimated_value) if current else 0.0
+        cur_qty = int(current.quantity) if current else 0
+        tgt_val = float(target.estimated_value) if target else 0.0
+        tgt_qty = int(target.quantity) if target else 0
+        cur_weight = cur_val / denom_before if denom_before > 0 else 0.0
+        tgt_weight = tgt_val / denom_after if denom_after > 0 else 0.0
+        action = _position_action(tgt_qty - cur_qty)
+        order = _matching_order(result, symbol)
+        target_frac = getattr(order, "target_qty_frac", None)
+        rounded = getattr(order, "rounded_target_qty", None)
+        rounding_loss = getattr(order, "rounding_loss", None)
+        est_fee = getattr(order, "est_fees", None)
+        _append_position_row(
+            lines,
+            symbol,
+            cur_val,
+            cur_qty,
+            tgt_val,
+            tgt_qty,
+            cur_weight,
+            tgt_weight,
+            target_frac,
+            rounded,
+            rounding_loss,
+            est_fee,
+            action,
+        )
+        rows.append(
+            _position_row_data(
+                symbol,
+                cur_val,
+                cur_qty,
+                tgt_val,
+                tgt_qty,
+                cur_weight,
+                tgt_weight,
+                target_frac,
+                rounded,
+                rounding_loss,
+                est_fee,
+                action,
+            )
+        )
+    return rows
+
+
+def _position_action(delta_quantity: int) -> str:
+    if delta_quantity > 0:
+        return f"BUY {delta_quantity}"
+    if delta_quantity < 0:
+        return f"SELL {abs(delta_quantity)}"
+    return "HOLD"
+
+
+def _matching_order(result: RebalanceResult, symbol: str) -> Any | None:
+    return next(
+        (
+            order
+            for order in result.orders
+            if order.symbol.replace(".US", "") == symbol.replace(".US", "")
+        ),
+        None,
+    )
+
+
+def _append_position_row(
+    lines: list[str],
+    symbol: str,
+    cur_val: float,
+    cur_qty: int,
+    tgt_val: float,
+    tgt_qty: int,
+    cur_weight: float,
+    tgt_weight: float,
+    target_frac: Any,
+    rounded: Any,
+    rounding_loss: Any,
+    est_fee: Any,
+    action: str,
+) -> None:
+    target_frac_str = f"{target_frac:.3f}" if isinstance(target_frac, float) else "   -   "
+    rounded_str = f"{rounded:d}" if isinstance(rounded, int) else " - "
+    rounding_loss_str = f"{rounding_loss:.3f}" if isinstance(rounding_loss, float) else "  -  "
+    fee_str = _fmt_money(est_fee) if isinstance(est_fee, (int | float)) else "$0.00"
+    lines.append(
+        f"{symbol[:8]:8s}  {_fmt_pct(cur_weight):>8}  "
+        f"{_fmt_money(cur_val):>12},{cur_qty:>4}  →  "
+        f"{_fmt_pct(tgt_weight):>8}  {_fmt_money(tgt_val):>12},{tgt_qty:>4}  "
+        f"{target_frac_str:>11}  {rounded_str:>7}  "
+        f"{rounding_loss_str:>6}  {fee_str:>8}  {action}"
+    )
+
+
+def _position_row_data(
+    symbol: str,
+    cur_val: float,
+    cur_qty: int,
+    tgt_val: float,
+    tgt_qty: int,
+    cur_weight: float,
+    tgt_weight: float,
+    target_frac: Any,
+    rounded: Any,
+    rounding_loss: Any,
+    est_fee: Any,
+    action: str,
+) -> dict[str, Any]:
+    return {
+        "symbol": symbol,
+        "cur_weight": cur_weight,
+        "cur_val": cur_val,
+        "cur_qty": cur_qty,
+        "tgt_weight": tgt_weight,
+        "tgt_val": tgt_val,
+        "tgt_qty": tgt_qty,
+        "target_frac": target_frac if isinstance(target_frac, float) else None,
+        "rounded": rounded if isinstance(rounded, int) else None,
+        "rounding_loss": rounding_loss if isinstance(rounding_loss, float) else None,
+        "est_fee": float(est_fee) if isinstance(est_fee, (int | float)) else 0.0,
+        "action": action,
+    }
+
+
+def _append_order_diff_lines(lines: list[str], result: RebalanceResult) -> list[dict[str, Any]]:
+    if not result.orders:
+        lines.append("No orders (already aligned or below lot thresholds)")
+        return []
+    rows: list[dict[str, Any]] = []
+    sell_first = sorted(
+        result.orders,
+        key=lambda order: (
+            0 if order.side.upper() == "SELL" else 1,
+            -(order.price or 0) * order.quantity,
+        ),
+    )
+    for order in sell_first:
+        est_amount = (order.price or 0.0) * float(order.quantity)
+        price_display = "MKT" if not order.price else _fmt_money(order.price)
+        risk_decision_summary = summarize_risk_decisions(
+            list(getattr(order, "risk_decisions", []) or [])
+        )
+        risk_bypass_summary = format_risk_bypass_summary(risk_decision_summary)
+        order_line = (
+            f"{order.side:4s} {order.symbol[:8]:8s} {order.quantity:>6} @ "
+            f"{price_display:<8} est{_fmt_money(est_amount)} [{order.status}]"
+        )
+        if getattr(order, "broker_status", None):
+            order_line += f" broker={order.broker_status}"
+        if getattr(order, "broker_order_id", None):
+            order_line += f" id={order.broker_order_id}"
+        lines.append(order_line)
+        risk_summary = getattr(order, "risk_summary", None)
+        if order.error_message or risk_summary:
+            lines.append(f"  -> {risk_summary or order.error_message}")
+        if risk_bypass_summary:
+            lines.append(f"  -> Risk BYPASS: {risk_bypass_summary}")
+        rows.append(
+            {
+                "side": order.side,
+                "symbol": order.symbol,
+                "quantity": int(order.quantity),
+                "price_display": price_display,
+                "est_amount": est_amount,
+                "status": order.status,
+                "detail": getattr(order, "risk_summary", None)
+                or order.error_message
+                or (f"Risk BYPASS: {risk_bypass_summary}" if risk_bypass_summary else None),
+            }
+        )
+    return rows
 
 
 def _build_summary_table(
@@ -401,37 +485,8 @@ def _build_rich_diff(
     )
     diff_table = _build_diffstat_table(diffstat, _style_delta)
 
-    positions_table = Table(
-        title="Per-position", show_header=True, header_style="bold", box=box.MINIMAL
-    )
-    positions_table.add_column("Symbol")
-    positions_table.add_column("Before %", justify="right")
-    positions_table.add_column("Before $", justify="right")
-    positions_table.add_column("Before Qty", justify="right")
-    positions_table.add_column("After %", justify="right")
-    positions_table.add_column("After $", justify="right")
-    positions_table.add_column("After Qty", justify="right")
-    positions_table.add_column("Target frac", justify="right")
-    positions_table.add_column("Rounded", justify="right")
-    positions_table.add_column("Δ frac", justify="right")
-    positions_table.add_column("Est. Fees", justify="right")
-    positions_table.add_column("Action")
-    for pos in positions:
-        _add_position_row(positions_table, pos, _style_delta, _fmt_pct, _fmt_money, _signed_money)
-
-    orders_table = Table(title="Orders", show_header=True, header_style="bold", box=box.MINIMAL)
-    orders_table.add_column("Side")
-    orders_table.add_column("Symbol")
-    orders_table.add_column("Qty", justify="right")
-    orders_table.add_column("Price")
-    orders_table.add_column("Est. Notional", justify="right")
-    orders_table.add_column("Status")
-    orders_table.add_column("Detail")
-    if not orders:
-        orders_table.add_row("-", "(none)", "-", "-", "-", "-")
-    else:
-        for order in orders:
-            _add_order_row(orders_table, order, _style_delta, _signed_money)
+    positions_table = _build_position_table(positions, _style_delta, _signed_money)
+    orders_table = _build_order_table(orders, _style_delta, _signed_money)
 
     rich_group: object = Group(
         Panel(header_table, border_style="cyan"),
@@ -441,6 +496,56 @@ def _build_rich_diff(
         orders_table,
     )
     return rich_group
+
+
+def _build_position_table(
+    positions: list[dict[str, Any]],
+    style_delta: Callable[[float, str], str],
+    signed_money: Callable[[float], str],
+) -> Any:
+    table = Table(title="Per-position", show_header=True, header_style="bold", box=box.MINIMAL)
+    for heading, justify in (
+        ("Symbol", None),
+        ("Before %", "right"),
+        ("Before $", "right"),
+        ("Before Qty", "right"),
+        ("After %", "right"),
+        ("After $", "right"),
+        ("After Qty", "right"),
+        ("Target frac", "right"),
+        ("Rounded", "right"),
+        ("Δ frac", "right"),
+        ("Est. Fees", "right"),
+        ("Action", None),
+    ):
+        if justify:
+            table.add_column(heading, justify=justify)
+        else:
+            table.add_column(heading)
+    for pos in positions:
+        _add_position_row(table, pos, style_delta, _fmt_pct, _fmt_money, signed_money)
+    return table
+
+
+def _build_order_table(
+    orders: list[dict[str, Any]],
+    style_delta: Callable[[float, str], str],
+    signed_money: Callable[[float], str],
+) -> Any:
+    table = Table(title="Orders", show_header=True, header_style="bold", box=box.MINIMAL)
+    table.add_column("Side")
+    table.add_column("Symbol")
+    table.add_column("Qty", justify="right")
+    table.add_column("Price")
+    table.add_column("Est. Notional", justify="right")
+    table.add_column("Status")
+    table.add_column("Detail")
+    if not orders:
+        table.add_row("-", "(none)", "-", "-", "-", "-")
+    else:
+        for order in orders:
+            _add_order_row(table, order, style_delta, signed_money)
+    return table
 
 
 def _markup_action(action: str) -> str:

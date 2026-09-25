@@ -6,7 +6,7 @@ import json
 import shutil
 from dataclasses import asdict, is_dataclass
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 from ._evidence_models import EvidenceArtifact
 from .paths import PROJECT_ROOT, outputs_dir
@@ -119,21 +119,32 @@ def _find_smoke_evidence(
             continue
         if not isinstance(payload, dict):
             continue
-        if str(payload.get("audit_run_id") or "") == run_id:
-            matches.append(path)
-            continue
-        raw_audit = str(payload.get("audit_log_path") or "")
-        if raw_audit in {audit_resolved, audit_project_relative, str(audit_log_path)}:
-            matches.append(path)
-            continue
-        if (
-            target_input_path
-            and str(payload.get("audit_target_input_path") or "") == target_input_path
+        if _matches_smoke_evidence(
+            payload,
+            run_id=run_id,
+            audit_paths={audit_resolved, audit_project_relative, str(audit_log_path)},
+            target_input_path=target_input_path,
         ):
             matches.append(path)
     if not matches:
         return None
     return sorted(matches, key=lambda item: (item.stat().st_mtime, item.name))[-1]
+
+
+def _matches_smoke_evidence(
+    payload: dict[str, Any],
+    *,
+    run_id: str,
+    audit_paths: set[str],
+    target_input_path: str | None,
+) -> bool:
+    if str(payload.get("audit_run_id") or "") == run_id:
+        return True
+    if str(payload.get("audit_log_path") or "") in audit_paths:
+        return True
+    return bool(
+        target_input_path and str(payload.get("audit_target_input_path") or "") == target_input_path
+    )
 
 
 def _copy_artifact(
@@ -188,7 +199,7 @@ def _copy_artifact(
 
 def _jsonable(value: Any) -> Any:
     if is_dataclass(value):
-        return {key: _jsonable(item) for key, item in asdict(cast(Any, value)).items()}
+        return {key: _jsonable(item) for key, item in asdict(value).items()}
     if isinstance(value, list):
         return [_jsonable(item) for item in value]
     if isinstance(value, dict):

@@ -15,7 +15,6 @@ from quant_execution_engine.broker.base import (
     BrokerValidationError,
     ResolvedBrokerAccount,
 )
-from quant_execution_engine.broker.factory import get_broker_capabilities
 from quant_execution_engine.execution import (
     ExecutionFillEvent,
     ExecutionOrderTrace,

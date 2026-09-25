@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, override
 
 _ALLOWED_SOURCE_OVERRIDES = {
     ("active_log_file", "loaded", "run_artifacts"),
@@ -75,12 +75,15 @@ class OutputContext(Mapping[str, Any]):
             )
         )
 
+    @override
     def __getitem__(self, key: str) -> Any:
         return self._flat[key]
 
+    @override
     def __iter__(self) -> Iterator[str]:
         return iter(self._flat)
 
+    @override
     def __len__(self) -> int:
         return len(self._flat)
 

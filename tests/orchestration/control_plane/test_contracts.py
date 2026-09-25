@@ -37,4 +37,3 @@ def test_public_contracts_reject_empty_identity_fields():
         RunRequest(run_id="", inputs=())
     with pytest.raises(ValueError, match="destination"):
         HandoffRequest(run_id="run-1", artifacts=(), destination="")
-

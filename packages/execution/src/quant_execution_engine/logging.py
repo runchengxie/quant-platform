@@ -10,6 +10,7 @@ import sys
 import uuid
 from contextvars import ContextVar
 from pathlib import Path
+from typing import override
 
 # This module is already being used elsewhere
 try:
@@ -56,6 +57,7 @@ def set_run_id(run_id: str) -> None:
 class _RunIdFilter(logging.Filter):
     """Ensure each log record carries the active ``run_id`` field."""
 
+    @override
     def filter(self, record: logging.LogRecord) -> bool:  # pragma: no cover - trivial
         record.run_id = get_run_id()
         return True

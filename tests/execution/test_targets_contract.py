@@ -55,6 +55,11 @@ def test_prune_target_weights_can_apply_minimum_and_renormalize() -> None:
     assert result.metadata["output_weight_sum"] == pytest.approx(1.0)
 
 
+def test_prune_target_weights_rejects_renormalization_of_zero_total() -> None:
+    with pytest.raises(ValueError, match="cannot renormalize zero total weight"):
+        prune_target_weights([0.0, 0.0], renormalize_target_weights=True)
+
+
 def test_normalize_execution_symbol_rejects_market_conflicts() -> None:
     with pytest.raises(ValueError, match="conflicts with market"):
         normalize_execution_symbol("600519.SH", "HK")

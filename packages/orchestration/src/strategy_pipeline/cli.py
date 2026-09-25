@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from typing import cast
 
 from .control_plane.targets import export_targets
 
@@ -20,12 +21,8 @@ def build_parser() -> argparse.ArgumentParser:
         command = commands.add_parser(name)
         command.add_argument("--run-id", required=True)
     export = commands.add_parser("export-targets")
-    export.add_argument(
-        "--holdings", required=True, help="Owner-produced holdings JSON path."
-    )
-    export.add_argument(
-        "--out", required=True, help="Canonical targets JSON output path."
-    )
+    export.add_argument("--holdings", required=True, help="Owner-produced holdings JSON path.")
+    export.add_argument("--out", required=True, help="Canonical targets JSON output path.")
     export.add_argument("--lineage-out", help="Optional lineage sidecar output path.")
     export.add_argument("--source", default="strategy-pipeline")
     cashflow = commands.add_parser("cashflow-publish-shadow")
@@ -43,7 +40,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if hasattr(args, "func"):
-        return args.func(args)
+        return cast(int, args.func(args))
     if args.command == "export-targets":
         lineage = export_targets(
             args.holdings,

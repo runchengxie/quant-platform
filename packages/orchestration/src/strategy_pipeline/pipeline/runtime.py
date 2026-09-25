@@ -16,6 +16,8 @@ from alpha_research.date_slices import (
     slice_with_train_window,
 )
 from alpha_research.evaluation_config import warn_if_purge_too_small
+from numpy.typing import NDArray
+
 from portfolio_backtester.rebalance import estimate_rebalance_gap
 
 logger = logging.getLogger("strategy_pipeline")
@@ -24,7 +26,7 @@ _managed_file_handler: logging.Handler | None = None
 
 
 def _resolve_log_file(
-    cfg: dict,
+    cfg: dict[str, Any],
     *,
     default_log_file: Path | None = None,
 ) -> Path | None:
@@ -40,7 +42,7 @@ def _resolve_log_file(
 
 
 def setup_logging(
-    cfg: dict,
+    cfg: dict[str, Any],
     *,
     default_log_file: Path | None = None,
 ) -> Path | None:
@@ -88,7 +90,7 @@ def setup_logging(
     return log_file
 
 
-def config_hash(cfg: dict) -> str:
+def config_hash(cfg: dict[str, Any]) -> str:
     dumped = yaml.safe_dump(cfg, sort_keys=True)
     return hashlib.md5(dumped.encode("utf-8")).hexdigest()[:8]
 
@@ -121,8 +123,8 @@ def _estimate_sample_rebalance_gap(
     *,
     sample_on_rebalance_dates: bool,
     df_model_all: pd.DataFrame,
-    reference_trade_dates: np.ndarray,
-    all_dates_full: np.ndarray,
+    reference_trade_dates: NDArray[Any],
+    all_dates_full: NDArray[Any],
 ) -> float | None:
     if not sample_on_rebalance_dates:
         return None
@@ -209,9 +211,9 @@ def _resolve_gap_state(
 def _slice_final_oos_holdout(
     *,
     df_model_all_sorted: pd.DataFrame,
-    all_dates_model_full: np.ndarray,
-    model_date_start_rows: np.ndarray,
-    model_date_end_rows: np.ndarray,
+    all_dates_model_full: NDArray[Any],
+    model_date_start_rows: NDArray[Any],
+    model_date_end_rows: NDArray[Any],
     df_model_all: pd.DataFrame,
     final_oos_enabled: bool,
     final_oos_size_raw: object | None,
@@ -268,7 +270,7 @@ def _slice_final_oos_holdout(
 def _build_in_sample_date_state(
     *,
     df_model: pd.DataFrame,
-    all_dates_model_full: np.ndarray,
+    all_dates_model_full: NDArray[Any],
     final_oos_len: int,
     sample_on_rebalance_dates: bool,
 ) -> dict[str, Any]:
@@ -373,14 +375,14 @@ def _build_train_test_split_state(
 def _prepare_split_context(
     *,
     df_model_all_sorted: pd.DataFrame,
-    all_dates_model_full: np.ndarray,
-    model_date_start_rows: np.ndarray,
-    model_date_end_rows: np.ndarray,
+    all_dates_model_full: NDArray[Any],
+    model_date_start_rows: NDArray[Any],
+    model_date_end_rows: NDArray[Any],
     model_date_to_pos: dict[pd.Timestamp, int],
-    reference_trade_dates: np.ndarray,
+    reference_trade_dates: NDArray[Any],
     sample_on_rebalance_dates: bool,
     df_model_all: pd.DataFrame,
-    all_dates_full: np.ndarray,
+    all_dates_full: NDArray[Any],
     label_horizon_days: int,
     label_horizon_mode: str,
     label_horizon_gap: float | None,

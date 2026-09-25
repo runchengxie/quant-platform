@@ -8,7 +8,11 @@ from __future__ import annotations
 
 from ._recovery_actions_single import OrderLifecycleRecoverySingleMixin
 from .broker.base import utc_now_iso
-from .execution_helpers import require_latest_child_attempt, resolve_tracked_order_context
+from .execution_helpers import (
+    TrackedOrderContext,
+    require_latest_child_attempt,
+    resolve_tracked_order_context,
+)
 from .execution_state import (
     OPEN_BROKER_STATUSES,
     STALE_RETRY_EXCLUDED_STATUSES,
@@ -18,6 +22,35 @@ from .logging import get_logger
 from .models import Order
 
 logger = get_logger(__name__)
+
+
+def _validate_reprice_context(context: TrackedOrderContext, limit_price: float) -> float:
+    if context.child is None or context.parent is None or context.intent is None:
+        raise ValueError("tracked order is incomplete and cannot be repriced")
+    if context.broker_order is None:
+        raise ValueError("tracked order is incomplete and cannot be repriced")
+    require_latest_child_attempt(
+        context.state,
+        parent=context.parent,
+        child=context.child,
+        action_name="reprice",
+    )
+    if str(context.intent.order_type).upper() != "LIMIT":
+        raise ValueError("reprice only supports tracked LIMIT orders")
+    if context.broker_order.status not in OPEN_BROKER_STATUSES:
+        raise ValueError(f"tracked order is not open: {context.broker_order.status}")
+    if context.broker_order.status in STALE_RETRY_EXCLUDED_STATUSES:
+        raise ValueError(f"tracked order is already pending cancel: {context.broker_order.status}")
+    if (
+        float(context.parent.filled_quantity or 0.0) > 0
+        or float(context.broker_order.filled_quantity or 0.0) > 0
+    ):
+        raise ValueError("reprice for partially filled orders is not supported yet")
+
+    current_limit = float(context.intent.limit_price or 0.0)
+    if current_limit > 0 and current_limit == float(limit_price):
+        raise ValueError("new limit_price must differ from the current tracked limit price")
+    return current_limit
 
 
 class OrderLifecycleRecoveryRepriceMixin(OrderLifecycleRecoverySingleMixin):
@@ -43,34 +76,14 @@ class OrderLifecycleRecoveryRepriceMixin(OrderLifecycleRecoverySingleMixin):
         )
         account = context.account
         state = context.state
+        current_limit = _validate_reprice_context(context, limit_price)
         child = context.child
         parent = context.parent
         intent = context.intent
         broker_order = context.broker_order
-        if child is None or parent is None or intent is None or broker_order is None:
-            raise ValueError("tracked order is incomplete and cannot be repriced")
-        require_latest_child_attempt(
-            state,
-            parent=parent,
-            child=child,
-            action_name="reprice",
-        )
-        if str(intent.order_type).upper() != "LIMIT":
-            raise ValueError("reprice only supports tracked LIMIT orders")
-        if broker_order.status not in OPEN_BROKER_STATUSES:
-            raise ValueError(f"tracked order is not open: {broker_order.status}")
-        if broker_order.status in STALE_RETRY_EXCLUDED_STATUSES:
-            raise ValueError(f"tracked order is already pending cancel: {broker_order.status}")
-        if (
-            float(parent.filled_quantity or 0.0) > 0
-            or float(broker_order.filled_quantity or 0.0) > 0
-        ):
-            raise ValueError("reprice for partially filled orders is not supported yet")
-
-        current_limit = float(intent.limit_price or 0.0)
+        assert child is not None and parent is not None and intent is not None
+        assert broker_order is not None
         next_limit = float(limit_price)
-        if current_limit > 0 and current_limit == next_limit:
-            raise ValueError("new limit_price must differ from the current tracked limit price")
 
         cancel_outcome = self._cancel_tracked_broker_order(
             state=state,

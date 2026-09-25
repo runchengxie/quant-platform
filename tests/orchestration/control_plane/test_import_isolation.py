@@ -24,4 +24,3 @@ def test_control_plane_imports_without_owner_packages(monkeypatch):
 
     assert contracts.ArtifactRef
     assert ports.RunOwner
-

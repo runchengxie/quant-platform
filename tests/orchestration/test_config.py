@@ -20,7 +20,9 @@ def test_resolve_config_supports_alias_and_relative_extends(tmp_path) -> None:
     resolved = resolve_config(child, aliases={"default": "child.yml"}, search_paths=[str(tmp_path)])
     assert resolved.data == {"model": {"name": "linear", "seed": 7}}
 
-    aliased = resolve_config("default", aliases={"default": "child.yml"}, search_paths=[str(tmp_path)])
+    aliased = resolve_config(
+        "default", aliases={"default": "child.yml"}, search_paths=[str(tmp_path)]
+    )
     assert aliased.data == resolved.data
 
 

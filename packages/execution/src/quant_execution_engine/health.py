@@ -96,7 +96,22 @@ def render_health_result(result: HealthResult) -> str:
         "",
     ]
 
-    # Preflight section
+    _append_preflight_health_lines(lines, result)
+    lines.append("")
+    _append_state_doctor_health_lines(lines, result)
+    lines.append("")
+    if result.healthy:
+        lines.append("No issues found — ready for execution.")
+    else:
+        health_issues = result.issues
+        lines.append(f"Issues ({len(health_issues)}):")
+        for issue_text in health_issues:
+            lines.append(f"  - {issue_text}")
+
+    return "\n".join(lines)
+
+
+def _append_preflight_health_lines(lines: list[str], result: HealthResult) -> None:
     if result.preflight_error:
         lines.append(f"  Preflight: ERROR — {result.preflight_error}")
     elif result.preflight is None:
@@ -116,9 +131,8 @@ def render_health_result(result: HealthResult) -> str:
         for check in warned:
             lines.append(f"    WARN - {check.name}: {check.message}")
 
-    lines.append("")
 
-    # State doctor section
+def _append_state_doctor_health_lines(lines: list[str], result: HealthResult) -> None:
     if result.state_doctor_error:
         lines.append(f"  State doctor: ERROR — {result.state_doctor_error}")
     elif result.state_doctor is None:
@@ -130,14 +144,3 @@ def render_health_result(result: HealthResult) -> str:
         lines.append(f"  State doctor: {status} ({len(real_issues)} issue(s))")
         for issue in real_issues:
             lines.append(f"    - {issue.message}")
-
-    lines.append("")
-    if result.healthy:
-        lines.append("No issues found — ready for execution.")
-    else:
-        health_issues = result.issues
-        lines.append(f"Issues ({len(health_issues)}):")
-        for issue_text in health_issues:
-            lines.append(f"  - {issue_text}")
-
-    return "\n".join(lines)

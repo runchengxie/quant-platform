@@ -283,7 +283,25 @@ def diagnose_order_issue(record: Any) -> BrokerDiagnostic | None:
     raw_code = _extract_raw_code(raw_payload)
     raw_parts = _message_parts(message, raw_code, raw_payload)
     classification_text = " | ".join(raw_parts)
+    direct_diagnostic = _diagnose_terminal_status(status, message, raw_code, classification_text)
+    if direct_diagnostic is not None:
+        return direct_diagnostic
+    return _diagnose_open_order_status(
+        status,
+        message,
+        raw_code,
+        classification_text,
+        filled_quantity,
+        remaining,
+    )
 
+
+def _diagnose_terminal_status(
+    status: str,
+    message: str | None,
+    raw_code: str | None,
+    classification_text: str,
+) -> BrokerDiagnostic | None:
     if status == "BLOCKED":
         return BrokerDiagnostic(
             severity="ERROR",
@@ -322,6 +340,17 @@ def diagnose_order_issue(record: Any) -> BrokerDiagnostic | None:
                 "Inspect broker message/raw payload, correct the order parameters, then retry."
             ),
         )
+    return None
+
+
+def _diagnose_open_order_status(
+    status: str,
+    message: str | None,
+    raw_code: str | None,
+    classification_text: str,
+    filled_quantity: float,
+    remaining: float | None,
+) -> BrokerDiagnostic | None:
     if status == "EXPIRED":
         return BrokerDiagnostic(
             severity="WARNING",

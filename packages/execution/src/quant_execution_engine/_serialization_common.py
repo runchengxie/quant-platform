@@ -6,7 +6,7 @@ import math
 from collections.abc import Mapping
 from datetime import UTC, datetime, time, tzinfo
 from decimal import Decimal, InvalidOperation
-from typing import TypeAlias, TypeVar, cast
+from typing import cast
 
 from .domain import (
     ApprovedTarget,
@@ -24,10 +24,10 @@ from .domain import (
 
 SCHEMA_VERSION = 2
 
-WireScalar: TypeAlias = str | int | float | bool | None
-WireValue: TypeAlias = WireScalar | list["WireValue"] | dict[str, "WireValue"]
-WirePayload: TypeAlias = dict[str, WireValue]
-DomainModel: TypeAlias = PortfolioTarget | ApprovedTarget | OrderIntent | OrderEvent | Fill
+type WireScalar = str | int | float | bool | None
+type WireValue = WireScalar | list["WireValue"] | dict[str, "WireValue"]
+type WirePayload = dict[str, WireValue]
+type DomainModel = PortfolioTarget | ApprovedTarget | OrderIntent | OrderEvent | Fill
 
 _KNOWN_MARKETS = {"US", "HK", "CN", "SG"}
 _CN_EXCHANGES = {"SH", "SZ", "BJ", "XSHG", "XSHE"}
@@ -294,10 +294,9 @@ def instrument_from_legacy(
     )
 
 
-_EnumType = TypeVar("_EnumType", OrderSide, OrderType, TimeInForce, OrderStatus, ExecutionEventType)
-
-
-def enum_value(enum_type: type[_EnumType], value: object, field_name: str) -> _EnumType:
+def enum_value[EnumType: (OrderSide, OrderType, TimeInForce, OrderStatus, ExecutionEventType)](
+    enum_type: type[EnumType], value: object, field_name: str
+) -> EnumType:
     if not isinstance(value, str):
         raise WireFormatError(f"{field_name} must be a string enum value")
     try:

@@ -17,4 +17,3 @@ def test_publish_artifact_delegates_to_injected_writer():
 
     assert seen == ["run-1"]
     assert result.kind == "published"
-

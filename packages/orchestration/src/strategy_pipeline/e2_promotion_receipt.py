@@ -68,14 +68,10 @@ def _repositories(value: object, *, producer_repository: str) -> dict[str, str]:
     for name, raw_sha in payload.items():
         sha = str(raw_sha or "").strip()
         if not _SHA40.fullmatch(sha):
-            raise ValueError(
-                f"lineage.repositories.{name} must be a 40-char lowercase git SHA"
-            )
+            raise ValueError(f"lineage.repositories.{name} must be a 40-char lowercase git SHA")
         repositories[name] = sha
     if producer_repository not in repositories:
-        raise ValueError(
-            "lineage.producer_repository must appear in lineage.repositories"
-        )
+        raise ValueError("lineage.producer_repository must appear in lineage.repositories")
     return repositories
 
 

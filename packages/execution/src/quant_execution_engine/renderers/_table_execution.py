@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from ..broker.base import BrokerReconcileReport
 from ..diagnostics import diagnose_order_issue, diagnose_warning_message
 from ..execution import (
@@ -150,56 +152,9 @@ def render_tracked_order_detail(tracked: ExecutionTrackedOrder) -> str:
         f"- Requested Ref: {tracked.order_ref}",
         f"- State file: {tracked.state_path}",
     ]
-    if tracked.intent is not None:
-        lines.extend(
-            [
-                f"- Intent: {tracked.intent.intent_id} {tracked.intent.side} "
-                f"{tracked.intent.quantity:g} {tracked.intent.symbol}",
-                f"- Intent Order Type: {tracked.intent.order_type}",
-                f"- Target Source: {tracked.intent.target_source or '-'}",
-                f"- Target Asof: {tracked.intent.target_asof or '-'}",
-                f"- Target Input: {tracked.intent.target_input_path or '-'}",
-            ]
-        )
-        if str(tracked.intent.order_type).upper() == "LIMIT":
-            limit_price = (
-                tracked.intent.limit_price if tracked.intent.limit_price is not None else "-"
-            )
-            lines.append(f"- Intent Limit Price: {limit_price}")
-        last_reprice_at = tracked.intent.metadata.get("last_reprice_at")
-        if last_reprice_at:
-            lines.append(f"- Last Reprice At: {last_reprice_at}")
-        if "last_reprice_from_limit_price" in tracked.intent.metadata:
-            lines.append(
-                "- Last Reprice From Limit: "
-                f"{tracked.intent.metadata.get('last_reprice_from_limit_price')}"
-            )
-    if tracked.parent is not None:
-        lines.extend(
-            [
-                f"- Parent: {tracked.parent.parent_order_id}",
-                f"- Parent Status: {tracked.parent.status}",
-                "- Parent Filled / Remaining: "
-                f"{tracked.parent.filled_quantity:g} / "
-                f"{tracked.parent.remaining_quantity:g}",
-            ]
-        )
-        manual_resolution = tracked.parent.metadata.get("manual_resolution")
-        if manual_resolution:
-            lines.append(f"- Manual Resolution: {manual_resolution}")
-        if tracked.parent.metadata.get("manual_resolution_at"):
-            lines.append(
-                f"- Manual Resolution At: {tracked.parent.metadata.get('manual_resolution_at')}"
-            )
-    if tracked.child is not None:
-        lines.extend(
-            [
-                f"- Child: {tracked.child.child_order_id} (attempt {tracked.child.attempt})",
-                f"- Child Status: {tracked.child.status}",
-            ]
-        )
-        if tracked.child.message:
-            lines.append(f"- Child Message: {tracked.child.message}")
+    _append_tracked_intent_lines(lines, tracked)
+    _append_tracked_parent_detail_lines(lines, tracked)
+    _append_tracked_child_detail_lines(lines, tracked)
     if tracked.broker_order is not None:
         lines.extend(
             [
@@ -220,6 +175,64 @@ def render_tracked_order_detail(tracked: ExecutionTrackedOrder) -> str:
     for fill in tracked.fill_events:
         lines.append(f"  * {fill.fill_id}: {fill.quantity:g} @ {fill.price:g} on {fill.filled_at}")
     return "\n".join(lines)
+
+
+def _append_tracked_intent_lines(lines: list[str], tracked: ExecutionTrackedOrder) -> None:
+    intent = tracked.intent
+    if intent is None:
+        return
+    lines.extend(
+        [
+            f"- Intent: {intent.intent_id} {intent.side} {intent.quantity:g} {intent.symbol}",
+            f"- Intent Order Type: {intent.order_type}",
+            f"- Target Source: {intent.target_source or '-'}",
+            f"- Target Asof: {intent.target_asof or '-'}",
+            f"- Target Input: {intent.target_input_path or '-'}",
+        ]
+    )
+    if str(intent.order_type).upper() == "LIMIT":
+        limit_price = intent.limit_price if intent.limit_price is not None else "-"
+        lines.append(f"- Intent Limit Price: {limit_price}")
+    last_reprice_at = intent.metadata.get("last_reprice_at")
+    if last_reprice_at:
+        lines.append(f"- Last Reprice At: {last_reprice_at}")
+    if "last_reprice_from_limit_price" in intent.metadata:
+        lines.append(
+            f"- Last Reprice From Limit: {intent.metadata.get('last_reprice_from_limit_price')}"
+        )
+
+
+def _append_tracked_parent_detail_lines(lines: list[str], tracked: ExecutionTrackedOrder) -> None:
+    parent = tracked.parent
+    if parent is None:
+        return
+    lines.extend(
+        [
+            f"- Parent: {parent.parent_order_id}",
+            f"- Parent Status: {parent.status}",
+            "- Parent Filled / Remaining: "
+            f"{parent.filled_quantity:g} / {parent.remaining_quantity:g}",
+        ]
+    )
+    manual_resolution = parent.metadata.get("manual_resolution")
+    if manual_resolution:
+        lines.append(f"- Manual Resolution: {manual_resolution}")
+    if parent.metadata.get("manual_resolution_at"):
+        lines.append(f"- Manual Resolution At: {parent.metadata.get('manual_resolution_at')}")
+
+
+def _append_tracked_child_detail_lines(lines: list[str], tracked: ExecutionTrackedOrder) -> None:
+    child = tracked.child
+    if child is None:
+        return
+    lines.extend(
+        [
+            f"- Child: {child.child_order_id} (attempt {child.attempt})",
+            f"- Child Status: {child.status}",
+        ]
+    )
+    if child.message:
+        lines.append(f"- Child Message: {child.message}")
 
 
 def render_order_trace(trace: ExecutionOrderTrace) -> str:
@@ -253,7 +266,18 @@ def render_order_trace(trace: ExecutionOrderTrace) -> str:
         )
         diagnostic = diagnose_order_issue(trace.broker_order)
         _append_diagnostic(lines, diagnostic)
+    _append_trace_children(lines, trace)
+    _append_trace_orders(
+        lines, "Local Tracked Broker Orders", trace.tracked_broker_orders, show_message=True
+    )
+    _append_trace_fills(lines, "Local Fill Events", trace.fill_events)
+    _append_trace_orders(lines, "Broker-side Order History", trace.broker_history_orders)
+    _append_trace_fills(lines, "Broker-side Fill History", trace.broker_history_fills)
+    _append_warning_lines(lines, trace.warnings)
+    return "\n".join(lines)
 
+
+def _append_trace_children(lines: list[str], trace: ExecutionOrderTrace) -> None:
     lines.append(f"- Local Child Attempts: {len(trace.child_orders)}")
     for child in trace.child_orders:
         lines.append(
@@ -265,8 +289,12 @@ def render_order_trace(trace: ExecutionOrderTrace) -> str:
         if child.message:
             lines.append(f"    message: {child.message}")
 
-    lines.append(f"- Local Tracked Broker Orders: {len(trace.tracked_broker_orders)}")
-    for record in trace.tracked_broker_orders:
+
+def _append_trace_orders(
+    lines: list[str], heading: str, records: list[Any], *, show_message: bool = False
+) -> None:
+    lines.append(f"- {heading}: {len(records)}")
+    for record in records:
         lines.append(
             "  * "
             f"{record.broker_order_id}: {record.status}, "
@@ -274,42 +302,27 @@ def render_order_trace(trace: ExecutionOrderTrace) -> str:
             f"remaining {float(record.remaining_quantity or 0.0):g}, "
             f"updated {record.updated_at}"
         )
-        if record.message:
+        if show_message and getattr(record, "message", None):
             lines.append(f"    message: {record.message}")
 
-    lines.append(f"- Local Fill Events: {len(trace.fill_events)}")
-    for local_fill in trace.fill_events:
+
+def _append_trace_fills(lines: list[str], heading: str, records: list[Any]) -> None:
+    lines.append(f"- {heading}: {len(records)}")
+    for record in records:
         lines.append(
-            f"  * {local_fill.fill_id}: {local_fill.quantity:g} @ "
-            f"{local_fill.price:g} on {local_fill.filled_at}"
+            f"  * {record.fill_id}: {record.quantity:g} @ {record.price:g} on {record.filled_at}"
         )
 
-    lines.append(f"- Broker-side Order History: {len(trace.broker_history_orders)}")
-    for record in trace.broker_history_orders:
-        lines.append(
-            "  * "
-            f"{record.broker_order_id}: {record.status}, "
-            f"filled {float(record.filled_quantity or 0.0):g} / "
-            f"remaining {float(record.remaining_quantity or 0.0):g}, "
-            f"updated {record.updated_at}"
-        )
 
-    lines.append(f"- Broker-side Fill History: {len(trace.broker_history_fills)}")
-    for broker_fill in trace.broker_history_fills:
-        lines.append(
-            f"  * {broker_fill.fill_id}: {broker_fill.quantity:g} @ "
-            f"{broker_fill.price:g} on {broker_fill.filled_at}"
-        )
-
-    if trace.warnings:
-        lines.append("- Warnings:")
-        for warning in trace.warnings:
-            diagnostic = diagnose_warning_message(warning)
-            lines.append(f"  * [{diagnostic.code}] {diagnostic.summary}")
-            if diagnostic.action_hint:
-                lines.append(f"    next: {diagnostic.action_hint}")
-
-    return "\n".join(lines)
+def _append_warning_lines(lines: list[str], warnings: list[str]) -> None:
+    if not warnings:
+        return
+    lines.append("- Warnings:")
+    for warning in warnings:
+        diagnostic = diagnose_warning_message(warning)
+        lines.append(f"  * [{diagnostic.code}] {diagnostic.summary}")
+        if diagnostic.action_hint:
+            lines.append(f"    next: {diagnostic.action_hint}")
 
 
 def render_retry_summary(
@@ -383,39 +396,43 @@ def render_stale_retry_summary(outcome: ExecutionStaleRetryResult) -> str:
         f"- Retry attempts completed: {len(outcome.retry_results)}",
         f"- State file: {outcome.state_path}",
     ]
-    if outcome.cancel_results:
-        lines.append("- Cancel results:")
-        for result in outcome.cancel_results:
-            lines.append(f"  * {result.broker_order_id} -> {result.status}")
-            for warning in result.warnings:
-                diagnostic = diagnose_warning_message(warning)
-                lines.append(f"    warning: [{diagnostic.code}] {diagnostic.summary}")
-                if diagnostic.action_hint:
-                    lines.append(f"    next: {diagnostic.action_hint}")
-    if outcome.retry_results:
-        lines.append("- Retry results:")
-        for retry_result in outcome.retry_results:
-            lines.append(
-                f"  * {retry_result.order_ref} -> "
-                f"child {retry_result.new_child_order_id} / "
-                f"broker {retry_result.broker_order_id or '-'} / "
-                f"status {retry_result.broker_status or '-'}"
-            )
-            for warning in retry_result.warnings:
-                diagnostic = diagnose_warning_message(warning)
-                lines.append(f"    warning: [{diagnostic.code}] {diagnostic.summary}")
-                if diagnostic.action_hint:
-                    lines.append(f"    next: {diagnostic.action_hint}")
-    if outcome.warnings:
-        lines.append("- Warnings:")
-        for warning in outcome.warnings:
-            diagnostic = diagnose_warning_message(warning)
-            lines.append(f"  * [{diagnostic.code}] {diagnostic.summary}")
-            if diagnostic.action_hint:
-                lines.append(f"    next: {diagnostic.action_hint}")
+    _append_stale_cancel_results(lines, outcome)
+    _append_stale_retry_results(lines, outcome)
+    _append_warning_lines(lines, outcome.warnings)
     if not outcome.cancel_results and not outcome.retry_results and not outcome.warnings:
         lines.append("- No stale tracked open orders were eligible for retry")
     return "\n".join(lines)
+
+
+def _append_stale_cancel_results(lines: list[str], outcome: ExecutionStaleRetryResult) -> None:
+    if not outcome.cancel_results:
+        return
+    lines.append("- Cancel results:")
+    for result in outcome.cancel_results:
+        lines.append(f"  * {result.broker_order_id} -> {result.status}")
+        _append_indented_warning_lines(lines, result.warnings)
+
+
+def _append_stale_retry_results(lines: list[str], outcome: ExecutionStaleRetryResult) -> None:
+    if not outcome.retry_results:
+        return
+    lines.append("- Retry results:")
+    for result in outcome.retry_results:
+        lines.append(
+            f"  * {result.order_ref} -> "
+            f"child {result.new_child_order_id} / "
+            f"broker {result.broker_order_id or '-'} / "
+            f"status {result.broker_status or '-'}"
+        )
+        _append_indented_warning_lines(lines, result.warnings)
+
+
+def _append_indented_warning_lines(lines: list[str], warnings: list[str]) -> None:
+    for warning in warnings:
+        diagnostic = diagnose_warning_message(warning)
+        lines.append(f"    warning: [{diagnostic.code}] {diagnostic.summary}")
+        if diagnostic.action_hint:
+            lines.append(f"    next: {diagnostic.action_hint}")
 
 
 def render_resume_remaining_summary(outcome: ExecutionResumeRemainingResult) -> str:
