@@ -91,6 +91,7 @@ nav:
       - 基准阶梯: concepts/benchmark-ladder.md
       - 换手率: concepts/turnover.md
       - 执行成本: concepts/execution-costs.md
+      - 组合执行性能基线: development/portfolio-execution-profiling-2026-09.md
       - 成本拆解: concepts/cost-breakdown.md
       - 日期执行费用: dated-execution-fees.md
       - 公司行动账本: corporate-action-ledger.md
