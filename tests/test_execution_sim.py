@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import inspect
+
 import numpy as np
 import pandas as pd
 import pytest
 
 import portfolio_backtester.execution_sim as execution_sim
 import portfolio_backtester.execution_sim.core as execution_core
+import portfolio_backtester.execution_sim.table_preparation as table_preparation
 from portfolio_backtester.execution import ParticipationSlippageModel
 from portfolio_backtester.execution_sim import (
     ExecutionSimConfig,
@@ -43,6 +46,9 @@ def test_execution_sim_package_exports_are_stable() -> None:
     assert execution_core.simulate_capacity_execution is simulate_capacity_execution
     assert execution_core.simulate_execution_adjusted_nav is simulate_execution_adjusted_nav
     assert execution_core.simulate_ideal_daily_nav is simulate_ideal_daily_nav
+    assert inspect.signature(execution_core.prepare_execution_tables) == inspect.signature(
+        table_preparation.prepare_execution_tables
+    )
 
 
 def _pricing_frame(dates, symbols, *, amount_map=None, tradable_map=None, price_map=None):
@@ -97,7 +103,7 @@ def test_adjusted_nav_accepts_reused_prepared_execution_tables(monkeypatch):
     def unexpected_rebuild(*args, **kwargs):
         raise AssertionError("execution tables were rebuilt")
 
-    monkeypatch.setattr(execution_core, "_build_execution_tables", unexpected_rebuild)
+    monkeypatch.setattr(table_preparation, "_build_execution_tables", unexpected_rebuild)
     result = simulate_execution_adjusted_nav(
         positions,
         pricing,
