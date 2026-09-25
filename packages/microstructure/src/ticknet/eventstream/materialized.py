@@ -10,7 +10,7 @@ import os
 import shutil
 from collections import defaultdict
 from pathlib import Path, PurePosixPath
-from typing import Any
+from typing import Any, override
 
 import numpy as np
 import torch
@@ -155,6 +155,11 @@ def _manifest_payload(manifest: dict[str, Any]) -> dict[str, Any]:
 
 
 def _validate_shard_record(record: dict[str, Any], contract: dict[str, Any]) -> None:
+    _validate_shard_metadata(record)
+    _validate_shard_files(record, contract)
+
+
+def _validate_shard_metadata(record: dict[str, Any]) -> None:
     partition = str(record.get("partition", ""))
     if partition not in PARTITIONS:
         raise ValueError(f"物化分片的 partition 无效：{partition}")
@@ -164,6 +169,9 @@ def _validate_shard_record(record: dict[str, Any], contract: dict[str, Any]) -> 
     days = record.get("days")
     if not isinstance(days, list) or days != sorted({int(day) for day in days}):
         raise ValueError("物化分片日期应唯一并按顺序排列")
+
+
+def _validate_shard_files(record: dict[str, Any], contract: dict[str, Any]) -> None:
     files = record.get("files")
     if not isinstance(files, list) or len(files) != len(ARRAY_DTYPES):
         raise ValueError("物化分片缺少张量文件")
@@ -201,6 +209,23 @@ def validate_materialized_manifest(
     require_complete: bool = True,
 ) -> None:
     """验证物化清单结构、汇总和逻辑指纹。"""
+    status, contract, shards, totals = _validate_manifest_header(
+        manifest, require_complete=require_complete
+    )
+    _validate_manifest_shards(shards, contract)
+    expected_totals = _manifest_totals(shards)
+    if totals != expected_totals:
+        raise ValueError("物化清单汇总不一致")
+    if status == "complete":
+        if any(expected_totals["partitions"][name] < 1 for name in PARTITIONS):
+            raise ValueError("完整物化清单必须覆盖五个训练与评估分区")
+        if manifest.get("dataset_fingerprint") != _canonical_sha256(_manifest_payload(manifest)):
+            raise ValueError("物化数据指纹不匹配")
+
+
+def _validate_manifest_header(
+    manifest: dict[str, Any], *, require_complete: bool
+) -> tuple[str, dict[str, Any], list[Any], dict[str, Any]]:
     if manifest.get("schema_version") != SCHEMA_VERSION or manifest.get("mode") != MODE:
         raise ValueError("物化清单格式或版本无效")
     status = manifest.get("status")
@@ -222,6 +247,10 @@ def validate_materialized_manifest(
     _validate_representation_contract(contract)
     if manifest.get("contract_sha256") != _canonical_sha256(contract):
         raise ValueError("物化合同指纹不匹配")
+    return status, contract, shards, totals
+
+
+def _validate_manifest_shards(shards: list[Any], contract: dict[str, Any]) -> None:
     seen: set[tuple[str, str]] = set()
     for record in shards:
         if not isinstance(record, dict):
@@ -231,7 +260,10 @@ def validate_materialized_manifest(
         if key in seen:
             raise ValueError(f"物化清单包含重复分片：{key}")
         seen.add(key)
-    expected_totals = {
+
+
+def _manifest_totals(shards: list[Any]) -> dict[str, Any]:
+    return {
         "shards": len(shards),
         "samples": sum(int(record["samples"]) for record in shards),
         "bytes": sum(
@@ -244,13 +276,6 @@ def validate_materialized_manifest(
             for partition in PARTITIONS
         },
     }
-    if totals != expected_totals:
-        raise ValueError("物化清单汇总不一致")
-    if status == "complete":
-        if any(expected_totals["partitions"][name] < 1 for name in PARTITIONS):
-            raise ValueError("完整物化清单必须覆盖五个训练与评估分区")
-        if manifest.get("dataset_fingerprint") != _canonical_sha256(_manifest_payload(manifest)):
-            raise ValueError("物化数据指纹不匹配")
 
 
 def load_materialized_manifest(root: Path, *, require_complete: bool = True) -> dict[str, Any]:
@@ -542,20 +567,9 @@ def build_materialized_dataset(
     contract = _materialization_contract(config, storage, source_revision=source_revision)
     output_root = Path(output_root)
     manifest_path = output_root / MANIFEST_NAME
-    if manifest_path.exists():
-        manifest = load_materialized_manifest(output_root, require_complete=False)
-        if manifest["contract"] != contract:
-            raise ValueError("已有物化目录的合同与本次运行不同")
-        for record in manifest["shards"]:
-            _verify_shard(output_root, record, contract)
-        if manifest["status"] == "complete":
-            return manifest
-    else:
-        if output_root.exists() and any(output_root.iterdir()):
-            raise ValueError("物化输出目录非空且缺少 manifest.json")
-        output_root.mkdir(parents=True, exist_ok=True)
-        manifest = _empty_manifest(contract)
-        _atomic_json(manifest_path, manifest)
+    manifest, already_complete = _load_or_initialize_manifest(output_root, contract)
+    if already_complete:
+        return manifest
 
     datasets = build_source_datasets(config, storage["contract"]["splits"])
     estimated_bytes = _required_bytes(datasets, config.seq_len)
@@ -565,6 +579,50 @@ def build_materialized_dataset(
     if available < required_free:
         raise RuntimeError(f"物化盘空间不足：需要 {required_free} 字节，当前可用 {available} 字节")
 
+    _write_missing_shards(
+        datasets,
+        manifest,
+        manifest_path=manifest_path,
+        output_root=output_root,
+        config=config,
+    )
+    manifest["status"] = "complete"
+    _refresh_totals(manifest)
+    manifest["dataset_fingerprint"] = _canonical_sha256(_manifest_payload(manifest))
+    validate_materialized_manifest(manifest)
+    _atomic_json(manifest_path, manifest)
+    return manifest
+
+
+def _load_or_initialize_manifest(
+    output_root: Path, contract: dict[str, Any]
+) -> tuple[dict[str, Any], bool]:
+    manifest_path = output_root / MANIFEST_NAME
+    if manifest_path.exists():
+        manifest = load_materialized_manifest(output_root, require_complete=False)
+        if manifest["contract"] != contract:
+            raise ValueError("已有物化目录的合同与本次运行不同")
+        for record in manifest["shards"]:
+            _verify_shard(output_root, record, contract)
+        if manifest["status"] == "complete":
+            return manifest, True
+    else:
+        if output_root.exists() and any(output_root.iterdir()):
+            raise ValueError("物化输出目录非空且缺少 manifest.json")
+        output_root.mkdir(parents=True, exist_ok=True)
+        manifest = _empty_manifest(contract)
+        _atomic_json(manifest_path, manifest)
+    return manifest, False
+
+
+def _write_missing_shards(
+    datasets: dict[str, Any],
+    manifest: dict[str, Any],
+    *,
+    manifest_path: Path,
+    output_root: Path,
+    config: Any,
+) -> None:
     completed = {(row["partition"], row["month"]) for row in manifest["shards"]}
     for partition in PARTITIONS:
         dataset = datasets[partition]
@@ -587,13 +645,6 @@ def build_materialized_dataset(
             manifest["shards"].append(record)
             _refresh_totals(manifest)
             _atomic_json(manifest_path, manifest)
-
-    manifest["status"] = "complete"
-    _refresh_totals(manifest)
-    manifest["dataset_fingerprint"] = _canonical_sha256(_manifest_payload(manifest))
-    validate_materialized_manifest(manifest)
-    _atomic_json(manifest_path, manifest)
-    return manifest
 
 
 def assert_materialized_compatible(manifest: dict[str, Any], config: Any) -> None:
@@ -627,7 +678,7 @@ def assert_materialized_compatible(manifest: dict[str, Any], config: Any) -> Non
         raise ValueError("物化训练集与配置的源码 revision 不一致")
 
 
-class MaterializedWindowDataset(Dataset):
+class MaterializedWindowDataset(Dataset[tuple[torch.Tensor, ...]]):
     """按需 mmap 物化分片，返回与 ``L2WindowDataset`` 相同的张量合同。"""
 
     def __init__(
@@ -706,6 +757,7 @@ class MaterializedWindowDataset(Dataset):
             self._target_overlay_arrays[shard_index] = values
         return values
 
+    @override
     def __getitem__(self, index: int) -> tuple[torch.Tensor, ...]:
         if not 0 <= index < len(self):
             raise IndexError(index)

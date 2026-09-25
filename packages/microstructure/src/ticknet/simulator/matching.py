@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, Protocol, cast
 
 from .pack import SimulatorEvent
 
@@ -27,6 +27,22 @@ class Trade:
     sell_id: str
     price: int
     volume: int
+
+
+class _RustOrderBook(Protocol):
+    def apply_order(
+        self, order_id: str, side: int, price: int, volume: int
+    ) -> tuple[str, str, int, int] | None: ...
+
+    def cancel_order(self, order_id: str, volume: int | None = None) -> bool: ...
+
+    def has_order(self, order_id: str) -> bool: ...
+
+    def replay(
+        self,
+        background: list[tuple[int, int, int, int, str]],
+        interventions: list[tuple[int, int, int, int, str]],
+    ) -> list[tuple[int, tuple[int, int] | None, tuple[int, int] | None, str]]: ...
 
 
 class LimitOrderBook:
@@ -193,14 +209,23 @@ class MatchingEngine:
     def apply_order(self, order_id: str, side: int, price: int, volume: int) -> Trade | None:
         result = self.lob.apply_order(order_id, side, price, volume)
         if self.backend == "rust" and result is not None:
-            return Trade(*result)
-        return result
+            return Trade(*cast(tuple[str, str, int, int], result))
+        return cast(Trade | None, result)
 
     def cancel_order(self, order_id: str, volume: int | None = None) -> bool:
         return self.lob.cancel_order(order_id, volume)
 
     def has_order(self, order_id: str) -> bool:
         return self.lob.has_order(order_id)
+
+    def replay(
+        self,
+        background: list[tuple[int, int, int, int, str]],
+        interventions: list[tuple[int, int, int, int, str]],
+    ) -> list[tuple[int, tuple[int, int] | None, tuple[int, int] | None, str]]:
+        if self.backend != "rust":
+            raise RuntimeError("Rust replay is only available with the rust backend")
+        return cast(_RustOrderBook, self.lob).replay(background, interventions)
 
     def consume(self, event: SimulatorEvent) -> Trade | None:
         if event.kind == "order":

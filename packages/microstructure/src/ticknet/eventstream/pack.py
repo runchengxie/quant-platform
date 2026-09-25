@@ -30,9 +30,11 @@ import sys
 import time
 from collections.abc import Mapping
 from pathlib import Path
+from typing import Any, cast
 
 import numpy as np
 import polars as pl
+from numpy.typing import NDArray
 
 from ticknet.eventstream.config import (
     AGE_UNKNOWN_MS,
@@ -92,7 +94,7 @@ def _universe_for_day(universe: UniverseSpec | None, day: int) -> list[str] | No
     return universe.get(int(day))
 
 
-def _load_prev_close(day: int, tickers: list[str], raw_root: Path) -> np.ndarray:
+def _load_prev_close(day: int, tickers: list[str], raw_root: Path) -> NDArray[Any]:
     """basic/close_data.parquet 宽表里 day 之前的最近一个收盘价（元）。"""
     import pyarrow.parquet as pq
 
@@ -245,14 +247,14 @@ def pack_day(
     )
 
     # ---------------- 转结构化数组 ----------------
-    def col(frame: pl.DataFrame, name: str, np_dtype) -> np.ndarray:
+    def col(frame: pl.DataFrame, name: str, np_dtype) -> NDArray[Any]:
         return frame[name].cast(pl.Float64).fill_null(0.0).to_numpy().astype(np_dtype)
 
-    def cents(frame: pl.DataFrame, name: str) -> np.ndarray:
+    def cents(frame: pl.DataFrame, name: str) -> NDArray[Any]:
         """原始价格单位为元，打包统一转分为 int32，保留最小报价精度。"""
         return np.round(frame[name].cast(pl.Float64).fill_null(0.0) * 100.0).astype(np.int32)
 
-    order_arr = np.empty(len(orders), dtype=ORDER_DTYPE)
+    order_arr = cast(NDArray[np.void], np.empty(len(orders), dtype=ORDER_DTYPE))
     order_arr["time_ms"] = col(orders, "time_ms", np.int32)
     order_arr["price"] = cents(orders, "Price")
     order_arr["volume"] = col(orders, "Volume", np.int32)
@@ -264,7 +266,7 @@ def pack_day(
     del orders
     gc.collect()
 
-    trade_arr = np.empty(len(trades), dtype=TRADE_DTYPE)
+    trade_arr = cast(NDArray[np.void], np.empty(len(trades), dtype=TRADE_DTYPE))
     trade_arr["time_ms"] = col(trades, "time_ms", np.int32)
     trade_arr["price"] = cents(trades, "Price")
     trade_arr["volume"] = col(trades, "Volume", np.int32)
@@ -276,7 +278,7 @@ def pack_day(
     del trades
     gc.collect()
 
-    snap_arr = np.empty(len(snaps), dtype=SNAP_DTYPE)
+    snap_arr = cast(NDArray[np.void], np.empty(len(snaps), dtype=SNAP_DTYPE))
     snap_arr["time_ms"] = col(snaps, "time_ms", np.int32)
     snap_arr["last"] = cents(snaps, "Price")
     snap_arr["d_volume"] = col(snaps, "d_volume", np.int32)
@@ -306,7 +308,7 @@ def pack_day(
     tk_to_i = {t: i for i, t in enumerate(tickers)}
     n = len(tickers)
 
-    def offsets(groups: dict[str, tuple[int, int]]) -> tuple[np.ndarray, np.ndarray]:
+    def offsets(groups: dict[str, tuple[int, int]]) -> tuple[NDArray[Any], NDArray[Any]]:
         off = np.zeros(n, dtype=np.int64)
         length = np.zeros(n, dtype=np.int64)
         for ticker, (start, count) in groups.items():

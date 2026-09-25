@@ -33,9 +33,11 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any, override
 
 import numpy as np
 import torch
+from numpy.typing import NDArray
 from torch.utils.data import Dataset
 
 from ticknet.eventstream.config import PACK_ROOT, STREAM_DTYPES, day_pack_paths
@@ -51,13 +53,13 @@ N_ORDER_TYPES = 12
 STREAM_SNAP, STREAM_ORDER, STREAM_TRADE = 1, 2, 3
 
 
-def _log1p(x: np.ndarray) -> np.ndarray:
+def _log1p(x: NDArray[Any]) -> NDArray[Any]:
     return np.log1p(np.maximum(x.astype(np.float32), 0.0))
 
 
 def _resolve_window_entries(
     entries: list[tuple[int, int]],
-    index_by_day: dict[int, dict],
+    index_by_day: dict[int, dict[Any, Any]],
     *,
     seq_len: int,
     eval_mode: bool,
@@ -87,7 +89,7 @@ def _resolve_window_entries(
     return resolved
 
 
-class L2WindowDataset(Dataset):
+class L2WindowDataset(Dataset[tuple[torch.Tensor, ...]]):
     """训练模式：随机窗口，股票按事件数比例采样。
 
     评估模式（``eval_mode=True``）：每个有标签的 (ticker, day) 一个确定性样本，
@@ -120,33 +122,10 @@ class L2WindowDataset(Dataset):
         self.use_session_anchors = bool(use_session_anchors)
         self.rng = np.random.default_rng(seed)
         self.days: list[int] = []
-        self.index: dict[int, dict] = {}
-        self.mmaps: dict[int, dict] = {}
+        self.index: dict[int, dict[Any, Any]] = {}
+        self.mmaps: dict[int, dict[Any, Any]] = {}
 
-        labels: dict[int, dict[str, float]] = {}
-        if label_path is not None and Path(label_path).exists():
-            import pyarrow.parquet as pq
-
-            table = pq.read_table(label_path)
-            names = table.column_names
-            if "value" in names:
-                day_col, tick_cols = "value", [c for c in names if c != "value"]
-            else:
-                day_col = "__index_level_0__" if "__index_level_0__" in names else names[0]
-                tick_cols = [c for c in names if c != day_col]
-            day_values = table.column(day_col).to_pylist()
-            for row in range(table.num_rows):
-                day = int(day_values[row])
-                mapping: dict[str, float] = {}
-                for ticker in tick_cols:
-                    value = table.column(ticker)[row].as_py()
-                    if value is not None and np.isfinite(float(value)):
-                        mapping[str(ticker)] = float(value)
-                labels[day] = mapping
-        elif label_path is not None:
-            print(
-                f"[dataset] WARNING: label file missing ({label_path}), day-label loss will be zero"
-            )
+        labels = _load_day_labels(label_path)
 
         entries: list[tuple[int, int]] = []
         n_labeled = 0
@@ -210,7 +189,7 @@ class L2WindowDataset(Dataset):
         ticker = str(self.index[day]["tickers"][ticker_index])
         return day, ticker
 
-    def _get_mmaps(self, day: int) -> dict:
+    def _get_mmaps(self, day: int) -> dict[Any, Any]:
         mmaps = self.mmaps.get(day)
         if mmaps is None:
             paths = day_pack_paths(day, self.root)
@@ -224,6 +203,7 @@ class L2WindowDataset(Dataset):
     def __len__(self) -> int:
         return len(self.entries)
 
+    @override
     def __getitem__(self, index: int):
         day, tk, start = self.entries[index]
         idx = self.index[day]
@@ -283,8 +263,36 @@ class L2WindowDataset(Dataset):
         )
 
 
+def _load_day_labels(label_path: Path | None) -> dict[int, dict[str, float]]:
+    labels: dict[int, dict[str, float]] = {}
+    if label_path is None:
+        return labels
+    if not label_path.exists():
+        print(f"[dataset] WARNING: label file missing ({label_path}), day-label loss will be zero")
+        return labels
+    import pyarrow.parquet as pq
+
+    table = pq.read_table(label_path)
+    names = table.column_names
+    if "value" in names:
+        day_col, tick_cols = "value", [column for column in names if column != "value"]
+    else:
+        day_col = "__index_level_0__" if "__index_level_0__" in names else names[0]
+        tick_cols = [column for column in names if column != day_col]
+    day_values = table.column(day_col).to_pylist()
+    for row in range(table.num_rows):
+        day = int(day_values[row])
+        mapping: dict[str, float] = {}
+        for ticker in tick_cols:
+            value = table.column(ticker)[row].as_py()
+            if value is not None and np.isfinite(float(value)):
+                mapping[str(ticker)] = float(value)
+        labels[day] = mapping
+    return labels
+
+
 def _positions_at_rank(
-    times: tuple[np.ndarray, np.ndarray, np.ndarray],
+    times: tuple[NDArray[Any], NDArray[Any], NDArray[Any]],
     rank: int,
 ) -> tuple[int, int, int]:
     """返回稳定三路归并在消费 ``rank`` 个事件后的各流位置。"""
@@ -327,7 +335,7 @@ def _merged_window_rows(
     *,
     start: int,
     stop: int,
-) -> tuple[np.ndarray, np.ndarray, tuple[int, int, int]]:
+) -> tuple[NDArray[Any], NDArray[Any], tuple[int, int, int]]:
     """只归并 ``[start, stop)``，同时间戳保持 order、trade、snapshot 顺序。"""
     time_streams = (order["time_ms"], trade["time_ms"], snap["time_ms"])
     total = sum(len(values) for values in time_streams)
@@ -413,7 +421,7 @@ def _lob_prefix_features(
     positions: tuple[int, int, int],
     prev_close_cent: float,
     use_session_anchors: bool,
-) -> np.ndarray:
+) -> NDArray[Any]:
     """构造严格位于窗口边界之前的盘口状态，不读取任何未来快照。"""
     _order_position, _trade_position, snap_position = positions
     prefix = np.zeros(N_FEATURES, dtype=np.float32)
@@ -554,7 +562,7 @@ def _merge_and_featurize(order, trade, snap, prev_close_cent: float):
         np.nanmax(ref[np.isfinite(ref)]) if np.isfinite(ref).any() else 1.0,
     )
 
-    def bps(px: np.ndarray, r: np.ndarray) -> np.ndarray:
+    def bps(px: NDArray[Any], r: NDArray[Any]) -> NDArray[Any]:
         out = (px.astype(np.float64) / r - 1.0) * 1e4 / BPS_SCALE
         return np.clip(np.nan_to_num(out, nan=0.0), -50.0, 50.0).astype(np.float32)
 

@@ -10,7 +10,7 @@ import os
 import platform
 from itertools import combinations
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import torch
@@ -140,7 +140,9 @@ def _load_fixed_batches(
         partition=dataset.partition,
         indices=indices,
     )
-    return fixed_batches, indices, fingerprint
+    return cast(
+        tuple[list[tuple[torch.Tensor, ...]], list[int], str], (fixed_batches, indices, fingerprint)
+    )
 
 
 def _backbone_parameters(model: L2FoundationModel) -> tuple[torch.nn.Parameter, ...]:
@@ -340,12 +342,7 @@ def run_gradient_audit(
     expected_parameter_count: int | None = None,
 ) -> dict[str, Any]:
     """在同一组固定 batch 上比较初始化和最佳 checkpoint 的任务梯度。"""
-    if partition not in {"train", "validation"}:
-        raise ValueError("梯度审计只允许读取 train 或 validation 分区")
-    if len(expected_checkpoint_sha256) != 64:
-        raise ValueError("必须提供 64 位 checkpoint SHA-256")
-    if not source_revision or source_revision == "unknown":
-        raise ValueError("梯度审计需要有效的源码 revision")
+    _validate_gradient_audit_request(partition, expected_checkpoint_sha256, source_revision)
     config.validate()
     device = resolve_device(config.device)
     use_amp = config.amp and device.type == "cuda"
@@ -468,6 +465,17 @@ def run_gradient_audit(
     }
     result["result_fingerprint"] = _canonical_sha256(result)
     return result
+
+
+def _validate_gradient_audit_request(
+    partition: str, expected_checkpoint_sha256: str, source_revision: str
+) -> None:
+    if partition not in {"train", "validation"}:
+        raise ValueError("梯度审计只允许读取 train 或 validation 分区")
+    if len(expected_checkpoint_sha256) != 64:
+        raise ValueError("必须提供 64 位 checkpoint SHA-256")
+    if not source_revision or source_revision == "unknown":
+        raise ValueError("梯度审计需要有效的源码 revision")
 
 
 def _load_audit(path: Path) -> dict[str, Any]:

@@ -8,10 +8,11 @@
 from __future__ import annotations
 
 import random
-from typing import TypedDict
+from typing import Any, TypedDict
 
 import numpy as np
 import torch
+from numpy.typing import NDArray
 
 NUM_CLASSES = 3
 
@@ -49,8 +50,8 @@ def resolve_device(requested: str) -> torch.device:
 
 
 def f1_metrics(
-    y_true: np.ndarray,
-    y_pred: np.ndarray,
+    y_true: NDArray[Any],
+    y_pred: NDArray[Any],
     num_classes: int = NUM_CLASSES,
 ) -> Metrics:
     """计算准确率、F1，以及各类别的精确率和召回率。"""

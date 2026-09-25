@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
+from numpy.typing import NDArray
 
 DAILY_STATE_KEYS = (
     "order_count",
@@ -41,14 +44,16 @@ def _finite_or_zero(value: float) -> float:
     return value if np.isfinite(value) else 0.0
 
 
-def _safe_mean(values: np.ndarray) -> tuple[float, float]:
+def _safe_mean(values: NDArray[Any]) -> tuple[float, float]:
     finite = values[np.isfinite(values)]
     if finite.size == 0:
         return 0.0, 0.0
     return _finite_or_zero(np.mean(finite)), float(finite.size)
 
 
-def _global_timestamps(order: np.ndarray, trade: np.ndarray, snap: np.ndarray) -> np.ndarray:
+def _global_timestamps(
+    order: NDArray[Any], trade: NDArray[Any], snap: NDArray[Any]
+) -> NDArray[Any]:
     parts = [
         values["time_ms"].astype(np.int64, copy=False)
         for values in (order, trade, snap)
@@ -59,13 +64,13 @@ def _global_timestamps(order: np.ndarray, trade: np.ndarray, snap: np.ndarray) -
     return np.concatenate(parts)
 
 
-def _ordered_snapshots(snap: np.ndarray) -> np.ndarray:
+def _ordered_snapshots(snap: NDArray[Any]) -> NDArray[Any]:
     if len(snap) < 2:
         return snap
     return snap[np.argsort(snap["time_ms"], kind="stable")]
 
 
-def _snapshot_returns(snap: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def _snapshot_returns(snap: NDArray[Any]) -> tuple[NDArray[Any], NDArray[Any]]:
     ordered = _ordered_snapshots(snap)
     if len(ordered) < 2:
         return np.empty(0, dtype=np.float64), np.empty(0, dtype=np.int64)
@@ -75,14 +80,14 @@ def _snapshot_returns(snap: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return returns[valid], ordered["time_ms"][1:][valid].astype(np.int64)
 
 
-def _path_return(prices: np.ndarray) -> float:
+def _path_return(prices: NDArray[Any]) -> float:
     valid = prices[np.isfinite(prices) & (prices > 0)]
     if len(valid) < 2:
         return 0.0
     return _finite_or_zero(valid[-1] / valid[0] - 1.0)
 
 
-def _split_snapshot_returns(snap: np.ndarray, split: float) -> tuple[float, float]:
+def _split_snapshot_returns(snap: NDArray[Any], split: float) -> tuple[float, float]:
     ordered = _ordered_snapshots(snap)
     if not len(ordered):
         return 0.0, 0.0
@@ -96,7 +101,7 @@ def _split_snapshot_returns(snap: np.ndarray, split: float) -> tuple[float, floa
 
 
 def _final_observed_price(
-    order: np.ndarray, trade: np.ndarray, snap: np.ndarray
+    order: NDArray[Any], trade: NDArray[Any], snap: NDArray[Any]
 ) -> tuple[float, float]:
     candidates: list[tuple[int, float]] = []
     for values, field in ((order, "price"), (trade, "price"), (snap, "last")):
@@ -110,9 +115,9 @@ def _final_observed_price(
 
 
 def aggregate_day(
-    order: np.ndarray,
-    trade: np.ndarray,
-    snap: np.ndarray,
+    order: NDArray[Any],
+    trade: NDArray[Any],
+    snap: NDArray[Any],
     prev_close_cent: float,
 ) -> dict[str, float]:
     """Aggregate one packed trading day into a finite named state vector."""

@@ -14,6 +14,8 @@
 
 from __future__ import annotations
 
+from typing import cast, override
+
 import torch
 import torch.nn as nn
 
@@ -72,6 +74,7 @@ class InceptionModule(nn.Module):
             nn.BatchNorm2d(branch_channels),
         )
 
+    @override
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return torch.cat(
             (self.branch_3(x), self.branch_5(x), self.branch_pool(x)),
@@ -143,17 +146,18 @@ class DeepLOB(nn.Module):
                 f"(B, 1, {self.window_size}, {NUM_FEATURES})，实际为 {tuple(x.shape)}"
             )
 
-        x = self.conv1(x)
-        x = self.conv2(x)
-        x = self.conv3(x)
-        x = self.inception(x)
+        x = cast(torch.Tensor, self.conv1(x))
+        x = cast(torch.Tensor, self.conv2(x))
+        x = cast(torch.Tensor, self.conv3(x))
+        x = cast(torch.Tensor, self.inception(x))
         x = x.squeeze(-1).transpose(1, 2)
-        x, _ = self.lstm(x)
+        x, _ = cast(tuple[torch.Tensor, torch.Tensor], self.lstm(x))
         return x[:, -1, :]
 
+    @override
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """返回形状为 ``(B, 3)`` 的 logits。"""
-        return self.output(self.encode(x))
+        return cast(torch.Tensor, self.output(self.encode(x)))
 
 
 def build_model(
