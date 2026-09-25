@@ -18,19 +18,9 @@ def fit_matched_rank_models(
     all-missing training columns use zero. Targets must be finite. Return scores
     are not calibrated expected returns or confidence estimates.
     """
-    date = pd.Timestamp(decision_date)
-    train = train.copy().sort_values(["formation_date", "symbol"])
-    test = test.copy()
-    formation = pd.to_datetime(train.formation_date)
-    end = pd.to_datetime(train.label_end_date)
-    if train.empty or not (formation.lt(date) & end.lt(date)).all():
-        raise ValueError("training observations must be mature strictly before decision")
-    if test.empty or not pd.to_datetime(test.formation_date).eq(date).all():
-        raise ValueError("inference observations must match decision date")
-    if train.duplicated(["formation_date", "symbol"]).any() or test.symbol.duplicated().any():
-        raise ValueError("duplicate observation keys")
-    if not features or len(features) != len(set(features)) or not configs:
-        raise ValueError("unique features and model configurations required")
+    train, test, date, formation, end = _validate_matched_inputs(
+        train, test, features, decision_date, configs
+    )
     target = pd.to_numeric(train.target, errors="coerce")
     if not np.isfinite(target).all():
         raise ValueError("training targets must be finite")
@@ -101,3 +91,20 @@ def fit_matched_rank_models(
         if target_transform == "rank"
         else "identity numeric target",
     }
+
+
+def _validate_matched_inputs(train, test, features, decision_date, configs):
+    date = pd.Timestamp(decision_date)
+    train = train.copy().sort_values(["formation_date", "symbol"])
+    test = test.copy()
+    formation = pd.to_datetime(train.formation_date)
+    end = pd.to_datetime(train.label_end_date)
+    if train.empty or not (formation.lt(date) & end.lt(date)).all():
+        raise ValueError("training observations must be mature strictly before decision")
+    if test.empty or not pd.to_datetime(test.formation_date).eq(date).all():
+        raise ValueError("inference observations must match decision date")
+    if train.duplicated(["formation_date", "symbol"]).any() or test.symbol.duplicated().any():
+        raise ValueError("duplicate observation keys")
+    if not features or len(features) != len(set(features)) or not configs:
+        raise ValueError("unique features and model configurations required")
+    return train, test, date, formation, end

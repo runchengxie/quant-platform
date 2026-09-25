@@ -25,7 +25,7 @@ import json
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import pandas as pd
 from research_contracts import attach_artifact_envelope_v2, file_sha256
@@ -78,7 +78,7 @@ def _wide_to_long(
     long.columns = [date_col, symbol_col, value_col]
     long[date_col] = pd.to_datetime(long[date_col]).dt.strftime("%Y%m%d")
     long[symbol_col] = long[symbol_col].astype(str)
-    return long
+    return cast(pd.DataFrame, long)
 
 
 def _build_explanation_columns(
@@ -120,18 +120,20 @@ def _filter_signals_by_dated_eligibility(
     counts = price_panel.notna().cumsum()
     rows: list[pd.DataFrame] = []
     for date, group in signals.groupby("signal_date", sort=False):
-        as_of = pd.Timestamp(str(date)).normalize()
+        as_of = cast(pd.Timestamp, pd.Timestamp(str(date))).normalize()
         if as_of not in counts.index:
             continue
         history_eligible = set(counts.loc[as_of].loc[lambda series: series >= 120].index)
         if as_of not in by_date.groups:
             continue
-        status = by_date.get_group(as_of)
+        status = cast(pd.DataFrame, by_date.get_group(as_of))
         status_eligible = _filter_st_and_newly_listed(status, as_of)
         selected = group.loc[group["symbol"].isin(history_eligible & status_eligible)]
         if not selected.empty:
             rows.append(selected)
-    return pd.concat(rows, ignore_index=True) if rows else signals.iloc[:0].copy()
+    return cast(
+        pd.DataFrame, pd.concat(rows, ignore_index=True) if rows else signals.iloc[:0].copy()
+    )
 
 
 def _build_classification_series(
@@ -145,7 +147,7 @@ def _build_classification_series(
     industry_series = None
     if "industry_name" in industry_frame.columns:
         industry_series = industry_frame.set_index("symbol")["industry_name"]
-    return theme_series, industry_series
+    return cast(tuple[pd.Series | None, pd.Series | None], (theme_series, industry_series))
 
 
 def _compute_signal_scores(
@@ -237,7 +239,7 @@ def _order_and_rank_signals(signals: pd.DataFrame) -> pd.DataFrame:
         .rank(ascending=False, method="first", na_option="bottom")
         .astype("Int64")
     )
-    return ordered
+    return cast(pd.DataFrame, ordered)
 
 
 def generate_daily_signals(
@@ -269,9 +271,7 @@ def generate_daily_signals(
         industry_series=industry_series,
     )
     if instruments is not None:
-        signals = _filter_signals_by_dated_eligibility(
-            signals, filtered_prices, instruments
-        )
+        signals = _filter_signals_by_dated_eligibility(signals, filtered_prices, instruments)
     if signals.empty:
         return pd.DataFrame()
     return _order_and_rank_signals(

@@ -61,29 +61,7 @@ def build_promotion_record(config: PromotionGateConfig) -> dict[str, Any]:
     )
     missing = _missing_evidence(candidate_evidence, config.required_evidence)
 
-    hard_failures: list[str] = []
-    hard = config.hard_rejections
-    if hard.constant_prediction and _bool(
-        _get_nested(candidate_summary, "eval.constant_prediction")
-    ):
-        hard_failures.append("constant_prediction")
-    if hard.zero_feature_importance and _bool(
-        _get_nested(candidate_summary, "eval.zero_feature_importance")
-    ):
-        hard_failures.append("zero_feature_importance")
-    if hard.require_final_oos and "final_oos" in missing:
-        hard_failures.append("missing_final_oos")
-    valid_folds = candidate_evidence["main_eval"]["cv_ic_valid_folds"]
-    if hard.min_cv_ic_valid_folds > 0 and (valid_folds or 0) < hard.min_cv_ic_valid_folds:
-        hard_failures.append("insufficient_cv_ic_valid_folds")
-    if hard.min_cpcv_path_count > 0:
-        cpcv_paths = candidate_evidence["cpcv"]["valid_path_count"]
-        if cpcv_paths is None or cpcv_paths < hard.min_cpcv_path_count:
-            hard_failures.append("insufficient_cpcv_path_count")
-    if hard.min_dsr_n_trials > 0:
-        dsr_trials = candidate_evidence["dsr"]["n_trials"]
-        if dsr_trials is None or dsr_trials < hard.min_dsr_n_trials:
-            hard_failures.append("insufficient_dsr_trial_count")
+    hard_failures = _hard_rejection_reasons(candidate_summary, candidate_evidence, missing, config)
 
     soft_failures = _soft_failures(baseline_evidence, candidate_evidence, config.soft_thresholds)
 
@@ -113,6 +91,38 @@ def build_promotion_record(config: PromotionGateConfig) -> dict[str, Any]:
         "baseline_evidence": baseline_evidence,
         "candidate_evidence": candidate_evidence,
     }
+
+
+def _hard_rejection_reasons(
+    candidate_summary: dict[str, Any],
+    evidence: dict[str, Any],
+    missing: list[str],
+    config: PromotionGateConfig,
+) -> list[str]:
+    hard = config.hard_rejections
+    reasons = []
+    if hard.constant_prediction and _bool(
+        _get_nested(candidate_summary, "eval.constant_prediction")
+    ):
+        reasons.append("constant_prediction")
+    if hard.zero_feature_importance and _bool(
+        _get_nested(candidate_summary, "eval.zero_feature_importance")
+    ):
+        reasons.append("zero_feature_importance")
+    if hard.require_final_oos and "final_oos" in missing:
+        reasons.append("missing_final_oos")
+    valid_folds = evidence["main_eval"]["cv_ic_valid_folds"]
+    if hard.min_cv_ic_valid_folds > 0 and (valid_folds or 0) < hard.min_cv_ic_valid_folds:
+        reasons.append("insufficient_cv_ic_valid_folds")
+    if hard.min_cpcv_path_count > 0:
+        cpcv_paths = evidence["cpcv"]["valid_path_count"]
+        if cpcv_paths is None or cpcv_paths < hard.min_cpcv_path_count:
+            reasons.append("insufficient_cpcv_path_count")
+    if hard.min_dsr_n_trials > 0:
+        dsr_trials = evidence["dsr"]["n_trials"]
+        if dsr_trials is None or dsr_trials < hard.min_dsr_n_trials:
+            reasons.append("insufficient_dsr_trial_count")
+    return reasons
 
 
 def flatten_promotion_record(record: dict[str, Any]) -> dict[str, Any]:
@@ -279,35 +289,53 @@ def add_promotion_gate_args(parser: argparse.ArgumentParser) -> argparse.Argumen
 
 def run(args: argparse.Namespace) -> int:
     cfg = load_promotion_gate_config(args.config)
-    payload = asdict(cfg)
-    if args.baseline_run:
-        payload["baseline_run"] = args.baseline_run
-    if args.candidate_run:
-        payload["candidate_run"] = args.candidate_run
-    if args.benchmark_report:
-        payload["benchmark_report"] = args.benchmark_report
-    cpcv_payload = payload.setdefault("cpcv", {})
-    if args.baseline_cpcv_report:
-        cpcv_payload["baseline_report"] = args.baseline_cpcv_report
-    if args.candidate_cpcv_report:
-        cpcv_payload["candidate_report"] = args.candidate_cpcv_report
-    dsr_payload = payload.setdefault("dsr", {})
-    if args.baseline_dsr_report:
-        dsr_payload["baseline_report"] = args.baseline_dsr_report
-    if args.candidate_dsr_report:
-        dsr_payload["candidate_report"] = args.candidate_dsr_report
-    dynamic_payload = payload.setdefault("dynamic_ensemble", {})
-    if args.baseline_dynamic_ensemble_report:
-        dynamic_payload["baseline_report"] = args.baseline_dynamic_ensemble_report
-    if args.candidate_dynamic_ensemble_report:
-        dynamic_payload["candidate_report"] = args.candidate_dynamic_ensemble_report
-    if args.baseline_exposure_screen_report:
-        payload["baseline_exposure_screen_report"] = args.baseline_exposure_screen_report
-    if args.candidate_exposure_screen_report:
-        payload["candidate_exposure_screen_report"] = args.candidate_exposure_screen_report
+    payload = _apply_promotion_gate_cli_overrides(asdict(cfg), args)
     cfg = load_promotion_gate_config(payload)
     record = build_promotion_record(cfg)
     write_promotion_report(record, output_json=args.output_json, output_csv=args.output_csv)
     if not args.output_json and not args.output_csv:
         print(json.dumps(record, ensure_ascii=True, indent=2, default=str))
     return 0
+
+
+def _apply_promotion_gate_cli_overrides(
+    payload: dict[str, Any], args: argparse.Namespace
+) -> dict[str, Any]:
+    _apply_direct_overrides(
+        payload,
+        args,
+        ("baseline_run", "candidate_run", "benchmark_report"),
+    )
+    for section, fields in (
+        ("cpcv", ("baseline_cpcv_report", "candidate_cpcv_report")),
+        ("dsr", ("baseline_dsr_report", "candidate_dsr_report")),
+        (
+            "dynamic_ensemble",
+            ("baseline_dynamic_ensemble_report", "candidate_dynamic_ensemble_report"),
+        ),
+    ):
+        _apply_section_overrides(payload.setdefault(section, {}), args, fields)
+    _apply_direct_overrides(
+        payload,
+        args,
+        ("baseline_exposure_screen_report", "candidate_exposure_screen_report"),
+    )
+    return payload
+
+
+def _apply_direct_overrides(
+    payload: dict[str, Any], args: argparse.Namespace, names: tuple[str, ...]
+) -> None:
+    for name in names:
+        value = getattr(args, name)
+        if value:
+            payload[name] = value
+
+
+def _apply_section_overrides(
+    payload: dict[str, Any], args: argparse.Namespace, names: tuple[str, str]
+) -> None:
+    for field, argument in zip(("baseline_report", "candidate_report"), names, strict=True):
+        value = getattr(args, argument)
+        if value:
+            payload[field] = value

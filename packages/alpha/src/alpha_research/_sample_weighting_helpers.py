@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import hashlib
 from collections.abc import Mapping, Sequence
-from typing import cast
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 
 
 def _resolve_bars(
@@ -86,7 +87,7 @@ def _normalize_mean_one(values: pd.Series) -> pd.Series:
     mean = float(cleaned.mean()) if not cleaned.empty else float("nan")
     if not np.isfinite(mean) or mean <= 0:
         return pd.Series(1.0, index=cleaned.index, dtype=float)
-    return (cleaned / mean).astype(float)
+    return cast(pd.Series, (cleaned / mean).astype(float))
 
 
 def _effective_sample_size(weights: pd.Series) -> float:
@@ -125,7 +126,7 @@ def _interval_weights(
     returns: pd.Series | None,
     start_col: str,
     end_col: str,
-) -> tuple[np.ndarray, np.ndarray | None]:
+) -> tuple[NDArray[Any], NDArray[Any] | None]:
     bar_values = bars.to_numpy(dtype="datetime64[ns]")
     starts = pd.to_datetime(events[start_col]).to_numpy(dtype="datetime64[ns]")
     ends = pd.to_datetime(events[end_col]).to_numpy(dtype="datetime64[ns]")

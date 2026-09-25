@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 import pandas as pd
@@ -23,18 +23,20 @@ def _normalized_dates(series: pd.Series, *, column: str) -> pd.Series:
         raise ValueError(f"fundamental state requires valid dates in {column}")
     if values.dt.tz is not None:
         values = values.dt.tz_localize(None)
-    return values.dt.normalize()
+    return cast(pd.Series, values.dt.normalize())
 
 
 def _nullable_normalized_dates(series: pd.Series) -> pd.Series:
     values = pd.to_datetime(series, format="mixed", errors="coerce")
     if values.dt.tz is not None:
         values = values.dt.tz_localize(None)
-    return values.dt.normalize()
+    return cast(pd.Series, values.dt.normalize())
 
 
 def _numeric(series: pd.Series) -> pd.Series:
-    return pd.to_numeric(series, errors="coerce").replace([np.inf, -np.inf], np.nan)
+    return cast(
+        pd.Series, pd.to_numeric(series, errors="coerce").replace([np.inf, -np.inf], np.nan)
+    )
 
 
 def _validate_target_specs(specs: tuple[FundamentalTargetSpec, ...]) -> None:
@@ -54,9 +56,9 @@ def _target_values(
     if transform == "level":
         return future
     if transform == "delta":
-        return future - current
+        return cast(pd.Series, future - current)
     valid_base = current.where(current.notna() & np.isfinite(current) & (current > 0))
-    return ((future / valid_base) - 1.0).replace([np.inf, -np.inf], np.nan)
+    return cast(pd.Series, ((future / valid_base) - 1.0).replace([np.inf, -np.inf], np.nan))
 
 
 def _prepare_periodic_observations(

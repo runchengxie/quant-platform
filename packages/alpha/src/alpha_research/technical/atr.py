@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 import pandas as pd
 
 from ._common import (
@@ -72,7 +74,7 @@ def average_true_range(
     )
 
     def rolling_mean(values: pd.Series) -> pd.Series:
-        return values.rolling(window, min_periods=minimum).mean()
+        return cast(pd.Series, values.rolling(window, min_periods=minimum).mean())
 
     result = grouped_transform(ranges, frame[group_col] if group_col else None, rolling_mean)
     result.name = output_name

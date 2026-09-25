@@ -4,9 +4,11 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 
 
 @dataclass(frozen=True)
@@ -23,7 +25,7 @@ def fractional_difference_weights(
     *,
     threshold: float = 1e-5,
     max_size: int = 10000,
-) -> np.ndarray:
+) -> NDArray[Any]:
     """Return fixed-width fractional-difference weights, oldest first."""
 
     if d < 0:

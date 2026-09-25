@@ -75,7 +75,7 @@ def _date_series(values: pd.Series) -> pd.Series:
     compact = text.str.fullmatch(r"\d{8}")
     if compact.any():
         parsed.loc[compact] = pd.to_datetime(text.loc[compact], format="%Y%m%d", errors="coerce")
-    return parsed.dt.normalize()
+    return cast(pd.Series, parsed.dt.normalize())
 
 
 def _normalize_periods(periods: pd.DataFrame) -> pd.DataFrame:
@@ -231,7 +231,7 @@ def _eval_scored_for_dates(
     frame = inputs.scored.loc[inputs.scored["trade_date"].isin(set(dates))].copy()
     if target_col != "future_return" and target_col in frame.columns:
         frame["future_return"] = frame[target_col]
-    return frame
+    return cast(pd.DataFrame, frame)
 
 
 def _split_result(inputs: ArtifactCPCVInputs, split: cpcv_module.CPCVSplit) -> dict[str, Any]:

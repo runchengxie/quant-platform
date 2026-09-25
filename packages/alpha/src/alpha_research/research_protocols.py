@@ -47,7 +47,7 @@ class ProtocolReport:
     evidence: dict[str, object]
 
     def to_dict(self) -> dict[str, object]:
-        return asdict(self)
+        return cast(dict[str, object], asdict(self))
 
 
 def protocol_policy(level: ProtocolLevel) -> ProtocolPolicy:
@@ -135,7 +135,7 @@ def load_protocol_manifest(path: str | Path) -> dict[str, object]:
     payload = json.loads(text) if source.suffix.lower() == ".json" else yaml.safe_load(text)
     if not isinstance(payload, dict):
         raise ValueError("protocol manifest must contain a mapping")
-    return payload
+    return cast(dict[str, object], payload)
 
 
 def evaluate_protocol_manifest(
@@ -278,6 +278,25 @@ def _evaluate_evidence_item(
     failed: list[str],
     warnings: list[str],
 ) -> bool:
+    status_result = _evaluate_evidence_status(requirement, item, failed)
+    if status_result is not None:
+        return status_result
+
+    path_raw = item.get("path")
+    if requirement.artifact_required and not path_raw:
+        failed.append(f"{requirement.name}.path")
+        return True
+    if not path_raw:
+        return False
+
+    return _evaluate_artifact(requirement, item, path_raw, evidence_root, failed, warnings)
+
+
+def _evaluate_evidence_status(
+    requirement: EvidenceRequirement,
+    item: Mapping[str, object],
+    failed: list[str],
+) -> bool | None:
     status = str(item.get("status") or "").strip().lower()
     if status not in requirement.allowed_statuses:
         failed.append(requirement.name)
@@ -296,14 +315,17 @@ def _evaluate_evidence_item(
             failed.append("operator_approval.identity")
             return True
         return False
+    return None
 
-    path_raw = item.get("path")
-    if requirement.artifact_required and not path_raw:
-        failed.append(f"{requirement.name}.path")
-        return True
-    if not path_raw:
-        return False
 
+def _evaluate_artifact(
+    requirement: EvidenceRequirement,
+    item: Mapping[str, object],
+    path_raw: object,
+    evidence_root: Path,
+    failed: list[str],
+    warnings: list[str],
+) -> bool:
     artifact_path = _resolve_evidence_path(path_raw, evidence_root)
     if not artifact_path.is_file():
         failed.append(f"{requirement.name}.path")

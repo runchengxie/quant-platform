@@ -50,9 +50,9 @@ def _run_walk_forward_evaluation(
     request: TrainEvalRequest,
     *,
     updated_signal_direction: float,
-) -> tuple[list[dict], pd.DataFrame, pd.DataFrame]:
+) -> tuple[list[dict[Any, Any]], pd.DataFrame, pd.DataFrame]:
     walk_forward_settings = request.walk_forward
-    walk_forward_results: list[dict] = []
+    walk_forward_results: list[dict[Any, Any]] = []
     walk_forward_importance_rows: list[dict[str, Any]] = []
     if walk_forward_settings.wf_enabled:
         walk_forward_context = _build_walk_forward_context(
@@ -397,7 +397,10 @@ def _annotated_stage_positions(
         positions_by_rebalance = _annotate_positions_window(positions_by_rebalance)
     if positions_by_rebalance_live is not None and not positions_by_rebalance_live.empty:
         positions_by_rebalance_live = _annotate_positions_window(positions_by_rebalance_live)
-    return positions_by_rebalance, positions_by_rebalance_live
+    return cast(
+        tuple[pd.DataFrame | None, pd.DataFrame | None],
+        (positions_by_rebalance, positions_by_rebalance_live),
+    )
 
 
 def _prediction_diagnostics(

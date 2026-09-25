@@ -104,7 +104,7 @@ def quantile_returns(
         if len(values) < n_quantiles:
             return pd.Series([np.nan] * len(values), index=values.index)
         ranks = values.rank(method="first")
-        return pd.qcut(ranks, n_quantiles, labels=False)
+        return cast(pd.Series, pd.qcut(ranks, n_quantiles, labels=False))
 
     data = data.copy()
     quantile = data.groupby("trade_date")[pred_col].apply(_add_quantile)
@@ -113,19 +113,19 @@ def quantile_returns(
 
     q_ret = data.groupby(["trade_date", "quantile"])[target_col].mean().unstack()
     q_ret.index = pd.to_datetime(q_ret.index)
-    return q_ret
+    return cast(pd.DataFrame, q_ret)
 
 
 def regression_error_metrics(y_true: pd.Series, y_pred: pd.Series) -> dict[str, float]:
     aligned = pd.concat([y_true.rename("y_true"), y_pred.rename("y_pred")], axis=1).dropna()
     if aligned.empty:
         return {"n": 0, "mae": np.nan, "rmse": np.nan, "r2": np.nan}
-    y_true = aligned["y_true"].to_numpy()
-    y_pred = aligned["y_pred"].to_numpy()
-    err = y_true - y_pred
+    true_values = cast(np.ndarray[Any, Any], aligned["y_true"].to_numpy())
+    predicted_values = cast(np.ndarray[Any, Any], aligned["y_pred"].to_numpy())
+    err = true_values - predicted_values
     mae = float(np.mean(np.abs(err)))
     rmse = float(np.sqrt(np.mean(err**2)))
-    denom = float(np.sum((y_true - np.mean(y_true)) ** 2))
+    denom = float(np.sum((true_values - np.mean(true_values)) ** 2))
     r2 = float(1 - np.sum(err**2) / denom) if denom > 0 else np.nan
     return {"n": int(aligned.shape[0]), "mae": mae, "rmse": rmse, "r2": r2}
 
@@ -134,8 +134,8 @@ def hit_rate(y_true: pd.Series, y_pred: pd.Series) -> dict[str, float]:
     aligned = pd.concat([y_true.rename("y_true"), y_pred.rename("y_pred")], axis=1).dropna()
     if aligned.empty:
         return {"n": 0, "hit_rate": np.nan}
-    sign_true = np.sign(aligned["y_true"].to_numpy())
-    sign_pred = np.sign(aligned["y_pred"].to_numpy())
+    sign_true = np.sign(cast(np.ndarray[Any, Any], aligned["y_true"].to_numpy()))
+    sign_pred = np.sign(cast(np.ndarray[Any, Any], aligned["y_pred"].to_numpy()))
     hit = float(np.mean(sign_true == sign_pred)) if aligned.shape[0] > 0 else np.nan
     return {"n": int(aligned.shape[0]), "hit_rate": hit}
 
@@ -174,7 +174,7 @@ def assign_daily_quantile_bucket(
         if values.nunique() < n_bins:
             return pd.Series([np.nan] * len(values), index=values.index)
         ranks = values.rank(method="first")
-        return pd.qcut(ranks, n_bins, labels=False, duplicates="drop")
+        return cast(pd.Series, pd.qcut(ranks, n_bins, labels=False, duplicates="drop"))
 
     buckets = data.groupby(date_col, sort=False)[value_col].apply(_bucket)
     buckets = buckets.reset_index(level=0, drop=True)
@@ -292,8 +292,8 @@ def summarize_active_returns(
             "active_total_return": np.nan,
         }, empty
 
-    strategy = aligned["strategy"]
-    benchmark = aligned["benchmark"]
+    strategy = cast(pd.Series, aligned["strategy"])
+    benchmark = cast(pd.Series, aligned["benchmark"])
     active = strategy - benchmark
 
     mean = float(active.mean())
@@ -328,14 +328,20 @@ def summarize_active_returns(
     else:
         active_total = np.nan
 
-    return {
-        "n": int(active.shape[0]),
-        "mean": mean,
-        "std": std,
-        "tracking_error": tracking_error,
-        "information_ratio": information_ratio,
-        "beta": beta,
-        "alpha": alpha,
-        "corr": corr,
-        "active_total_return": float(active_total) if np.isfinite(active_total) else np.nan,
-    }, active.rename("active_return")
+    return cast(
+        tuple[dict[str, float], pd.Series],
+        (
+            {
+                "n": int(active.shape[0]),
+                "mean": mean,
+                "std": std,
+                "tracking_error": tracking_error,
+                "information_ratio": information_ratio,
+                "beta": beta,
+                "alpha": alpha,
+                "corr": corr,
+                "active_total_return": float(active_total) if np.isfinite(active_total) else np.nan,
+            },
+            active.rename("active_return"),
+        ),
+    )

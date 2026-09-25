@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 import pandas as pd
 
 
@@ -23,10 +25,13 @@ def _merge_aux(
         return df
     aux = aux.copy()
     aux["trade_date"] = pd.to_datetime(aux["trade_date"])
-    aux = aux[
-        aux["trade_date"].isin(df["trade_date"].unique())
-        & aux["symbol"].isin(df["symbol"].unique())
-    ].copy()
+    aux = cast(
+        pd.DataFrame,
+        aux[
+            aux["trade_date"].isin(df["trade_date"].unique())
+            & aux["symbol"].isin(df["symbol"].unique())
+        ].copy(),
+    )
     available = [column for column in columns if column in aux.columns]
     source = aux[["symbol", "trade_date", *available]].drop_duplicates(
         ["symbol", "trade_date"], keep="last"

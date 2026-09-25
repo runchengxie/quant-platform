@@ -53,6 +53,8 @@ from .train_eval_diagnostics import (
 )
 from .train_eval_fit import (
     _TrainFitResult,
+)
+from .train_eval_fit import (
     fit_model_and_score_train as _fit_model_and_score_train,
 )
 from .train_eval_request_builder import (

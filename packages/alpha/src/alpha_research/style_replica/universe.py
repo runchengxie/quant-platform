@@ -16,9 +16,10 @@ _MIN_LISTED_DAYS = 60
 
 
 def _normalize_trade_dates(values: pd.Series) -> pd.Series:
-    return pd.to_datetime(
-        values.astype("string"), format="mixed", errors="coerce"
-    ).dt.normalize()
+    return cast(
+        pd.Series,
+        pd.to_datetime(values.astype("string"), format="mixed", errors="coerce").dt.normalize(),
+    )
 
 
 def _has_sufficient_history(
@@ -41,8 +42,10 @@ def _filter_st_and_newly_listed(
     required = {"symbol", "trade_date", "is_st", "is_suspended", "list_date"}
     missing = required.difference(instruments.columns)
     if missing:
-        raise ValueError("historical instruments require symbol, trade_date, is_st, "
-                         "is_suspended, list_date; missing: " + ", ".join(sorted(missing)))
+        raise ValueError(
+            "historical instruments require symbol, trade_date, is_st, "
+            "is_suspended, list_date; missing: " + ", ".join(sorted(missing))
+        )
     df = instruments.copy()
     df["trade_date"] = _normalize_trade_dates(df["trade_date"])
     df = df.loc[df["trade_date"].eq(as_of_date)]
@@ -96,4 +99,4 @@ def filter_style_replica_universe(
     if not symbols:
         return pd.DataFrame()
 
-    return history[symbols]
+    return cast(pd.DataFrame, history[symbols])

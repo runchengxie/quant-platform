@@ -75,7 +75,7 @@ def _resolve_last_trading_date(
         else:
             candidates = [d for d in candidates if d < as_of]
         if candidates:
-            return max(candidates)
+            return cast(pd.Timestamp | None, max(candidates))
     return None
 
 

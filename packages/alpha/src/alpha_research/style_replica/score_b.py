@@ -18,6 +18,8 @@ Higher score = better candidate for B-leg.
 
 from __future__ import annotations
 
+from typing import cast
+
 import pandas as pd
 
 # ── B-leg weights ──────────────────────────────────────────────────────────────
@@ -99,7 +101,7 @@ def compute_score_b(
     if total_weight > 0:
         composite = composite / total_weight
 
-    return composite.clip(0.0, 1.0)
+    return cast(pd.DataFrame, composite.clip(0.0, 1.0))
 
 
 def compute_score_b_with_explanations(

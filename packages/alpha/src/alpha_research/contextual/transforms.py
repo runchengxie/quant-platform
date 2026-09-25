@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 
 _TRANSFORMS = {
     "level",
@@ -54,7 +56,7 @@ def _timestamps(frame: pd.DataFrame, column: str) -> pd.Series:
     values = pd.to_datetime(frame[column], utc=True, errors="coerce")
     if values.isna().any():
         raise ValueError(f"context observations contain invalid {column}")
-    return values
+    return cast(pd.Series, values)
 
 
 def _validate_input(observations: pd.DataFrame) -> pd.DataFrame:
@@ -107,11 +109,11 @@ def _rolling_zscore(values: pd.Series, window: int) -> pd.Series:
     rolling = values.rolling(window=window, min_periods=window)
     mean = rolling.mean()
     std = rolling.std(ddof=0)
-    return ((values - mean) / std).where(std > 0)
+    return cast(pd.Series, ((values - mean) / std).where(std > 0))
 
 
 def _last_percentile(values: pd.Series, window: int) -> pd.Series:
-    def percentile(array: np.ndarray) -> float:
+    def percentile(array: NDArray[Any]) -> float:
         if len(array) < window or np.isnan(array).any():
             return np.nan
         current = array[-1]
@@ -121,7 +123,9 @@ def _last_percentile(values: pd.Series, window: int) -> pd.Series:
         rank = less + (equal + 1.0) / 2.0
         return (rank - 1.0) / max(len(array) - 1.0, 1.0)
 
-    return values.rolling(window=window, min_periods=window).apply(percentile, raw=True)
+    return cast(
+        pd.Series, values.rolling(window=window, min_periods=window).apply(percentile, raw=True)
+    )
 
 
 def _apply_transform(frame: pd.DataFrame, spec: ContextTransformSpec) -> pd.Series:

@@ -85,22 +85,24 @@ def slice_trade_dates(
     if not positions:
         return cast(pd.DataFrame, ordered.iloc[0:0].copy())
 
-    ranges: list[tuple[int, int]] = []
-    range_start = positions[0]
-    range_end = positions[0]
-    for pos in positions[1:]:
-        if pos == range_end + 1:
-            range_end = pos
-            continue
-        ranges.append((range_start, range_end))
-        range_start = pos
-        range_end = pos
-    ranges.append((range_start, range_end))
-
+    ranges = _contiguous_ranges(positions)
     parts = [ordered.iloc[start_rows[start] : end_rows[end]] for start, end in ranges]
     if len(parts) == 1:
         return cast(pd.DataFrame, parts[0].copy())
     return cast(pd.DataFrame, pd.concat(parts, ignore_index=True))
+
+
+def _contiguous_ranges(positions: list[int]) -> list[tuple[int, int]]:
+    ranges: list[tuple[int, int]] = []
+    start = end = positions[0]
+    for position in positions[1:]:
+        if position == end + 1:
+            end = position
+            continue
+        ranges.append((start, end))
+        start = end = position
+    ranges.append((start, end))
+    return ranges
 
 
 def apply_model_train_window(

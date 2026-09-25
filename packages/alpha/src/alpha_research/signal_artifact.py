@@ -5,7 +5,8 @@ import subprocess
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from importlib.metadata import PackageNotFoundError, version as package_version
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as package_version
 from pathlib import Path
 from typing import Any, cast
 
@@ -212,19 +213,25 @@ def validate_signal_artifact_frame(signals: pd.DataFrame) -> list[str]:
     if signals.empty:
         return issues
 
+    _validate_signal_identity(signals, issues)
+    _validate_signal_numeric_columns(signals, issues)
+    return issues
+
+
+def _validate_signal_identity(signals: pd.DataFrame, issues: list[str]) -> None:
     signal_dates = _column_series(signals, "signal_date").astype("string")
     invalid_dates = signal_dates.isna() | ~signal_dates.str.fullmatch(r"\d{8}").fillna(False)
     if bool(invalid_dates.any()):
         issues.append("signal_date must use YYYYMMDD strings")
-
     symbols = _column_series(signals, "symbol").astype("string")
     if bool(symbols.isna().any()) or bool(symbols.str.strip().eq("").any()):
         issues.append("symbol must be non-empty")
 
+
+def _validate_signal_numeric_columns(signals: pd.DataFrame, issues: list[str]) -> None:
     for column in SCORE_COLUMNS:
         if not is_numeric_dtype(_column_series(signals, column)):
             issues.append(f"{column} must be numeric")
-
     if not is_numeric_dtype(_column_series(signals, "signal_direction")):
         issues.append("signal_direction must be numeric")
     if not is_integer_dtype(_column_series(signals, "rank")):
@@ -232,7 +239,6 @@ def validate_signal_artifact_frame(signals: pd.DataFrame) -> list[str]:
     for column in BOOL_COLUMNS:
         if not is_bool_dtype(_column_series(signals, column)):
             issues.append(f"{column} must be boolean typed")
-    return issues
 
 
 def assert_signal_artifact_frame(signals: pd.DataFrame) -> None:

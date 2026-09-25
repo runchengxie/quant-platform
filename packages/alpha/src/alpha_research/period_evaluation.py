@@ -6,6 +6,7 @@ from typing import Any, cast
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 
 from .evaluation import (
     _permutation_test_ic,
@@ -197,7 +198,7 @@ def _score_and_record_period_eval_metrics(
     *,
     test_df_full: pd.DataFrame,
     model_eval: Any,
-    test_dates: np.ndarray,
+    test_dates: NDArray[Any],
     context: Mapping[str, Any],
     label_prefix: str,
     run_perm_test: bool,

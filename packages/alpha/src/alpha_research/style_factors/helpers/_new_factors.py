@@ -8,6 +8,8 @@ source data leaves the factor columns all-NaN.
 
 from __future__ import annotations
 
+from typing import Any, cast
+
 import numpy as np
 import pandas as pd
 
@@ -16,7 +18,7 @@ from ._aux import _merge_aux
 
 def _signed_log1p(series: pd.Series) -> pd.Series:
     values = series.astype(float)
-    return np.sign(values) * np.log1p(values.abs())
+    return cast(pd.Series, np.sign(values) * np.log1p(values.abs()))
 
 
 def _add_liquidity_flow_factor(df: pd.DataFrame, *, moneyflow: pd.DataFrame | None) -> pd.DataFrame:
@@ -119,7 +121,7 @@ def _add_dividend_ps_value_factor(
     return df
 
 
-def add_new_factors(df: pd.DataFrame, *, aux: dict | None) -> pd.DataFrame:
+def add_new_factors(df: pd.DataFrame, *, aux: dict[Any, Any] | None) -> pd.DataFrame:
     """Compute auxiliary daily and ownership factors from local datasets.
 
     Each sub-indicator is subsequently winsorized (1%/99%) and standardized by

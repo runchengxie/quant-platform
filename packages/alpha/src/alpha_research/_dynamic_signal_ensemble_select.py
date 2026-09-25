@@ -57,45 +57,19 @@ def _select_factors(
     config: DynamicSignalEnsembleConfig,
 ) -> tuple[list[str], dict[str, str], pd.DataFrame]:
     reasons: dict[str, str] = {}
-    candidates: list[str] = []
-    checks = {
-        "icir": ("icir_below_threshold", config.min_icir),
-        "rank_ic_mean": ("rank_ic_mean_below_threshold", config.min_rank_ic_mean),
-        "long_short_sharpe": ("long_short_below_threshold", config.min_long_short_sharpe),
-        "stability": ("stability_below_threshold", config.min_stability),
-        "direction_consistency": (
-            "direction_inconsistent",
-            config.min_direction_consistency,
-        ),
-        "coverage_ratio": ("coverage_below_threshold", config.min_coverage_ratio),
-        "dispersion": ("dispersion_below_threshold", config.min_signal_dispersion),
-    }
+    candidates = []
     for factor in factors:
-        values = {name: diagnostics[name].get(factor, np.nan) for name in checks}
-        failed = False
-        for name, (reason, threshold) in checks.items():
-            if threshold is None:
-                continue
-            if pd.isna(values[name]):
-                reasons[factor] = "insufficient_history"
-                failed = True
-                break
-            if not _passes_min(float(values[name]), threshold):
-                reasons[factor] = reason
-                failed = True
-                break
-        if failed:
-            continue
-        threshold = config.selection_threshold
-        if threshold is not None and strength.get(factor, np.nan) < threshold:
-            reasons[factor] = "strength_below_threshold"
-            continue
-        candidates.append(factor)
+        exclusion = _factor_exclusion_reason(factor, strength, diagnostics, config)
+        if exclusion is None:
+            candidates.append(factor)
+        else:
+            reasons[factor] = exclusion
 
     if not candidates:
         fallback_count = max(int(config.fallback_factor_count), 1)
-        candidates = (
-            strength.dropna().sort_values(ascending=False).head(fallback_count).index.tolist()
+        candidates = cast(
+            list[str],
+            strength.dropna().sort_values(ascending=False).head(fallback_count).index.tolist(),
         )
         for factor in candidates:
             reasons.pop(factor, None)
@@ -115,6 +89,35 @@ def _select_factors(
     for factor in factors:
         reasons.setdefault(factor, "")
     return selected, reasons, corr
+
+
+def _factor_exclusion_reason(
+    factor: str,
+    strength: pd.Series,
+    diagnostics: dict[str, pd.Series],
+    config: DynamicSignalEnsembleConfig,
+) -> str | None:
+    checks = (
+        ("icir", "icir_below_threshold", config.min_icir),
+        ("rank_ic_mean", "rank_ic_mean_below_threshold", config.min_rank_ic_mean),
+        ("long_short_sharpe", "long_short_below_threshold", config.min_long_short_sharpe),
+        ("stability", "stability_below_threshold", config.min_stability),
+        ("direction_consistency", "direction_inconsistent", config.min_direction_consistency),
+        ("coverage_ratio", "coverage_below_threshold", config.min_coverage_ratio),
+        ("dispersion", "dispersion_below_threshold", config.min_signal_dispersion),
+    )
+    for name, reason, threshold in checks:
+        if threshold is None:
+            continue
+        value = diagnostics[name].get(factor, np.nan)
+        if pd.isna(value):
+            return "insufficient_history"
+        if not _passes_min(float(value), threshold):
+            return reason
+    threshold = config.selection_threshold
+    if threshold is not None and strength.get(factor, np.nan) < threshold:
+        return "strength_below_threshold"
+    return None
 
 
 def _factor_weights(
@@ -154,7 +157,10 @@ def _aggregate_stock_scores(
         values = factor_panels[factor].loc[date].astype(float)
         values = _zscore_series(values)
         contribution = values * float(weight)
-        score = contribution if score is None else score.add(contribution, fill_value=0.0)
+        score = cast(
+            pd.Series,
+            contribution if score is None else score.add(contribution, fill_value=0.0),
+        )
     return pd.Series(dtype=float) if score is None else score.sort_values(ascending=False)
 
 
@@ -202,4 +208,6 @@ def _stock_weights(
         raw = pd.Series(np.exp(zscores), index=selected_scores.index, dtype=float)
     else:
         raw = pd.Series(1.0, index=selected_scores.index, dtype=float)
-    return _cap_positive_weights(raw, config.max_stock_weight), holdings
+    return cast(
+        tuple[pd.Series, list[str]], (_cap_positive_weights(raw, config.max_stock_weight), holdings)
+    )

@@ -50,7 +50,7 @@ def estimate_topk_membership_churn(
             .drop_duplicates()
             .tolist()
         )
-        selected = set(ranked[rank_offset : rank_offset + k])
+        selected = set(cast(list[str], ranked[rank_offset : rank_offset + k]))
         if len(selected) < k:
             continue
         if previous is not None:

@@ -40,7 +40,7 @@ class TripleBarrierConfig:
             raise ValueError("vertical_label must be one of: sign, zero")
 
     def to_dict(self) -> dict[str, object]:
-        return asdict(self)
+        return cast(dict[str, object], asdict(self))
 
 
 def estimate_ewm_volatility(
@@ -67,7 +67,7 @@ def estimate_ewm_volatility(
     data[output_col] = returns.groupby(data[symbol_col], sort=False).transform(
         lambda values: values.ewm(span=span, adjust=False).std(bias=False)
     )
-    return data[[symbol_col, time_col, output_col]]
+    return cast(pd.DataFrame, data[[symbol_col, time_col, output_col]])
 
 
 def make_volatility_events(
@@ -97,7 +97,7 @@ def make_volatility_events(
         selected = event_filter[[symbol_col, time_col]].copy()
         selected[time_col] = pd.to_datetime(selected[time_col], errors="coerce")
         events = selected.merge(volatility, on=[symbol_col, time_col], how="left")
-    return events.dropna(subset=[target_col]).reset_index(drop=True)
+    return cast(pd.DataFrame, events.dropna(subset=[target_col]).reset_index(drop=True))
 
 
 def label_triple_barrier(

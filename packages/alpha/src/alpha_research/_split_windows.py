@@ -27,10 +27,31 @@ def _time_decay_weights(
     if params is not None and not isinstance(params, Mapping):
         raise ValueError("sample_weight_params must be a mapping.")
     params_map = dict(params or {})
-    halflife_raw = params_map.get("halflife", params_map.get("half_life"))
-    decay_rate_raw = params_map.get("decay_rate", params_map.get("rate"))
+    decay_base, decay_scale = _decay_parameters(params_map)
     min_weight = _coerce_sample_weight_min(params_map.get("min_weight", 0.0))
 
+    date_values = pd.to_datetime(data[date_col], errors="coerce")
+    if date_values.isna().any():
+        raise ValueError(f"sample weights require valid dates in column: {date_col}")
+    unique_dates = pd.Index(date_values.unique()).sort_values()
+    if unique_dates.empty:
+        return None
+    unique_ages = float(len(unique_dates) - 1) - np.arange(len(unique_dates), dtype=float)
+    unique_date_weights = np.power(decay_base, unique_ages / decay_scale)
+    if min_weight > 0:
+        unique_date_weights = np.maximum(unique_date_weights, min_weight)
+    mean_weight = float(np.nanmean(unique_date_weights))
+    if np.isfinite(mean_weight) and mean_weight > 0:
+        unique_date_weights = unique_date_weights / mean_weight
+    date_weight_map = pd.Series(unique_date_weights, index=unique_dates, dtype=float)
+    date_weights = date_values.map(date_weight_map).to_numpy(dtype=float)
+    counts = data.groupby(date_col, sort=False)[date_col].transform("count").to_numpy(dtype=float)
+    return date_weights / counts
+
+
+def _decay_parameters(params: Mapping[str, object]) -> tuple[float, float]:
+    halflife_raw = params.get("halflife", params.get("half_life"))
+    decay_rate_raw = params.get("decay_rate", params.get("rate"))
     if halflife_raw is not None:
         decay_base = 0.5
         try:
@@ -52,24 +73,7 @@ def _time_decay_weights(
             "exp_decay/time_decay sample_weight_mode requires either "
             "sample_weight_params.halflife or sample_weight_params.decay_rate."
         )
-
-    date_values = pd.to_datetime(data[date_col], errors="coerce")
-    if date_values.isna().any():
-        raise ValueError(f"sample weights require valid dates in column: {date_col}")
-    unique_dates = pd.Index(date_values.unique()).sort_values()
-    if unique_dates.empty:
-        return None
-    unique_ages = float(len(unique_dates) - 1) - np.arange(len(unique_dates), dtype=float)
-    unique_date_weights = np.power(decay_base, unique_ages / decay_scale)
-    if min_weight > 0:
-        unique_date_weights = np.maximum(unique_date_weights, min_weight)
-    mean_weight = float(np.nanmean(unique_date_weights))
-    if np.isfinite(mean_weight) and mean_weight > 0:
-        unique_date_weights = unique_date_weights / mean_weight
-    date_weight_map = pd.Series(unique_date_weights, index=unique_dates, dtype=float)
-    date_weights = date_values.map(date_weight_map).to_numpy(dtype=float)
-    counts = data.groupby(date_col, sort=False)[date_col].transform("count").to_numpy(dtype=float)
-    return date_weights / counts
+    return decay_base, decay_scale
 
 
 def select_train_window_dates(

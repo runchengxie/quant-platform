@@ -204,12 +204,12 @@ _FUNDAMENTAL_SOURCE_DEPENDENCIES = {
 def _numeric_fundamental_series(fund_df: pd.DataFrame, name: str) -> pd.Series:
     if name not in fund_df.columns:
         return pd.Series(np.nan, index=fund_df.index, dtype=float)
-    return pd.to_numeric(fund_df[name], errors="coerce")
+    return cast(pd.Series, pd.to_numeric(fund_df[name], errors="coerce"))
 
 
 def _safe_fundamental_ratio(numerator: pd.Series, denominator: pd.Series) -> pd.Series:
     valid_denominator = denominator.where(denominator.notna() & (denominator != 0))
-    return (numerator / valid_denominator).replace([np.inf, -np.inf], np.nan)
+    return cast(pd.Series, (numerator / valid_denominator).replace([np.inf, -np.inf], np.nan))
 
 
 def _needs_fundamental_feature(
@@ -281,6 +281,11 @@ def _add_margin_fields(fund_df: pd.DataFrame, requested_feature_names: set[str])
 
 
 def _add_structure_ratio_fields(fund_df: pd.DataFrame, requested_feature_names: set[str]) -> None:
+    _add_balance_sheet_ratios(fund_df, requested_feature_names)
+    _add_cashflow_and_activity_ratios(fund_df, requested_feature_names)
+
+
+def _add_balance_sheet_ratios(fund_df: pd.DataFrame, requested_feature_names: set[str]) -> None:
     if "asset_turnover" in requested_feature_names:
         fund_df["asset_turnover"] = _safe_fundamental_ratio(
             _numeric_fundamental_series(fund_df, "revenue"),
@@ -321,6 +326,11 @@ def _add_structure_ratio_fields(fund_df: pd.DataFrame, requested_feature_names: 
             _numeric_fundamental_series(fund_df, "goodwill"),
             _numeric_fundamental_series(fund_df, "total_assets"),
         )
+
+
+def _add_cashflow_and_activity_ratios(
+    fund_df: pd.DataFrame, requested_feature_names: set[str]
+) -> None:
     if "accrual_ratio" in requested_feature_names:
         accrual = _numeric_fundamental_series(fund_df, "net_profit") - _numeric_fundamental_series(
             fund_df, "cash_flow_from_operating_activities"

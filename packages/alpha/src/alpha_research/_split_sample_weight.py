@@ -5,6 +5,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 
 from ._split_windows import (
     _build_label_event_windows,
@@ -20,7 +21,7 @@ def _event_sample_weights(
     mode: str,
     date_col: str,
     params: Mapping[str, object] | None,
-) -> np.ndarray | None:
+) -> NDArray[Any] | None:
     if params is not None and not isinstance(params, Mapping):
         raise ValueError("sample_weight_params must be a mapping.")
     params_map: dict[str, Any] = dict(params or {})
@@ -105,7 +106,7 @@ def build_sample_weight(
     *,
     date_col: str = "trade_date",
     params: Mapping[str, object] | None = None,
-) -> np.ndarray | None:
+) -> NDArray[Any] | None:
     if mode is None:
         return None
     mode_text = str(mode).strip().lower()

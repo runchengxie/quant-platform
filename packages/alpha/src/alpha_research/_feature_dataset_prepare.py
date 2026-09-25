@@ -37,7 +37,7 @@ def _engineer_features_by_symbol(
     *,
     df: pd.DataFrame,
     features: list[str],
-    feature_params: dict,
+    feature_params: dict[Any, Any],
     price_col: str,
     target: str,
     label_shift_days: int,
@@ -84,7 +84,7 @@ def _engineer_features_by_symbol(
             5,
         )
     if not frames:
-        return df.iloc[0:0].copy()
+        return cast(pd.DataFrame, df.iloc[0:0].copy())
     return pd.concat(frames, ignore_index=True)
 
 
@@ -302,7 +302,7 @@ def _prepare_feature_dataset(
     *,
     df: pd.DataFrame,
     features: list[str],
-    feature_params: dict,
+    feature_params: dict[Any, Any],
     price_col: str,
     target: str,
     label_shift_days: int,

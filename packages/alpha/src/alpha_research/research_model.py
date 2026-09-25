@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, cast
 
 import pandas as pd
 
@@ -85,7 +85,7 @@ class ResearchModel:
         out["model_version"] = self.model_version
         out["feature_set_id"] = self.feature_set_id
         self.last_prediction = out
-        return out
+        return cast(pd.DataFrame, out)
 
     def detail(self) -> dict[str, Any]:
         importance_source = None

@@ -5,7 +5,7 @@ Re-exported from ``alpha_research.cpcv`` so existing imports keep working.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -77,7 +77,7 @@ def _path_metric_row(
     if not eval_frame.empty:
         if target_col not in eval_frame.columns:
             candidates = [col for col in eval_frame.columns if col.endswith("return")]
-            target_col = candidates[0] if candidates else "future_return"
+            target_col = cast(str, candidates[0]) if candidates else "future_return"
         ic_stats = summarize_ic(daily_ic_series(eval_frame, target_col, "signal_eval"))
         q = quantile_returns(eval_frame, "signal_eval", target_col, n_quantiles)
         q_mean = q.mean() if not q.empty else pd.Series(dtype=float)

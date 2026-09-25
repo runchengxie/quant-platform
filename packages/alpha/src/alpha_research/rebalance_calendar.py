@@ -66,7 +66,7 @@ def _parse_multiweek_frequency(freq: str) -> _MultiweekFrequency | None:
 def _period_end_dates(dates: list[pd.Timestamp], freq: str) -> list[pd.Timestamp]:
     date_df = pd.DataFrame({"date": dates})
     date_df["period"] = date_df["date"].dt.to_period(freq)
-    return date_df.groupby("period")["date"].max().sort_values().tolist()
+    return cast(list[pd.Timestamp], date_df.groupby("period")["date"].max().sort_values().tolist())
 
 
 def _multiweek_rebalance_dates(
@@ -80,7 +80,7 @@ def _multiweek_rebalance_dates(
     date_df["period"] = date_df["date"].dt.to_period(weekly_freq)
     weekly_dates = date_df.groupby("period")["date"].max().sort_index()
     if anchor is None:
-        return weekly_dates.tolist()[phase::weeks]
+        return cast(list[pd.Timestamp], weekly_dates.tolist()[phase::weeks])
 
     anchor_ordinal = anchor.to_period(weekly_freq).ordinal
     selected_dates: list[pd.Timestamp] = []
@@ -142,10 +142,10 @@ def sample_rebalance_frame(
         allowed_dates_set = _timestamp_set(allowed_dates)
         rebalance_dates = [date for date in rebalance_dates if date in allowed_dates_set]
     if not rebalance_dates:
-        return frame_sorted.iloc[0:0].copy(), []
+        return cast(tuple[pd.DataFrame, list[pd.Timestamp]], (frame_sorted.iloc[0:0].copy(), []))
 
     sampled = frame_sorted.loc[normalized_trade_dates.isin(set(rebalance_dates))].copy()
-    return sampled, rebalance_dates
+    return cast(tuple[pd.DataFrame, list[pd.Timestamp]], (sampled, rebalance_dates))
 
 
 _sample_rebalance_frame = sample_rebalance_frame

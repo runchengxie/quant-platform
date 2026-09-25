@@ -9,10 +9,11 @@ for evidence/visualization.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Final
+from typing import Any, Final, cast
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 
 MOMENTUM_WINDOWS: Final[tuple[int, ...]] = (10, 20, 30, 40, 50, 60)
 SMALL_HIGH_THRESHOLD: Final[float] = 0.90
@@ -65,10 +66,10 @@ def _validate_frame(frame: pd.DataFrame, label: str) -> pd.DataFrame:
         raise ValueError(f"{label} contains non-finite close/amount values")
     if (result["close"] <= 0).any() or (result["amount"] <= 0).any():
         raise ValueError(f"{label} close/amount values must be positive")
-    return result
+    return cast(pd.DataFrame, result)
 
 
-def _top3_average(values: np.ndarray) -> float:
+def _top3_average(values: NDArray[Any]) -> float:
     valid = values[~np.isnan(values)]
     if len(valid) >= 3:
         return float(np.mean(np.sort(valid)[-3:]))
@@ -77,7 +78,7 @@ def _top3_average(values: np.ndarray) -> float:
     return 0.5
 
 
-def _rolling_momentum(prices: np.ndarray, window: int) -> np.ndarray:
+def _rolling_momentum(prices: NDArray[Any], window: int) -> NDArray[Any]:
     n = len(prices)
     result = np.full(n, np.nan)
     result[window:] = prices[window:] / prices[:-window] - 1.0
@@ -107,15 +108,15 @@ def compute_crowding_series(
         for window in MOMENTUM_WINDOWS
     }
     turnover = small_amount / large_amount
-    turnover_rolling: dict[int, np.ndarray] = {}
+    turnover_rolling: dict[int, NDArray[Any]] = {}
     for window in MOMENTUM_WINDOWS:
         cumsum = np.cumsum(np.insert(turnover, 0, 0.0))
         rolling = np.full(n, np.nan)
         rolling[window - 1 :] = (cumsum[window:] - cumsum[:-window]) / window
         turnover_rolling[window] = rolling
 
-    momentum_pct: dict[int, np.ndarray] = {}
-    turnover_pct: dict[int, np.ndarray] = {}
+    momentum_pct: dict[int, NDArray[Any]] = {}
+    turnover_pct: dict[int, NDArray[Any]] = {}
     for window in MOMENTUM_WINDOWS:
         diff = momentum_diff[window]
         diff_pct = np.full(n, np.nan)

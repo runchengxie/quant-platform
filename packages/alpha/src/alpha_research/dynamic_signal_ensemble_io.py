@@ -56,7 +56,7 @@ def _coerce_date_column(values: pd.Series) -> pd.Series:
     missing = parsed.isna()
     if missing.any():
         parsed.loc[missing] = pd.to_datetime(values.loc[missing], errors="coerce")
-    return parsed.dt.normalize()
+    return cast(pd.Series, parsed.dt.normalize())
 
 
 def _normalize_long_frame(
@@ -129,7 +129,7 @@ def _load_regime_features(cfg: dict[str, Any], *, config_dir: Path) -> pd.DataFr
     out = frame.copy()
     out[date_col] = _coerce_date_column(out[date_col])
     out = out.set_index(date_col).sort_index()
-    return out.apply(pd.to_numeric, errors="coerce")
+    return cast(pd.DataFrame | None, out.apply(pd.to_numeric, errors="coerce"))
 
 
 def _load_from_signal_files(cfg: dict[str, Any], *, config_dir: Path) -> pd.DataFrame:

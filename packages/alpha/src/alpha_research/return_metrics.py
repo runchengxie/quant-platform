@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import cast
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -61,7 +61,7 @@ def _drawdown_timing(nav: pd.Series) -> dict[str, float]:
     }
 
 
-def _empty_period_return_summary() -> dict:
+def _empty_period_return_summary() -> dict[Any, Any]:
     return {
         "periods": 0,
         "total_return": np.nan,
@@ -90,7 +90,7 @@ def _empty_period_return_summary() -> dict:
 
 def _annualized_return(
     total_return: float,
-    period_info: list[dict],
+    period_info: list[dict[Any, Any]],
     trading_days_per_year: int,
 ) -> float:
     total_days = np.nan
@@ -99,12 +99,12 @@ def _annualized_return(
         exit_last = period_info[-1]["exit_idx"]
         total_days = exit_last - entry_first
     if np.isfinite(total_days) and total_days > 0:
-        return (1 + total_return) ** (trading_days_per_year / total_days) - 1.0
+        return cast(float, (1 + total_return) ** (trading_days_per_year / total_days) - 1.0)
     return np.nan
 
 
 def _holding_period_stats(
-    period_info: list[dict],
+    period_info: list[dict[Any, Any]],
     trading_days_per_year: int,
 ) -> tuple[float, float]:
     holding_lengths = [info["exit_idx"] - info["entry_idx"] for info in period_info]
@@ -143,10 +143,10 @@ def _risk_adjusted_stats(
     else:
         calmar = np.nan
 
-    return ann_vol, sharpe, sortino, calmar
+    return cast(tuple[float, float, float, float], (ann_vol, sharpe, sortino, calmar))
 
 
-def _period_exit_lag(info: dict) -> float | None:
+def _period_exit_lag(info: dict[Any, Any]) -> float | None:
     lag_raw = info.get("exit_delay_steps")
     if lag_raw is None:
         planned_idx = info.get("planned_exit_idx")
@@ -164,7 +164,7 @@ def _period_exit_lag(info: dict) -> float | None:
     return max(0.0, lag)
 
 
-def _exit_lag_stats(period_info: list[dict]) -> tuple[float, float, int, float]:
+def _exit_lag_stats(period_info: list[dict[Any, Any]]) -> tuple[float, float, int, float]:
     exit_lags = [lag for info in period_info if (lag := _period_exit_lag(info)) is not None]
     if not exit_lags:
         return np.nan, np.nan, 0, np.nan
@@ -191,9 +191,9 @@ def _distribution_stats(returns: pd.Series) -> tuple[float, float, float, float]
 
 def summarize_period_returns(
     returns: pd.Series,
-    period_info: list[dict],
+    period_info: list[dict[Any, Any]],
     trading_days_per_year: int,
-) -> dict:
+) -> dict[Any, Any]:
     if returns is None or returns.empty:
         return _empty_period_return_summary()
 

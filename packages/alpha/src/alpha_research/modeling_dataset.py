@@ -3,8 +3,8 @@ from __future__ import annotations
 import logging
 from typing import Any, cast
 
-import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 
 from .dataset import DatasetSchema, build_dataset
 from .dataset_sampling_core import (
@@ -141,9 +141,9 @@ def _filter_model_dates_by_symbol_count(
 ) -> tuple[
     pd.DataFrame,
     pd.DataFrame,
-    np.ndarray,
-    np.ndarray,
-    np.ndarray,
+    NDArray[Any],
+    NDArray[Any],
+    NDArray[Any],
     dict[pd.Timestamp, int],
     pd.Index,
     pd.Series,
@@ -197,16 +197,16 @@ def _assemble_modeling_dataset_state(
     df_features: pd.DataFrame,
     df_full: pd.DataFrame,
     df_full_sorted: pd.DataFrame,
-    reference_trade_dates: np.ndarray,
-    all_dates_full: np.ndarray,
-    full_date_start_rows: np.ndarray,
-    full_date_end_rows: np.ndarray,
+    reference_trade_dates: NDArray[Any],
+    all_dates_full: NDArray[Any],
+    full_date_start_rows: NDArray[Any],
+    full_date_end_rows: NDArray[Any],
     full_date_to_pos: dict[pd.Timestamp, int],
     df_model_all: pd.DataFrame,
     df_model_all_sorted: pd.DataFrame,
-    all_dates_model_full: np.ndarray,
-    model_date_start_rows: np.ndarray,
-    model_date_end_rows: np.ndarray,
+    all_dates_model_full: NDArray[Any],
+    model_date_start_rows: NDArray[Any],
+    model_date_end_rows: NDArray[Any],
     model_date_to_pos: dict[pd.Timestamp, int],
     valid_dates: pd.Index,
     dropped_date_counts: pd.Series,
@@ -238,7 +238,7 @@ def _build_modeling_output_state(
     dataset: Any,
     df_features: pd.DataFrame,
     df_full: pd.DataFrame,
-    reference_trade_dates: np.ndarray,
+    reference_trade_dates: NDArray[Any],
     min_symbols_per_date: int,
 ) -> dict[str, Any]:
     (
@@ -305,7 +305,7 @@ def build_modeling_dataset(
     min_symbols_per_date: int,
     universe_by_date: pd.DataFrame | None,
     eval_extra_df: pd.DataFrame | None,
-    reference_trade_dates: np.ndarray | None = None,
+    reference_trade_dates: NDArray[Any] | None = None,
     extra_sample_dates_without_target: list[object] | None = None,
 ) -> dict[str, Any]:
     out = _ensure_symbol_alias(df)

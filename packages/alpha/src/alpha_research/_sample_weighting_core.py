@@ -11,7 +11,7 @@ import json
 from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Literal, cast
 
 import numpy as np
 import pandas as pd
@@ -67,7 +67,7 @@ class SampleWeightReceipt:
     config: dict[str, object]
 
     def to_dict(self) -> dict[str, object]:
-        return asdict(self)
+        return cast(dict[str, object], asdict(self))
 
 
 def build_indicator_matrix(

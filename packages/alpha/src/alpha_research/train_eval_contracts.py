@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 
 from .backends import (
     ExperimentRecorder,
@@ -18,13 +18,13 @@ from .backends import (
 class TrainEvalData:
     train_df: pd.DataFrame
     test_df: pd.DataFrame
-    test_dates: np.ndarray
+    test_dates: NDArray[Any]
     df_features: pd.DataFrame
     df_full: pd.DataFrame
     df_model_sorted: pd.DataFrame
-    all_dates: np.ndarray
-    all_date_start_rows: np.ndarray
-    all_date_end_rows: np.ndarray
+    all_dates: NDArray[Any]
+    all_date_start_rows: NDArray[Any]
+    all_date_end_rows: NDArray[Any]
     all_date_to_pos: dict[pd.Timestamp, int]
     valid_dates_set: set[pd.Timestamp]
     backtest_pricing_df: pd.DataFrame

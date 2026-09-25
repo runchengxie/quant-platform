@@ -219,49 +219,87 @@ def permutation_active_return_importance(
     baseline_metric, n_dates = _topk_metric(data, score_col, target_col, top_k)
     rows: list[dict[str, Any]] = []
 
-    def _importance(name: str, kind: str, columns: list[str]) -> dict[str, Any]:
-        feature_score_col = "__feature_proxy_score"
-        working = data.copy()
-        working[feature_score_col] = _cross_sectional_zscore(working, columns)
-        feature_metric, feature_dates = _topk_metric(working, feature_score_col, target_col, top_k)
-        permuted_metrics: list[float] = []
-        for repeat in range(n_repeats):
-            permuted = data.copy()
-            rng = np.random.default_rng(seed + repeat)
-            for column in columns:
-                permuted[column] = _permute_within_date(permuted, column, rng)
-            permuted[feature_score_col] = _cross_sectional_zscore(permuted, columns)
-            metric, _ = _topk_metric(permuted, feature_score_col, target_col, top_k)
-            if np.isfinite(metric):
-                permuted_metrics.append(metric)
-        permuted_metric = float(np.mean(permuted_metrics)) if permuted_metrics else np.nan
-        return {
-            "name": name,
-            "kind": kind,
-            "features": ",".join(columns),
-            "feature_count": len(columns),
-            "top_k": top_k,
-            "n_dates": feature_dates,
-            "baseline_score_metric": baseline_metric,
-            "baseline_score_n_dates": n_dates,
-            "feature_metric": feature_metric,
-            "permuted_metric": permuted_metric,
-            "permutation_importance": (
-                feature_metric - permuted_metric
-                if np.isfinite(feature_metric) and np.isfinite(permuted_metric)
-                else np.nan
-            ),
-            "delta_vs_baseline_score": (
-                feature_metric - baseline_metric
-                if np.isfinite(feature_metric) and np.isfinite(baseline_metric)
-                else np.nan
-            ),
-        }
-
     for feature in features:
-        rows.append(_importance(feature, "feature", [feature]))
+        rows.append(
+            _permutation_importance_row(
+                data,
+                feature,
+                "feature",
+                [feature],
+                target_col,
+                top_k,
+                baseline_metric,
+                n_dates,
+                seed,
+                n_repeats,
+            )
+        )
     for family, columns in families.items():
         valid_columns = [column for column in columns if column in data.columns]
         if valid_columns:
-            rows.append(_importance(family, "family", valid_columns))
+            rows.append(
+                _permutation_importance_row(
+                    data,
+                    family,
+                    "family",
+                    valid_columns,
+                    target_col,
+                    top_k,
+                    baseline_metric,
+                    n_dates,
+                    seed,
+                    n_repeats,
+                )
+            )
     return rows
+
+
+def _permutation_importance_row(
+    data: pd.DataFrame,
+    name: str,
+    kind: str,
+    columns: list[str],
+    target_col: str,
+    top_k: int,
+    baseline_metric: float,
+    n_dates: int,
+    seed: int,
+    n_repeats: int,
+) -> dict[str, Any]:
+    feature_score_col = "__feature_proxy_score"
+    working = data.copy()
+    working[feature_score_col] = _cross_sectional_zscore(working, columns)
+    feature_metric, feature_dates = _topk_metric(working, feature_score_col, target_col, top_k)
+    permuted_metrics: list[float] = []
+    for repeat in range(n_repeats):
+        permuted = data.copy()
+        rng = np.random.default_rng(seed + repeat)
+        for column in columns:
+            permuted[column] = _permute_within_date(permuted, column, rng)
+        permuted[feature_score_col] = _cross_sectional_zscore(permuted, columns)
+        metric, _ = _topk_metric(permuted, feature_score_col, target_col, top_k)
+        if np.isfinite(metric):
+            permuted_metrics.append(metric)
+    permuted_metric = float(np.mean(permuted_metrics)) if permuted_metrics else np.nan
+    return {
+        "name": name,
+        "kind": kind,
+        "features": ",".join(columns),
+        "feature_count": len(columns),
+        "top_k": top_k,
+        "n_dates": feature_dates,
+        "baseline_score_metric": baseline_metric,
+        "baseline_score_n_dates": n_dates,
+        "feature_metric": feature_metric,
+        "permuted_metric": permuted_metric,
+        "permutation_importance": (
+            feature_metric - permuted_metric
+            if np.isfinite(feature_metric) and np.isfinite(permuted_metric)
+            else np.nan
+        ),
+        "delta_vs_baseline_score": (
+            feature_metric - baseline_metric
+            if np.isfinite(feature_metric) and np.isfinite(baseline_metric)
+            else np.nan
+        ),
+    }
