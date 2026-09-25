@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from datetime import date
+
 import pandas as pd
 
 from strategy_pipeline.pipeline.output_summary_sections import (
     _build_backtest_exposure_summary,
     _date_bounds_text,
+    _date_text,
     _frame_records,
 )
 
@@ -22,6 +25,7 @@ def test_summary_helpers_normalize_paths_dates_and_frames() -> None:
     assert summary["industry_file"] is None
     assert summary["latest_rebalance_date"] == "2026-01-02"
     assert summary["latest_entry_date"] == "2026-01-03"
+    assert _date_text(date(2026, 1, 2)) == "20260102"
     assert _date_bounds_text(["2026-01-03", "2026-01-01"]) == {
         "start": "20260101",
         "end": "20260103",

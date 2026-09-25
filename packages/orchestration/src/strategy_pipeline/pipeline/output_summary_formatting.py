@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import date, datetime
 from typing import Any
 
 import numpy as np
@@ -12,7 +13,7 @@ def _path_text(value: Any) -> str | None:
     return str(value) if value else None
 
 
-def _date_text(value: Any) -> str | None:
+def _date_text(value: date | datetime | None) -> str | None:
     return value.strftime("%Y%m%d") if value else None
 
 
