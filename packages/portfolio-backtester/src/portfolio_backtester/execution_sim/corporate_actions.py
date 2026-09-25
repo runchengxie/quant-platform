@@ -165,12 +165,15 @@ class _CorporateActionLedger:
         required = set(self.stock_by_symbol())
         for right in self.rights:
             event = right.event
-            end = max(
-                value
-                for value in (event.ex_date, event.cash_pay_date, event.stock_tradable_date)
-                if value is not None
+            end = pd.Timestamp(
+                max(
+                    value
+                    for value in (event.ex_date, event.cash_pay_date, event.stock_tradable_date)
+                    if value is not None
+                )
             )
-            if event.record_date <= day <= end and ledger.shares.get(event.symbol, 0.0) > 0:
+            record_date = pd.Timestamp(event.record_date)
+            if record_date <= day <= end and ledger.shares.get(event.symbol, 0.0) > 0:
                 required.add(event.symbol)
         for symbol in required:
             if not np.isfinite(_price_at(symbol, day, tables.price_table)):
