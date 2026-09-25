@@ -44,7 +44,7 @@ from .factors import compute_all_style_factors
 from .score_a import compute_score_a
 from .score_b import compute_score_b
 from .theme_map import build_theme_map, get_theme_label
-from .universe import filter_style_replica_universe
+from .universe import _filter_st_and_newly_listed, _normalize_trade_dates
 
 MODEL_VERSION = "StyleReplica-A80B20-v0"
 FEATURE_SET_ID = "style_replica_v0"
@@ -106,13 +106,32 @@ def _build_explanation_columns(
     return explanations
 
 
-def _filter_price_panel(
+def _filter_signals_by_dated_eligibility(
+    signals: pd.DataFrame,
     price_panel: pd.DataFrame,
-    instruments: pd.DataFrame | None,
+    instruments: pd.DataFrame,
 ) -> pd.DataFrame:
-    if instruments is None:
-        return price_panel
-    return filter_style_replica_universe(price_panel, instruments, price_panel.index[-1])
+    required = {"symbol", "trade_date", "is_st", "is_suspended", "list_date"}
+    if missing := required.difference(instruments.columns):
+        raise ValueError("historical instruments missing: " + ", ".join(sorted(missing)))
+    dated = instruments.copy()
+    dated["trade_date"] = _normalize_trade_dates(dated["trade_date"])
+    by_date = dated.groupby("trade_date", sort=False)
+    counts = price_panel.notna().cumsum()
+    rows: list[pd.DataFrame] = []
+    for date, group in signals.groupby("signal_date", sort=False):
+        as_of = pd.Timestamp(str(date)).normalize()
+        if as_of not in counts.index:
+            continue
+        history_eligible = set(counts.loc[as_of].loc[lambda series: series >= 120].index)
+        if as_of not in by_date.groups:
+            continue
+        status = by_date.get_group(as_of)
+        status_eligible = _filter_st_and_newly_listed(status, as_of)
+        selected = group.loc[group["symbol"].isin(history_eligible & status_eligible)]
+        if not selected.empty:
+            rows.append(selected)
+    return pd.concat(rows, ignore_index=True) if rows else signals.iloc[:0].copy()
 
 
 def _build_classification_series(
@@ -168,6 +187,7 @@ def _decorate_signals(
     config: StyleReplicaConfig,
     theme_series: pd.Series | None,
     industry_series: pd.Series | None,
+    eligibility_verified: bool,
 ) -> pd.DataFrame:
     signals["model_version"] = config.model_version
     signals["feature_set_id"] = config.feature_set_id
@@ -183,8 +203,8 @@ def _decorate_signals(
     signals["signal_eval"] = signals["raw_pred"]
     signals["signal_backtest"] = signals["raw_pred"]
     signals["leg"] = signals.apply(_assign_leg, axis=1)
-    signals["eligible_for_backtest"] = True
-    signals["eligible_for_live"] = True
+    signals["eligible_for_backtest"] = eligibility_verified
+    signals["eligible_for_live"] = eligibility_verified
     signals["selected_reason"] = signals.apply(_build_reason, axis=1)
     return signals
 
@@ -233,7 +253,7 @@ def generate_daily_signals(
 ) -> pd.DataFrame:
     """Generate daily StyleReplica research signals for all usable dates."""
     cfg = config or StyleReplicaConfig()
-    filtered_prices = _filter_price_panel(price_panel, instruments)
+    filtered_prices = price_panel.sort_index()
     if filtered_prices.empty:
         return pd.DataFrame()
 
@@ -248,12 +268,19 @@ def generate_daily_signals(
         market_returns=market_returns,
         industry_series=industry_series,
     )
+    if instruments is not None:
+        signals = _filter_signals_by_dated_eligibility(
+            signals, filtered_prices, instruments
+        )
+    if signals.empty:
+        return pd.DataFrame()
     return _order_and_rank_signals(
         _decorate_signals(
             signals,
             config=cfg,
             theme_series=theme_series,
             industry_series=industry_series,
+            eligibility_verified=instruments is not None,
         )
     )
 
@@ -312,8 +339,8 @@ class StyleReplicaSignalGenerator:
             model_version=self.config.model_version,
             feature_set_id=self.config.feature_set_id,
             signal_direction=1.0,
-            eligible_for_backtest=True,
-            eligible_for_live=True,
+            eligible_for_backtest=False,
+            eligible_for_live=False,
         )
 
     def write(
