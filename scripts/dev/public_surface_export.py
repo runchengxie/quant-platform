@@ -43,7 +43,8 @@ provider 和执行场所由使用方仓库负责，并通过独立的薄 adapter
 pip install strategy-pipeline
 ```
 
-运行时依赖公开的 owner 包和常用数据处理库。请先阅读[文档首页](docs/README.md)、[控制面 API](docs/control-plane.md)
+运行时依赖公开的 owner 包和常用数据处理库。请先阅读[文档首页](docs/README.md)、\
+[控制面 API](docs/control-plane.md)\n\
 和 [owner 接入指南](docs/integrating-an-owner.md)。
 
 ## 提供的能力

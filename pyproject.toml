@@ -102,12 +102,6 @@ markers = ["unit: fast deterministic unit tests"]
 [tool.ruff]
 target-version = "py312"
 line-length = 100
-extend-exclude = [
-  "packages/alpha",
-  "packages/microstructure",
-  "tests/microstructure",
-  "scripts/dev/public_surface_export.py",
-]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "C4", "RET", "SIM", "RUF", "C90"]
@@ -133,20 +127,13 @@ extra-paths = [
   "packages/execution/src",
   "packages/alpha/src",
   "packages/microstructure/src",
+  "packages/microstructure/rust",
   "packages/research-contracts",
 ]
 
 [[tool.ty.overrides]]
 include = ["packages/portfolio-backtester/src/portfolio_backtester/backends/qlib.py"]
 rules = { unresolved-import = "ignore" }
-
-[[tool.ty.overrides]]
-include = [
-  "packages/alpha/src/**",
-  "packages/microstructure/src/**",
-  "tests/microstructure/**",
-]
-rules = { all = "warn" }
 
 # Rich is optional here; plain-text rendering works without the dependency.
 [[tool.ty.overrides]]
