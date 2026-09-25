@@ -40,34 +40,22 @@ def resolve_backtest_period_plan(
     if entry_idx is None:
         return None
 
-    if exit_mode == "rebalance":
-        if rebalance_index >= len(rebalance_dates) - 1:
-            return None
-        next_rebalance = rebalance_dates[rebalance_index + 1].normalize()
-        if next_rebalance not in date_to_idx:
-            return None
-        planned_exit_date = resolve_execution_date(
-            next_rebalance,
-            shift_days,
-            trade_dates,
-            calendar=execution_calendar,
-            open_dates=execution_open_dates,
-            closed_dates=execution_closed_dates,
-        )
-        if planned_exit_date is None:
-            return None
-        planned_exit_idx = date_to_idx.get(planned_exit_date)
-        if planned_exit_idx is None:
-            return None
-    else:
-        if exit_horizon_days is None:
-            raise ValueError("exit_horizon_days is required for exit_mode='label_horizon'.")
-        planned_exit_idx = entry_idx + exit_horizon_days
-        if prev_exit_idx is not None and entry_idx < prev_exit_idx:
-            raise ValueError(
-                "exit_mode='label_horizon' overlaps with rebalance_dates. "
-                "Increase rebalance_frequency or use exit_mode='rebalance'."
-            )
+    planned_exit_idx = _resolve_planned_exit_index(
+        exit_mode=exit_mode,
+        rebalance_dates=rebalance_dates,
+        rebalance_index=rebalance_index,
+        entry_idx=entry_idx,
+        exit_horizon_days=exit_horizon_days,
+        prev_exit_idx=prev_exit_idx,
+        trade_dates=trade_dates,
+        date_to_idx=date_to_idx,
+        shift_days=shift_days,
+        execution_calendar=execution_calendar,
+        execution_open_dates=execution_open_dates,
+        execution_closed_dates=execution_closed_dates,
+    )
+    if planned_exit_idx is None:
+        return None
 
     if prev_exit_idx is not None and entry_idx < prev_exit_idx:
         return None
@@ -84,3 +72,53 @@ def resolve_backtest_period_plan(
         entry_date=trade_dates[entry_idx],
         planned_exit_date=trade_dates[planned_exit_idx],
     )
+
+
+def _resolve_planned_exit_index(
+    *,
+    exit_mode: Literal["rebalance", "label_horizon"],
+    rebalance_dates: list[pd.Timestamp],
+    rebalance_index: int,
+    entry_idx: int,
+    exit_horizon_days: int | None,
+    prev_exit_idx: int | None,
+    trade_dates: list[pd.Timestamp],
+    date_to_idx: dict[pd.Timestamp, int],
+    shift_days: int,
+    execution_calendar: str,
+    execution_open_dates: tuple,
+    execution_closed_dates: tuple,
+) -> int | None:
+    if exit_mode == "label_horizon":
+        return _label_horizon_exit_index(
+            entry_idx, exit_horizon_days=exit_horizon_days, prev_exit_idx=prev_exit_idx
+        )
+    if rebalance_index >= len(rebalance_dates) - 1:
+        return None
+    next_rebalance = rebalance_dates[rebalance_index + 1].normalize()
+    if next_rebalance not in date_to_idx:
+        return None
+    planned_exit_date = resolve_execution_date(
+        next_rebalance,
+        shift_days,
+        trade_dates,
+        calendar=execution_calendar,
+        open_dates=execution_open_dates,
+        closed_dates=execution_closed_dates,
+    )
+    if planned_exit_date is None:
+        return None
+    return date_to_idx.get(planned_exit_date)
+
+
+def _label_horizon_exit_index(
+    entry_idx: int, *, exit_horizon_days: int | None, prev_exit_idx: int | None
+) -> int:
+    if exit_horizon_days is None:
+        raise ValueError("exit_horizon_days is required for exit_mode='label_horizon'.")
+    if prev_exit_idx is not None and entry_idx < prev_exit_idx:
+        raise ValueError(
+            "exit_mode='label_horizon' overlaps with rebalance_dates. "
+            "Increase rebalance_frequency or use exit_mode='rebalance'."
+        )
+    return entry_idx + exit_horizon_days

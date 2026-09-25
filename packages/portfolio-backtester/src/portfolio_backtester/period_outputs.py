@@ -7,6 +7,8 @@ import pandas as pd
 
 from .evaluation import (
     _build_period_positions as _build_period_positions_impl,
+)
+from .evaluation import (
     _record_exposure_outputs,
     _record_period_backtest_outputs,
     _record_period_execution_sim,

@@ -16,10 +16,20 @@ from . import _metrics_ic
 from ._metrics_active import summarize_active_returns as summarize_active_returns
 from ._metrics_ic import (
     daily_ic_series as daily_ic_series,
+)
+from ._metrics_ic import (
     leg_attribution_frame as leg_attribution_frame,
+)
+from ._metrics_ic import (
     pearson_corr as pearson_corr,
+)
+from ._metrics_ic import (
     quantile_returns as quantile_returns,
+)
+from ._metrics_ic import (
     spearman_corr as spearman_corr,
+)
+from ._metrics_ic import (
     summarize_leg_attribution as summarize_leg_attribution,
 )
 from ._metrics_period import summarize_period_returns as summarize_period_returns

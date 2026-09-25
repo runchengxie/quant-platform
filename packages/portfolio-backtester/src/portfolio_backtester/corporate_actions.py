@@ -17,7 +17,9 @@ def _action_date(value: object, name: str) -> pd.Timestamp:
         result = pd.Timestamp(value)
     except (TypeError, ValueError) as exc:
         raise ValueError(f"invalid {name}: {value!r}") from exc
-    if pd.isna(result) or result.tzinfo is not None or result != result.normalize():
+    if not isinstance(result, pd.Timestamp):
+        raise ValueError(f"invalid {name}: {value!r}")
+    if result.tzinfo is not None or result != result.normalize():
         raise ValueError(f"{name} must be a timezone-naive calendar date without a time")
     return result
 
@@ -40,7 +42,10 @@ def _validate_action_numbers(event: CorporateAction) -> None:
 def _validate_action_dates(event: CorporateAction) -> None:
     for name in ("available_date", "record_date", "ex_date"):
         object.__setattr__(event, name, _action_date(getattr(event, name), name))
-    if not event.available_date <= event.record_date < event.ex_date:
+    available_date = _action_date(event.available_date, "available_date")
+    record_date = _action_date(event.record_date, "record_date")
+    ex_date = _action_date(event.ex_date, "ex_date")
+    if not available_date <= record_date < ex_date:
         raise ValueError("require available_date <= record_date < ex_date")
     for amount, name in (
         (event.cash_per_share, "cash_pay_date"),
@@ -52,7 +57,7 @@ def _validate_action_dates(event: CorporateAction) -> None:
                 raise ValueError(f"{name} is required for a positive distribution")
             continue
         value = _action_date(value, name)
-        if value < event.ex_date:
+        if value < ex_date:
             raise ValueError(f"{name} must be on or after ex_date")
         object.__setattr__(event, name, value)
 

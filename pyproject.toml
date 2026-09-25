@@ -103,9 +103,6 @@ markers = ["unit: fast deterministic unit tests"]
 target-version = "py312"
 line-length = 100
 extend-exclude = [
-  "packages/research-contracts",
-  "packages/portfolio-backtester/src/portfolio_backtester",
-  "packages/portfolio-backtester/src/research_contracts",
   "packages/orchestration",
   "packages/execution",
   "packages/alpha",
@@ -118,6 +115,7 @@ extend-exclude = [
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "C4", "RET", "SIM", "RUF", "C90"]
+allowed-confusables = ["，", "：", "；", "（", "）", "｜", "×"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["portfolio_backtester", "market_data_platform", "strategy_pipeline", "quant_execution_engine"]
@@ -130,6 +128,16 @@ exclude = [
   "build",
   "dist",
   "outputs",
+]
+
+[tool.ty.environment]
+extra-paths = [
+  "packages/portfolio-backtester/src",
+  "packages/orchestration/src",
+  "packages/execution/src",
+  "packages/alpha/src",
+  "packages/microstructure/src",
+  "packages/research-contracts",
 ]
 
 [[tool.ty.overrides]]

@@ -67,45 +67,9 @@ class CanonicalBacktestResult:
             if not isinstance(frame, pd.DataFrame):
                 raise TypeError(f"CanonicalBacktestResult.{name} must be a pandas DataFrame.")
 
-        _require_columns(self.performance, {"period_end"}, label="performance")
-        if not self.positions.empty:
-            _require_columns(
-                self.positions,
-                {"rebalance_date", "symbol", "weight"},
-                label="positions",
-            )
-        if self.capabilities.order_lifecycle and not self.orders.empty:
-            _require_columns(self.orders, {"order_id", "status"}, label="orders")
-        elif not self.capabilities.order_lifecycle and (
-            not self.orders.empty or not self.fills.empty
-        ):
-            raise ValueError(
-                "A backend without order_lifecycle capability must not emit orders or fills."
-            )
-        if not self.orders.empty:
-            _assert_unique(self.orders, "order_id", label="orders")
-        if not self.fills.empty:
-            _require_columns(self.fills, {"fill_id", "order_id"}, label="fills")
-            _assert_unique(self.fills, "fill_id", label="fills")
-            unknown = set(self.fills["order_id"].astype(str)) - set(
-                self.orders["order_id"].astype(str)
-            )
-            if unknown:
-                raise ValueError(
-                    "Fills reference unknown order_id values: " + ", ".join(sorted(unknown))
-                )
-        if self.capabilities.daily_ledger and not self.daily_ledger.empty:
-            _require_columns(
-                self.daily_ledger,
-                {"trade_date", "cash", "positions_value", "nav"},
-                label="daily_ledger",
-            )
-            _assert_daily_ledger_balanced(self.daily_ledger)
-        elif not self.capabilities.daily_ledger and not self.daily_ledger.empty:
-            raise ValueError(
-                "A backend without daily_ledger capability must not emit daily ledger rows."
-            )
-
+        _validate_performance_and_positions(self.performance, self.positions)
+        _validate_order_lifecycle(self.capabilities, self.orders, self.fills)
+        _validate_daily_ledger(self.capabilities, self.daily_ledger)
         _assert_json_compatible(self.capabilities.to_mapping(), label="capabilities")
         _assert_json_compatible(self.summary, label="summary")
         _assert_json_compatible(self.metadata, label="metadata")
@@ -129,6 +93,47 @@ class CanonicalBacktestResult:
             "summary": to_json_compatible(self.summary),
             "metadata": to_json_compatible(self.metadata),
         }
+
+
+def _validate_performance_and_positions(performance: pd.DataFrame, positions: pd.DataFrame) -> None:
+    _require_columns(performance, {"period_end"}, label="performance")
+    if not positions.empty:
+        _require_columns(positions, {"rebalance_date", "symbol", "weight"}, label="positions")
+
+
+def _validate_order_lifecycle(
+    capabilities: BackendCapabilities, orders: pd.DataFrame, fills: pd.DataFrame
+) -> None:
+    if capabilities.order_lifecycle and not orders.empty:
+        _require_columns(orders, {"order_id", "status"}, label="orders")
+    elif not capabilities.order_lifecycle and (not orders.empty or not fills.empty):
+        raise ValueError(
+            "A backend without order_lifecycle capability must not emit orders or fills."
+        )
+    if not orders.empty:
+        _assert_unique(orders, "order_id", label="orders")
+    if not fills.empty:
+        _require_columns(fills, {"fill_id", "order_id"}, label="fills")
+        _assert_unique(fills, "fill_id", label="fills")
+        unknown = set(fills["order_id"].astype(str)) - set(orders["order_id"].astype(str))
+        if unknown:
+            raise ValueError(
+                "Fills reference unknown order_id values: " + ", ".join(sorted(unknown))
+            )
+
+
+def _validate_daily_ledger(capabilities: BackendCapabilities, ledger: pd.DataFrame) -> None:
+    if capabilities.daily_ledger and not ledger.empty:
+        _require_columns(
+            ledger,
+            {"trade_date", "cash", "positions_value", "nav"},
+            label="daily_ledger",
+        )
+        _assert_daily_ledger_balanced(ledger)
+    elif not capabilities.daily_ledger and not ledger.empty:
+        raise ValueError(
+            "A backend without daily_ledger capability must not emit daily ledger rows."
+        )
 
 
 @runtime_checkable

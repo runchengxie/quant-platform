@@ -116,6 +116,12 @@ class _SleeveSelection:
 
 
 def _validate_config(config: DailyWatch20Config) -> None:
+    _validate_column_settings(config)
+    _validate_guard_factors(config.guard_factors)
+    _validate_portfolio_settings(config)
+
+
+def _validate_column_settings(config: DailyWatch20Config) -> None:
     text_fields = (
         config.date_col,
         config.symbol_col,
@@ -125,15 +131,21 @@ def _validate_config(config: DailyWatch20Config) -> None:
     )
     if any(not str(value).strip() for value in text_fields):
         raise ValueError("DailyWatch20 column names must be non-empty.")
-    if not config.guard_factors:
+
+
+def _validate_guard_factors(guard_factors: tuple[GuardFactorSpec, ...]) -> None:
+    if not guard_factors:
         raise ValueError("DailyWatch20 requires at least one guard factor.")
-    guard_columns = [factor.column for factor in config.guard_factors]
+    guard_columns = [factor.column for factor in guard_factors]
     if any(not str(column).strip() for column in guard_columns):
         raise ValueError("Guard factor column names must be non-empty.")
     if len(set(guard_columns)) != len(guard_columns):
         raise ValueError("Guard factor columns must be unique.")
-    if any(not np.isfinite(factor.weight) or factor.weight <= 0 for factor in config.guard_factors):
+    if any(not np.isfinite(factor.weight) or factor.weight <= 0 for factor in guard_factors):
         raise ValueError("Guard factor weights must be finite and positive.")
+
+
+def _validate_portfolio_settings(config: DailyWatch20Config) -> None:
     if not np.isfinite(config.ml_weight) or not np.isfinite(config.guard_weight):
         raise ValueError("ML and guard weights must be finite.")
     if config.ml_weight < 0 or config.guard_weight < 0:

@@ -11,20 +11,33 @@ import pandas as pd
 
 def _execution_schedule(targets: pd.DataFrame, prices: pd.DataFrame) -> dict:
     """Validate inputs and map formations to strictly later execution closes."""
+    _validate_price_calendar(prices)
+    work = _validated_target_frame(targets, prices.columns)
+    return _map_targets_to_execution_dates(work, prices)
+
+
+def _validate_price_calendar(prices: pd.DataFrame) -> None:
     if prices.empty or not prices.index.is_monotonic_increasing or prices.index.has_duplicates:
         raise ValueError("prices need a nonempty ordered unique calendar")
     if prices.columns.has_duplicates:
         raise ValueError("duplicate price symbols")
+
+
+def _validated_target_frame(targets: pd.DataFrame, symbols: pd.Index) -> pd.DataFrame:
     work = targets.copy()
     work["formation_date"] = pd.to_datetime(work["formation_date"])
     if work[["formation_date", "symbol"]].isna().any().any():
         raise ValueError("target keys must be present")
     if work.duplicated(["formation_date", "symbol"]).any():
         raise ValueError("duplicate target symbols")
-    if not set(work.symbol).issubset(prices.columns):
+    if not set(work.symbol).issubset(symbols):
         raise ValueError("missing target prices")
     if not np.isfinite(work.weight).all() or (work.weight < 0).any():
         raise ValueError("invalid target weights")
+    return work
+
+
+def _map_targets_to_execution_dates(work: pd.DataFrame, prices: pd.DataFrame) -> dict:
     schedule = {}
     for formation, group in work.groupby("formation_date", sort=True):
         if not isinstance(formation, pd.Timestamp):
@@ -122,6 +135,35 @@ def _daily_record(date, nav, cash, previous_nav, pre_nav, cost, buys, sells, def
     }
 
 
+def _has_suspension_conflict(
+    candidate: np.ndarray | None, halted: np.ndarray, shares: np.ndarray
+) -> bool:
+    return candidate is not None and bool((halted & ((shares > 0) | (candidate > 0))).any())
+
+
+def _has_directional_trade_block(
+    trades: np.ndarray, buy_blocks: np.ndarray, sell_blocks: np.ndarray
+) -> bool:
+    return bool(((trades > 1e-12) & buy_blocks).any() or ((trades < -1e-12) & sell_blocks).any())
+
+
+def _scheduled_target_state(
+    idx: int,
+    *,
+    schedule: dict,
+    exposure_schedule: dict,
+    pending: np.ndarray | None,
+    desired_exposure: float,
+    exposure_pending: bool,
+) -> tuple[np.ndarray | None, float, bool]:
+    if idx in schedule:
+        pending = schedule[idx]
+    if idx in exposure_schedule:
+        desired_exposure = exposure_schedule[idx]
+        exposure_pending = True
+    return pending, desired_exposure, exposure_pending
+
+
 def replay_close_targets(
     targets: pd.DataFrame,
     prices: pd.DataFrame,
@@ -172,11 +214,14 @@ def replay_close_targets(
         observed = np.isfinite(px) & (px > 0) & ~halted
         last_marks[observed] = px[observed]
         px = np.where(halted, last_marks, px)
-        if idx in schedule:
-            pending = schedule[idx]
-        if idx in exposure_schedule:
-            desired_exposure = exposure_schedule[idx]
-            exposure_pending = True
+        pending, desired_exposure, exposure_pending = _scheduled_target_state(
+            idx,
+            schedule=schedule,
+            exposure_schedule=exposure_schedule,
+            pending=pending,
+            desired_exposure=desired_exposure,
+            exposure_pending=exposure_pending,
+        )
         required = shares > 0
         if pending is not None:
             required = required | ((pending > 0) & ~halted)
@@ -190,15 +235,12 @@ def replay_close_targets(
         if exposure_pending and candidate is None and holdings.sum() > 0:
             candidate = holdings / holdings.sum()
         buys = sells = cost = 0.0
-        deferred = candidate is not None and bool((halted & ((shares > 0) | (candidate > 0))).any())
+        deferred = _has_suspension_conflict(candidate, halted, shares)
         if candidate is not None and not deferred:
             weights = candidate * desired_exposure
             post_nav = _post_cost_nav(pre_nav, weights, holdings, fee)
             trades = weights * post_nav - holdings
-            deferred = bool(
-                ((trades > 1e-12) & buy_blocks[idx]).any()
-                or ((trades < -1e-12) & sell_blocks[idx]).any()
-            )
+            deferred = _has_directional_trade_block(trades, buy_blocks[idx], sell_blocks[idx])
             if not deferred:
                 buys = float(np.maximum(trades, 0).sum())
                 sells = float(np.maximum(-trades, 0).sum())

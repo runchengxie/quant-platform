@@ -37,12 +37,29 @@ def load_allocation_reference(path: str | Path) -> AllocationReference:
         raise SystemExit(f"Allocation reference file not found: {resolved}")
 
     frame = _load_frame(resolved).copy()
+    _require_reference_columns(frame)
+    _normalize_reference_symbols(frame)
+    _normalize_reference_prices(frame)
+    price_date = _normalize_reference_dates(frame)
+    _normalize_order_book_ids(frame)
+    source = _reference_source(frame)
+    return AllocationReference(
+        frame=frame.reset_index(drop=True),
+        price_date=price_date,
+        source=source,
+        path=resolved,
+    )
+
+
+def _require_reference_columns(frame: pd.DataFrame) -> None:
     missing = sorted(REQUIRED_REFERENCE_COLUMNS.difference(frame.columns))
     if missing:
         raise SystemExit(
             "Allocation reference is missing required column(s): " + ", ".join(missing)
         )
 
+
+def _normalize_reference_symbols(frame: pd.DataFrame) -> None:
     frame["symbol"] = frame["symbol"].astype(str).str.strip()
     if frame["symbol"].eq("").any():
         raise SystemExit("Allocation reference contains an empty symbol.")
@@ -52,6 +69,8 @@ def load_allocation_reference(path: str | Path) -> AllocationReference:
             "Allocation reference contains duplicate symbol rows: " + ", ".join(duplicates)
         )
 
+
+def _normalize_reference_prices(frame: pd.DataFrame) -> None:
     frame["price"] = pd.to_numeric(frame["price"], errors="coerce")
     frame["round_lot"] = pd.to_numeric(frame["round_lot"], errors="coerce")
     if frame["price"].isna().any() or (frame["price"] <= 0).any():
@@ -63,6 +82,8 @@ def load_allocation_reference(path: str | Path) -> AllocationReference:
         raise SystemExit("Allocation reference round_lot values must be whole numbers.")
     frame["round_lot"] = frame["round_lot"].astype(int)
 
+
+def _normalize_reference_dates(frame: pd.DataFrame) -> str:
     price_dates = pd.to_datetime(frame["price_date"], errors="coerce")
     if price_dates.isna().any():
         raise SystemExit("Allocation reference contains an invalid price_date.")
@@ -71,7 +92,10 @@ def load_allocation_reference(path: str | Path) -> AllocationReference:
     if len(unique_dates) != 1:
         raise SystemExit("Allocation reference must contain a single price_date snapshot.")
     frame["price_date"] = normalized_dates
+    return str(unique_dates[0])
 
+
+def _normalize_order_book_ids(frame: pd.DataFrame) -> None:
     if "order_book_id" not in frame.columns:
         frame["order_book_id"] = frame["symbol"]
     else:
@@ -80,6 +104,8 @@ def load_allocation_reference(path: str | Path) -> AllocationReference:
         )
         frame.loc[frame["order_book_id"].eq(""), "order_book_id"] = frame["symbol"]
 
+
+def _reference_source(frame: pd.DataFrame) -> str:
     source = "reference_file"
     if "source" in frame.columns:
         sources = sorted(
@@ -89,13 +115,7 @@ def load_allocation_reference(path: str | Path) -> AllocationReference:
             raise SystemExit("Allocation reference must contain at most one source label.")
         if sources:
             source = sources[0]
-
-    return AllocationReference(
-        frame=frame.reset_index(drop=True),
-        price_date=unique_dates[0],
-        source=source,
-        path=resolved,
-    )
+    return source
 
 
 def join_allocation_reference(

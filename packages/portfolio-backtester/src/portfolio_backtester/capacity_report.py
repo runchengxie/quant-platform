@@ -9,12 +9,21 @@ reachable.
 
 from __future__ import annotations
 
-from ._capacity_report_cli import add_capacity_report_args as add_capacity_report_args, run as run
+from ._capacity_report_cli import add_capacity_report_args as add_capacity_report_args
+from ._capacity_report_cli import run as run
 from ._capacity_report_config import (
     DEFAULT_PARTICIPATION_RATES as DEFAULT_PARTICIPATION_RATES,
+)
+from ._capacity_report_config import (
     DEFAULT_PORTFOLIO_VALUES as DEFAULT_PORTFOLIO_VALUES,
+)
+from ._capacity_report_config import (
     DEFAULT_PRIMARY_PARTICIPATION_RATE as DEFAULT_PRIMARY_PARTICIPATION_RATE,
+)
+from ._capacity_report_config import (
     THRESHOLD_PROFILES as THRESHOLD_PROFILES,
+)
+from ._capacity_report_config import (
     CapacityThresholds as CapacityThresholds,
 )
 from ._capacity_report_grid import build_capacity_report as build_capacity_report

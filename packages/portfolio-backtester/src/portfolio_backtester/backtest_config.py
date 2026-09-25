@@ -172,45 +172,34 @@ def _normalize_benchmark_compare(raw_value: object | None) -> list[dict[str, str
         return []
     if not isinstance(raw_value, (list, tuple)):
         raise SystemExit("backtest.benchmark_compare must be a list of compare benchmark specs.")
+    return [_normalize_benchmark_compare_item(item, idx) for idx, item in enumerate(raw_value)]
 
-    normalized: list[dict[str, str]] = []
-    for idx, item in enumerate(raw_value):
-        name: str | None = None
-        returns_file: str | None = None
-        symbol: str | None = None
-        if isinstance(item, str):
-            returns_file = str(item).strip() or None
-        elif isinstance(item, Mapping):
-            name_raw = item.get("name")
-            if name_raw is not None:
-                name = str(name_raw).strip() or None
-            returns_file_raw = item.get("returns_file") or item.get("file") or item.get("path")
-            if returns_file_raw is not None:
-                returns_file = str(returns_file_raw).strip() or None
-            symbol_raw = item.get("symbol") or item.get("benchmark_symbol")
-            if symbol_raw is not None:
-                symbol = str(symbol_raw).strip() or None
-        else:
-            raise SystemExit(
-                "backtest.benchmark_compare entries must be either strings or mappings."
-            )
 
-        if bool(returns_file) == bool(symbol):
-            raise SystemExit(
-                f"backtest.benchmark_compare[{idx}] must provide exactly one of "
-                "returns_file or symbol."
-            )
-        if not name:
-            name = Path(returns_file).stem if returns_file else str(symbol)
-        spec = {"name": name}
-        if returns_file:
-            spec["source_type"] = "returns_file"
-            spec["returns_file"] = returns_file
-        else:
-            spec["source_type"] = "symbol"
-            spec["symbol"] = str(symbol)
-        normalized.append(spec)
-    return normalized
+def _normalize_benchmark_compare_item(item: object, index: int) -> dict[str, str]:
+    if isinstance(item, str):
+        name, returns_file, symbol = None, item.strip() or None, None
+    elif isinstance(item, Mapping):
+        name = _optional_text(item.get("name"))
+        returns_file = _optional_text(
+            item.get("returns_file") or item.get("file") or item.get("path")
+        )
+        symbol = _optional_text(item.get("symbol") or item.get("benchmark_symbol"))
+    else:
+        raise SystemExit("backtest.benchmark_compare entries must be either strings or mappings.")
+
+    if bool(returns_file) == bool(symbol):
+        raise SystemExit(
+            f"backtest.benchmark_compare[{index}] must provide exactly one of "
+            "returns_file or symbol."
+        )
+    name = name or (Path(returns_file).stem if returns_file else str(symbol))
+    if returns_file:
+        return {"name": name, "source_type": "returns_file", "returns_file": returns_file}
+    return {"name": name, "source_type": "symbol", "symbol": str(symbol)}
+
+
+def _optional_text(value: object) -> str | None:
+    return str(value).strip() or None if value is not None else None
 
 
 def resolve_backtest_base_settings(

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 import pandas as pd
@@ -171,26 +171,27 @@ def _tier_conditions(tier: Mapping[str, Any]) -> Mapping[str, Any]:
 
 
 def _conditions_match(row: Mapping[str, Any], conditions: Mapping[str, Any]) -> bool:
-    for key, expected in conditions.items():
-        if key.startswith("min_"):
-            column = key.removeprefix("min_")
-            if float(row.get(column, np.nan)) < float(expected):
-                return False
-        elif key.startswith("max_"):
-            column = key.removeprefix("max_")
-            if float(row.get(column, np.nan)) > float(expected):
-                return False
-        elif key.endswith(("_min", "_gte")):
-            column = key.rsplit("_", 1)[0]
-            if float(row.get(column, np.nan)) < float(expected):
-                return False
-        elif key.endswith(("_max", "_lte")):
-            column = key.rsplit("_", 1)[0]
-            if float(row.get(column, np.nan)) > float(expected):
-                return False
-        elif row.get(key) != expected:
-            return False
-    return True
+    return all(_condition_matches(row, key, expected) for key, expected in conditions.items())
+
+
+def _condition_matches(row: Mapping[str, Any], key: str, expected: Any) -> bool:
+    if key.startswith("min_"):
+        return _numeric_condition_matches(row, key.removeprefix("min_"), expected, operation="min")
+    if key.startswith("max_"):
+        return _numeric_condition_matches(row, key.removeprefix("max_"), expected, operation="max")
+    if key.endswith(("_min", "_gte")):
+        return _numeric_condition_matches(row, key.rsplit("_", 1)[0], expected, operation="min")
+    if key.endswith(("_max", "_lte")):
+        return _numeric_condition_matches(row, key.rsplit("_", 1)[0], expected, operation="max")
+    return row.get(key) == expected
+
+
+def _numeric_condition_matches(
+    row: Mapping[str, Any], column: str, expected: Any, *, operation: Literal["min", "max"]
+) -> bool:
+    value = float(row.get(column, np.nan))
+    threshold = float(expected)
+    return not value < threshold if operation == "min" else not value > threshold
 
 
 def _validate_target_gross(target_gross: pd.Series, *, allow_leverage: bool) -> None:

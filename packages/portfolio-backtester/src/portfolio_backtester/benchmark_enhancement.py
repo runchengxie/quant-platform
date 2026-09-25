@@ -46,8 +46,7 @@ def _validated_frame(
         if not np.isfinite(result[column]).all():
             raise ValueError(f"{column} must contain finite values")
     if "benchmark_weight" in numeric_columns and (
-        (result["benchmark_weight"] < 0).any()
-        or result["benchmark_weight"].sum() <= 0
+        (result["benchmark_weight"] < 0).any() or result["benchmark_weight"].sum() <= 0
     ):
         raise ValueError("benchmark_weight must be non-negative and have a positive sum")
     sort_columns = ["selection_rank", "symbol"] if "selection_rank" in result else ["symbol"]
@@ -86,9 +85,7 @@ def build_target_weights(
     if normalized_variant is PortfolioConstructionVariant.BENCHMARK_SCORE_TILT:
         required.add(score_col)
         numeric_columns = ("benchmark_weight", score_col)
-    validated = _validated_frame(
-        frame, required_columns=required, numeric_columns=numeric_columns
-    )
+    validated = _validated_frame(frame, required_columns=required, numeric_columns=numeric_columns)
     if not np.isfinite(tilt_strength) or tilt_strength < 0:
         raise ValueError("tilt_strength must be finite and non-negative")
 
@@ -101,7 +98,12 @@ def build_target_weights(
         values = raw / raw.sum()
     else:
         selected = validated.set_index("symbol")
-        scores = selected[score_col if normalized_variant is PortfolioConstructionVariant.BENCHMARK_SCORE_TILT else "ml_score"]
+        score_name = (
+            score_col
+            if normalized_variant is PortfolioConstructionVariant.BENCHMARK_SCORE_TILT
+            else "ml_score"
+        )
+        scores = selected[score_name]
         deviation = scores - scores.mean()
         standard_deviation = float(scores.std(ddof=0))
         zscore = deviation / standard_deviation if standard_deviation > 0 else deviation * 0.0

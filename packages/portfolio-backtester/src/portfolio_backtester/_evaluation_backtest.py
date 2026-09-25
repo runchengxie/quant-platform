@@ -9,7 +9,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from .benchmarking import build_benchmark_series, warn_if_delay_exit_lag as _warn_if_delay_exit_lag
+from .benchmarking import build_benchmark_series
+from .benchmarking import warn_if_delay_exit_lag as _warn_if_delay_exit_lag
 from .engine import backtest_topk
 from .exposure import compute_backtest_exposure_analysis
 from .metrics import summarize_active_returns, summarize_period_returns
