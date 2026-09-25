@@ -9,10 +9,15 @@ from typing import Any
 import numpy as np
 import torch
 import torch.nn as nn
+from numpy.typing import NDArray
 from torch.utils.data import DataLoader
 
+from ticknet.eventstream.data_loading import EventstreamSample
 from ticknet.eventstream.dataset import L2WindowDataset
 from ticknet.eventstream.materialized import MaterializedWindowDataset
+
+type FloatArray = NDArray[np.float32] | NDArray[np.float64]
+type IntArray = NDArray[np.int64]
 
 
 def _empty_metrics() -> dict[str, Any]:
@@ -26,11 +31,11 @@ def _empty_metrics() -> dict[str, Any]:
     }
 
 
-def _spearman(a: np.ndarray, b: np.ndarray) -> float:
+def _spearman(a: FloatArray, b: FloatArray) -> float:
     if a.size < 2 or np.std(a) == 0 or np.std(b) == 0:
         return math.nan
 
-    def ranks(values: np.ndarray) -> np.ndarray:
+    def ranks(values: FloatArray) -> FloatArray:
         order = np.argsort(values, kind="mergesort")
         out = np.empty(values.size)
         out[order] = np.arange(values.size)
@@ -42,7 +47,7 @@ def _spearman(a: np.ndarray, b: np.ndarray) -> float:
 @torch.no_grad()
 def evaluate_rank_ic(
     model: nn.Module,
-    dataloader: DataLoader | None,
+    dataloader: DataLoader[EventstreamSample] | None,
     device: torch.device,
     *,
     min_symbols_per_day: int,
@@ -55,9 +60,9 @@ def evaluate_rank_ic(
         raise TypeError("事件流评估需要原始或物化窗口数据集")
     if len(dataset) == 0:
         return _empty_metrics()
-    preds: list[np.ndarray] = []
-    labs: list[np.ndarray] = []
-    day_ids: list[np.ndarray] = []
+    preds: list[FloatArray] = []
+    labs: list[FloatArray] = []
+    day_ids: list[IntArray] = []
     model.eval()
     use_amp = torch.cuda.is_available()
     for batch in dataloader:

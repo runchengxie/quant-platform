@@ -16,6 +16,8 @@ from ticknet.eventstream.materialized import (
 )
 from ticknet.eventstream.training_config import EventstreamConfig
 
+type EventstreamSample = tuple[torch.Tensor, ...]
+
 
 def list_packed_days(start: int, end: int, root: Path) -> list[int]:
     days: list[int] = []
@@ -44,9 +46,9 @@ def make_dataloaders(
     *,
     device: torch.device,
 ) -> tuple[
-    DataLoader,
-    DataLoader | None,
-    DataLoader | None,
+    DataLoader[EventstreamSample],
+    DataLoader[EventstreamSample] | None,
+    DataLoader[EventstreamSample] | None,
 ]:
     if config.materialized_root:
         root = Path(config.materialized_root)
@@ -61,7 +63,7 @@ def make_dataloaders(
         )
         val_ds = MaterializedWindowDataset(root, "validation")
         test_ds = MaterializedWindowDataset(root, "oos") if config.evaluate_test else None
-        train_loader = DataLoader(
+        train_loader = DataLoader[EventstreamSample](
             train_ds,
             batch_size=config.batch_size,
             shuffle=True,
@@ -70,7 +72,7 @@ def make_dataloaders(
             pin_memory=device.type == "cuda",
             persistent_workers=config.num_workers > 0,
         )
-        val_loader = DataLoader(
+        val_loader = DataLoader[EventstreamSample](
             val_ds,
             batch_size=config.batch_size,
             shuffle=False,
@@ -78,7 +80,7 @@ def make_dataloaders(
             pin_memory=device.type == "cuda",
         )
         test_loader = (
-            DataLoader(
+            DataLoader[EventstreamSample](
                 test_ds,
                 batch_size=config.batch_size,
                 shuffle=False,
@@ -102,7 +104,7 @@ def make_dataloaders(
         seed=config.seed,
         **_window_dataset_kwargs(config),
     )
-    train_loader = DataLoader(
+    train_loader = DataLoader[EventstreamSample](
         train_ds,
         batch_size=config.batch_size,
         shuffle=True,
@@ -124,7 +126,7 @@ def make_dataloaders(
             eval_tickers=config.eval_tickers,
             **_window_dataset_kwargs(config),
         )
-        val_loader = DataLoader(
+        val_loader = DataLoader[EventstreamSample](
             val_ds,
             batch_size=config.batch_size,
             shuffle=False,
@@ -143,7 +145,7 @@ def make_dataloaders(
             eval_tickers=0,
             **_window_dataset_kwargs(config),
         )
-        test_loader = DataLoader(
+        test_loader = DataLoader[EventstreamSample](
             test_ds,
             batch_size=config.batch_size,
             shuffle=False,
@@ -157,11 +159,11 @@ def make_monitor_dataloaders(
     config: EventstreamConfig,
     *,
     device: torch.device,
-) -> tuple[DataLoader | None, DataLoader | None]:
+) -> tuple[DataLoader[EventstreamSample] | None, DataLoader[EventstreamSample] | None]:
     """用同一批确定性收盘窗口加载只监控标签，不参与 checkpoint 选择。"""
     if config.materialized_root:
         root = Path(config.materialized_root)
-        validation = DataLoader(
+        validation = DataLoader[EventstreamSample](
             MaterializedWindowDataset(root, "monitor_validation"),
             batch_size=config.batch_size,
             shuffle=False,
@@ -169,7 +171,7 @@ def make_monitor_dataloaders(
             pin_memory=device.type == "cuda",
         )
         oos = (
-            DataLoader(
+            DataLoader[EventstreamSample](
                 MaterializedWindowDataset(root, "monitor_oos"),
                 batch_size=config.batch_size,
                 shuffle=False,
@@ -185,7 +187,7 @@ def make_monitor_dataloaders(
     root = Path(config.pack_root)
     label_path = Path(config.monitor_label_path)
 
-    def build(start: int, end: int, eval_tickers: int) -> DataLoader | None:
+    def build(start: int, end: int, eval_tickers: int) -> DataLoader[EventstreamSample] | None:
         if not start:
             return None
         dataset = L2WindowDataset(
@@ -198,7 +200,7 @@ def make_monitor_dataloaders(
             eval_tickers=eval_tickers,
             **_window_dataset_kwargs(config),
         )
-        return DataLoader(
+        return DataLoader[EventstreamSample](
             dataset,
             batch_size=config.batch_size,
             shuffle=False,
