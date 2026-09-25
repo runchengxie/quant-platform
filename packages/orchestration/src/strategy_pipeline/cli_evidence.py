@@ -25,6 +25,7 @@ def add_afml_evidence_args(parser: argparse.ArgumentParser) -> None:
 
 def handle_afml_evidence(args: argparse.Namespace) -> int:
     from alpha_research.research_protocols import load_protocol_manifest
+
     from portfolio_backtester.afml_evidence import (
         generate_run_afml_evidence,
         merge_evidence_fragment,
@@ -44,13 +45,9 @@ def handle_afml_evidence(args: argparse.Namespace) -> int:
         target = Path(args.manifest_output or args.manifest)
         target.parent.mkdir(parents=True, exist_ok=True)
         if target.suffix.lower() == ".json":
-            target.write_text(
-                json.dumps(merged, ensure_ascii=False, indent=2, default=str) + "\n"
-            )
+            target.write_text(json.dumps(merged, ensure_ascii=False, indent=2, default=str) + "\n")
         else:
-            target.write_text(
-                yaml.safe_dump(merged, allow_unicode=True, sort_keys=False)
-            )
+            target.write_text(yaml.safe_dump(merged, allow_unicode=True, sort_keys=False))
         fragment["merged_manifest"] = str(target)
     print(json.dumps(fragment, ensure_ascii=False, indent=2, default=str))
     return 0

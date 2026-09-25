@@ -6,9 +6,12 @@ from quant_execution_engine.risk_pipeline import (
 
 
 class Rule:
-    def __init__(self, name, decision): self.name, self.decision = name, decision
+    def __init__(self, name, decision):
+        self.name, self.decision = name, decision
+
     def evaluate(self, order, portfolio, market_state, config):
         return self.decision
+
 
 def test_pipeline_chains_adjustments_and_stops_on_reject() -> None:
     rules = [

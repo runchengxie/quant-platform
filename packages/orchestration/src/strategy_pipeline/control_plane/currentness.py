@@ -6,7 +6,7 @@ import hashlib
 import json
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass
-from typing import Literal
+from typing import Literal, cast
 
 PublicationTier = Literal["production", "research"]
 
@@ -65,7 +65,7 @@ class PublicationCurrentness:
         return self.status == "ready"
 
     def to_dict(self) -> dict[str, object]:
-        return asdict(self)
+        return cast(dict[str, object], asdict(self))
 
 
 def _text(availability: Mapping[str, object], key: str) -> str:
@@ -79,11 +79,7 @@ def evaluate_input_currentness(
     """Apply release-currentness rules without revalidating owner artifacts."""
 
     raw_issues = availability.get("issues")
-    reasons = (
-        [str(issue) for issue in raw_issues]
-        if isinstance(raw_issues, (list, tuple))
-        else []
-    )
+    reasons = [str(issue) for issue in raw_issues] if isinstance(raw_issues, (list, tuple)) else []
     if availability.get("available") is not True:
         reasons.append("owner input availability is not passed")
     if policy.require_current and availability.get("current_as_of") != availability.get(
@@ -99,6 +95,7 @@ def evaluate_input_currentness(
         and availability.get("current_as_of") != availability.get("source_date")
     ):
         reasons.append("research publication policy forbids stale inputs")
+    raw_input_count = availability.get("input_count")
     return PublicationCurrentness(
         status="ready" if not reasons else "unavailable",
         source_date=_text(availability, "source_date"),
@@ -113,11 +110,7 @@ def evaluate_input_currentness(
         else None,
         require_current=policy.require_current,
         input_mode=_text(availability, "input_mode"),
-        input_count=(
-            int(availability["input_count"])
-            if isinstance(availability.get("input_count"), int)
-            else None
-        ),
+        input_count=int(raw_input_count) if isinstance(raw_input_count, int) else None,
         input_policy_id=str(availability.get("input_policy_id"))
         if availability.get("input_policy_id") is not None
         else None,

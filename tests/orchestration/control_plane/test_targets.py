@@ -37,10 +37,7 @@ def test_export_targets_writes_canonical_json_and_lineage(tmp_path):
     assert lineage["run_id"] == "run-1"
     assert lineage["target_count"] == 2
     assert lineage["content_sha256"]
-    assert (
-        lineage["artifact_envelope"]["schema_version"]
-        == "research.artifact-envelope.v2"
-    )
+    assert lineage["artifact_envelope"]["schema_version"] == "research.artifact-envelope.v2"
 
 
 def test_export_targets_rejects_short_holdings(tmp_path):

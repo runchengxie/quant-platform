@@ -11,7 +11,7 @@ import json
 import math
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 
 
 def _execution_symbol(value: object, market: object | None) -> tuple[str, str]:
@@ -46,10 +46,16 @@ def _load_holdings(path: Path) -> dict[str, Any]:
     return payload
 
 
-def _target_rows(payload: dict[str, Any]) -> tuple[list[dict[str, object]], str]:
+class _ExportTarget(TypedDict):
+    symbol: str
+    market: str
+    target_weight: float
+
+
+def _target_rows(payload: dict[str, Any]) -> tuple[list[_ExportTarget], str]:
     rows = payload["holdings"]
     default_market = payload.get("market")
-    result: list[dict[str, object]] = []
+    result: list[_ExportTarget] = []
     seen: set[tuple[str, str]] = set()
     total = 0.0
     for row in rows:
@@ -57,15 +63,16 @@ def _target_rows(payload: dict[str, Any]) -> tuple[list[dict[str, object]], str]
             raise TypeError("every holding must be an object")
         if str(row.get("side", "long")).lower() != "long":
             raise ValueError("export-targets only supports long-only holdings")
+        raw_weight = row.get("weight")
+        if not isinstance(raw_weight, (int, float, str)):
+            raise ValueError("every holding requires a numeric weight")
         try:
-            weight = float(row["weight"])
+            weight = float(raw_weight)
         except (KeyError, TypeError, ValueError) as exc:
             raise ValueError("every holding requires a numeric weight") from exc
         if not math.isfinite(weight) or weight < 0:
             raise ValueError("target weights must be finite and non-negative")
-        symbol, market = _execution_symbol(
-            row.get("symbol"), row.get("market", default_market)
-        )
+        symbol, market = _execution_symbol(row.get("symbol"), row.get("market", default_market))
         key = (symbol, market)
         if key in seen:
             raise ValueError(f"duplicate execution target for {symbol}.{market}")
@@ -103,11 +110,7 @@ def export_targets(
     targets_file.write_text(
         json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
-    sidecar = (
-        Path(lineage_path)
-        if lineage_path
-        else targets_file.with_suffix(".json.lineage.json")
-    )
+    sidecar = Path(lineage_path) if lineage_path else targets_file.with_suffix(".json.lineage.json")
     content_sha256 = hashlib.sha256(targets_file.read_bytes()).hexdigest()
     run_id = str(payload.get("run_id", holdings_file.stem))
     configuration = {"source": source, "holdings_path": str(holdings_file)}
@@ -132,9 +135,7 @@ def export_targets(
                 "backend": "export_targets",
             },
             "configuration_sha256": hashlib.sha256(
-                json.dumps(
-                    configuration, sort_keys=True, separators=(",", ":")
-                ).encode()
+                json.dumps(configuration, sort_keys=True, separators=(",", ":")).encode()
             ).hexdigest(),
             "content_sha256": content_sha256,
             "lineage": [
@@ -146,7 +147,5 @@ def export_targets(
         },
     }
     sidecar.parent.mkdir(parents=True, exist_ok=True)
-    sidecar.write_text(
-        json.dumps(lineage, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
+    sidecar.write_text(json.dumps(lineage, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return sidecar

@@ -38,12 +38,7 @@ def test_unreviewed_git_sources_remain_findings() -> None:
 def test_clean_root_metadata_declares_runtime_import_dependencies() -> None:
     project = tomllib.loads((Path(__file__).parents[2] / "pyproject.toml").read_text())
     dependencies = project["project"]["dependencies"]
-    names = {
-        str(item).split(" @ ", 1)[0].split(">", 1)[0].lower() for item in dependencies
-    }
+    names = {str(item).split(" @ ", 1)[0].split(">", 1)[0].lower() for item in dependencies}
 
     assert {"numpy", "pandas", "pyarrow", "pyyaml"} <= names
-    assert all(
-        "@ git+" not in str(item) or "alpha-research" in str(item)
-        for item in dependencies
-    )
+    assert all("@ git+" not in str(item) or "alpha-research" in str(item) for item in dependencies)

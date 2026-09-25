@@ -1,6 +1,7 @@
 """Composable, pure pre-trade risk decisions."""
+
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any, Protocol
 
@@ -10,19 +11,23 @@ class RiskOutcome(StrEnum):
     REJECT = "REJECT"
     ADJUST = "ADJUST"
 
+
 @dataclass(frozen=True, slots=True)
 class RiskDecision:
     outcome: RiskOutcome
     rule: str
     reason: str
     order: Any = None
-    metrics: Mapping[str, Any] = None  # type: ignore[assignment]
+    metrics: Mapping[str, Any] = field(default_factory=dict)
+
 
 class RiskRule(Protocol):
     name: str
+
     def evaluate(
         self, order: Any, portfolio: Any, market_state: Any, config: Mapping[str, Any]
     ) -> RiskDecision: ...
+
 
 class PreTradeRiskPipeline:
     def __init__(self, rules: Sequence[RiskRule]) -> None:

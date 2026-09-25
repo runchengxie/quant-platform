@@ -103,12 +103,8 @@ markers = ["unit: fast deterministic unit tests"]
 target-version = "py312"
 line-length = 100
 extend-exclude = [
-  "packages/orchestration",
-  "packages/execution",
   "packages/alpha",
   "packages/microstructure",
-  "tests/orchestration",
-  "tests/execution",
   "tests/microstructure",
   "scripts/dev/public_surface_export.py",
 ]
@@ -146,12 +142,13 @@ rules = { unresolved-import = "ignore" }
 
 [[tool.ty.overrides]]
 include = [
-  "packages/orchestration/src/**",
-  "packages/execution/src/**",
   "packages/alpha/src/**",
-  "tests/orchestration/**",
-  "tests/execution/**",
   "packages/microstructure/src/**",
   "tests/microstructure/**",
 ]
 rules = { all = "warn" }
+
+# Rich is optional here; plain-text rendering works without the dependency.
+[[tool.ty.overrides]]
+include = ["packages/execution/src/quant_execution_engine/renderers/diff.py"]
+rules = { unresolved-import = "ignore" }

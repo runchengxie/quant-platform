@@ -4,10 +4,11 @@ import json
 import sys
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
+
 from market_data_platform.data_provider_contracts import normalize_market
 from market_data_platform.symbols import (
     PROVIDER_SYMBOL_PRIORITY,
@@ -61,7 +62,7 @@ def _prepare_panel_join_frame(
             join_df[date_col] = parsed.dt.normalize()
     join_df["symbol"] = join_df["symbol"].astype(str).str.strip()
     join_df = join_df.drop_duplicates(subset=["trade_date", "symbol"]).copy()
-    return join_df.sort_values(["symbol", "trade_date"]).reset_index(drop=True)
+    return cast(pd.DataFrame, join_df.sort_values(["symbol", "trade_date"]).reset_index(drop=True))
 
 
 def _parse_panel_join_trade_date(values: pd.Series) -> pd.Series:
@@ -74,7 +75,7 @@ def _parse_panel_join_trade_date(values: pd.Series) -> pd.Series:
         errors="coerce",
     )
     parsed_generic = pd.to_datetime(text.where(~yyyymmdd), errors="coerce")
-    return parsed_compact.combine_first(parsed_generic)
+    return cast(pd.Series, parsed_compact.combine_first(parsed_generic))
 
 
 def _select_panel_join_columns(
@@ -89,7 +90,7 @@ def _select_panel_join_columns(
     if missing:
         sys.exit(f"{item_label} columns not found in join data: {missing}")
     selected = ["trade_date", "symbol", *keep_columns]
-    return frame.loc[:, list(dict.fromkeys(selected))].copy()
+    return cast(pd.DataFrame, frame.loc[:, list(dict.fromkeys(selected))].copy())
 
 
 def _atomic_write(path: Path, write_fn) -> None:
@@ -158,7 +159,7 @@ def _coerce_yyyymmdd(values: pd.Series) -> pd.Series:
     compact = text.str.replace("-", "", regex=False)
     parsed = pd.to_datetime(compact, format="%Y%m%d", errors="coerce")
     formatted = parsed.dt.strftime("%Y%m%d")
-    return formatted.where(parsed.notna(), text)
+    return cast(pd.Series, formatted.where(parsed.notna(), text))
 
 
 def _annotate_positions_window(frame: pd.DataFrame) -> pd.DataFrame:
@@ -291,7 +292,7 @@ def normalize_date_like_series(series: pd.Series) -> pd.Series:
     if series.empty:
         return pd.to_datetime(series, errors="coerce")
     if pd.api.types.is_datetime64_any_dtype(series):
-        return pd.to_datetime(series, errors="coerce").dt.normalize()
+        return cast(pd.Series, pd.to_datetime(series, errors="coerce").dt.normalize())
 
     text = series.astype(str).str.strip().str.replace(r"\.0+$", "", regex=True)
     digits_mask = text.str.fullmatch(r"\d{8}")
@@ -306,7 +307,7 @@ def normalize_date_like_series(series: pd.Series) -> pd.Series:
     if (~digits_mask).any():
         parsed.loc[~digits_mask] = pd.to_datetime(text.loc[~digits_mask], errors="coerce")
 
-    return parsed.dt.normalize()
+    return cast(pd.Series, parsed.dt.normalize())
 
 
 def load_universe_by_date(path: Path, market: str) -> pd.DataFrame:
@@ -344,7 +345,7 @@ def load_universe_by_date(path: Path, market: str) -> pd.DataFrame:
     df["symbol"] = df["symbol"].apply(lambda s: normalize_universe_symbol(s, market))
     df = df[df["symbol"] != ""].copy()
     df = df.drop_duplicates(subset=["trade_date", "symbol"])
-    return df[["trade_date", "symbol"]].copy()
+    return cast(pd.DataFrame, df[["trade_date", "symbol"]].copy())
 
 
 def apply_universe_by_date(data: pd.DataFrame, universe: pd.DataFrame) -> pd.DataFrame:
@@ -359,7 +360,7 @@ def apply_universe_by_date(data: pd.DataFrame, universe: pd.DataFrame) -> pd.Dat
     idx = np.searchsorted(rebalance_dates, trade_dates, side="right") - 1
     valid_mask = idx >= 0
     if not np.any(valid_mask):
-        return data.iloc[0:0].copy()
+        return cast(pd.DataFrame, data.iloc[0:0].copy())
     date_map = pd.DataFrame(
         {
             "trade_date": trade_dates[valid_mask],
@@ -449,4 +450,4 @@ def _summarize_walk_forward_feature_stability(
     summary["nonzero_hit_rate"] = summary["nonzero_hits"] / windows_total
     summary["importance_std"] = summary["importance_std"].fillna(0.0)
     summary["rank_std"] = summary["rank_std"].fillna(0.0)
-    return summary
+    return cast(pd.DataFrame, summary)

@@ -8,6 +8,8 @@ in-class implementations.
 
 from __future__ import annotations
 
+from typing import Any
+
 from .broker.base import (
     BrokerFillRecord,
     BrokerOrderRecord,
@@ -202,45 +204,26 @@ def _load_broker_history_trace(
     account: ResolvedBrokerAccount,
     broker_order_ids: list[str],
 ) -> tuple[list[BrokerOrderRecord], list[BrokerFillRecord], list[str]]:
-    warnings: list[str] = []
-    broker_history_orders: list[BrokerOrderRecord] = []
-    broker_history_fills: list[BrokerFillRecord] = []
     if not broker_order_ids:
-        return broker_history_orders, broker_history_fills, warnings
+        return [], [], []
 
-    if service.adapter.capabilities.supports_order_history:
-        for broker_order_id in broker_order_ids:
-            try:
-                broker_history_orders.extend(
-                    service.adapter.list_order_history(account, broker_order_id=broker_order_id)
-                )
-            except UnsupportedBrokerOperationError as exc:
-                warnings.append(f"broker-side order history unavailable: {exc}")
-                break
-            except Exception as exc:
-                warnings.append(
-                    f"failed to load broker-side order history for {broker_order_id}: {exc}"
-                )
-    else:
-        warnings.append(
-            f"{service.adapter.backend_name} does not support broker-side order history"
-        )
-
-    if service.adapter.capabilities.supports_fill_history:
-        for broker_order_id in broker_order_ids:
-            try:
-                broker_history_fills.extend(
-                    service.adapter.list_fill_history(account, broker_order_id=broker_order_id)
-                )
-            except UnsupportedBrokerOperationError as exc:
-                warnings.append(f"broker-side fill history unavailable: {exc}")
-                break
-            except Exception as exc:
-                warnings.append(
-                    f"failed to load broker-side fill history for {broker_order_id}: {exc}"
-                )
-    else:
-        warnings.append(f"{service.adapter.backend_name} does not support broker-side fill history")
+    broker_history_orders, order_warnings = _load_history_records(
+        service,
+        account=account,
+        broker_order_ids=broker_order_ids,
+        supported=service.adapter.capabilities.supports_order_history,
+        method_name="list_order_history",
+        record_name="order",
+    )
+    broker_history_fills, fill_warnings = _load_history_records(
+        service,
+        account=account,
+        broker_order_ids=broker_order_ids,
+        supported=service.adapter.capabilities.supports_fill_history,
+        method_name="list_fill_history",
+        record_name="fill",
+    )
+    warnings = [*order_warnings, *fill_warnings]
 
     unique_orders: dict[str, BrokerOrderRecord] = {}
     for order_record in broker_history_orders:
@@ -268,3 +251,34 @@ def _load_broker_history_trace(
         ),
         warnings,
     )
+
+
+def _load_history_records(
+    service,
+    *,
+    account: ResolvedBrokerAccount,
+    broker_order_ids: list[str],
+    supported: bool,
+    method_name: str,
+    record_name: str,
+) -> tuple[list[Any], list[str]]:
+    if not supported:
+        message = (
+            f"{service.adapter.backend_name} does not support broker-side {record_name} history"
+        )
+        return [], [message]
+    records: list[Any] = []
+    warnings: list[str] = []
+    load_records = getattr(service.adapter, method_name)
+    for broker_order_id in broker_order_ids:
+        try:
+            records.extend(load_records(account, broker_order_id=broker_order_id))
+        except UnsupportedBrokerOperationError as exc:
+            warnings.append(f"broker-side {record_name} history unavailable: {exc}")
+            break
+        except Exception as exc:
+            message = (
+                f"failed to load broker-side {record_name} history for {broker_order_id}: {exc}"
+            )
+            warnings.append(message)
+    return records, warnings

@@ -123,10 +123,6 @@ class RebalancePlanMixin(RebalancePricingMixin):
         # Build current position mapping
         current_positions_map = {pos.symbol: pos for pos in account_snapshot.positions}
 
-        # Generate rebalancing orders
-        orders = []
-        target_positions = []
-
         client = self._get_client()
         cfg = load_cfg() or {}
         fees_cfg = (cfg.get("fees") or {}) if isinstance(cfg, dict) else {}
@@ -141,80 +137,27 @@ class RebalancePlanMixin(RebalancePricingMixin):
         frac_enable = bool(frac_cfg.get("enable", True))
         frac_step = Decimal(str(frac_cfg.get("default_step", 0.001)))
 
-        for target in targets:
-            lb_symbol = self._coerce_lb_symbol(target)
-            symbol = target.symbol
-
-            px = (quotes or {}).get(lb_symbol)
-            if not px or px <= 0:
-                logger.warning(f"跳过 {symbol}：无有效价格")
-                continue
-
-            price = float(px)
-            current_position = current_positions_map.get(lb_symbol)
-            current_qty = current_position.quantity if current_position else 0
-            if target.target_quantity is not None:
-                target_qty_raw = float(target.target_quantity)
-            else:
-                target_qty_raw = effective_total * float(target.target_weight or 0.0) / price
-
-            target_position, order = self._build_order(
-                lb_symbol,
-                price,
-                current_qty,
-                target_qty_raw,
-                allow_fractional,
-                client,
-                fs,
-                frac_enable,
-                frac_step,
-            )
-            target_positions.append(target_position)
-            if order:
-                orders.append(order)
-
-        # Handle existing positions not in target list: liquidate (treat target as 0)
+        target_positions, orders = self._plan_target_entries(
+            targets,
+            current_positions_map=current_positions_map,
+            quotes=quotes,
+            effective_total=effective_total,
+            allow_fractional=allow_fractional,
+            client=client,
+            fee_schedule=fs,
+            frac_enable=frac_enable,
+            frac_step=frac_step,
+        )
         target_set = {self._coerce_lb_symbol(target) for target in targets}
-        for sym, cur in current_positions_map.items():
-            if sym in target_set:
-                continue
-            current_qty = int(cur.quantity)
-            if current_qty <= 0:
-                continue
-            lot_size = client.lot_size(sym)
-            # Round to lot
-            qty_to_sell = (current_qty // lot_size) * lot_size
-            if qty_to_sell <= 0:
-                continue
-            # Use existing quotes
-            px = float((quotes or {}).get(sym, cur.last_price or 0.0))
-            # Add 0 row to target positions for diff view
-            target_positions.append(
-                Position(
-                    symbol=sym,
-                    quantity=0,
-                    last_price=px,
-                    estimated_value=0.0,
-                    env=self.env,
-                )
-            )
-            o = Order(
-                symbol=sym,
-                quantity=qty_to_sell,
-                side="SELL",
-                price=px if px > 0 else None,
-                order_type="MARKET",
-            )
-            est_fee, frac_hint = estimate_fees(
-                side="SELL",
-                qty_int=qty_to_sell,
-                price=px or 0.0,
-                any_fractional_lt1=False,
-                fs=fs,
-            )
-            o.est_fees = est_fee
-            o.est_frac_hint = frac_hint
-            orders.append(o)
+        liquidations = self._plan_unrequested_liquidations(
+            current_positions_map,
+            target_set=target_set,
+            quotes=quotes,
+            client=client,
+            fee_schedule=fs,
+        )
+        target_positions.extend(position for position, _ in liquidations)
+        orders.extend(order for _, order in liquidations)
 
         return RebalanceResult(
             target_positions=target_positions,
@@ -226,3 +169,90 @@ class RebalancePlanMixin(RebalancePricingMixin):
             broker_name=self.broker_name,
             account_label=self.account_label,
         )
+
+    def _plan_target_entries(
+        self,
+        targets: list[TargetEntry],
+        *,
+        current_positions_map: dict[str, Position],
+        quotes: dict[str, float],
+        effective_total: float,
+        allow_fractional: bool,
+        client: Any,
+        fee_schedule: FeeSchedule,
+        frac_enable: bool,
+        frac_step: Decimal,
+    ) -> tuple[list[Position], list[Order]]:
+        target_positions: list[Position] = []
+        orders: list[Order] = []
+        for target in targets:
+            symbol = self._coerce_lb_symbol(target)
+            price_value = quotes.get(symbol)
+            if not price_value or price_value <= 0:
+                logger.warning(f"跳过 {target.symbol}：无有效价格")
+                continue
+            price = float(price_value)
+            current = current_positions_map.get(symbol)
+            current_qty = current.quantity if current else 0
+            target_qty = (
+                float(target.target_quantity)
+                if target.target_quantity is not None
+                else effective_total * float(target.target_weight or 0.0) / price
+            )
+            position, order = self._build_order(
+                symbol,
+                price,
+                current_qty,
+                target_qty,
+                allow_fractional,
+                client,
+                fee_schedule,
+                frac_enable,
+                frac_step,
+            )
+            target_positions.append(position)
+            if order is not None:
+                orders.append(order)
+        return target_positions, orders
+
+    def _plan_unrequested_liquidations(
+        self,
+        current_positions: dict[str, Position],
+        *,
+        target_set: set[str],
+        quotes: dict[str, float],
+        client: Any,
+        fee_schedule: FeeSchedule,
+    ) -> list[tuple[Position, Order]]:
+        liquidations: list[tuple[Position, Order]] = []
+        for symbol, current in current_positions.items():
+            if symbol in target_set or current.quantity <= 0:
+                continue
+            lot_size = client.lot_size(symbol)
+            quantity = (int(current.quantity) // lot_size) * lot_size
+            if quantity <= 0:
+                continue
+            price = float(quotes.get(symbol, current.last_price or 0.0))
+            position = Position(
+                symbol=symbol,
+                quantity=0,
+                last_price=price,
+                estimated_value=0.0,
+                env=self.env,
+            )
+            order = Order(
+                symbol=symbol,
+                quantity=quantity,
+                side="SELL",
+                price=price if price > 0 else None,
+                order_type="MARKET",
+            )
+            order.est_fees, order.est_frac_hint = estimate_fees(
+                side="SELL",
+                qty_int=quantity,
+                price=price or 0.0,
+                any_fractional_lt1=False,
+                fs=fee_schedule,
+            )
+            liquidations.append((position, order))
+        return liquidations

@@ -9,9 +9,7 @@ from typing import cast
 
 
 def add_protocol_args(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument(
-        "--level", choices=("exploratory", "candidate", "release"), required=True
-    )
+    parser.add_argument("--level", choices=("exploratory", "candidate", "release"), required=True)
     parser.add_argument("--manifest", help="JSON or YAML evidence manifest.")
     parser.add_argument(
         "--init-manifest", help="Write a manifest template instead of evaluating one."
@@ -39,9 +37,7 @@ def handle_protocol(args: argparse.Namespace) -> int:
         else:
             import yaml
 
-            target.write_text(
-                yaml.safe_dump(payload, allow_unicode=True, sort_keys=False)
-            )
+            target.write_text(yaml.safe_dump(payload, allow_unicode=True, sort_keys=False))
         return 0
     if not args.manifest:
         raise SystemExit("--manifest is required unless --init-manifest is used")

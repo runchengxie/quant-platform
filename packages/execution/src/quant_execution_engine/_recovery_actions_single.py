@@ -7,7 +7,7 @@ used by resume/reprice.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from .broker.base import BrokerOrderRequest, ResolvedBrokerAccount, utc_now_iso
 from .execution_helpers import (
@@ -338,4 +338,4 @@ class OrderLifecycleRecoverySingleMixin(OrderLifecycleStateReconcileOpsMixin):
             self._apply_auto_kill_switch(state)
             self._mark_tracked_order_failed(parent, child, message=str(exc))
             warnings.append(f"{failure_prefix}: {exc}")
-            return None, child.status
+            return None, cast(str, child.status)

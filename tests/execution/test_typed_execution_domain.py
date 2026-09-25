@@ -11,6 +11,7 @@ from typing import cast
 
 import pytest
 
+from quant_execution_engine.broker import MockSimBrokerAdapter
 from quant_execution_engine.domain import (
     ApprovedTarget,
     CapabilityValidationError,
@@ -399,3 +400,7 @@ import quant_execution_engine.serialization
     )
 
     assert completed.returncode == 0, completed.stderr
+
+
+def test_mock_sim_adapter_is_importable_from_broker_package() -> None:
+    assert MockSimBrokerAdapter.__name__ == "MockSimBrokerAdapter"

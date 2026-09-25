@@ -55,10 +55,7 @@ def test_run_redacts_owner_and_publication_exception_details():
         def run(self, _request: RunRequest) -> ArtifactRef:
             return _artifact()
 
-    publication_failure = run(
-        RunRequest("run-1", ()), owner=Owner(), publisher=FailingPublisher()
-    )
+    publication_failure = run(RunRequest("run-1", ()), owner=Owner(), publisher=FailingPublisher())
     assert publication_failure.failure_category == "publication_failure"
     assert publication_failure.failure_message == "artifact publication failed"
     assert "strategy-secret" not in str(publication_failure.to_dict())
-

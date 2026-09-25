@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import pytest
+
 from strategy_pipeline.cashflow_publication import publish_cashflow_shadow
 
 

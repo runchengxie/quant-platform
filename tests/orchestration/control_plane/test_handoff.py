@@ -23,4 +23,3 @@ def test_publish_handoff_delegates_validated_request():
 def test_handoff_rejects_an_empty_artifact_list():
     with pytest.raises(ValueError, match="artifacts"):
         HandoffRequest("run-1", (), "memory://handoff")
-

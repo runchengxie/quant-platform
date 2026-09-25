@@ -149,10 +149,15 @@ def get_broker_adapter(
 ) -> BrokerAdapter:
     """Instantiate the configured broker adapter."""
 
-    if isinstance(client, BrokerAdapter):
-        return client
+    injected_adapter = _existing_adapter(client)
+    if injected_adapter is not None:
+        return injected_adapter
 
     backend = resolve_broker_name(broker_name)
+    return _create_broker_adapter(backend, client)
+
+
+def _create_broker_adapter(backend: str, client: Any | None) -> BrokerAdapter:
     if backend == "longport":
         LongPortBrokerAdapter, _, _ = _load_longport_runtime()
         return LongPortBrokerAdapter(client=client)
@@ -181,3 +186,7 @@ def get_broker_adapter(
         return AlpacaPaperBrokerAdapter()
 
     raise BrokerValidationError(f"unsupported broker backend: {backend}")
+
+
+def _existing_adapter(client: Any | None) -> BrokerAdapter | None:
+    return client if isinstance(client, BrokerAdapter) else None

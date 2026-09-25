@@ -8,9 +8,7 @@ def test_persist_run_outputs_preserves_owner_callback_order(monkeypatch):
     monkeypatch.setattr(
         output,
         "write_run_artifacts",
-        lambda *, context: (
-            events.append(("artifacts", context)) or {"path": "run.json"}
-        ),
+        lambda *, context: events.append(("artifacts", context)) or {"path": "run.json"},
     )
 
     def evidence_builder(*, context, artifacts):

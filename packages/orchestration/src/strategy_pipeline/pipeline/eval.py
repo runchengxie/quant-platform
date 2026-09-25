@@ -4,7 +4,6 @@ import logging
 from collections.abc import Mapping
 from typing import Any
 
-import numpy as np
 import pandas as pd
 from alpha_research.period_evaluation import (
     build_scored_data as _build_scored_data_impl,
@@ -12,6 +11,8 @@ from alpha_research.period_evaluation import (
 from alpha_research.period_evaluation import (
     score_and_record_period_eval_metrics as _score_and_record_period_eval_metrics_impl,
 )
+from numpy.typing import NDArray
+
 from portfolio_backtester.period_outputs import (
     build_period_positions as _build_period_positions_impl,
 )
@@ -137,7 +138,7 @@ def _evaluate_period(
     label: str,
     model_eval: Any,
     test_df_full: pd.DataFrame,
-    test_dates: np.ndarray,
+    test_dates: NDArray[Any],
     *,
     context: Mapping[str, Any],
     run_perm_test: bool,

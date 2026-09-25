@@ -58,56 +58,24 @@ def prune_target_weights(
     keeps the first item crossing the requested limit so the result does not
     silently exclude the target boundary.
     """
-    values = tuple(float(value) for value in weights)
-    if not values:
-        raise ValueError("target pruning requires at least one weight")
-    if any(not math.isfinite(value) for value in values):
-        raise ValueError("target weights must be finite")
-    if any(value < 0 for value in values):
-        raise ValueError("target weights must be non-negative")
-    if min_target_weight is not None and (
-        min_target_weight < 0 or not math.isfinite(float(min_target_weight))
-    ):
-        raise ValueError("min_target_weight must be finite and non-negative")
-    if cumulative_target_weight is not None and (
-        cumulative_target_weight <= 0
-        or cumulative_target_weight > 1.0
-        or not math.isfinite(float(cumulative_target_weight))
-    ):
-        raise ValueError("cumulative_target_weight must be finite and in (0, 1]")
-
+    values = _validate_pruning_weights(
+        weights,
+        min_target_weight=min_target_weight,
+        cumulative_target_weight=cumulative_target_weight,
+    )
     original_weight_sum = sum(values)
-    eligible = [
-        index
-        for index, value in enumerate(values)
-        if min_target_weight is None or value >= float(min_target_weight)
-    ]
-    retained = eligible
-    if cumulative_target_weight is not None:
-        if not eligible:
-            raise ValueError("target pruning removed every holding")
-        ordered = sorted(eligible, key=lambda index: (-values[index], index))
-        running = 0.0
-        retained_set: set[int] = set()
-        crossing_index: int | None = None
-        for index in ordered:
-            running += values[index]
-            if running <= float(cumulative_target_weight):
-                retained_set.add(index)
-            if crossing_index is None and running >= float(cumulative_target_weight):
-                crossing_index = index
-                break
-        if crossing_index is not None:
-            retained_set.add(crossing_index)
-        else:
-            retained_set.update(ordered)
-        retained = [index for index in eligible if index in retained_set]
-
+    retained = _retained_target_indices(
+        values,
+        min_target_weight=min_target_weight,
+        cumulative_target_weight=cumulative_target_weight,
+    )
     if not retained:
         raise ValueError("target pruning removed every holding")
     retained_weight_sum = sum(values[index] for index in retained)
     output = [values[index] for index in retained]
     if renormalize_target_weights:
+        if retained_weight_sum == 0:
+            raise ValueError("cannot renormalize zero total weight")
         output = [value * original_weight_sum / retained_weight_sum for value in output]
     output_weight_sum = sum(output)
     return TargetPruningResult(
@@ -134,6 +102,68 @@ def prune_target_weights(
     )
 
 
+def _validate_pruning_weights(
+    weights: Sequence[float],
+    *,
+    min_target_weight: float | None,
+    cumulative_target_weight: float | None,
+) -> tuple[float, ...]:
+    values = tuple(float(value) for value in weights)
+    if not values:
+        raise ValueError("target pruning requires at least one weight")
+    if any(not math.isfinite(value) for value in values):
+        raise ValueError("target weights must be finite")
+    if any(value < 0 for value in values):
+        raise ValueError("target weights must be non-negative")
+    if min_target_weight is not None and (
+        min_target_weight < 0 or not math.isfinite(float(min_target_weight))
+    ):
+        raise ValueError("min_target_weight must be finite and non-negative")
+    if cumulative_target_weight is not None and (
+        cumulative_target_weight <= 0
+        or cumulative_target_weight > 1.0
+        or not math.isfinite(float(cumulative_target_weight))
+    ):
+        raise ValueError("cumulative_target_weight must be finite and in (0, 1]")
+
+    return values
+
+
+def _retained_target_indices(
+    values: tuple[float, ...],
+    *,
+    min_target_weight: float | None,
+    cumulative_target_weight: float | None,
+) -> list[int]:
+    eligible = [
+        index
+        for index, value in enumerate(values)
+        if min_target_weight is None or value >= float(min_target_weight)
+    ]
+    retained = eligible
+    if cumulative_target_weight is not None:
+        if not eligible:
+            raise ValueError("target pruning removed every holding")
+        ordered = sorted(eligible, key=lambda index: (-values[index], index))
+        running = 0.0
+        retained_set: set[int] = set()
+        crossing_index: int | None = None
+        for index in ordered:
+            running += values[index]
+            if running <= float(cumulative_target_weight):
+                retained_set.add(index)
+            if crossing_index is None and running >= float(cumulative_target_weight):
+                crossing_index = index
+                break
+        if crossing_index is not None:
+            retained_set.add(crossing_index)
+        else:
+            retained_set.update(ordered)
+        retained = [index for index in eligible if index in retained_set]
+
+    return retained
+
+
 def normalize_execution_symbol(
     symbol: object,
     market: object | None = None,
@@ -153,6 +183,21 @@ def normalize_execution_symbol(
     if requested_market is not None and requested_market not in KNOWN_MARKETS:
         raise ValueError(f"unsupported execution target market: {market!r}")
 
+    normalized = _normalize_execution_symbol_suffix(text, requested_market)
+    if normalized is not None:
+        return normalized
+
+    if requested_market is None:
+        raise ValueError(f"cannot infer execution target market for symbol {text!r}")
+    if requested_market == "HK" and text.isdigit():
+        text = text.lstrip("0") or "0"
+    return text, requested_market
+
+
+def _normalize_execution_symbol_suffix(
+    text: str,
+    requested_market: str | None,
+) -> tuple[str, str] | None:
     for suffix, suffix_market in _EXECUTION_MARKET_SUFFIXES.items():
         if not text.endswith(suffix):
             continue
@@ -170,11 +215,7 @@ def normalize_execution_symbol(
             base = base.lstrip("0") or "0"
         return base, suffix_market
 
-    if requested_market is None:
-        raise ValueError(f"cannot infer execution target market for symbol {text!r}")
-    if requested_market == "HK" and text.isdigit():
-        text = text.lstrip("0") or "0"
-    return text, requested_market
+    return None
 
 
 def _canonical_cn_symbol(base: str, suffix: str | None = None) -> str:

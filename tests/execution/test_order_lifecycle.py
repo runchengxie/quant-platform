@@ -19,12 +19,15 @@ def test_order_lifecycle_accepts_partial_then_fill() -> None:
         filled_quantity=Decimal("4"),
         order_quantity=Decimal("10"),
     )
-    assert validate_order_transition(
-        status,
-        ExecutionEventType.FILLED,
-        filled_quantity=Decimal("10"),
-        order_quantity=Decimal("10"),
-    ) is OrderStatus.FILLED
+    assert (
+        validate_order_transition(
+            status,
+            ExecutionEventType.FILLED,
+            filled_quantity=Decimal("10"),
+            order_quantity=Decimal("10"),
+        )
+        is OrderStatus.FILLED
+    )
 
 
 def test_order_lifecycle_rejects_terminal_and_overfill() -> None:
