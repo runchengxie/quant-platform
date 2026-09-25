@@ -52,8 +52,32 @@ def test_generate_daily_signals_decorates_and_ranks_scores(monkeypatch) -> None:
     assert second_day.loc["THEMED", "raw_pred"] == 0.7
     assert second_day.loc["UNTHEMED", "rank"] == 1
     assert result["model_version"].eq(signal_generator.MODEL_VERSION).all()
+    assert not result["eligible_for_backtest"].any()
+    assert not result["eligible_for_live"].any()
+
+
+def test_dated_st_status_filters_each_signal_date(monkeypatch) -> None:
+    dates = pd.bdate_range("2025-01-02", periods=122)
+    prices = pd.DataFrame({"A": 10.0, "B": 20.0}, index=dates)
+    scores = pd.DataFrame({"A": [0.8, 0.9], "B": [0.4, 0.5]}, index=dates[-2:])
+    monkeypatch.setattr(signal_generator, "compute_all_style_factors", lambda *a, **k: {})
+    monkeypatch.setattr(signal_generator, "compute_score_a", lambda factors: scores)
+    monkeypatch.setattr(signal_generator, "compute_score_b", lambda factors: scores)
+    instruments = pd.DataFrame(
+        {
+            "symbol": ["A", "B", "A", "B"],
+            "trade_date": [dates[-2], dates[-2], dates[-1], dates[-1]],
+            "is_st": [False, False, True, False],
+            "is_suspended": [False] * 4,
+            "list_date": ["20200101"] * 4,
+            "name": ["ST 当前名称"] * 4,
+        }
+    )
+    result = signal_generator.generate_daily_signals(prices, instruments=instruments)
+    by_date = result.groupby("signal_date")["symbol"].apply(set).to_dict()
+    assert by_date[dates[-2].strftime("%Y%m%d")] == {"A", "B"}
+    assert by_date[dates[-1].strftime("%Y%m%d")] == {"B"}
     assert result["eligible_for_backtest"].all()
-    assert result["eligible_for_live"].all()
 
 
 def test_scores_allow_optional_intraday_factors_to_be_absent() -> None:
