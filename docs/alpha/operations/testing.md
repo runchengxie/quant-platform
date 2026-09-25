@@ -89,4 +89,4 @@ uv run --extra dev python -m pytest tests/test_cpcv.py -q
 
 ## 自动化状态
 
-GitHub Actions 的根目录公开 CI 在 PR 和主分支推送时运行全仓测试。本页脚本提供 Alpha 模块的独立覆盖率、类型和维护性检查。本地完整质量门禁与公开 CI 使用本地构造数据执行离线测试。类型检查目前仍有历史诊断，可选 Qlib 后端需要安装 `qlib` extra 后单独验证。真实数据平台的分钟源目录测试通过 `market-data` extra 单独运行。
+GitHub Actions 的根目录公开 CI 在 PR 和主分支推送时运行全仓 Ruff、格式、严格 `ty`、pytest 和依赖漏洞检查。本地完整质量门禁与公开 CI 使用本地构造数据执行离线测试。本页脚本提供统一入口，便于单独运行覆盖率、类型和维护性检查。标准 `dev` 依赖不包含 Qlib，可选 Qlib 后端需要安装 `qlib` extra 后单独验证。真实数据平台的分钟源目录测试通过 `market-data` extra 单独运行。

@@ -118,29 +118,23 @@ CLI 契约测试读取 `pyproject.toml` 的全部命令声明，逐个导入目�
 
 ## 质量门禁
 
-GitHub Actions 会在拉取请求和 `main` 推送时运行公开质量门禁，使用锁定的开发依赖执行 Ruff、格式检查、`ty`、带覆盖率的 pytest 和 Python 编译检查。覆盖率会输出报告，但当前不额外设置远端最低阈值。完整训练、慢测试、真实数据检查和 GPU 检查不属于每次 CI，按需手动运行。
+GitHub Actions 会在拉取请求和 `main` 推送时运行全仓 Ruff、格式检查、严格 `ty`、完整 pytest 和 `pip-audit`。Rust job 会构建可选 wheel，并在要求 Rust 后端的环境中运行 microstructure 测试。完整训练、慢测试、真实数据检查和 GPU 检查不属于每次 CI，按需手动运行。
 
-本地运行：
-
-```bash
-python scripts/check.py
-```
-
-脚本依次运行以下检查：
+本地常用检查：
 
 ```bash
-ruff check .
-ruff format --check .
-ty check
-python -m pytest --cov --cov-report=term-missing
-python scripts/smoke_test.py
+scripts/dev/run_tests.sh lint
+scripts/dev/run_tests.sh format
+scripts/dev/run_tests.sh typecheck
+scripts/dev/run_tests.sh all
+scripts/dev/run_tests.sh maintainability
 ```
 
-Ruff 检查 pycodestyle、Pyflakes、导入顺序、现代语法、常见缺陷、推导式、pytest 写法和简化规则。`RUF001`、`RUF002`、`RUF003` 只因中文字符串、文档字符串和注释需要中文标点而关闭。
+Rust 后端的构建和强制测试步骤见[可选 Rust 模拟内核说明](../development/microstructure-rust.md)。
 
-`ty` 的全局未解析导入忽略已经移除。历史 Colab Python 快照保留单独覆盖，因为本地环境通常没有 `google.colab`。
+Ruff 按仓库配置检查风格、导入、常见缺陷和复杂度。中文文案中的全角标点由 `allowed-confusables` 配置显式允许。
 
-pre-commit 在提交前运行 Ruff 自动修复、Ruff 格式化和 ty。运行 `pre-commit install` 会同时安装 pre-push hook，在每次推送前调用 `scripts/check.py`。完整门禁包含格式检查、静态检查、类型检查、带覆盖率的测试和冒烟检查。核心包分支覆盖率低于 80% 时测试失败。
+`ty` 严格检查配置的源码和脚本范围。Qlib 与 Rich 是可选依赖，各自只在对应文件保留导入例外。共享工作区的提交前钩子由工作区统一管理，单独克隆时请按根目录测试说明运行相应命令。
 
 ## 依赖
 

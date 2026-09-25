@@ -32,6 +32,7 @@ scripts/dev/run_tests.sh <mode> [args...]
 | `fast` | `all` 的兼容别名 |
 | `unit` | `all` 的兼容别名 |
 | `coverage` | 完整测试集，并统计 `packages/` 与 `scripts/` 下 Python 源码覆盖率 |
+| `contracts-coverage` | 运行 `tests/contracts`，并要求已安装 `research-contracts` 的覆盖率至少达到 80% |
 | `lint` | Ruff 代码检查 |
 | `format` | Ruff 格式检查 |
 | `format-all` | `format` 的兼容别名 |
@@ -56,7 +57,7 @@ scripts/dev/run_tests.sh typecheck-release
 scripts/dev/run_tests.sh maintainability
 ```
 
-覆盖率依赖 `pytest-cov`。目前只生成报告，不设置最低覆盖率门槛。Python 覆盖率报告不包括 Rust 扩展。
+`coverage` 模式依赖 `pytest-cov`，只生成报告，不设置全仓最低覆盖率门槛。`contracts-coverage` 单独对已安装的 `research-contracts` 设置 80% 门槛。Python 覆盖率报告不包括 Rust 扩展。
 
 ## 依赖安全检查
 
@@ -88,32 +89,13 @@ bash scripts/public_release/build_clean_export.sh \
 
 `.github/workflows/ci.yml` 在 PR 和主分支推送时运行公开质量门禁。`.github/workflows/docs.yml` 独立构建 MkDocs 并发布在线文档。本地命令和工作区共享 `pre-push` 提交前提供反馈。
 
-PR workflow 覆盖：
-
-- Ruff 代码和格式检查。
-- 公开源代码和测试范围的 Ruff 检查。
-- 框架中立的执行契约。
-- 后端协议、规范化结果和 `native` 固定对照样例。
-- 框架状态账本。
-- 持仓回放回归。
-- 包导入检查。
-
-Rust 微观结构检查和 Python 主检查分别运行。在线文档 workflow 使用 strict 模式检查导航页面中的相对链接。`ty` 警告和维护性预算由本地门禁检查。
+PR 与 `main` 推送会运行全仓 Ruff 代码和格式检查、严格类型检查、完整 pytest 测试集及 `pip-audit`。Rust job 会单独构建可选 wheel，并在 `TICKNET_REQUIRE_RUST=1` 下运行 microstructure 测试。在线文档 workflow 使用 strict 模式构建 MkDocs 并检查链接。维护性预算由本地 `maintainability` 模式检查。
 
 ## 类型检查范围
 
-本地 `scripts/dev/run_tests.sh typecheck` 按 `pyproject.toml` 的 `[tool.ty.src]` 配置检查源码和脚本，并显式加入五个源码根目录解析内部导入。该命令启用 `--error-on-warning`，目前仍有历史诊断，因此尚不能视为全仓类型检查通过。
+`scripts/dev/run_tests.sh typecheck` 和 `typecheck-release` 会按 `pyproject.toml` 的 `[tool.ty.src]` 检查配置范围，并启用 `--error-on-warning`。当前范围包括 `portfolio-backtester`、orchestration、execution、alpha、microstructure 和 `scripts/`。CI 运行相同的严格检查，不传入缩小后的路径列表。
 
-公开 CI 只检查下面三个迁移包。警告保留为提示，错误仍会使任务失败。最近一次检查在这三个包中报告 306 条诊断，主要是 Pandas 类型信息不足引起的 `Unknown` 推断。CI 会放行这些警告，因此不能把这项结果当成无警告的类型检查：
-
-```bash
-uv run --locked --extra dev ty check --exit-zero-on-warning \
-  packages/alpha/src packages/orchestration/src packages/execution/src
-```
-
-`packages/portfolio-backtester`、`packages/microstructure` 和测试目录中的类型问题目前属于分层治理范围。加入源码根目录后，原先由路径配置造成的 unresolved-import 错误已消除，剩余 warning 仍需按模块分层治理。扩大阻断范围前，应先修复目标模块的类型问题，并同步更新 CI、脚本和本页说明。
-
-扩大类型覆盖时，应先修复目标模块，再更新配置和测试说明。新后端边界先由运行时契约测试保护，后续在共享账本迁移时纳入完整静态检查。
+只有两个可选依赖保留逐文件导入例外：Qlib 后端需要 `qlib` extra，Rich 渲染器在没有 Rich 时使用纯文本输出。其他已配置源码的类型诊断都会阻断检查。
 
 ## 测试重点
 

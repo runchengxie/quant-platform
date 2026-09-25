@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-25-quality-modularization-and-production-design.md`
 
+**实施记录（2026-09-25）：**静态检查债务由 [PR #53](https://github.com/runchengxie/quant-platform/pull/53)、[PR #54](https://github.com/runchengxie/quant-platform/pull/54) 和 [PR #55](https://github.com/runchengxie/quant-platform/pull/55) 分批清理。完整 Ruff、格式和严格 `ty` 已纳入 CI 并通过。
+
 ## Global Constraints
 
 - Use isolated worktrees and separate PRs for independently reviewable package groups.
@@ -144,4 +146,4 @@ Task 4 result: alpha and microstructure sources/tests pass Ruff and strict `ty`.
 - [x] Run `uv run --locked ty check --error-on-warning` and verify exit code 0.
 - [x] Run `uv run --locked python -m pytest -q`, the repository formatting check, maintainability budget, and `uv run --locked pip-audit`.
 - [x] Review the dependency graph and full import tests for new cycles caused by module splits.
-- [ ] Commit each ownership group independently and keep the PR diff reviewable.
+- [x] Commit each ownership group independently and keep the PR diff reviewable.
