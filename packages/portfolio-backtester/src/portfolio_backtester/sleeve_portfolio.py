@@ -169,9 +169,9 @@ def _select_rank_sleeve(
     for rank, (_, row) in enumerate(ranked.iterrows(), start=1):
         symbol = str(row[symbol_col])
         held = symbol in previous
-        if held and rank > spec.exit_rank:
-            continue
-        if not held and (rank > spec.entry_rank or replacements >= spec.max_replacements):
+        if not _eligible_ranked_sleeve_candidate(
+            rank, held=held, replacements=replacements, spec=spec
+        ):
             continue
         group = _group_value(row, spec.group_col)
         if spec.max_per_group is not None and group_counts.get(group, 0) >= spec.max_per_group:
@@ -194,6 +194,18 @@ def _select_rank_sleeve(
         if len(selected) >= spec.slots:
             break
     return selected
+
+
+def _eligible_ranked_sleeve_candidate(
+    rank: int,
+    *,
+    held: bool,
+    replacements: int,
+    spec: RankBufferedSleeveSpec,
+) -> bool:
+    if held:
+        return rank <= spec.exit_rank
+    return rank <= spec.entry_rank and replacements < spec.max_replacements
 
 
 def _fill_sleeve(

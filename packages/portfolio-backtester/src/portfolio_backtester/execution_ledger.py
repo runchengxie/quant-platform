@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any, cast
+
 import numpy as np
 import pandas as pd
 
@@ -84,54 +86,16 @@ def settle_execution_fills(
             ignore_index=True,
         )
         available_at_open = holdings.copy()
-        buy_notional = sell_notional = fees = 0.0
-        buy_shares = sell_shares = blocked_shares = 0
-        lot_blocked_shares = cash_blocked_shares = 0
-        lot_blocked_notional = cash_blocked_notional = 0.0
-
-        for fill in day_fills.itertuples(index=False):
-            requested_shares = int(
-                np.floor(float(fill.filled_notional) / float(fill.average_fill_price))
-            )
-            if fill.side == "buy":
-                lot_shares = (requested_shares // round_lot) * round_lot
-                affordable_shares = int(
-                    np.floor(
-                        cash / (float(fill.average_fill_price) * (1.0 + buy_fee_bps / 10000.0))
-                    )
-                )
-                affordable_shares = (affordable_shares // round_lot) * round_lot
-                shares = min(lot_shares, affordable_shares)
-                lot_blocked_shares += max(requested_shares - lot_shares, 0)
-                cash_blocked_shares += max(lot_shares - shares, 0)
-                notional = shares * float(fill.average_fill_price)
-                fee = notional * buy_fee_bps / 10000.0
-                lot_blocked_notional += max(
-                    float(fill.filled_notional) - lot_shares * float(fill.average_fill_price),
-                    0.0,
-                )
-                cash_blocked_notional += max(
-                    (lot_shares - shares) * float(fill.average_fill_price),
-                    0.0,
-                )
-                cash -= notional + fee
-                holdings[fill.instrument_id] = holdings.get(fill.instrument_id, 0) + shares
-                buy_shares += shares
-                buy_notional += notional
-            else:
-                available = min(
-                    holdings.get(fill.instrument_id, 0),
-                    available_at_open.get(fill.instrument_id, 0),
-                )
-                shares = min(requested_shares, available)
-                blocked_shares += max(requested_shares - shares, 0)
-                notional = shares * float(fill.average_fill_price)
-                fee = notional * (sell_fee_bps + stamp_tax_bps) / 10000.0
-                cash += notional - fee
-                holdings[fill.instrument_id] = holdings.get(fill.instrument_id, 0) - shares
-                sell_shares += shares
-                sell_notional += notional
-            fees += fee
+        cash, fill_totals = _settle_day_fills(
+            day_fills,
+            holdings=holdings,
+            available_at_open=available_at_open,
+            cash=cash,
+            round_lot=round_lot,
+            buy_fee_bps=buy_fee_bps,
+            sell_fee_bps=sell_fee_bps,
+            stamp_tax_bps=stamp_tax_bps,
+        )
 
         mark_day = mark_frame.loc[mark_frame["trade_date"].eq(trade_date)]
         mark_prices = dict(zip(mark_day["instrument_id"], mark_day["price"], strict=True))
@@ -146,19 +110,123 @@ def settle_execution_fills(
                 "holdings_value": holdings_value,
                 "nav": nav,
                 "cash_weight": cash / nav if nav else np.nan,
-                "buy_notional": buy_notional,
-                "sell_notional": sell_notional,
-                "buy_shares": buy_shares,
-                "sell_shares": sell_shares,
-                "t1_blocked_shares": blocked_shares,
-                "lot_blocked_shares": lot_blocked_shares,
-                "lot_blocked_notional": lot_blocked_notional,
-                "cash_blocked_shares": cash_blocked_shares,
-                "cash_blocked_notional": cash_blocked_notional,
-                "fees": fees,
+                **fill_totals,
             }
         )
     return pd.DataFrame(rows)
+
+
+def _settle_day_fills(
+    day_fills: pd.DataFrame,
+    *,
+    holdings: dict[str, int],
+    available_at_open: dict[str, int],
+    cash: float,
+    round_lot: int,
+    buy_fee_bps: float,
+    sell_fee_bps: float,
+    stamp_tax_bps: float,
+) -> tuple[float, dict[str, float | int]]:
+    totals: dict[str, float | int] = {
+        "buy_notional": 0.0,
+        "sell_notional": 0.0,
+        "buy_shares": 0,
+        "sell_shares": 0,
+        "t1_blocked_shares": 0,
+        "lot_blocked_shares": 0,
+        "lot_blocked_notional": 0.0,
+        "cash_blocked_shares": 0,
+        "cash_blocked_notional": 0.0,
+        "fees": 0.0,
+    }
+    for raw_fill in day_fills.itertuples(index=False):
+        fill = cast(Any, raw_fill)
+        requested_shares = int(
+            np.floor(float(fill.filled_notional) / float(fill.average_fill_price))
+        )
+        if fill.side == "buy":
+            shares, notional, fee = _settle_buy_fill(
+                fill,
+                requested_shares,
+                holdings=holdings,
+                cash=cash,
+                round_lot=round_lot,
+                buy_fee_bps=buy_fee_bps,
+                totals=totals,
+            )
+            cash -= notional + fee
+            totals["buy_shares"] = int(totals["buy_shares"]) + shares
+            totals["buy_notional"] = float(totals["buy_notional"]) + notional
+        else:
+            shares, notional, fee = _settle_sell_fill(
+                fill,
+                requested_shares,
+                holdings=holdings,
+                available_at_open=available_at_open,
+                sell_fee_bps=sell_fee_bps,
+                stamp_tax_bps=stamp_tax_bps,
+                totals=totals,
+            )
+            cash += notional - fee
+            totals["sell_shares"] = int(totals["sell_shares"]) + shares
+            totals["sell_notional"] = float(totals["sell_notional"]) + notional
+        totals["fees"] = float(totals["fees"]) + fee
+    return cash, totals
+
+
+def _settle_buy_fill(
+    fill: Any,
+    requested_shares: int,
+    *,
+    holdings: dict[str, int],
+    cash: float,
+    round_lot: int,
+    buy_fee_bps: float,
+    totals: dict[str, float | int],
+) -> tuple[int, float, float]:
+    price = float(fill.average_fill_price)
+    lot_shares = (requested_shares // round_lot) * round_lot
+    affordable_shares = int(np.floor(cash / (price * (1.0 + buy_fee_bps / 10000.0))))
+    affordable_shares = (affordable_shares // round_lot) * round_lot
+    shares = min(lot_shares, affordable_shares)
+    totals["lot_blocked_shares"] = int(totals["lot_blocked_shares"]) + max(
+        requested_shares - lot_shares, 0
+    )
+    totals["cash_blocked_shares"] = int(totals["cash_blocked_shares"]) + max(lot_shares - shares, 0)
+    notional = shares * price
+    fee = notional * buy_fee_bps / 10000.0
+    totals["lot_blocked_notional"] = float(totals["lot_blocked_notional"]) + max(
+        float(fill.filled_notional) - lot_shares * price, 0.0
+    )
+    totals["cash_blocked_notional"] = float(totals["cash_blocked_notional"]) + max(
+        (lot_shares - shares) * price, 0.0
+    )
+    holdings[fill.instrument_id] = holdings.get(fill.instrument_id, 0) + shares
+    return shares, notional, fee
+
+
+def _settle_sell_fill(
+    fill: Any,
+    requested_shares: int,
+    *,
+    holdings: dict[str, int],
+    available_at_open: dict[str, int],
+    sell_fee_bps: float,
+    stamp_tax_bps: float,
+    totals: dict[str, float | int],
+) -> tuple[int, float, float]:
+    available = min(
+        holdings.get(fill.instrument_id, 0),
+        available_at_open.get(fill.instrument_id, 0),
+    )
+    shares = min(requested_shares, available)
+    totals["t1_blocked_shares"] = int(totals["t1_blocked_shares"]) + max(
+        requested_shares - shares, 0
+    )
+    notional = shares * float(fill.average_fill_price)
+    fee = notional * (sell_fee_bps + stamp_tax_bps) / 10000.0
+    holdings[fill.instrument_id] = holdings.get(fill.instrument_id, 0) - shares
+    return shares, notional, fee
 
 
 __all__ = ["settle_execution_fills"]

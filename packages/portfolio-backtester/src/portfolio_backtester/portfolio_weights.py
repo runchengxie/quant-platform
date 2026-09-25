@@ -187,44 +187,71 @@ def build_position_weights(
         raise ValueError("fixed_slot target weights require weighting='equal'.")
     if target_policy == "fixed_slot" and side != "long":
         raise ValueError("fixed_slot target weights require side='long'.")
-    base = _equal_weights(holdings)
-    weights = base
-    if mode == "sqrt_liquidity" and not base.empty:
-        weights = _sqrt_liquidity_weights(day, holdings, liquidity_col)
-    elif mode not in {"equal"} and not base.empty:
-        if side not in {"long", "short"}:
-            raise ValueError("side must be one of: long, short.")
-        if mode in {
-            "probability",
-            "probability_vol_target",
-            "signal_vol_target",
-            "confidence_budget",
-            "risk_budget",
-        }:
-            weights = _calibrated_weights(day, holdings, pred_col, mode=mode)
-        else:
-            signal = pd.to_numeric(
-                day.set_index("symbol").reindex(holdings)[pred_col],
-                errors="coerce",
-            )
-            if side == "short":
-                signal = -signal
-            if not signal.empty and not signal.isna().all():
-                signal = signal.fillna(float(signal.mean()) if signal.notna().any() else 0.0)
-                std = float(signal.std(ddof=0))
-                if np.isfinite(std) and std > 0:
-                    scaled = ((signal - float(signal.mean())) / std).clip(-5.0, 5.0)
-                    raw = np.exp(scaled.to_numpy(dtype=float))
-                    total = float(np.sum(raw))
-                    if np.isfinite(total) and total > 0:
-                        weights = normalize_position_weights(
-                            pd.Series(raw, index=signal.index, dtype=float)
-                        )
+    weights = _weights_for_mode(
+        day,
+        holdings,
+        pred_col,
+        mode=mode,
+        side=side,
+        liquidity_col=liquidity_col,
+    )
     return _apply_target_weight_policy(
         weights,
         target_weight_policy=target_policy,
         target_slot_count=target_slot_count,
     )
+
+
+def _weights_for_mode(
+    day: pd.DataFrame,
+    holdings: list[str],
+    pred_col: str,
+    *,
+    mode: str,
+    side: str,
+    liquidity_col: str,
+) -> pd.Series:
+    base = _equal_weights(holdings)
+    if base.empty or mode == "equal":
+        return base
+    if mode == "sqrt_liquidity":
+        return _sqrt_liquidity_weights(day, holdings, liquidity_col)
+    if side not in {"long", "short"}:
+        raise ValueError("side must be one of: long, short.")
+    if mode in {
+        "probability",
+        "probability_vol_target",
+        "signal_vol_target",
+        "confidence_budget",
+        "risk_budget",
+    }:
+        return _calibrated_weights(day, holdings, pred_col, mode=mode)
+    return _score_weights(day, holdings, pred_col, side=side, fallback=base)
+
+
+def _score_weights(
+    day: pd.DataFrame,
+    holdings: list[str],
+    pred_col: str,
+    *,
+    side: str,
+    fallback: pd.Series,
+) -> pd.Series:
+    signal = pd.to_numeric(day.set_index("symbol").reindex(holdings)[pred_col], errors="coerce")
+    if side == "short":
+        signal = -signal
+    if signal.empty or signal.isna().all():
+        return fallback
+    signal = signal.fillna(float(signal.mean()) if signal.notna().any() else 0.0)
+    standard_deviation = float(signal.std(ddof=0))
+    if not np.isfinite(standard_deviation) or standard_deviation <= 0:
+        return fallback
+    scaled = ((signal - float(signal.mean())) / standard_deviation).clip(-5.0, 5.0)
+    raw = np.exp(scaled.to_numpy(dtype=float))
+    total = float(np.sum(raw))
+    if not np.isfinite(total) or total <= 0:
+        return fallback
+    return normalize_position_weights(pd.Series(raw, index=signal.index, dtype=float))
 
 
 def limit_weight_turnover(

@@ -38,63 +38,101 @@ def _build_active_exposure_summary_table(
     if style_df.empty and industry_df.empty:
         return pd.DataFrame()
 
-    style_work, industry_work = style_df.copy(), industry_df.copy()
-    for frame in (style_work, industry_work):
-        if not frame.empty:
-            frame["rebalance_date"] = frame["rebalance_date"].map(_exposure_period_key)
-            frame["entry_date"] = frame["entry_date"].map(_exposure_period_key)
-    periods: set[tuple[str, str | None]] = set()
-    for frame in (style_work, industry_work):
-        if frame.empty:
-            continue
-        for _, row in frame[["rebalance_date", "entry_date"]].drop_duplicates().iterrows():
-            periods.add((str(row["rebalance_date"]), row["entry_date"]))
-
-    rows: list[dict[str, Any]] = []
-    for rebalance_date, entry_date in sorted(periods):
-        row: dict[str, Any] = {
-            "rebalance_date": rebalance_date,
-            "entry_date": entry_date,
-        }
-        if not style_work.empty:
-            style_day = style_work[style_work["rebalance_date"] == rebalance_date]
-            for factor in _STYLE_FACTOR_ORDER:
-                factor_day = style_day[style_day["factor"] == factor]
-                if factor_day.empty:
-                    continue
-                factor_row = factor_day.iloc[0]
-                row[f"{factor}_active_net_vs_equal"] = factor_row["active_net_vs_equal"]
-                row[f"{factor}_active_net_vs_cap"] = factor_row["active_net_vs_cap"]
-                row[f"{factor}_weight_coverage"] = factor_row["weight_coverage"]
-                row[f"{factor}_source"] = factor_row["source"]
-
-        if not industry_work.empty:
-            industry_day = industry_work[industry_work["rebalance_date"] == rebalance_date].copy()
-            if not industry_day.empty:
-                row["industry_column"] = industry_day["industry_col"].dropna().iloc[0]
-                reference_col = (
-                    "active_net_vs_cap_weight"
-                    if industry_day["active_net_vs_cap_weight"].notna().any()
-                    else "active_net_vs_equal_weight"
-                )
-                row["industry_reference"] = reference_col
-                ranked = industry_day.assign(
-                    abs_active=industry_day[reference_col].abs()
-                ).sort_values(["abs_active", "industry"], ascending=[False, True])
-                top_industries = ranked.head(top_n_industries).iterrows()
-                for idx, (_, ranked_row) in enumerate(top_industries, start=1):
-                    row[f"industry_top_{idx}_name"] = ranked_row["industry"]
-                    row[f"industry_top_{idx}_active"] = ranked_row[reference_col]
-                    row[f"industry_top_{idx}_portfolio_net_weight"] = ranked_row[
-                        "portfolio_net_weight"
-                    ]
-
-        rows.append(row)
+    style_work = _normalize_exposure_summary_dates(style_df)
+    industry_work = _normalize_exposure_summary_dates(industry_df)
+    periods = _exposure_summary_periods(style_work, industry_work)
+    rows = [
+        _build_exposure_summary_row(
+            style_work,
+            industry_work,
+            rebalance_date=rebalance_date,
+            entry_date=entry_date,
+            top_n_industries=top_n_industries,
+        )
+        for rebalance_date, entry_date in sorted(periods)
+    ]
 
     summary_df = pd.DataFrame(rows)
     summary_df.sort_values("rebalance_date", inplace=True)
     summary_df.reset_index(drop=True, inplace=True)
     return summary_df
+
+
+def _normalize_exposure_summary_dates(frame: pd.DataFrame) -> pd.DataFrame:
+    normalized = frame.copy()
+    if not normalized.empty:
+        normalized["rebalance_date"] = normalized["rebalance_date"].map(_exposure_period_key)
+        normalized["entry_date"] = normalized["entry_date"].map(_exposure_period_key)
+    return normalized
+
+
+def _exposure_summary_periods(
+    style_df: pd.DataFrame, industry_df: pd.DataFrame
+) -> set[tuple[str, str | None]]:
+    periods: set[tuple[str, str | None]] = set()
+    for frame in (style_df, industry_df):
+        if frame.empty:
+            continue
+        for _, row in frame[["rebalance_date", "entry_date"]].drop_duplicates().iterrows():
+            entry_date = row["entry_date"]
+            periods.add((str(row["rebalance_date"]), entry_date))
+    return periods
+
+
+def _build_exposure_summary_row(
+    style_df: pd.DataFrame,
+    industry_df: pd.DataFrame,
+    *,
+    rebalance_date: str,
+    entry_date: str | None,
+    top_n_industries: int,
+) -> dict[str, Any]:
+    row: dict[str, Any] = {"rebalance_date": rebalance_date, "entry_date": entry_date}
+    _add_style_summary(row, style_df, rebalance_date)
+    _add_industry_summary(row, industry_df, rebalance_date, top_n_industries)
+    return row
+
+
+def _add_style_summary(row: dict[str, Any], style_df: pd.DataFrame, rebalance_date: str) -> None:
+    if style_df.empty:
+        return
+    style_day = style_df[style_df["rebalance_date"] == rebalance_date]
+    for factor in _STYLE_FACTOR_ORDER:
+        factor_day = style_day[style_day["factor"] == factor]
+        if factor_day.empty:
+            continue
+        factor_row = factor_day.iloc[0]
+        row[f"{factor}_active_net_vs_equal"] = factor_row["active_net_vs_equal"]
+        row[f"{factor}_active_net_vs_cap"] = factor_row["active_net_vs_cap"]
+        row[f"{factor}_weight_coverage"] = factor_row["weight_coverage"]
+        row[f"{factor}_source"] = factor_row["source"]
+
+
+def _add_industry_summary(
+    row: dict[str, Any],
+    industry_df: pd.DataFrame,
+    rebalance_date: str,
+    top_n_industries: int,
+) -> None:
+    if industry_df.empty:
+        return
+    industry_day = industry_df[industry_df["rebalance_date"] == rebalance_date].copy()
+    if industry_day.empty:
+        return
+    row["industry_column"] = industry_day["industry_col"].dropna().iloc[0]
+    reference_col = (
+        "active_net_vs_cap_weight"
+        if industry_day["active_net_vs_cap_weight"].notna().any()
+        else "active_net_vs_equal_weight"
+    )
+    row["industry_reference"] = reference_col
+    ranked = industry_day.assign(abs_active=industry_day[reference_col].abs()).sort_values(
+        ["abs_active", "industry"], ascending=[False, True]
+    )
+    for idx, (_, ranked_row) in enumerate(ranked.head(top_n_industries).iterrows(), start=1):
+        row[f"industry_top_{idx}_name"] = ranked_row["industry"]
+        row[f"industry_top_{idx}_active"] = ranked_row[reference_col]
+        row[f"industry_top_{idx}_portfolio_net_weight"] = ranked_row["portfolio_net_weight"]
 
 
 def _build_exposure_rows(

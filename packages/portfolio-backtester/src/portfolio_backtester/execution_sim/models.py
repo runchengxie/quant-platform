@@ -9,8 +9,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from ..execution import DetailedTradeFeeModel, SlippageModel
 from ..dated_fees import DatedFeeQuote, DatedTradeFeeModel, FeeQuoteContext
+from ..execution import DetailedTradeFeeModel, SlippageModel
 from ..types import CostBreakdown
 from .config import ExecutionSimConfig
 from .corporate_actions import _CorporateActionLedger
@@ -25,8 +25,8 @@ __all__ = [
     "_MarketRules",
     "_NavOrder",
     "_OrderSink",
-    "_trade_fee",
     "_quote_trade_fee",
+    "_trade_fee",
     "describe_trade_fee_model",
 ]
 

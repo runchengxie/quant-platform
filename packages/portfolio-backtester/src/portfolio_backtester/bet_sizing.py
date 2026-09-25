@@ -128,39 +128,68 @@ def build_sized_weights(
         if side_col is not None and side_col in frame.columns
         else pd.Series(1.0, index=frame.index)
     )
-    if cfg.method.startswith("probability"):
+    raw = _raw_sizing_values(
+        frame,
+        config=cfg,
+        score_col=score_col,
+        side=side,
+        probability_col=probability_col,
+        confidence_col=confidence_col,
+        risk_budget_col=risk_budget_col,
+    )
+    raw = _scale_by_volatility(frame, raw, cfg.method, volatility_col)
+    return _constrain_sized_weights(raw, cfg)
+
+
+def _raw_sizing_values(
+    frame: pd.DataFrame,
+    *,
+    config: SizingConfig,
+    score_col: str,
+    side: pd.Series,
+    probability_col: str,
+    confidence_col: str,
+    risk_budget_col: str,
+) -> pd.Series:
+    if config.method.startswith("probability"):
         if probability_col not in frame.columns:
             raise ValueError(f"probability column not found: {probability_col}")
-        raw = probability_to_size(frame[probability_col], side=side).abs()
-    elif cfg.method == "signal_vol_target":
-        raw = pd.to_numeric(frame[score_col], errors="coerce").abs()
-    elif cfg.method == "confidence_budget":
+        return probability_to_size(frame[probability_col], side=side).abs()
+    if config.method == "signal_vol_target":
+        return pd.to_numeric(frame[score_col], errors="coerce").abs()
+    if config.method == "confidence_budget":
         if confidence_col not in frame.columns:
             raise ValueError(f"confidence column not found: {confidence_col}")
-        raw = pd.to_numeric(frame[confidence_col], errors="coerce").clip(lower=0.0)
-    elif cfg.method == "risk_budget":
+        return pd.to_numeric(frame[confidence_col], errors="coerce").clip(lower=0.0)
+    if config.method == "risk_budget":
         if risk_budget_col not in frame.columns:
             raise ValueError(f"risk budget column not found: {risk_budget_col}")
-        raw = pd.to_numeric(frame[risk_budget_col], errors="coerce").clip(lower=0.0)
-    else:
-        raise ValueError(f"Unsupported sizing method: {cfg.method}")
+        return pd.to_numeric(frame[risk_budget_col], errors="coerce").clip(lower=0.0)
+    raise ValueError(f"Unsupported sizing method: {config.method}")
 
-    if cfg.method in {"probability_vol_target", "signal_vol_target"}:
+
+def _scale_by_volatility(
+    frame: pd.DataFrame, raw: pd.Series, method: str, volatility_col: str
+) -> pd.Series:
+    if method in {"probability_vol_target", "signal_vol_target"}:
         if volatility_col not in frame.columns:
             raise ValueError(f"volatility column not found: {volatility_col}")
         volatility = pd.to_numeric(frame[volatility_col], errors="coerce").replace(0.0, np.nan)
-        raw = raw.div(volatility.abs())
+        return raw.div(volatility.abs())
+    return raw
 
+
+def _constrain_sized_weights(raw: pd.Series, config: SizingConfig) -> pd.Series:
     raw = raw.replace([np.inf, -np.inf], np.nan).fillna(0.0).clip(lower=0.0)
-    weights = _normalize_gross(raw, cfg.gross_target)
-    if cfg.single_name_cap is not None:
-        weights = _cap_and_redistribute(weights, cfg.single_name_cap, cfg.gross_target)
-    if cfg.step_size is not None:
-        weights = discretize_weights(weights, step_size=cfg.step_size)
-        weights = _normalize_gross(weights.clip(lower=0.0), cfg.gross_target)
-    if cfg.min_trade_weight > 0:
-        weights = weights.where(weights >= cfg.min_trade_weight, 0.0)
-        weights = _normalize_gross(weights, cfg.gross_target)
+    weights = _normalize_gross(raw, config.gross_target)
+    if config.single_name_cap is not None:
+        weights = _cap_and_redistribute(weights, config.single_name_cap, config.gross_target)
+    if config.step_size is not None:
+        weights = discretize_weights(weights, step_size=config.step_size)
+        weights = _normalize_gross(weights.clip(lower=0.0), config.gross_target)
+    if config.min_trade_weight > 0:
+        weights = weights.where(weights >= config.min_trade_weight, 0.0)
+        weights = _normalize_gross(weights, config.gross_target)
     return weights.rename("target_weight")
 
 

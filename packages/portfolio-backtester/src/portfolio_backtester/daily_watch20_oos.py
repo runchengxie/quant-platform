@@ -8,7 +8,8 @@ import numpy as np
 import pandas as pd
 
 from . import name_turnover, turnover_from_trade_weights
-from .daily_watch20 import DailyWatch20Config as SelectionConfig, select_daily_watch20
+from .daily_watch20 import DailyWatch20Config as SelectionConfig
+from .daily_watch20 import select_daily_watch20
 from .incumbent_requalification import (
     IncumbentRequalificationConfig,
     IncumbentRequalificationPolicy,

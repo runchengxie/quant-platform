@@ -34,9 +34,7 @@ def apply_rebalance_buffer(
         return []
     strict_cutoff = validate_entry_rank_cutoff(entry_rank_cutoff)
     if prev_holdings is None:
-        if strict_cutoff is not None:
-            return list(ranked_codes[:strict_cutoff])
-        return list(ranked_codes)
+        return _initial_buffer_selection(ranked_codes, strict_cutoff)
     if buffer_exit <= 0 and buffer_entry <= 0 and strict_cutoff is None:
         return list(ranked_codes)
 
@@ -48,14 +46,33 @@ def apply_rebalance_buffer(
 
     preferred_limit = min(strict_cutoff, entry_limit) if strict_cutoff is not None else entry_limit
     preferred = set(ranked_codes[:preferred_limit]) if preferred_limit > 0 else set()
+    return _fill_buffer_candidates(
+        candidate_order,
+        ranked_codes,
+        k=k,
+        strict_cutoff=strict_cutoff,
+        preferred=preferred,
+    )
+
+
+def _initial_buffer_selection(ranked_codes: list[str], strict_cutoff: int | None) -> list[str]:
+    return list(ranked_codes[:strict_cutoff]) if strict_cutoff is not None else list(ranked_codes)
+
+
+def _fill_buffer_candidates(
+    candidate_order: list[str],
+    ranked_codes: list[str],
+    *,
+    k: int,
+    strict_cutoff: int | None,
+    preferred: set[str],
+) -> list[str]:
     for code in ranked_codes:
         if len(candidate_order) >= k:
             break
         if code in candidate_order:
             continue
-        if strict_cutoff is not None and code not in preferred:
-            continue
-        if strict_cutoff is None and preferred and code not in preferred:
+        if (strict_cutoff is not None or preferred) and code not in preferred:
             continue
         candidate_order.append(code)
 

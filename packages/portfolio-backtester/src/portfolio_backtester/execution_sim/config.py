@@ -43,6 +43,18 @@ class ExecutionSimConfig:
     lot_tolerance: float = 1e-6
 
 
+@dataclass(frozen=True)
+class _MarketRuleConfig:
+    round_lot: int | None
+    enforce_t1: bool
+    enforce_price_limits: bool
+    enforce_listing_status: bool
+    limit_up_col: str | None
+    limit_down_col: str | None
+    listing_status_col: str | None
+    lot_tolerance: float
+
+
 def build_execution_sim_config(
     sim_cfg: object,
     *,
@@ -99,20 +111,7 @@ def build_execution_sim_config(
     if unfilled_sell_action != "keep_position":
         raise ValueError("execution_sim.unfilled_sell_action must be 'keep_position'.")
 
-    round_lot_raw = sim_cfg.get("round_lot")
-    if round_lot_raw is None:
-        round_lot = None
-    else:
-        round_lot = _coerce_positive_int(round_lot_raw, label="execution_sim.round_lot")
-    enforce_t1 = bool(sim_cfg.get("enforce_t1", False))
-    enforce_price_limits = bool(sim_cfg.get("enforce_price_limits", False))
-    enforce_listing_status = bool(sim_cfg.get("enforce_listing_status", False))
-    limit_up_col = _coerce_optional_str(sim_cfg.get("limit_up_col"))
-    limit_down_col = _coerce_optional_str(sim_cfg.get("limit_down_col"))
-    listing_status_col = _coerce_optional_str(sim_cfg.get("listing_status_col"))
-    lot_tolerance = float(cast("float", sim_cfg.get("lot_tolerance", 1e-6)))
-    if not np.isfinite(lot_tolerance) or lot_tolerance < 0:
-        raise ValueError("execution_sim.lot_tolerance must be >= 0.")
+    market_rules = _resolve_market_rule_config(sim_cfg)
 
     return ExecutionSimConfig(
         enabled=True,
@@ -125,13 +124,35 @@ def build_execution_sim_config(
         zero_fill_abort_days_buy=zero_fill_abort_days_buy,
         unfilled_buy_action=unfilled_buy_action,
         unfilled_sell_action=unfilled_sell_action,
+        round_lot=market_rules.round_lot,
+        enforce_t1=market_rules.enforce_t1,
+        enforce_price_limits=market_rules.enforce_price_limits,
+        enforce_listing_status=market_rules.enforce_listing_status,
+        limit_up_col=market_rules.limit_up_col,
+        limit_down_col=market_rules.limit_down_col,
+        listing_status_col=market_rules.listing_status_col,
+        lot_tolerance=market_rules.lot_tolerance,
+    )
+
+
+def _resolve_market_rule_config(config: Mapping[str, Any]) -> _MarketRuleConfig:
+    round_lot_raw = config.get("round_lot")
+    round_lot = (
+        None
+        if round_lot_raw is None
+        else _coerce_positive_int(round_lot_raw, label="execution_sim.round_lot")
+    )
+    lot_tolerance = float(cast("float", config.get("lot_tolerance", 1e-6)))
+    if not np.isfinite(lot_tolerance) or lot_tolerance < 0:
+        raise ValueError("execution_sim.lot_tolerance must be >= 0.")
+    return _MarketRuleConfig(
         round_lot=round_lot,
-        enforce_t1=enforce_t1,
-        enforce_price_limits=enforce_price_limits,
-        enforce_listing_status=enforce_listing_status,
-        limit_up_col=limit_up_col,
-        limit_down_col=limit_down_col,
-        listing_status_col=listing_status_col,
+        enforce_t1=bool(config.get("enforce_t1", False)),
+        enforce_price_limits=bool(config.get("enforce_price_limits", False)),
+        enforce_listing_status=bool(config.get("enforce_listing_status", False)),
+        limit_up_col=_coerce_optional_str(config.get("limit_up_col")),
+        limit_down_col=_coerce_optional_str(config.get("limit_down_col")),
+        listing_status_col=_coerce_optional_str(config.get("listing_status_col")),
         lot_tolerance=lot_tolerance,
     )
 

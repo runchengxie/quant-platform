@@ -230,36 +230,55 @@ def _build_cost_breakdown(fills: pd.DataFrame, daily: pd.DataFrame) -> pd.DataFr
     ``transaction_cost`` column is aggregated by side so the ledger contract is
     preserved.
     """
-    source: dict[str, dict[str, float]] | None = None
-    if not fills.empty and (
-        "cost_commission" in fills.columns or "transaction_cost" in fills.columns
-    ):
-        source = _aggregate_cost_columns(fills, by_side=True)
-    elif not daily.empty and (
-        "cost_commission" in daily.columns or "transaction_cost" in daily.columns
-    ):
-        source = _aggregate_cost_columns(daily, by_side=False)
-
+    source = _cost_breakdown_source(fills, daily)
     if not source:
         return pd.DataFrame(columns=["side", "transaction_cost"])
 
-    # The "total" row must aggregate every row, not just a single side.
-    total_row: dict[str, float] = {}
-    for row in source.values():
-        for k, v in row.items():
-            total_row[k] = total_row.get(k, 0.0) + v
-    source = {"total": total_row, **source}
-
-    all_keys: list[str] = []
-    for row in source.values():
-        for k in row:
-            if k not in all_keys:
-                all_keys.append(k)
-
+    source = _add_total_cost_row(source)
     labels = ["total", *sorted(s for s in source if s != "total")]
     data: dict[str, list[float] | list[str]] = {"side": labels}
-    for key in all_keys:
+    for key in _cost_breakdown_columns(source):
         data[key] = [float(source.get(label, {}).get(key, 0.0)) for label in labels]
+    _add_derived_cost_columns(data, source, labels)
+    return pd.DataFrame(data)
+
+
+def _cost_breakdown_source(
+    fills: pd.DataFrame, daily: pd.DataFrame
+) -> dict[str, dict[str, float]] | None:
+    if not fills.empty and (
+        "cost_commission" in fills.columns or "transaction_cost" in fills.columns
+    ):
+        return _aggregate_cost_columns(fills, by_side=True)
+    if not daily.empty and (
+        "cost_commission" in daily.columns or "transaction_cost" in daily.columns
+    ):
+        return _aggregate_cost_columns(daily, by_side=False)
+    return None
+
+
+def _add_total_cost_row(source: dict[str, dict[str, float]]) -> dict[str, dict[str, float]]:
+    total_row: dict[str, float] = {}
+    for row in source.values():
+        for key, value in row.items():
+            total_row[key] = total_row.get(key, 0.0) + value
+    return {"total": total_row, **source}
+
+
+def _cost_breakdown_columns(source: dict[str, dict[str, float]]) -> list[str]:
+    columns: list[str] = []
+    for row in source.values():
+        for key in row:
+            if key not in columns:
+                columns.append(key)
+    return columns
+
+
+def _add_derived_cost_columns(
+    data: dict[str, list[float] | list[str]],
+    source: dict[str, dict[str, float]],
+    labels: list[str],
+) -> None:
     # Derived aggregate columns (CostBreakdown contract): fee_cost / slippage_cost.
     fee_cols = [c for c in ("commission", "stamp_tax", "transfer_fee") if c in data]
     slip_cols = [
@@ -274,9 +293,7 @@ def _build_cost_breakdown(fills: pd.DataFrame, daily: pd.DataFrame) -> pd.DataFr
         if c in data
     ]
     if fee_cols:
-        data["fee_cost"] = [
-            sum(float(data[c][i]) for c in fee_cols) for i in range(len(labels))
-        ]
+        data["fee_cost"] = [sum(float(data[c][i]) for c in fee_cols) for i in range(len(labels))]
     if slip_cols:
         data["slippage_cost"] = [
             sum(float(data[c][i]) for c in slip_cols) for i in range(len(labels))
@@ -285,7 +302,6 @@ def _build_cost_breakdown(fills: pd.DataFrame, daily: pd.DataFrame) -> pd.DataFr
     # consumers (and conservation assertions) keep working.
     if "transaction_cost" not in data:
         data["transaction_cost"] = [float(sum(source.get(label, {}).values())) for label in labels]
-    return pd.DataFrame(data)
 
 
 def _build_turnover_breakdown(orders: pd.DataFrame, fills: pd.DataFrame) -> pd.DataFrame:

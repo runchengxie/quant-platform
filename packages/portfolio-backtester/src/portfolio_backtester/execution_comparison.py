@@ -43,6 +43,57 @@ def compare_paired_execution_metrics(
     strategy-specific names remain in the application layer.
     """
 
+    compared_columns = _validate_comparison_options(
+        metrics,
+        baseline_variant=baseline_variant,
+        challenger_variant=challenger_variant,
+        baseline_output_column=baseline_output_column,
+        challenger_output_column=challenger_output_column,
+        value_columns=value_columns,
+    )
+
+    rows: list[dict[str, object]] = []
+    expected_variants = {baseline_variant, challenger_variant}
+    for raw_key, group in metrics.groupby(["horizon", "single_side_cost_bps"], sort=True):
+        horizon, cost = cast(tuple[Any, Any], raw_key)
+        indexed = group.set_index("variant")
+        if len(indexed) != 2 or set(indexed.index) != expected_variants:
+            raise ValueError("execution metrics do not contain exactly one paired variant row")
+        rows.extend(
+            _paired_metric_rows(
+                indexed,
+                compared_columns,
+                horizon=int(horizon),
+                cost=float(cost),
+                baseline_variant=baseline_variant,
+                challenger_variant=challenger_variant,
+                baseline_output_column=baseline_output_column,
+                challenger_output_column=challenger_output_column,
+            )
+        )
+
+    return pd.DataFrame(
+        rows,
+        columns=[
+            "horizon",
+            "single_side_cost_bps",
+            "metric",
+            baseline_output_column,
+            challenger_output_column,
+            "delta",
+        ],
+    )
+
+
+def _validate_comparison_options(
+    metrics: pd.DataFrame,
+    *,
+    baseline_variant: str,
+    challenger_variant: str,
+    baseline_output_column: str,
+    challenger_output_column: str,
+    value_columns: Sequence[str],
+) -> tuple[str, ...]:
     if not baseline_variant.strip() or not challenger_variant.strip():
         raise ValueError("paired execution variants must be non-empty")
     if baseline_variant == challenger_variant:
@@ -70,39 +121,35 @@ def compare_paired_execution_metrics(
     missing = sorted(required - set(metrics.columns))
     if missing:
         raise ValueError(f"execution metrics are missing columns: {missing}")
+    return compared_columns
 
+
+def _paired_metric_rows(
+    indexed: pd.DataFrame,
+    compared_columns: Sequence[str],
+    *,
+    horizon: int,
+    cost: float,
+    baseline_variant: str,
+    challenger_variant: str,
+    baseline_output_column: str,
+    challenger_output_column: str,
+) -> list[dict[str, object]]:
     rows: list[dict[str, object]] = []
-    expected_variants = {baseline_variant, challenger_variant}
-    for raw_key, group in metrics.groupby(["horizon", "single_side_cost_bps"], sort=True):
-        horizon, cost = cast(tuple[Any, Any], raw_key)
-        indexed = group.set_index("variant")
-        if len(indexed) != 2 or set(indexed.index) != expected_variants:
-            raise ValueError("execution metrics do not contain exactly one paired variant row")
-        for metric in compared_columns:
-            baseline = float(indexed.at[baseline_variant, metric])
-            challenger = float(indexed.at[challenger_variant, metric])
-            rows.append(
-                {
-                    "horizon": int(horizon),
-                    "single_side_cost_bps": float(cost),
-                    "metric": metric,
-                    baseline_output_column: baseline,
-                    challenger_output_column: challenger,
-                    "delta": challenger - baseline,
-                }
-            )
-
-    return pd.DataFrame(
-        rows,
-        columns=[
-            "horizon",
-            "single_side_cost_bps",
-            "metric",
-            baseline_output_column,
-            challenger_output_column,
-            "delta",
-        ],
-    )
+    for metric in compared_columns:
+        baseline = float(indexed.at[baseline_variant, metric])
+        challenger = float(indexed.at[challenger_variant, metric])
+        rows.append(
+            {
+                "horizon": horizon,
+                "single_side_cost_bps": cost,
+                "metric": metric,
+                baseline_output_column: baseline,
+                challenger_output_column: challenger,
+                "delta": challenger - baseline,
+            }
+        )
+    return rows
 
 
 __all__ = [

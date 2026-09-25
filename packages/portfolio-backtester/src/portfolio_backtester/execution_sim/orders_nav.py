@@ -23,6 +23,7 @@ from .config import (
     ExecutionSimConfig,
 )
 from .models import (
+    SupportedTradeFeeModel,
     _add_breakdown,
     _ExecutionTables,
     _MarketRules,
@@ -30,7 +31,6 @@ from .models import (
     _OrderSink,
     _quote_trade_fee,
     _TradeFeeQuote,
-    SupportedTradeFeeModel,
 )
 from .orders_nav_states import (
     _append_nav_order_row,  # noqa: F401  re-exported for core/ideal
@@ -460,41 +460,21 @@ def _execute_buy_orders(
         if total_requested_fill > max(cash_weight, 0.0) and total_requested_fill > 0:
             scale = max(cash_weight, 0.0) / total_requested_fill
 
-        for symbol in sorted(remaining):
-            if symbol in abandoned:
-                continue
-            before = remaining[symbol]
-            capacity, raw_fill = daily_fills.get(symbol, (0.0, 0.0))
-            fill = min(before, raw_fill * scale)
-            if fill > 1e-12:
-                remaining[symbol] = max(before - fill, 0.0)
-                current_weights[symbol] = current_weights.get(symbol, 0.0) + fill
-                cash_weight = max(cash_weight - fill, 0.0)
-                _record_fill(
-                    sink.fill_rows,
-                    rebalance_date=rebalance_date,
-                    entry_date=entry_date,
-                    trade_date=trade_date,
-                    day_number=day_number,
-                    side="buy",
-                    symbol=symbol,
-                    remaining_before=before,
-                    capacity=capacity,
-                    fill=fill,
-                    config=config,
-                )
-                _update_state(states[symbol], trade_date, fill)
-                states[symbol]["zero_fill_days"] = 0
-            else:
-                if capacity <= 1e-12:
-                    states[symbol]["zero_fill_days"] += 1
-                    if (
-                        config.zero_fill_abort_days_buy is not None
-                        and states[symbol]["zero_fill_days"] >= config.zero_fill_abort_days_buy
-                    ):
-                        abandoned.add(symbol)
-            if remaining.get(symbol, 0.0) <= 1e-12:
-                remaining.pop(symbol, None)
+        cash_weight = _apply_buy_day_fills(
+            daily_fills,
+            remaining=remaining,
+            states=states,
+            abandoned=abandoned,
+            current_weights=current_weights,
+            cash_weight=cash_weight,
+            scale=scale,
+            rebalance_date=rebalance_date,
+            entry_date=entry_date,
+            trade_date=trade_date,
+            day_number=day_number,
+            config=config,
+            sink=sink,
+        )
         if not remaining:
             break
         if set(remaining).issubset(abandoned):
@@ -513,6 +493,59 @@ def _execute_buy_orders(
         unfilled_status="cancelled_buy_deadline",
         abandoned=abandoned,
     )
+    return cash_weight
+
+
+def _apply_buy_day_fills(
+    daily_fills: dict[str, tuple[float, float]],
+    *,
+    remaining: dict[str, float],
+    states: dict[str, dict[str, Any]],
+    abandoned: set[str],
+    current_weights: dict[str, float],
+    cash_weight: float,
+    scale: float,
+    rebalance_date: pd.Timestamp,
+    entry_date: pd.Timestamp,
+    trade_date: pd.Timestamp,
+    day_number: int,
+    config: ExecutionSimConfig,
+    sink: _OrderSink,
+) -> float:
+    for symbol in sorted(remaining):
+        if symbol in abandoned:
+            continue
+        before = remaining[symbol]
+        capacity, raw_fill = daily_fills.get(symbol, (0.0, 0.0))
+        fill = min(before, raw_fill * scale)
+        if fill > 1e-12:
+            remaining[symbol] = max(before - fill, 0.0)
+            current_weights[symbol] = current_weights.get(symbol, 0.0) + fill
+            cash_weight = max(cash_weight - fill, 0.0)
+            _record_fill(
+                sink.fill_rows,
+                rebalance_date=rebalance_date,
+                entry_date=entry_date,
+                trade_date=trade_date,
+                day_number=day_number,
+                side="buy",
+                symbol=symbol,
+                remaining_before=before,
+                capacity=capacity,
+                fill=fill,
+                config=config,
+            )
+            _update_state(states[symbol], trade_date, fill)
+            states[symbol]["zero_fill_days"] = 0
+        elif capacity <= 1e-12:
+            states[symbol]["zero_fill_days"] += 1
+            if (
+                config.zero_fill_abort_days_buy is not None
+                and states[symbol]["zero_fill_days"] >= config.zero_fill_abort_days_buy
+            ):
+                abandoned.add(symbol)
+        if remaining.get(symbol, 0.0) <= 1e-12:
+            remaining.pop(symbol, None)
     return cash_weight
 
 
@@ -734,19 +767,54 @@ def _execute_nav_buy_orders_for_day(
     if scale <= 1e-12:
         return 0.0, CostBreakdown()
 
+    return _apply_nav_buy_fills(
+        raw_fills,
+        total_raw_fill=total_raw_fill,
+        scale=scale,
+        shares=shares,
+        cash_ref=cash_ref,
+        trade_date=trade_date,
+        trade_idx=trade_idx,
+        tables=tables,
+        config=config,
+        cost_rate=cost_rate,
+        trade_fee_model=trade_fee_model,
+        slippage_model=slippage_model,
+        fill_rows=fill_rows,
+        fee_group_notionals=fee_group_notionals,
+        market_rules=market_rules,
+    )
+
+
+def _apply_nav_buy_fills(
+    raw_fills: dict[str, tuple[_NavOrder, float, float, float]],
+    *,
+    total_raw_fill: float,
+    scale: float,
+    shares: dict[str, float],
+    cash_ref: dict[str, float],
+    trade_date: pd.Timestamp,
+    trade_idx: int,
+    tables: _ExecutionTables,
+    config: ExecutionSimConfig,
+    cost_rate: float,
+    trade_fee_model: TradeFeeModel | None,
+    slippage_model: SlippageModel | None,
+    fill_rows: list[dict[str, Any]],
+    fee_group_notionals: dict[str, float],
+    market_rules: _MarketRules | None,
+) -> tuple[float, CostBreakdown]:
     traded_notional = 0.0
     transaction_cost = CostBreakdown()
     for _, (order, price, capacity, raw_fill) in sorted(raw_fills.items()):
         round_lot = market_rules.round_lot if market_rules is not None else None
         dated_fees_alone_require_scaling = (
             isinstance(trade_fee_model, DatedTradeFeeModel)
-            and total_raw_fill <= cash + 1e-9
+            and total_raw_fill <= float(cash_ref.get("cash", 0.0)) + 1e-9
         )
         fill = (
             raw_fill
-            if round_lot is not None
-            and round_lot > 0
-            and dated_fees_alone_require_scaling
+            if round_lot is not None and round_lot > 0 and dated_fees_alone_require_scaling
             else raw_fill * scale
         )
         if fill <= 1e-8:

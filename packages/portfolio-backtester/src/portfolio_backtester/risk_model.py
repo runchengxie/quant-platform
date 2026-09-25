@@ -81,8 +81,7 @@ def _validate_exposure_frame(exposures: pd.DataFrame) -> None:
         raise ValueError("exposures must use a MultiIndex")
     if tuple(exposures.index.names) != _EXPOSURE_INDEX_NAMES:
         raise ValueError(
-            "exposures index names must be ('as_of_date', 'symbol'), "
-            f"got {exposures.index.names!r}"
+            f"exposures index names must be ('as_of_date', 'symbol'), got {exposures.index.names!r}"
         )
     if exposures.index.has_duplicates:
         raise ValueError("exposures contains duplicate (as_of_date, symbol) keys")
@@ -104,8 +103,7 @@ def _as_return_series(returns: pd.Series | pd.DataFrame) -> pd.Series:
         raise ValueError("returns must use a MultiIndex")
     if tuple(returns.index.names) != _EXPOSURE_INDEX_NAMES:
         raise ValueError(
-            "returns index names must be ('as_of_date', 'symbol'), "
-            f"got {returns.index.names!r}"
+            f"returns index names must be ('as_of_date', 'symbol'), got {returns.index.names!r}"
         )
     if returns.index.has_duplicates:
         raise ValueError("returns contains duplicate (as_of_date, symbol) keys")
@@ -345,9 +343,9 @@ def build_risk_model(
             continue
         weights_for_symbol = _ewma_weights(len(values), config.ewma_halflife)
         specific_values[symbol] = float(
-            _weighted_covariance(
-                values.to_numpy(dtype=float).reshape(-1, 1), weights_for_symbol
-            )[0, 0]
+            _weighted_covariance(values.to_numpy(dtype=float).reshape(-1, 1), weights_for_symbol)[
+                0, 0
+            ]
         )
     specific_variance = pd.Series(specific_values, dtype=float, name="specific_variance")
     diagnostics = pd.DataFrame(

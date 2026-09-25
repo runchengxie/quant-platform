@@ -92,26 +92,9 @@ def _prepare_signal_column(
 
     risk_penalty = variant.get("risk_penalty") or {}
     if risk_penalty:
-        if not isinstance(risk_penalty, dict):
-            raise ValueError("risk_penalty must be a mapping.")
-        risk_columns = [str(col) for col in risk_penalty.get("columns", [])]
-        missing = [col for col in risk_columns if col not in data.columns]
-        if missing:
-            raise ValueError(f"Risk penalty columns not found: {', '.join(sorted(set(missing)))}")
-        strength = float(risk_penalty.get("strength", risk_penalty.get("scale", 0.0)))
-        adjusted_col = f"__risk_adjusted_score_{variant.get('name', 'variant')}"
-        out = data.copy()
-        if risk_columns and strength != 0.0:
-            risk = out[risk_columns].apply(pd.to_numeric, errors="coerce")
-            grouped = risk.groupby(out["trade_date"], sort=False)
-            mean = grouped.transform("mean")
-            std = grouped.transform(lambda series: series.std(ddof=0)).replace(0.0, np.nan)
-            penalty = risk.sub(mean).div(std).abs().mean(axis=1).fillna(0.0)
-            out[adjusted_col] = pd.to_numeric(out[signal_col], errors="coerce") - strength * penalty
-        else:
-            out[adjusted_col] = out[signal_col]
-        data = out
-        signal_col = adjusted_col
+        data, signal_col, strength, risk_columns = _apply_risk_penalty(
+            data, signal_col, risk_penalty, variant_name=str(variant.get("name", "variant"))
+        )
         meta["risk_penalty_columns"] = ",".join(risk_columns)
         meta["risk_penalty_strength"] = strength
         method = "risk_penalty" if method == "none" else f"{method}+risk_penalty"
@@ -120,6 +103,35 @@ def _prepare_signal_column(
         meta["risk_penalty_strength"] = None
 
     return data, signal_col, method, columns, meta
+
+
+def _apply_risk_penalty(
+    data: pd.DataFrame,
+    signal_col: str,
+    config: Any,
+    *,
+    variant_name: str,
+) -> tuple[pd.DataFrame, str, float, list[str]]:
+    if not isinstance(config, dict):
+        raise ValueError("risk_penalty must be a mapping.")
+    risk_columns = [str(column) for column in config.get("columns", [])]
+    missing = [column for column in risk_columns if column not in data.columns]
+    if missing:
+        raise ValueError(f"Risk penalty columns not found: {', '.join(sorted(set(missing)))}")
+    strength = float(config.get("strength", config.get("scale", 0.0)))
+    adjusted_col = f"__risk_adjusted_score_{variant_name}"
+    output = data.copy()
+    if not risk_columns or strength == 0.0:
+        output[adjusted_col] = output[signal_col]
+        return output, adjusted_col, strength, risk_columns
+
+    risk = output[risk_columns].apply(pd.to_numeric, errors="coerce")
+    grouped = risk.groupby(output["trade_date"], sort=False)
+    mean = grouped.transform("mean")
+    std = grouped.transform(lambda series: series.std(ddof=0)).replace(0.0, np.nan)
+    penalty = risk.sub(mean).div(std).abs().mean(axis=1).fillna(0.0)
+    output[adjusted_col] = pd.to_numeric(output[signal_col], errors="coerce") - strength * penalty
+    return output, adjusted_col, strength, risk_columns
 
 
 def _construction_grid_config(config: dict[str, Any]) -> dict[str, Any]:

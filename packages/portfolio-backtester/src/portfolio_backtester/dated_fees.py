@@ -7,11 +7,12 @@ provide every rate, the schedule dates, and an explicit symbol-to-market map.
 from __future__ import annotations
 
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date, datetime
+from itertools import pairwise
 from types import MappingProxyType
-from typing import Any, Literal, Mapping
-
+from typing import Any, Literal
 
 Side = Literal["buy", "sell"]
 
@@ -123,7 +124,7 @@ class DatedFeeSchedule:
             by_market.setdefault(period.market, []).append(period)
         for market, market_periods in by_market.items():
             ordered = sorted(market_periods, key=lambda item: item.start_date)
-            for previous, current in zip(ordered, ordered[1:], strict=False):
+            for previous, current in pairwise(ordered):
                 if current.start_date < previous.end_date:
                     raise ValueError(f"overlapping fee periods for market {market!r}")
 
@@ -264,11 +265,7 @@ class DatedTradeFeeModel:
             transfer_fee=amount * period.transfer_bps / 10_000.0,
             spread_cost=(
                 amount
-                * (
-                    period.buy_spread_bps
-                    if context.side == "buy"
-                    else period.sell_spread_bps
-                )
+                * (period.buy_spread_bps if context.side == "buy" else period.sell_spread_bps)
                 / 10_000.0
             ),
             market=context.market,

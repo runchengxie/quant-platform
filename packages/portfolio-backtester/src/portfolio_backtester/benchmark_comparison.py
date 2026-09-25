@@ -58,9 +58,7 @@ def compare_portfolio_returns(
     excess = returns["portfolio"] - returns["benchmark"]
     tracking_error = float(excess.std(ddof=1) * np.sqrt(252)) if len(excess) > 1 else 0.0
     information_ratio = (
-        float(excess.mean() * np.sqrt(252) / tracking_error)
-        if tracking_error > 0
-        else float("nan")
+        float(excess.mean() * np.sqrt(252) / tracking_error) if tracking_error > 0 else float("nan")
     )
     if previous_weights is None:
         turnover = 0.0
