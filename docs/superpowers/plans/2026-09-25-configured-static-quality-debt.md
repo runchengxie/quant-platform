@@ -83,11 +83,13 @@ Current package work has added the ty source roots and allowed legitimate Chines
 **Interfaces:**
 - Produces: orchestration and execution code/test scopes pass Ruff and blocking `ty`.
 
-- [ ] Run Ruff separately on both source and test scopes and review findings by file before editing.
-- [ ] Fix type narrowing for optional/date/path values at the data boundary, retaining output representation.
-- [ ] Run `uv run --locked python -m pytest tests/orchestration tests/execution -q`.
-- [ ] Run `uv run --locked ty check --error-on-warning packages/orchestration/src packages/execution/src`.
-- [ ] Remove the four corresponding source/test exclusions only after each complete directory passes Ruff.
+- [x] Run Ruff separately on both source and test scopes and review findings by file before editing.
+- [x] Fix type narrowing for optional/date/path values at the data boundary, retaining output representation.
+- [x] Run `uv run --locked python -m pytest tests/orchestration tests/execution -q`.
+- [x] Run `uv run --locked ty check --error-on-warning packages/orchestration/src packages/execution/src`.
+- [x] Remove the four corresponding source/test exclusions only after each complete directory passes Ruff.
+
+Execution/orchestration results: Ruff and `ty --error-on-warning` pass for both full source scopes, and the matching tests pass (144 passed). Ruff exclusions and warning-only `ty` scope overrides for these four paths were removed. The public execution package now exports only adapters present in this repository; its former module entrypoint referenced a nonexistent private CLI and was removed. The optional Rich renderer keeps one file-scoped unresolved-import exception because Rich is not a platform dependency and plain-text rendering remains available.
 
 ### Task 4: Clear alpha and microstructure lint/type debt
 
