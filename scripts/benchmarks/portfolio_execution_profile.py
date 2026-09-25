@@ -215,18 +215,17 @@ def _digest(values: list[tuple[str, Any]]) -> tuple[str, list[dict[str, Any]]]:
 
 
 def _profile_summary(profiler: cProfile.Profile) -> list[dict[str, Any]]:
-    stats = pstats.Stats(profiler)
+    functions = pstats.Stats(profiler).get_stats_profile().func_profiles
     rows = []
-    for (filename, line, function), (primitive_calls, calls, total, cumulative, _callers) in sorted(
-        stats.stats.items(), key=lambda item: item[1][3], reverse=True
+    for function, profile in sorted(
+        functions.items(), key=lambda item: item[1].cumtime, reverse=True
     )[:20]:
         rows.append(
             {
-                "function": f"{filename}:{line}({function})",
-                "calls": calls,
-                "primitive_calls": primitive_calls,
-                "total_seconds": round(total, 6),
-                "cumulative_seconds": round(cumulative, 6),
+                "function": f"{profile.file_name}:{profile.line_number}({function})",
+                "calls": profile.ncalls,
+                "total_seconds": round(profile.tottime, 6),
+                "cumulative_seconds": round(profile.cumtime, 6),
             }
         )
     return rows
