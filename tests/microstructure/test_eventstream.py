@@ -9,7 +9,7 @@ import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
-
+import torch
 from ticknet.eventstream.config import ORDER_DTYPE, SNAP_DTYPE, TRADE_DTYPE, day_pack_paths
 from ticknet.eventstream.dataset import (
     L2WindowDataset,
@@ -24,6 +24,8 @@ from ticknet.eventstream.pack import (
     _universe_for_day,
     pack_day,
 )
+from ticknet.eventstream.train import EventstreamConfig, make_dataloaders
+from ticknet.train import set_seed
 
 DAY = 20210104
 
@@ -400,3 +402,32 @@ def test_daily_state_api_is_exported():
 
     assert callable(aggregate_day)
     assert "trade_amount" in DAILY_STATE_KEYS
+
+
+def test_training_dataloader_order_repeats_for_fixed_seed(tmp_path):
+    raw, pack_root = _make_lake(tmp_path)
+    pack_day(DAY, raw_root=raw, pack_root=pack_root)
+    config = EventstreamConfig(
+        pack_root=str(pack_root),
+        days=(DAY,),
+        seq_len=2,
+        min_events=2,
+        samples_per_day=4,
+        batch_size=2,
+        seed=17,
+        num_workers=0,
+    )
+
+    set_seed(config.seed)
+    first, validation, test = make_dataloaders(config, device=torch.device("cpu"))
+    first_batches = [[tensor.clone() for tensor in batch] for batch in first]
+    set_seed(config.seed)
+    second, _, _ = make_dataloaders(config, device=torch.device("cpu"))
+    second_batches = [[tensor.clone() for tensor in batch] for batch in second]
+
+    assert validation is None
+    assert test is None
+    assert len(first_batches) == len(second_batches) == 2
+    for first_batch, second_batch in zip(first_batches, second_batches, strict=True):
+        for first_tensor, second_tensor in zip(first_batch, second_batch, strict=True):
+            assert torch.equal(first_tensor, second_tensor)
