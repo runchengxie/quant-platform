@@ -8,12 +8,14 @@ import cProfile
 import hashlib
 import json
 import math
+import os
 import platform
 import pstats
 import resource
 import statistics
 import time
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -230,6 +232,16 @@ def _profile_summary(profiler: cProfile.Profile) -> list[dict[str, Any]]:
     return rows
 
 
+def _cpu_model() -> str:
+    try:
+        for line in Path("/proc/cpuinfo").read_text(encoding="utf-8").splitlines():
+            if line.startswith("model name"):
+                return line.split(":", maxsplit=1)[1].strip()
+    except OSError:
+        pass
+    return platform.processor() or platform.machine()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -276,7 +288,8 @@ def main() -> int:
             "numpy": np.__version__,
             "pandas": pd.__version__,
             "platform": platform.platform(),
-            "processor": platform.processor() or platform.machine(),
+            "cpu_model": _cpu_model(),
+            "logical_cpus": os.cpu_count(),
         },
         "median_wall_seconds": round(statistics.median(elapsed), 6),
         "repetition_wall_seconds": [round(value, 6) for value in elapsed],
