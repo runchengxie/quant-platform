@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import portfolio_backtester.execution_sim as execution_sim
 import portfolio_backtester.execution_sim.core as execution_core
 from portfolio_backtester.execution import ParticipationSlippageModel
 from portfolio_backtester.execution_sim import (
@@ -16,6 +17,32 @@ from portfolio_backtester.execution_sim import (
     simulate_execution_adjusted_nav,
     simulate_ideal_daily_nav,
 )
+
+
+def test_execution_sim_package_exports_are_stable() -> None:
+    assert execution_sim.__all__ == [
+        "CorporateAction",
+        "SELL_UNTIL_NEXT_REBALANCE",
+        "ExecutionAdjustedNavResult",
+        "ExecutionSimConfig",
+        "ExecutionSimResult",
+        "PreparedExecutionTables",
+        "TradeFeeModel",
+        "UnifiedLedger",
+        "build_execution_sim_config",
+        "describe_execution_sim_config",
+        "describe_trade_fee_model",
+        "prepare_execution_tables",
+        "required_execution_sim_columns",
+        "simulate_capacity_execution",
+        "simulate_execution_adjusted_nav",
+        "simulate_ideal_daily_nav",
+        "to_unified_ledger",
+    ]
+    assert execution_core.prepare_execution_tables is prepare_execution_tables
+    assert execution_core.simulate_capacity_execution is simulate_capacity_execution
+    assert execution_core.simulate_execution_adjusted_nav is simulate_execution_adjusted_nav
+    assert execution_core.simulate_ideal_daily_nav is simulate_ideal_daily_nav
 
 
 def _pricing_frame(dates, symbols, *, amount_map=None, tradable_map=None, price_map=None):
@@ -192,11 +219,23 @@ def test_capacity_execution_partially_fills_buy_deadline():
     )
 
     orders = result.orders.set_index("symbol")
+    assert result.orders["symbol"].tolist() == ["AAA", "BBB"]
     assert orders.loc["AAA", "status"] == "filled"
     assert orders.loc["AAA", "filled_weight"] == pytest.approx(0.10)
     assert orders.loc["BBB", "status"] == "cancelled_buy_deadline"
     assert orders.loc["BBB", "filled_weight"] == pytest.approx(0.025)
     assert result.summary["unfilled_buy_notional"] == pytest.approx(75_000.0)
+    assert result.fills["symbol"].tolist() == [
+        "AAA",
+        "BBB",
+        "AAA",
+        "BBB",
+        "AAA",
+        "BBB",
+        "AAA",
+        "BBB",
+        "BBB",
+    ]
 
 
 def test_capacity_execution_abandons_zero_fill_buy_after_threshold():
@@ -410,6 +449,32 @@ def test_execution_adjusted_nav_tracks_fully_filled_position_return():
     )
 
     assert result.summary["status"] == "ok"
+    assert result.daily["trade_date"].tolist() == ["20200102", "20200103"]
+    assert result.daily.columns.tolist() == [
+        "trade_date",
+        "executed_return",
+        "executed_nav",
+        "portfolio_value",
+        "cash",
+        "invested_value",
+        "cash_weight",
+        "target_cash_weight",
+        "execution_shortfall_cash_weight",
+        "gross_exposure",
+        "traded_notional",
+        "transaction_cost",
+        "cost_commission",
+        "cost_stamp_tax",
+        "cost_transfer_fee",
+        "cost_spread",
+        "cost_temporary_impact",
+        "cost_permanent_impact",
+        "cost_opportunity",
+        "cost_financing",
+        "open_orders",
+    ]
+    assert result.orders["symbol"].tolist() == ["AAA"]
+    assert result.orders["filled_notional"].tolist() == pytest.approx([1_000.0])
     assert result.daily["executed_nav"].iloc[-1] == pytest.approx(1.10)
     assert result.daily["executed_return"].iloc[-1] == pytest.approx(0.10)
     assert result.summary["stats"]["total_return"] == pytest.approx(0.10)
@@ -558,6 +623,9 @@ def test_ideal_daily_nav_tracks_fully_invested_position_return():
 
     assert result.summary["status"] == "ok"
     assert result.summary["mode"] == "ideal_daily_nav"
+    assert result.daily["trade_date"].tolist() == ["20200102", "20200103"]
+    assert result.orders["symbol"].tolist() == ["AAA"]
+    assert result.fills["trade_date"].tolist() == ["20200102"]
     assert result.daily["executed_nav"].iloc[-1] == pytest.approx(1.10)
     assert result.daily["executed_return"].iloc[-1] == pytest.approx(0.10)
     assert result.orders["status"].tolist() == ["filled"]
