@@ -25,11 +25,14 @@ def _volume_rank_columns(cfg: Mapping[str, Any]) -> list[str]:
 
 def _rank_pct_by_date(frame: pd.DataFrame, column: str, *, date_col: str) -> pd.Series:
     values = pd.to_numeric(frame[column], errors="coerce")
-    return values.groupby(frame[date_col], sort=False).rank(
-        pct=True,
-        ascending=True,
-        method="average",
-        na_option="bottom",
+    return cast(
+        pd.Series,
+        values.groupby(frame[date_col], sort=False).rank(
+            pct=True,
+            ascending=True,
+            method="average",
+            na_option="bottom",
+        ),
     )
 
 

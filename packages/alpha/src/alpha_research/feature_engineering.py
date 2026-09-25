@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any, cast
+
 import numpy as np
 import pandas as pd
 import pandas_ta as ta
@@ -9,7 +11,7 @@ from .feature_windows import _parse_window_config, parse_feature_windows
 
 def _numeric_column_or_nan(group: pd.DataFrame, column: str) -> pd.Series:
     if column in group.columns:
-        return pd.to_numeric(group[column], errors="coerce")
+        return cast(pd.Series, pd.to_numeric(group[column], errors="coerce"))
     return pd.Series(np.nan, index=group.index, dtype=float)
 
 
@@ -28,7 +30,7 @@ def _ta_series(
     result = callable(series, **kwargs)
     if result is None:
         return pd.Series(np.nan, index=series.index, dtype=float)
-    return result
+    return cast(pd.Series, result)
 
 
 def _has_columns(group: pd.DataFrame, columns: tuple[str, ...]) -> bool:
@@ -57,7 +59,7 @@ def _add_sma_features(
     group: pd.DataFrame,
     *,
     features: list[str],
-    feature_params: dict,
+    feature_params: dict[Any, Any],
     needed: set[str],
     price_series: pd.Series,
 ) -> None:
@@ -75,7 +77,7 @@ def _add_rsi_features(
     group: pd.DataFrame,
     *,
     features: list[str],
-    feature_params: dict,
+    feature_params: dict[Any, Any],
     price_series: pd.Series,
 ) -> None:
     rsi_lengths = set(parse_feature_windows(features, "rsi_"))
@@ -88,7 +90,7 @@ def _add_rsi_features(
 def _add_macd_feature(
     group: pd.DataFrame,
     *,
-    feature_params: dict,
+    feature_params: dict[Any, Any],
     needed: set[str],
     price_series: pd.Series,
 ) -> None:
@@ -108,7 +110,7 @@ def _add_volume_features(
     group: pd.DataFrame,
     *,
     features: list[str],
-    feature_params: dict,
+    feature_params: dict[Any, Any],
     needed: set[str],
 ) -> None:
     volume_windows = set(parse_feature_windows(features, "volume_sma", "_ratio"))
@@ -125,7 +127,7 @@ def _add_return_features(
     group: pd.DataFrame,
     *,
     features: list[str],
-    feature_params: dict,
+    feature_params: dict[Any, Any],
     price_series: pd.Series,
 ) -> None:
     ret_windows = set(parse_feature_windows(features, "ret_"))
@@ -139,7 +141,7 @@ def _add_realized_volatility_features(
     group: pd.DataFrame,
     *,
     features: list[str],
-    feature_params: dict,
+    feature_params: dict[Any, Any],
     price_series: pd.Series,
 ) -> None:
     rv_windows = set(parse_feature_windows(features, "rv_"))
@@ -156,7 +158,7 @@ def _add_technical_features(
     group: pd.DataFrame,
     *,
     features: list[str],
-    feature_params: dict,
+    feature_params: dict[Any, Any],
     needed: set[str],
     price_series: pd.Series,
 ) -> None:
@@ -318,7 +320,7 @@ def engineer_symbol_features(
     group: pd.DataFrame,
     *,
     features: list[str],
-    feature_params: dict,
+    feature_params: dict[Any, Any],
     price_col: str,
     target: str,
     label_shift_days: int,

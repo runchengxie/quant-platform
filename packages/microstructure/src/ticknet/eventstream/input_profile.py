@@ -87,7 +87,9 @@ def _dataset(config: EventstreamConfig) -> L2WindowDataset:
     )
 
 
-def _loader(config: EventstreamConfig, dataset: L2WindowDataset) -> DataLoader:
+def _loader(
+    config: EventstreamConfig, dataset: L2WindowDataset
+) -> DataLoader[tuple[torch.Tensor, ...]]:
     return DataLoader(
         dataset,
         batch_size=config.batch_size,

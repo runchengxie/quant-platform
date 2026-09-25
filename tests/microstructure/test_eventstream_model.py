@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import pytest
 import torch
-
 from ticknet.eventstream.dataset import N_FEATURES, N_ORDER_TYPES
 from ticknet.eventstream.model import (
     DAY_SUPERVISION_WEIGHT_VERSION,

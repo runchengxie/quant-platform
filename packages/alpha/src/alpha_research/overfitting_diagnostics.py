@@ -57,7 +57,7 @@ def _to_float(value: Any) -> float | None:
 
 
 def _as_dates(values: Any) -> pd.Series:
-    return pd.Series(pd.to_datetime(values, errors="coerce")).dt.normalize()
+    return cast(pd.Series, pd.Series(pd.to_datetime(values, errors="coerce")).dt.normalize())
 
 
 def uniqueness_report(

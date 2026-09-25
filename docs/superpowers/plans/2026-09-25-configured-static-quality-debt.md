@@ -102,12 +102,14 @@ Execution/orchestration results: Ruff and `ty --error-on-warning` pass for both 
 **Interfaces:**
 - Produces: alpha and microstructure source/test scopes pass Ruff and blocking `ty`.
 
-- [ ] Run Ruff separately on alpha source, microstructure source, and microstructure tests; retain JSON reports per scope.
-- [ ] Fix long functions by extracting cohesive helpers only when behavior and ownership remain clear; keep event ordering and numerical operations unchanged.
-- [ ] Add or adapt focused tests before any control-flow simplification.
-- [ ] Run the complete alpha and microstructure pytest selections from CI.
-- [ ] Run `uv run --locked ty check --error-on-warning packages/alpha/src packages/microstructure/src`.
-- [ ] Remove the alpha, microstructure, and microstructure-test exclusions only after complete directory scans pass.
+- [x] Run Ruff separately on alpha source, microstructure source, and microstructure tests; retain JSON reports per scope.
+- [x] Fix long functions by extracting cohesive helpers only when behavior and ownership remain clear; keep event ordering and numerical operations unchanged.
+- [x] Add or adapt focused tests before any control-flow simplification.
+- [x] Run the complete alpha and microstructure pytest selections from CI.
+- [x] Run `uv run --locked ty check --error-on-warning packages/alpha/src packages/microstructure/src`.
+- [x] Remove the alpha, microstructure, and microstructure-test exclusions only after complete directory scans pass.
+
+Task 4 result: alpha and microstructure sources/tests pass Ruff and strict `ty`. The full relevant test selection passes (443 passed, 12 skipped). The Rust extension wheel includes its new type stub and its required Rust parity test selection passes (71 passed). The missing target-overlay loader was restored with manifest binding, partition, shard-path and partition-size validation, plus direct tests and development-guide documentation.
 
 ### Task 5: Clear script and remaining test lint debt
 
@@ -121,10 +123,10 @@ Execution/orchestration results: Ruff and `ty --error-on-warning` pass for both 
 **Interfaces:**
 - Produces: every former Ruff-excluded script/test path passes Ruff and configured tests remain valid.
 
-- [ ] Run Ruff on the script and each test path not already cleaned by Tasks 2–4.
-- [ ] Keep script output and generated public-surface data byte-compatible for a fixed checkout.
-- [ ] Run the direct tests associated with each changed test file.
-- [ ] Remove the script exclusion only after the complete script file passes Ruff.
+- [x] Run Ruff on the script and each test path not already cleaned by Tasks 2–4.
+- [x] Keep script output and generated public-surface data byte-compatible for a fixed checkout.
+- [x] Run the direct tests associated with each changed test file.
+- [x] Remove the script exclusion only after the complete script file passes Ruff.
 
 ### Task 6: Make the complete configured type surface blocking in CI
 
@@ -136,10 +138,10 @@ Execution/orchestration results: Ruff and `ty --error-on-warning` pass for both 
 **Interfaces:**
 - Produces: zero unexplained Ruff findings across the repository and a blocking `ty` check over every configured include path.
 
-- [ ] Run `uv run --locked ruff check .` and verify no target directories remain excluded.
-- [ ] Remove the broad `all = "warn"` `ty` override for migrated packages after their complete `ty` findings are fixed.
-- [ ] Change the CI typecheck command from `.venv/bin/ty check --exit-zero-on-warning` on selected packages to `.venv/bin/ty check --error-on-warning` with no path overrides, so `tool.ty.src.include` controls the full surface.
-- [ ] Run `uv run --locked ty check --error-on-warning` and verify exit code 0.
-- [ ] Run `uv run --locked python -m pytest -q`, the repository formatting check, maintainability budget, and `uv run --locked pip-audit`.
-- [ ] Review the dependency graph and full import tests for new cycles caused by module splits.
+- [x] Run `uv run --locked ruff check .` and verify no target directories remain excluded.
+- [x] Remove the broad `all = "warn"` `ty` override for migrated packages after their complete `ty` findings are fixed.
+- [x] Change the CI typecheck command from `.venv/bin/ty check --exit-zero-on-warning` on selected packages to `.venv/bin/ty check --error-on-warning` with no path overrides, so `tool.ty.src.include` controls the full surface.
+- [x] Run `uv run --locked ty check --error-on-warning` and verify exit code 0.
+- [x] Run `uv run --locked python -m pytest -q`, the repository formatting check, maintainability budget, and `uv run --locked pip-audit`.
+- [x] Review the dependency graph and full import tests for new cycles caused by module splits.
 - [ ] Commit each ownership group independently and keep the PR diff reviewable.

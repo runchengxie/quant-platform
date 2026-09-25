@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import cast
 
 import pandas as pd
 
@@ -17,7 +18,7 @@ def stock_scores_to_long(
         return pd.DataFrame(columns=pd.Index(["trade_date", "symbol", score_col]))
     out = scores.stack(future_stack=True).rename(score_col).reset_index()
     out.columns = ["trade_date", "symbol", score_col]
-    return out.dropna(subset=[score_col]).reset_index(drop=True)
+    return cast(pd.DataFrame, out.dropna(subset=[score_col]).reset_index(drop=True))
 
 
 def write_dynamic_ensemble_artifacts(

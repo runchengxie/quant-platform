@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 import pandas as pd
 
 from ._common import (
@@ -33,7 +35,7 @@ def rolling_high(
 
     def rolling_max(values: pd.Series) -> pd.Series:
         result = values.rolling(window, min_periods=minimum).max()
-        return result.shift(1) if exclude_current else result
+        return cast(pd.Series, result.shift(1) if exclude_current else result)
 
     result = grouped_transform(highs, frame[group_col] if group_col else None, rolling_max)
     result.name = output_name

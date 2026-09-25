@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 import pandas as pd
 
 from ._common import (
@@ -50,7 +52,7 @@ def volume_weighted_cost(
         numerator = numeric_column(frame, amount_col)
 
     def rolling_sum(values: pd.Series) -> pd.Series:
-        return values.rolling(window, min_periods=minimum).sum()
+        return cast(pd.Series, values.rolling(window, min_periods=minimum).sum())
 
     groups = frame[group_col] if group_col else None
     numerator_sum = grouped_transform(numerator, groups, rolling_sum)

@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import cast, override
 
 import torch
 import torch.nn as nn
@@ -60,6 +61,7 @@ class _RotaryCache(nn.Module):
         self.register_buffer("cos", freqs.cos(), persistent=False)
         self.register_buffer("sin", freqs.sin(), persistent=False)
 
+    @override
     def forward(self, length: int) -> tuple[torch.Tensor, torch.Tensor]:
         return self.cos[:length], self.sin[:length]
 
@@ -88,6 +90,7 @@ class _Block(nn.Module):
         )
         self.dropout = cfg.dropout
 
+    @override
     def forward(self, x: torch.Tensor, cos: torch.Tensor, sin: torch.Tensor) -> torch.Tensor:
         batch, length, dim = x.shape
         h = self.norm1(x)
@@ -107,9 +110,8 @@ class _Block(nn.Module):
             dropout_p=self.dropout if self.training else 0.0,
         )
         att = att.transpose(1, 2).reshape(batch, length, dim)
-        x = x + self.proj(att)
-        x = x + self.mlp(self.norm2(x))
-        return x
+        x = cast(torch.Tensor, x + self.proj(att))
+        return cast(torch.Tensor, x + self.mlp(self.norm2(x)))
 
 
 class VectorQuantizer(nn.Module):
@@ -126,6 +128,7 @@ class VectorQuantizer(nn.Module):
         self.codebook = nn.Embedding(codebook_size, dim)
         self.commitment_beta = float(commitment_beta)
 
+    @override
     def forward(
         self,
         encoded: torch.Tensor,
@@ -222,12 +225,15 @@ class L2FoundationModel(nn.Module):
         cos, sin = self.rope(x.shape[1])
         for blk in self.blocks:
             h = blk(h, cos, sin)
-        return self.norm_f(h), vq_loss, vq_codes
+        return cast(
+            tuple[torch.Tensor, torch.Tensor, torch.Tensor], (self.norm_f(h), vq_loss, vq_codes)
+        )
 
     def backbone(self, x: torch.Tensor, sid: torch.Tensor, oid: torch.Tensor) -> torch.Tensor:
         h, _vq_loss, _vq_codes = self._backbone_and_vq(x, sid, oid)
         return h
 
+    @override
     def forward(
         self, x: torch.Tensor, sid: torch.Tensor, oid: torch.Tensor
     ) -> dict[str, torch.Tensor]:
@@ -242,7 +248,7 @@ class L2FoundationModel(nn.Module):
         if self.use_vq:
             output["vq_loss"] = vq_loss
             output["vq_codes"] = vq_codes
-        return output
+        return cast(dict[str, torch.Tensor], output)
 
 
 def compute_loss_components(

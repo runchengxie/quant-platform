@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import yaml
@@ -186,7 +186,7 @@ def _coerce_str_tuple(value: Any, *, key: str, default: tuple[str, ...]) -> tupl
     cleaned = tuple(item for item in values if item)
     if not cleaned:
         raise SystemExit(f"{key} cannot be empty.")
-    return cleaned
+    return cast(tuple[str, ...], cleaned)
 
 
 def _promotion_gate_payload(

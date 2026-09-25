@@ -46,7 +46,7 @@ class SimulatorPack:
     ordering_provenance: dict[str, Any] = field(default_factory=dict)
 
 
-def _optional_sequence(row: dict) -> int | None:
+def _optional_sequence(row: dict[Any, Any]) -> int | None:
     value = row.get("sequence")
     if value is None:
         return None
@@ -54,9 +54,9 @@ def _optional_sequence(row: dict) -> int | None:
 
 
 def build_simulator_pack(
-    raw_orders: Iterable[dict],
-    raw_trades: Iterable[dict],
-    raw_snapshots: Iterable[dict],
+    raw_orders: Iterable[dict[Any, Any]],
+    raw_trades: Iterable[dict[Any, Any]],
+    raw_snapshots: Iterable[dict[Any, Any]],
 ) -> SimulatorPack:
     """从原始 L2 风格字典构建保留 ID 和可用排序元数据的 simulator pack。"""
     events: list[SimulatorEvent] = []

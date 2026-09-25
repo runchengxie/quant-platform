@@ -7,12 +7,10 @@ import os
 import random
 
 import pytest
-
-from ticknet.simulator.matching import LimitOrderBook
-from ticknet.simulator.replay import InterventionOrder, ReplaySession
-from ticknet.simulator.matching import MatchingEngine
+from ticknet.simulator.matching import LimitOrderBook, MatchingEngine
 from ticknet.simulator.ordering import sort_simulator_events
 from ticknet.simulator.pack import SimulatorEvent
+from ticknet.simulator.replay import InterventionOrder, ReplaySession
 
 
 def _native():

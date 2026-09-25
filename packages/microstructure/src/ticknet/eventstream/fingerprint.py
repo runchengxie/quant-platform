@@ -10,6 +10,7 @@ import hashlib
 import json
 import subprocess
 from pathlib import Path
+from typing import Any
 
 from ticknet.eventstream.config import PACK_ROOT, day_pack_paths
 
@@ -38,7 +39,7 @@ def dataset_fingerprint(
     """pack 日文件 + 可选 label 文件的确定性指纹。"""
     root = Path(root)
     sorted_days = sorted({int(d) for d in days})
-    packs: list[dict] = []
+    packs: list[dict[Any, Any]] = []
     for day in sorted_days:
         day_files: dict[str, str | None] = {}
         for kind, path in day_pack_paths(day, root).items():

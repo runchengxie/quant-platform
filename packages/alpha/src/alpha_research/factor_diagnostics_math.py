@@ -5,6 +5,7 @@ from typing import Any, cast
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 
 from .factor_diagnostics_config import DEFAULT_SIZE_BUCKET_LABELS
 
@@ -45,9 +46,10 @@ def long_short_return(values: pd.Series, target: pd.Series, *, min_obs: int) -> 
 def factor_correlation_rows(correlation: pd.DataFrame, factor: str) -> pd.DataFrame:
     if correlation.empty:
         return pd.DataFrame()
-    return correlation.loc[
-        (correlation["factor_a"] == factor) | (correlation["factor_b"] == factor)
-    ]
+    return cast(
+        pd.DataFrame,
+        correlation.loc[(correlation["factor_a"] == factor) | (correlation["factor_b"] == factor)],
+    )
 
 
 def dominant_style(exposure: pd.DataFrame) -> str | None:
@@ -86,8 +88,8 @@ def zscore(values: pd.Series) -> pd.Series:
     mean = numeric.mean()
     std = numeric.std(ddof=0)
     if not np.isfinite(std) or std == 0:
-        return numeric - mean
-    return (numeric - mean) / std
+        return cast(pd.Series, numeric - mean)
+    return cast(pd.Series, (numeric - mean) / std)
 
 
 def spearman(left: pd.Series, right: pd.Series) -> float:
@@ -99,7 +101,7 @@ def spearman(left: pd.Series, right: pd.Series) -> float:
     return float(left_num.loc[valid].corr(right_num.loc[valid], method="spearman"))
 
 
-def r2_score(y: np.ndarray, fitted: np.ndarray) -> float:
+def r2_score(y: NDArray[Any], fitted: NDArray[Any]) -> float:
     total = float(np.sum((y - np.mean(y)) ** 2))
     if not np.isfinite(total) or total == 0:
         return np.nan

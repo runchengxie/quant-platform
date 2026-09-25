@@ -5,13 +5,15 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 from math import isfinite
+from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 SIGNAL_DRIFT_SCHEMA = "alpha_research.signal_drift.v1"
 
 
-def _finite_array(values: Iterable[float], *, label: str, min_observations: int) -> np.ndarray:
+def _finite_array(values: Iterable[float], *, label: str, min_observations: int) -> NDArray[Any]:
     array = np.asarray(list(values), dtype=float).reshape(-1)
     array = array[np.isfinite(array)]
     if len(array) < min_observations:
@@ -22,8 +24,8 @@ def _finite_array(values: Iterable[float], *, label: str, min_observations: int)
 
 
 def _population_stability_index(
-    reference: np.ndarray,
-    current: np.ndarray,
+    reference: NDArray[Any],
+    current: NDArray[Any],
     *,
     bins: int,
     epsilon: float = 1e-8,
@@ -49,7 +51,7 @@ def _population_stability_index(
     return float(value)
 
 
-def _ks_statistic(reference: np.ndarray, current: np.ndarray) -> float:
+def _ks_statistic(reference: NDArray[Any], current: NDArray[Any]) -> float:
     support = np.sort(np.unique(np.concatenate((reference, current))))
     ref_cdf = np.searchsorted(np.sort(reference), support, side="right") / len(reference)
     cur_cdf = np.searchsorted(np.sort(current), support, side="right") / len(current)

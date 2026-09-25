@@ -8,6 +8,7 @@ from typing import Any, cast
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 
 from .compat import ensure_numpy_nan_alias
 from .rebalance_calendar import get_rebalance_dates
@@ -21,7 +22,7 @@ _REBALANCE_CANDIDATE_TAIL_DAYS = 5
 
 @dataclass(frozen=True)
 class _FeatureDatasetConfig:
-    feature_params: dict
+    feature_params: dict[Any, Any]
     price_col: str
     target: str
     label_shift_days: int
@@ -65,7 +66,7 @@ class _FeatureDatasetPrepared:
     feature_availability_diagnostics: dict[str, Any]
     missing_fill_features: list[str]
     raw_daily_panel_rows: int
-    raw_reference_trade_dates: np.ndarray
+    raw_reference_trade_dates: NDArray[Any]
     extra_no_label_dates: pd.DatetimeIndex
 
 

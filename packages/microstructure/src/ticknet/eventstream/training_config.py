@@ -155,6 +155,11 @@ class EventstreamConfig:
         self.min_symbols_per_day = min_symbols_per_day
 
     def validate(self) -> None:
+        self._validate_model_and_training()
+        self._validate_event_features()
+        self._validate_input_contract()
+
+    def _validate_model_and_training(self) -> None:
         if self.model not in CONFIGS:
             raise ValueError(f"model 应为 {sorted(CONFIGS)} 之一")
         if self.seq_len < 2 or self.min_events < 1 or self.samples_per_day < 1:
@@ -173,6 +178,8 @@ class EventstreamConfig:
             raise ValueError(f"day_supervision_mode 应为 {sorted(DAY_SUPERVISION_MODES)} 之一")
         if self.day_loss_weight < 0:
             raise ValueError("day_loss_weight 不能为负数")
+
+    def _validate_event_features(self) -> None:
         if self.use_session_anchors and not self.use_lob_prefix:
             raise ValueError("use_session_anchors 需要同时启用 use_lob_prefix")
         if self.vq_codebook_size < 2:
@@ -183,6 +190,8 @@ class EventstreamConfig:
             raise ValueError("vq_loss_weight 不能为负数")
         if self.min_symbols_per_day < 2:
             raise ValueError("min_symbols_per_day 至少为 2")
+
+    def _validate_input_contract(self) -> None:
         if self.monitor_label_path and not self.monitor_name:
             raise ValueError("提供 monitor_label_path 时必须提供 monitor_name")
         if self.target_overlay_root and not self.materialized_root:

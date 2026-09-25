@@ -2,15 +2,15 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
+import xgboost
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import ElasticNet, Ridge
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from xgboost import XGBRanker, XGBRegressor
 
 FitFn = Callable[
     [Any, pd.DataFrame],
@@ -18,6 +18,8 @@ FitFn = Callable[
 ]
 ImportanceFn = Callable[[Any], tuple[np.ndarray[Any, Any], str]]
 FactoryFn = Callable[[Mapping[str, Any]], Any]
+XGBRanker = cast(Any, xgboost).XGBRanker
+XGBRegressor = cast(Any, xgboost).XGBRegressor
 
 
 class FixedScoreArtifactModel:

@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 from sklearn.isotonic import IsotonicRegression
 from sklearn.linear_model import LogisticRegression
 
@@ -112,10 +114,10 @@ def probability_to_bet_size(
         if not 0 < step_size <= 1:
             raise ValueError("step_size must be in (0, 1]")
         signed = (signed / step_size).round() * step_size
-    return signed.clip(-1.0, 1.0).rename("bet_size")
+    return cast(pd.Series, signed.clip(-1.0, 1.0).rename("bet_size"))
 
 
-def _score_to_unit_interval(score: pd.Series) -> np.ndarray:
+def _score_to_unit_interval(score: pd.Series) -> NDArray[Any]:
     values = pd.to_numeric(score, errors="coerce").to_numpy(dtype=float)
     if values.size == 0:
         return values
@@ -123,7 +125,7 @@ def _score_to_unit_interval(score: pd.Series) -> np.ndarray:
     return np.clip(ranks, 0.0, 1.0)
 
 
-def _brier(probability: np.ndarray, outcome: np.ndarray) -> float:
+def _brier(probability: NDArray[Any], outcome: NDArray[Any]) -> float:
     if probability.size == 0:
         return float("nan")
     return float(np.mean(np.square(probability - outcome)))
@@ -137,7 +139,7 @@ def _normal_cdf(values: pd.Series) -> pd.Series:
     coefficients = (0.254829592, -0.284496736, 1.421413741, -1.453152027, 1.061405429)
     polynomial = sum(coef * t.pow(index + 1) for index, coef in enumerate(coefficients))
     erf = sign * (1.0 - polynomial * np.exp(-absolute * absolute))
-    return 0.5 * (1.0 + erf)
+    return cast(pd.Series, 0.5 * (1.0 + erf))
 
 
 __all__ = [

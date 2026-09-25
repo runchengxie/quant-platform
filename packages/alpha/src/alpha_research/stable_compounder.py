@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
 import pandas as pd
 
@@ -81,7 +83,7 @@ def build_quarterly_operating_panel(
         "standalone_n_income_attr_p"
     ].where(out["standalone_n_income_attr_p"].ne(0))
     out = out.drop(columns=["_report_year", "_report_quarter"])
-    return out.replace([np.inf, -np.inf], np.nan)
+    return cast(pd.DataFrame, out.replace([np.inf, -np.inf], np.nan))
 
 
 def select_latest_pit_report_events(
@@ -111,11 +113,12 @@ def select_latest_pit_report_events(
         subset=[symbol_col, report_period_col, available_date_col]
     )
     if out.empty:
-        return out
-    return (
+        return cast(pd.DataFrame, out)
+    return cast(
+        pd.DataFrame,
         out.sort_values([symbol_col, report_period_col, available_date_col])
         .drop_duplicates([symbol_col, report_period_col], keep="last")
-        .reset_index(drop=True)
+        .reset_index(drop=True),
     )
 
 
@@ -162,7 +165,7 @@ def build_rolling_stability_labels(
         )
         result = getattr(values, statistic)()
         result.index = result.index.droplevel(0)
-        return result.reindex(out.index)
+        return cast(pd.Series, result.reindex(out.index))
 
     def rolling_count(column: str, min_periods: int) -> pd.Series:
         values = out.groupby("symbol", sort=False)[column].rolling(
@@ -170,7 +173,7 @@ def build_rolling_stability_labels(
         )
         result = values.count()
         result.index = result.index.droplevel(0)
-        return result.reindex(out.index)
+        return cast(pd.Series, result.reindex(out.index))
 
     out["cfo_to_profit_median"] = rolling_stat(
         "standalone_cfo_to_profit", "median", minimum_observed

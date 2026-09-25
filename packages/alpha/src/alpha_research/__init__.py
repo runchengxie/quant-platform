@@ -14,8 +14,8 @@ from .contextual import (
     contextual_feature_set_id,
     default_context_exposure_specs,
 )
-from .freshness_overlay import apply_freshness_overlay
 from .factor_expression import FactorExpression, OperatorRegistry, parse_factor
+from .freshness_overlay import apply_freshness_overlay
 from .risk_model import FACTOR_RISK_MODEL_SCHEMA, FactorRiskModelEstimate, build_factor_risk_model
 
 __all__ = [
@@ -24,8 +24,8 @@ __all__ = [
     "ContextTransformSpec",
     "ContextualFeatureEvidence",
     "ExposureSpec",
-    "FactorRiskModelEstimate",
     "FactorExpression",
+    "FactorRiskModelEstimate",
     "FundamentalModifier",
     "OperatorRegistry",
     "apply_freshness_overlay",
@@ -66,9 +66,9 @@ __all__ = [
     "minute_friend_factors",
     "modeling",
     "overfitting_diagnostics",
+    "parse_factor",
     "pbo",
     "period_evaluation",
-    "parse_factor",
     "probability_calibration",
     "promotion_gate",
     "promotion_gate_thresholds",

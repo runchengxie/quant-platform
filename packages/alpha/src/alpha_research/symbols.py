@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import cast
 
 import pandas as pd
 
@@ -13,11 +14,11 @@ DEFAULT_SYMBOL_PRIORITY = ("symbol", "ts_code", "stock_ticker", "order_book_id")
 
 def _column_series(frame: pd.DataFrame, column: str) -> pd.Series:
     values = frame.loc[:, column]
-    return values.iloc[:, 0] if isinstance(values, pd.DataFrame) else values
+    return cast(pd.Series, values.iloc[:, 0] if isinstance(values, pd.DataFrame) else values)
 
 
 def _clean_symbol_series(values: pd.Series) -> pd.Series:
-    return values.where(values.notna(), "").astype(str).str.strip()
+    return cast(pd.Series, values.where(values.notna(), "").astype(str).str.strip())
 
 
 def resolve_symbol_series(

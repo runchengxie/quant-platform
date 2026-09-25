@@ -54,7 +54,7 @@ def compute_returns_from_prices(
 ) -> pd.DataFrame:
     """Compute daily returns from a wide price panel."""
     if method == "log":
-        return np.log(price_panel / price_panel.shift(1))
+        return cast(pd.DataFrame, np.log(price_panel / price_panel.shift(1)))
     return price_panel.pct_change()
 
 
@@ -168,7 +168,7 @@ def compute_momentum_factor(
         Wide DataFrame of N-day returns.
     """
     if log_return:
-        return np.log(price_panel / price_panel.shift(window))
+        return cast(pd.DataFrame, np.log(price_panel / price_panel.shift(window)))
     return price_panel.pct_change(periods=window)
 
 
@@ -251,7 +251,9 @@ def compute_vol_convergence_factor(
     vol_long = returns_panel.rolling(window=long_window, min_periods=min_obs_long).std()
 
     ratio = vol_short / vol_long.replace(0, np.nan)
-    return -ratio  # negative ratio → short vol < long vol → positive convergence
+    return cast(
+        pd.DataFrame, -ratio
+    )  # negative ratio → short vol < long vol → positive convergence
 
 
 # ── Factor: Low RESVOL (B-leg) ─────────────────────────────────────────────────
@@ -381,10 +383,14 @@ def compute_hermite_stability_factor(
         hs4_raw2 = (zs2 * zs2 - 6.0 * zs2 + 3.0) / np.sqrt(24.0)
         hs4 = hs4_raw2.rolling(w_short, min_periods=mp_short).mean()
         energy_short = hs3.pow(2) + hs4.pow(2)
-        return np.log1p(energy) - np.log1p(energy_short)  # positive = getting less stable
+        return cast(
+            pd.DataFrame | None, np.log1p(energy) - np.log1p(energy_short)
+        )  # positive = getting less stable
 
     # Default: closeness = -log(1 + energy)
-    return -np.log1p(energy)  # higher = more stable across daily observations
+    return cast(
+        pd.DataFrame | None, -np.log1p(energy)
+    )  # higher = more stable across daily observations
 
 
 # ── Composite factorization ────────────────────────────────────────────────────

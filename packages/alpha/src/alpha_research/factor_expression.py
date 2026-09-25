@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import ast
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import pandas as pd
 
@@ -14,19 +14,19 @@ _MAX_AST_NODES = 256
 _MAX_AST_DEPTH = 64
 
 _BinaryEvaluator = Callable[[Any, Any], Any]
-_OperatorEvaluator = Callable[[list[Any], pd.DataFrame, list[ast.AST]], Any]
+_OperatorEvaluator = Callable[[list[Any], pd.DataFrame, Sequence[ast.AST]], Any]
 
 
 @dataclass(frozen=True)
 class _Operator:
     arity: int
-    lookback: Callable[[list[ast.AST]], int]
+    lookback: Callable[[Sequence[ast.AST]], int]
     evaluate: _OperatorEvaluator
     requires_symbol_date_index: bool = False
     cumulative_lookback: bool = False
 
 
-def _constant_window(args: list[ast.AST], position: int) -> int:
+def _constant_window(args: Sequence[ast.AST], position: int) -> int:
     node = args[position]
     if not isinstance(node, ast.Constant) or isinstance(node.value, bool):
         raise ValueError("window must be a positive integer constant")
@@ -35,34 +35,38 @@ def _constant_window(args: list[ast.AST], position: int) -> int:
     return node.value
 
 
-def _no_lookback(args: list[ast.AST]) -> int:
+def _no_lookback(args: Sequence[ast.AST]) -> int:
     return 0
 
 
-def _window_lookback(position: int) -> Callable[[list[ast.AST]], int]:
+def _window_lookback(position: int) -> Callable[[Sequence[ast.AST]], int]:
     return lambda args: _constant_window(args, position)
 
 
-def _rank(values: list[Any], frame: pd.DataFrame, args: list[ast.AST]) -> pd.Series:
-    return values[0].groupby(level="date", sort=False).rank(method="average", pct=True)
+def _rank(values: list[Any], frame: pd.DataFrame, args: Sequence[ast.AST]) -> pd.Series:
+    return cast(
+        pd.Series, values[0].groupby(level="date", sort=False).rank(method="average", pct=True)
+    )
 
 
-def _delay(values: list[Any], frame: pd.DataFrame, args: list[ast.AST]) -> pd.Series:
-    return values[0].groupby(level="symbol", sort=False).shift(_constant_window(args, 1))
+def _delay(values: list[Any], frame: pd.DataFrame, args: Sequence[ast.AST]) -> pd.Series:
+    return cast(
+        pd.Series, values[0].groupby(level="symbol", sort=False).shift(_constant_window(args, 1))
+    )
 
 
-def _returns(values: list[Any], frame: pd.DataFrame, args: list[ast.AST]) -> pd.Series:
+def _returns(values: list[Any], frame: pd.DataFrame, args: Sequence[ast.AST]) -> pd.Series:
     window = _constant_window(args, 1)
     delayed = values[0].groupby(level="symbol", sort=False).shift(window)
-    return values[0] / delayed - 1
+    return cast(pd.Series, values[0] / delayed - 1)
 
 
-def _rolling_std(values: list[Any], frame: pd.DataFrame, args: list[ast.AST]) -> pd.Series:
+def _rolling_std(values: list[Any], frame: pd.DataFrame, args: Sequence[ast.AST]) -> pd.Series:
     window = _constant_window(args, 1)
     return _grouped_rolling(values[0], window, lambda series: series.std(ddof=1))
 
 
-def _rolling_corr(values: list[Any], frame: pd.DataFrame, args: list[ast.AST]) -> pd.Series:
+def _rolling_corr(values: list[Any], frame: pd.DataFrame, args: Sequence[ast.AST]) -> pd.Series:
     window = _constant_window(args, 2)
     pair = pd.concat(values[:2], axis=1)
     result = pd.Series(index=pair.index, dtype="float64")
@@ -71,9 +75,7 @@ def _rolling_corr(values: list[Any], frame: pd.DataFrame, args: list[ast.AST]) -
     return result
 
 
-def _grouped_rolling(
-    series: pd.Series, window: int, operation: Callable[[pd.Series], pd.Series]
-) -> pd.Series:
+def _grouped_rolling(series: pd.Series, window: int, operation: Callable[[Any], Any]) -> pd.Series:
     result = pd.Series(index=series.index, dtype="float64")
     for _, group in series.groupby(level="symbol", sort=False):
         result.loc[group.index] = operation(group.rolling(window)).to_numpy()

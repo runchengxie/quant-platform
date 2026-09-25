@@ -19,6 +19,8 @@ Original implementations (with CuPy GPU acceleration):
 
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
 import pandas as pd
 
@@ -61,7 +63,7 @@ def compute_morning_vwap(
     total_volume = grouped[volume_col].sum()
     vwap = total_notional / total_volume.replace(0, np.nan)
     vwap.name = "morning_vwap"
-    return vwap
+    return cast(pd.Series, vwap)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -92,7 +94,7 @@ def compute_volume_ratio(
         lambda x: x / x.shift(1).rolling(window, min_periods=5).mean()
     )
     result.name = "volume_ratio"
-    return result
+    return cast(pd.Series, result)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -136,7 +138,7 @@ def compute_volume_perc(
 
     result = perc.unstack("bucket").fillna(0)
     result.columns = [f"volume_perc{i + 1}" for i in range(n_buckets)]
-    return result
+    return cast(pd.DataFrame, result)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -209,7 +211,7 @@ def compute_smart_money_q(
         return pd.Series(dtype=float, name="q_factor")
     out = pd.DataFrame(results).set_index(["trade_date", "symbol"])["q_factor"]
     out.name = "smart_money_q"
-    return out
+    return cast(pd.Series, out)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

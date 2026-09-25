@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any, cast
+
 import numpy as np
 import pandas as pd
 
@@ -60,7 +62,7 @@ def _price_frame(daily: pd.DataFrame) -> pd.DataFrame:
     daily_cols = ["trade_date", "symbol", "close", "pct_chg", "amount"]
     df = daily[daily_cols].copy()
     df = df[df["amount"] > 0].copy()
-    return df.sort_values(["symbol", "trade_date"]).reset_index(drop=True)
+    return cast(pd.DataFrame, df.sort_values(["symbol", "trade_date"]).reset_index(drop=True))
 
 
 def _merge_daily_basics(df: pd.DataFrame, basics: pd.DataFrame) -> pd.DataFrame:
@@ -70,7 +72,7 @@ def _merge_daily_basics(df: pd.DataFrame, basics: pd.DataFrame) -> pd.DataFrame:
         on=["trade_date", "symbol"],
         how="left",
     )
-    df = df[df["total_mv"] > 0].copy()
+    df = cast(pd.DataFrame, df[df["total_mv"] > 0].copy())
     return df.sort_values(["symbol", "trade_date"]).reset_index(drop=True)
 
 
@@ -402,7 +404,7 @@ def compute_factors(
     fina: pd.DataFrame | None = None,
     cashflow: pd.DataFrame | None = None,
     *,
-    aux: dict | None = None,
+    aux: dict[Any, Any] | None = None,
     sw_membership: pd.DataFrame | None = None,
     rebalance_dates: pd.DatetimeIndex | None = None,
     formation_fundamentals: pd.DataFrame | None = None,

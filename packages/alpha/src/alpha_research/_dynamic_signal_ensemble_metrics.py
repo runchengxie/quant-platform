@@ -10,7 +10,7 @@ surface.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -118,28 +118,42 @@ def _compute_regime_scores(
         if idx < config.regime_window:
             continue
         hist_dates = factor_returns.index[max(0, idx - config.regime_window) : idx]
-        current = features.loc[date]
-        factor_scores: list[pd.Series] = []
-        for feature in features.columns:
-            hist_feature = features.loc[hist_dates, feature].dropna()
-            if len(hist_feature) < max(3, config.regime_window // 3):
-                continue
-            current_value = current.get(feature, np.nan)
-            if pd.isna(current_value):
-                continue
-            low = hist_feature.quantile(1.0 / 3.0)
-            high = hist_feature.quantile(2.0 / 3.0)
-            if current_value <= low:
-                bucket = hist_feature[hist_feature <= low].index
-            elif current_value >= high:
-                bucket = hist_feature[hist_feature >= high].index
-            else:
-                bucket = hist_feature[(hist_feature > low) & (hist_feature < high)].index
-            if len(bucket):
-                factor_scores.append(factor_returns.loc[bucket].mean())
+        factor_scores = _scores_for_regime_date(
+            factor_returns, features, date, hist_dates, config.regime_window
+        )
         if factor_scores:
             scores.loc[date] = pd.concat(factor_scores, axis=1).mean(axis=1)
     return _cross_sectional_zscore_frame(scores).fillna(0.0)
+
+
+def _scores_for_regime_date(
+    factor_returns: pd.DataFrame,
+    features: pd.DataFrame,
+    date: pd.Timestamp,
+    hist_dates: pd.Index,
+    window: int,
+) -> list[pd.Series]:
+    minimum_history = max(3, window // 3)
+    scores = []
+    for feature in features.columns:
+        history = features.loc[hist_dates, feature].dropna()
+        current_value = features.loc[date].get(feature, np.nan)
+        if len(history) < minimum_history or pd.isna(current_value):
+            continue
+        bucket = _regime_bucket(history, current_value)
+        if len(bucket):
+            scores.append(cast(pd.Series, factor_returns.loc[bucket].mean()))
+    return scores
+
+
+def _regime_bucket(history: pd.Series, current_value: Any) -> pd.Index:
+    low = history.quantile(1.0 / 3.0)
+    high = history.quantile(2.0 / 3.0)
+    if current_value <= low:
+        return cast(pd.Index, history[history <= low].index)
+    if current_value >= high:
+        return cast(pd.Index, history[history >= high].index)
+    return cast(pd.Index, history[(history > low) & (history < high)].index)
 
 
 def compute_rolling_diagnostics(
@@ -195,8 +209,10 @@ def _combine_strength(
             continue
         strength = strength.add(component.fillna(0.0) * weight, fill_value=0.0)
         total_weight += abs(weight)
-    return strength / total_weight if total_weight > 0 else strength
+    return cast(pd.Series, strength / total_weight if total_weight > 0 else strength)
 
 
 def _passes_min(value: float | None, threshold: float | None) -> bool:
-    return threshold is None or (value is not None and np.isfinite(value) and value >= threshold)
+    return cast(
+        bool, threshold is None or (value is not None and np.isfinite(value) and value >= threshold)
+    )

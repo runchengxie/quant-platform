@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
+from typing import cast
 
 import pandas as pd
 
@@ -24,7 +25,7 @@ def validate_min_periods(min_periods: int | None, window: int) -> int:
 
 
 def numeric_column(frame: pd.DataFrame, column: str) -> pd.Series:
-    return pd.to_numeric(frame[column], errors="coerce")
+    return cast(pd.Series, pd.to_numeric(frame[column], errors="coerce"))
 
 
 def grouped_transform(
@@ -34,4 +35,4 @@ def grouped_transform(
 ) -> pd.Series:
     if groups is None:
         return function(values)
-    return values.groupby(groups, sort=False).transform(function)
+    return cast(pd.Series, values.groupby(groups, sort=False).transform(function))

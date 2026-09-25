@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
-from typing import Any
+from typing import Any, cast
 
 import pandas as pd
 
@@ -80,7 +80,7 @@ class ResearchDataset:
         segment_col = "_segment"
         if segment_col not in frame.columns:
             return frame
-        return frame[frame[segment_col].astype(str) == str(segment)]
+        return cast(pd.DataFrame, frame[frame[segment_col].astype(str) == str(segment)])
 
 
 def _processor_records(

@@ -344,7 +344,7 @@ def _walk_forward_feature_importance_top(
 
 
 def _evaluate_injected_walk_forward_backtest(
-    window_meta: dict,
+    window_meta: dict[Any, Any],
     *,
     model_w: Any,
     direction: float,
@@ -413,7 +413,7 @@ def _update_walk_forward_result(
 
 
 def _evaluate_walk_forward_window(
-    window_meta: dict,
+    window_meta: dict[Any, Any],
     *,
     context: Mapping[str, Any],
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:

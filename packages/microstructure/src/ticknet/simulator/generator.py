@@ -9,10 +9,12 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
+from typing import Any
 
 import numpy as np
 import torch
 import torch.nn as nn
+from numpy.typing import NDArray
 
 from .replay import BackgroundOrder
 
@@ -41,7 +43,7 @@ def events_to_features(
     history: list[BackgroundOrder],
     initial_bid: tuple[int, int],
     initial_ask: tuple[int, int],
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[NDArray[Any], NDArray[Any], NDArray[Any]]:
     """把历史事件 + 初始盘口转成模型输入 (features, stream_ids, order_ids)。
 
     轻量构造：复用与 dataset 一致的 stream/otype 编码与 bps 公式思路，
@@ -49,7 +51,7 @@ def events_to_features(
     """
     mid = (initial_bid[0] + initial_ask[0]) / 2.0
 
-    def _order_features(o: BackgroundOrder, prev_time: int) -> tuple[np.ndarray, int, int]:
+    def _order_features(o: BackgroundOrder, prev_time: int) -> tuple[NDArray[Any], int, int]:
         f = np.zeros(N_FEATURES, dtype=np.float32)
         price_bps = ((o.price - mid) / mid * 10000.0) if mid > 0 else 0.0
         f[0] = price_bps / 100.0  # 缩放到与训练分布相近的量级
@@ -61,7 +63,7 @@ def events_to_features(
         f[4] = 1.0 if o.side >= 0 else 0.0
         return f, STREAM_ORDER, 0
 
-    rows: list[np.ndarray] = []
+    rows: list[NDArray[Any]] = []
     sids: list[int] = []
     oids: list[int] = []
 
@@ -199,7 +201,7 @@ class OrderGenerator:
 
     def _decode_vq(
         self,
-        out: dict,
+        out: dict[Any, Any],
         ctx: GenerationContext,
         mid: float,
         last_time: int,

@@ -59,7 +59,7 @@ def _parse_dates(values: pd.Series) -> pd.Series:
     text = values.astype(str).str.strip()
     compact = text.str.replace("-", "", regex=False).str.slice(0, 8)
     parsed = pd.to_datetime(compact, format="%Y%m%d", errors="coerce")
-    return parsed.fillna(pd.to_datetime(values, errors="coerce"))
+    return cast(pd.Series, parsed.fillna(pd.to_datetime(values, errors="coerce")))
 
 
 def _normalize_positions(positions: pd.DataFrame | None) -> pd.DataFrame:

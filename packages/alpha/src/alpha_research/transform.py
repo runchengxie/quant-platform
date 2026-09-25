@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -62,7 +63,7 @@ def apply_cross_sectional_series_transform(
     group_cols: Sequence[str] | None = None,
 ) -> pd.Series:
     if method == "none":
-        return data[column].copy()
+        return cast(pd.Series, data[column].copy())
 
     group_columns = list(group_cols or ["trade_date"])
     missing_cols = [col for col in [*group_columns, column] if col not in data.columns]
@@ -79,7 +80,7 @@ def apply_cross_sectional_series_transform(
     )
     result = transformed[column].copy()
     result.loc[data[column].isna()] = np.nan
-    return result
+    return cast(pd.Series, result)
 
 
 def neutralize_cross_sectional_series(
@@ -92,11 +93,11 @@ def neutralize_cross_sectional_series(
 ) -> pd.Series:
     control_cols = [str(col).strip() for col in controls if str(col).strip()]
     if not control_cols:
-        return data[column].copy()
+        return cast(pd.Series, data[column].copy())
     if strength < 0:
         raise ValueError("strength must be >= 0.")
     if strength == 0:
-        return data[column].copy()
+        return cast(pd.Series, data[column].copy())
 
     out = data[column].copy()
     required_obs = max(
@@ -125,7 +126,7 @@ def neutralize_cross_sectional_series(
         coeffs, *_ = np.linalg.lstsq(design, y, rcond=None)
         fitted_exposure = x @ coeffs[1:]
         out.loc[group_valid.index] = y - strength * fitted_exposure
-    return out
+    return cast(pd.Series, out)
 
 
 def rank_blend_cross_sectional_series(
@@ -162,7 +163,7 @@ def rank_blend_cross_sectional_series(
     )
     overlay_rank = overlay_ranks.mean(axis=1, skipna=True)
     blended = (1.0 - strength) * base_rank + strength * overlay_rank
-    return blended.where(overlay_rank.notna(), base_rank)
+    return cast(pd.Series, blended.where(overlay_rank.notna(), base_rank))
 
 
 def apply_score_postprocess(
@@ -176,7 +177,7 @@ def apply_score_postprocess(
 ) -> pd.Series:
     method_text = str(method or "none").strip().lower()
     if method_text == "none":
-        return data[column].copy()
+        return cast(pd.Series, data[column].copy())
     missing_cols = [col for col in columns if col not in data.columns]
     if missing_cols:
         missing_text = ", ".join(sorted(set(missing_cols)))

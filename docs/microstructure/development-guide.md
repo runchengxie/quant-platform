@@ -89,6 +89,13 @@ eventstream 链路覆盖：
 - 三条原始流的无损打包、ID 关联解析和逐日索引
 - 事件窗口采样、多任务预测头和日级信号头
 - 训练、断点恢复、数据集指纹与预测导出契约
+- 物化窗口的分区标签覆盖层，以及覆盖层与训练分片的指纹和样本数校验
+
+标签覆盖层放在独立目录中，清单文件名为 `manifest.json`。清单记录基础物化数据的
+`materialized_fingerprint`、`partition`、覆盖层自身的 `dataset_fingerprint`，以及按月列出的
+`files`。每个分片记录包含 `month`、`samples` 和相对 `path`。加载器会校验基础数据指纹、分区、
+分片路径边界和物化训练集的月份及样本数，避免错配标签或从覆盖层目录之外读取文件。
+启用方式是在训练配置中同时设置 `materialized_root` 和 `target_overlay_root`。
 
 CLI 契约测试读取 `pyproject.toml` 的全部命令声明，逐个导入目标函数并运行 `--help`。新增、删除或移动入口时，测试会直接反映声明与代码是否一致。
 

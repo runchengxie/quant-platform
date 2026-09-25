@@ -4,11 +4,33 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from math import isfinite
+from typing import cast
 
 import numpy as np
 import pandas as pd
 
 FACTOR_RISK_MODEL_SCHEMA = "alpha_research.factor_risk_model.v1"
+
+
+def _validate_positive_semidefinite(covariance_frame: pd.DataFrame) -> None:
+    covariance = covariance_frame.to_numpy(dtype=float)
+    if not np.allclose(covariance, covariance.T, atol=1e-12, rtol=1e-12):
+        raise ValueError("factor_covariance must be symmetric")
+    eigenvalues = np.linalg.eigvalsh((covariance + covariance.T) / 2.0)
+    if float(eigenvalues.min()) < -1e-10:
+        raise ValueError("factor_covariance must be positive semidefinite")
+
+
+def _validate_history_bounds(
+    history_start: pd.Timestamp, history_end: pd.Timestamp, as_of: pd.Timestamp
+) -> None:
+    normalized_as_of = _comparison_timestamp(as_of)
+    normalized_start = _comparison_timestamp(history_start)
+    normalized_end = _comparison_timestamp(history_end)
+    if normalized_start > normalized_end:
+        raise ValueError("history_start must be <= history_end")
+    if normalized_end > normalized_as_of:
+        raise ValueError("history_end must be at or before as_of")
 
 
 def _numeric_frame(frame: pd.DataFrame, *, label: str) -> pd.DataFrame:
@@ -27,7 +49,7 @@ def _numeric_frame(frame: pd.DataFrame, *, label: str) -> pd.DataFrame:
         numeric.index.map(str) if not isinstance(numeric.index, pd.DatetimeIndex) else numeric.index
     )
     numeric.columns = numeric.columns.map(str)
-    return numeric.astype(float)
+    return cast(pd.DataFrame, numeric.astype(float))
 
 
 def _comparison_timestamp(value: pd.Timestamp) -> pd.Timestamp:
@@ -92,25 +114,8 @@ class FactorRiskModelEstimate:
         if any(not np.isfinite(values).all() for values in arrays):
             raise ValueError("risk model values must be finite")
 
-        factor_covariance = self.factor_covariance.to_numpy(dtype=float)
-        if not np.allclose(
-            factor_covariance,
-            factor_covariance.T,
-            atol=1e-12,
-            rtol=1e-12,
-        ):
-            raise ValueError("factor_covariance must be symmetric")
-        eigenvalues = np.linalg.eigvalsh((factor_covariance + factor_covariance.T) / 2.0)
-        if float(eigenvalues.min()) < -1e-10:
-            raise ValueError("factor_covariance must be positive semidefinite")
-
-        as_of = _comparison_timestamp(self.as_of)
-        history_start = _comparison_timestamp(self.history_start)
-        history_end = _comparison_timestamp(self.history_end)
-        if history_start > history_end:
-            raise ValueError("history_start must be <= history_end")
-        if history_end > as_of:
-            raise ValueError("history_end must be at or before as_of")
+        _validate_positive_semidefinite(self.factor_covariance)
+        _validate_history_bounds(self.history_start, self.history_end, self.as_of)
 
     def asset_covariance(self) -> pd.DataFrame:
         """Project factor covariance plus specific variance into asset space."""
@@ -176,20 +181,12 @@ def build_factor_risk_model(
     if min_observations < 2:
         raise ValueError("min_observations must be >= 2")
 
-    factors = tuple(map(str, exposure_frame.columns))
-    assets = tuple(map(str, exposure_frame.index))
-    if set(factor_history.columns) != set(factors):
-        raise ValueError("factor columns must match exposures")
-    if set(specific_history.columns) != set(assets):
-        raise ValueError("specific return columns must match exposure assets")
-    factor_history = factor_history.reindex(columns=factors)
-    specific_history = specific_history.reindex(columns=assets)
-
-    common_index = factor_history.index.intersection(specific_history.index)
-    if len(common_index) < min_observations:
-        raise ValueError(f"risk model requires at least {min_observations} common observations")
-    factor_history = factor_history.loc[common_index]
-    specific_history = specific_history.loc[common_index]
+    factor_history, specific_history, common_index = _align_risk_histories(
+        exposure_frame,
+        factor_history,
+        specific_history,
+        min_observations=min_observations,
+    )
 
     factor_covariance = factor_history.cov()
     if covariance_shrinkage > 0:
@@ -204,7 +201,7 @@ def build_factor_risk_model(
     specific_variance = specific_history.var(ddof=1)
     if (specific_variance <= 0).any() or specific_variance.isna().any():
         raise ValueError("specific return history must imply positive finite variance")
-    specific_risk = np.sqrt(specific_variance)
+    specific_risk = cast(pd.Series, np.sqrt(specific_variance))
     if not all(isfinite(float(value)) for value in specific_risk):
         raise ValueError("specific risk must be finite")
 
@@ -224,6 +221,31 @@ def build_factor_risk_model(
     )
     estimate.validate()
     return estimate
+
+
+def _align_risk_histories(
+    exposures: pd.DataFrame,
+    factor_history: pd.DataFrame,
+    specific_history: pd.DataFrame,
+    *,
+    min_observations: int,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.Index]:
+    factors = tuple(map(str, exposures.columns))
+    assets = tuple(map(str, exposures.index))
+    if set(factor_history.columns) != set(factors):
+        raise ValueError("factor columns must match exposures")
+    if set(specific_history.columns) != set(assets):
+        raise ValueError("specific return columns must match exposure assets")
+    factor_history = factor_history.reindex(columns=factors)
+    specific_history = specific_history.reindex(columns=assets)
+    common_index = factor_history.index.intersection(specific_history.index)
+    if len(common_index) < min_observations:
+        raise ValueError(f"risk model requires at least {min_observations} common observations")
+    return (
+        cast(pd.DataFrame, factor_history.loc[common_index]),
+        cast(pd.DataFrame, specific_history.loc[common_index]),
+        cast(pd.Index, common_index),
+    )
 
 
 __all__ = [

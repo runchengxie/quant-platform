@@ -10,7 +10,7 @@ import os
 import shutil
 from itertools import pairwise
 from pathlib import Path, PurePosixPath
-from typing import Any
+from typing import Any, cast
 
 import yaml
 
@@ -99,18 +99,8 @@ def _expected_days_from_universes(
     days: set[int] = set()
     source_fingerprints: set[str] = set()
     for path in universe_paths:
-        with path.open(encoding="utf-8") as file:
-            universe = json.load(file)
-        if not isinstance(universe, dict) or not isinstance(universe.get("universes"), dict):
-            raise ValueError(f"股票池文件缺少 universes 对象：{path}")
-        fingerprint = universe.get("source_dataset_fingerprint")
-        if not isinstance(fingerprint, str) or len(fingerprint) != 64:
-            raise ValueError(f"股票池文件缺少有效的源数据指纹：{path}")
+        actual_days, fingerprint = _load_universe_days(path)
         source_fingerprints.add(fingerprint)
-        declared_days = int(universe.get("days", -1))
-        actual_days = {int(day) for day in universe["universes"]}
-        if declared_days != len(actual_days):
-            raise ValueError(f"股票池文件的 days 与 universes 数量不一致：{path}")
         if days & actual_days:
             raise ValueError(f"股票池文件包含重复交易日：{path}")
         days.update(actual_days)
@@ -128,7 +118,22 @@ def _expected_days_from_universes(
     empty = [split for split, values in split_days.items() if not values]
     if empty:
         raise ValueError(f"日期合同缺少分区：{empty}")
-    return split_days, source_fingerprints.pop()
+    return cast(tuple[dict[str, list[int]], str], (split_days, source_fingerprints.pop()))
+
+
+def _load_universe_days(path: Path) -> tuple[set[int], str]:
+    with path.open(encoding="utf-8") as file:
+        universe = json.load(file)
+    if not isinstance(universe, dict) or not isinstance(universe.get("universes"), dict):
+        raise ValueError(f"股票池文件缺少 universes 对象：{path}")
+    fingerprint = universe.get("source_dataset_fingerprint")
+    if not isinstance(fingerprint, str) or len(fingerprint) != 64:
+        raise ValueError(f"股票池文件缺少有效的源数据指纹：{path}")
+    declared_days = int(universe.get("days", -1))
+    actual_days = {int(day) for day in universe["universes"]}
+    if declared_days != len(actual_days):
+        raise ValueError(f"股票池文件的 days 与 universes 数量不一致：{path}")
+    return actual_days, fingerprint
 
 
 def _manifest_payload(manifest: dict[str, Any]) -> dict[str, Any]:
@@ -237,15 +242,26 @@ def _validate_layout(
     artifacts = manifest.get("artifacts")
     if not isinstance(months, list) or not isinstance(artifacts, list):
         raise ValueError("存储清单缺少月份或附属产物")
+    _validate_artifact_records(artifacts)
+
+    expected_pack_paths = {
+        f"pack/{path.name}" for day in all_days for path in day_pack_paths(day, Path(".")).values()
+    }
+    month_days, actual_pack_paths = _validate_month_records(months)
+    if month_days != all_days or actual_pack_paths != expected_pack_paths:
+        raise ValueError("存储清单月份没有完整覆盖日期合同的四类 pack 文件")
+    return months, artifacts, expected_pack_paths
+
+
+def _validate_artifact_records(artifacts: list[Any]) -> None:
     if any(not isinstance(record, dict) for record in artifacts):
         raise ValueError("存储清单附属产物记录无效")
     artifact_paths = {str(record.get("path", "")) for record in artifacts}
     if artifact_paths != REQUIRED_ARTIFACT_PATHS or len(artifacts) != len(REQUIRED_ARTIFACT_PATHS):
         raise ValueError("存储清单缺少正式 H5/H3 附属产物")
 
-    expected_pack_paths = {
-        f"pack/{path.name}" for day in all_days for path in day_pack_paths(day, Path(".")).values()
-    }
+
+def _validate_month_records(months: list[Any]) -> tuple[list[int], set[str]]:
     actual_pack_paths: set[str] = set()
     month_days: list[int] = []
     for month in months:
@@ -265,9 +281,7 @@ def _validate_layout(
             raise ValueError(f"存储清单月份字节汇总不一致：{label}")
         actual_pack_paths.update(str(record.get("path", "")) for record in month["files"])
         month_days.extend(int(day) for day in days)
-    if month_days != all_days or actual_pack_paths != expected_pack_paths:
-        raise ValueError("存储清单月份没有完整覆盖日期合同的四类 pack 文件")
-    return months, artifacts, expected_pack_paths
+    return month_days, actual_pack_paths
 
 
 def _validate_records_and_totals(

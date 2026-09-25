@@ -17,21 +17,53 @@ import pandas as pd
 
 from .factor_diagnostics_math import (
     bucket_labels as _bucket_labels,
+)
+from .factor_diagnostics_math import (
     column_mean as _column_mean,
+)
+from .factor_diagnostics_math import (
     column_min as _column_min,
+)
+from .factor_diagnostics_math import (
     date_text as _date_text,
+)
+from .factor_diagnostics_math import (
     dominant_style as _dominant_style,
+)
+from .factor_diagnostics_math import (
     factor_correlation_rows as _factor_correlation_rows,
+)
+from .factor_diagnostics_math import (
     ir as _ir,
+)
+from .factor_diagnostics_math import (
     long_short_return as _long_short_return,
+)
+from .factor_diagnostics_math import (
     max_abs_group_mean as _max_abs_group_mean,
+)
+from .factor_diagnostics_math import (
     r2_score as _r2,
+)
+from .factor_diagnostics_math import (
     safe_mean as _safe_mean,
+)
+from .factor_diagnostics_math import (
     safe_ratio as _safe_ratio,
+)
+from .factor_diagnostics_math import (
     safe_std as _safe_std,
+)
+from .factor_diagnostics_math import (
     size_bucket_ic_spread as _size_bucket_ic_spread,
+)
+from .factor_diagnostics_math import (
     size_buckets as _size_buckets,
+)
+from .factor_diagnostics_math import (
     spearman as _spearman,
+)
+from .factor_diagnostics_math import (
     zscore as _zscore,
 )
 
@@ -225,7 +257,10 @@ def _fit_exposure_model(
         if str(col) in style_cols
     }
     residual = pd.Series(residual_values, index=group.index[valid])
-    return betas, r2, residual, valid, int(x_frame.shape[1])
+    return cast(
+        tuple[dict[str, float], float, pd.Series, pd.Series, int] | None,
+        (betas, r2, residual, valid, int(x_frame.shape[1])),
+    )
 
 
 def _size_bucket_rows(

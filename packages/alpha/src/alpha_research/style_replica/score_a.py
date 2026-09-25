@@ -13,6 +13,8 @@ Higher score = better candidate for A-leg.
 
 from __future__ import annotations
 
+from typing import cast
+
 import pandas as pd
 
 # ── A-leg weights ──────────────────────────────────────────────────────────────
@@ -91,7 +93,7 @@ def compute_score_a(
     if total_weight > 0:
         composite = composite / total_weight
 
-    return composite.clip(0.0, 1.0)
+    return cast(pd.DataFrame, composite.clip(0.0, 1.0))
 
 
 def compute_score_a_with_explanations(

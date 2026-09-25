@@ -72,14 +72,14 @@ def _normalized_dates(series: pd.Series, *, column: str) -> pd.Series:
         raise ValueError(f"fundamental state requires valid dates in {column}")
     if values.dt.tz is not None:
         values = values.dt.tz_localize(None)
-    return values.dt.normalize()
+    return cast(pd.Series, values.dt.normalize())
 
 
 def _nullable_normalized_dates(series: pd.Series) -> pd.Series:
     values = pd.to_datetime(series, errors="coerce")
     if values.dt.tz is not None:
         values = values.dt.tz_localize(None)
-    return values.dt.normalize()
+    return cast(pd.Series, values.dt.normalize())
 
 
 def _numeric(series: pd.Series) -> pd.Series:
@@ -105,9 +105,9 @@ def _target_values(
     if transform == "level":
         return future
     if transform == "delta":
-        return future - current
+        return cast(pd.Series, future - current)
     valid_base = current.where(current.notna() & np.isfinite(current) & (current > 0))
-    return ((future / valid_base) - 1.0).replace([np.inf, -np.inf], np.nan)
+    return cast(pd.Series, ((future / valid_base) - 1.0).replace([np.inf, -np.inf], np.nan))
 
 
 def build_annual_fundamental_target_panel(
@@ -360,7 +360,9 @@ def _learning_target(
         return values
     percentile = values.groupby(frame[date_col], sort=False).rank(method="average", pct=True)
     if objective == "rank:ndcg":
-        return np.floor(percentile * 31.0).clip(lower=0.0, upper=31.0).astype("Int32")
+        return cast(
+            pd.Series, np.floor(percentile * 31.0).clip(lower=0.0, upper=31.0).astype("Int32")
+        )
     return percentile
 
 
@@ -509,7 +511,7 @@ def _forecast_fundamental_fold(
         "models": resolved_models,
         "target_transforms": target_transforms,
     }
-    return test, audit
+    return cast(tuple[pd.DataFrame | None, dict[str, object] | None], (test, audit))
 
 
 def _forecast_run_audit(
@@ -553,37 +555,17 @@ def run_walk_forward_fundamental_forecast(
     min_train_periods: int = 3,
 ) -> FundamentalForecastRun:
     """Generate leakage-safe expanding-window OOS forecasts by formation period."""
-
-    features = tuple(str(column).strip() for column in feature_cols)
-    if not features or any(not column for column in features):
-        raise ValueError("feature_cols must contain non-empty names")
-    if len(features) != len(set(features)):
-        raise ValueError("feature_cols must be unique")
-    future_label_columns = {
-        target_spec.name,
-        "target_available_date",
-        "fundamental_label_end_date",
-    }
-    leaked_features = sorted(future_label_columns.intersection(features))
-    if leaked_features:
-        raise ValueError(f"future label columns cannot be model features: {leaked_features}")
-    if int(min_train_rows) <= 0 or int(min_train_periods) <= 0:
-        raise ValueError("minimum training requirements must be positive")
-    models = {str(name).strip(): dict(config) for name, config in model_configs.items()}
-    if any(not name for name in models) or "persistence" in models:
-        raise ValueError("model names must be non-empty and cannot use persistence")
-
-    required = {
-        target_spec.source_col,
-        target_spec.name,
-        formation_col,
-        feature_date_col,
-        label_end_col,
-        *features,
-    }
-    missing = sorted(required - set(frame.columns))
-    if missing:
-        raise ValueError(f"walk-forward fundamental frame missing columns: {missing}")
+    features, models = _validate_walk_forward_inputs(
+        frame,
+        target_spec=target_spec,
+        feature_cols=feature_cols,
+        model_configs=model_configs,
+        formation_col=formation_col,
+        feature_date_col=feature_date_col,
+        label_end_col=label_end_col,
+        min_train_rows=min_train_rows,
+        min_train_periods=min_train_periods,
+    )
 
     data = frame.copy()
     data[formation_col] = _normalized_dates(data[formation_col], column=formation_col)
@@ -636,6 +618,51 @@ def run_walk_forward_fundamental_forecast(
         min_train_periods=int(min_train_periods),
     )
     return FundamentalForecastRun(predictions, audit)
+
+
+def _validate_walk_forward_inputs(
+    frame: pd.DataFrame,
+    *,
+    target_spec: FundamentalTargetSpec,
+    feature_cols: tuple[str, ...],
+    model_configs: Mapping[str, Mapping[str, Any]],
+    formation_col: str,
+    feature_date_col: str,
+    label_end_col: str,
+    min_train_rows: int,
+    min_train_periods: int,
+) -> tuple[tuple[str, ...], dict[str, dict[str, Any]]]:
+    features = tuple(str(column).strip() for column in feature_cols)
+    if not features or any(not column for column in features):
+        raise ValueError("feature_cols must contain non-empty names")
+    if len(features) != len(set(features)):
+        raise ValueError("feature_cols must be unique")
+    future_label_columns = {
+        target_spec.name,
+        "target_available_date",
+        "fundamental_label_end_date",
+    }
+    leaked_features = sorted(future_label_columns.intersection(features))
+    if leaked_features:
+        raise ValueError(f"future label columns cannot be model features: {leaked_features}")
+    if int(min_train_rows) <= 0 or int(min_train_periods) <= 0:
+        raise ValueError("minimum training requirements must be positive")
+    models = {str(name).strip(): dict(config) for name, config in model_configs.items()}
+    if any(not name for name in models) or "persistence" in models:
+        raise ValueError("model names must be non-empty and cannot use persistence")
+
+    required = {
+        target_spec.source_col,
+        target_spec.name,
+        formation_col,
+        feature_date_col,
+        label_end_col,
+        *features,
+    }
+    missing = sorted(required - set(frame.columns))
+    if missing:
+        raise ValueError(f"walk-forward fundamental frame missing columns: {missing}")
+    return features, models
 
 
 def build_fundamental_forecast_score(

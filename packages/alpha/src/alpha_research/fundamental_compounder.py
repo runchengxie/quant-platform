@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -150,7 +151,7 @@ _GROUPS = (
 
 def _safe_ratio(numerator: pd.Series, denominator: pd.Series) -> pd.Series:
     denominator = denominator.where(denominator.ne(0))
-    return (numerator / denominator).replace([np.inf, -np.inf], np.nan)
+    return cast(pd.Series, (numerator / denominator).replace([np.inf, -np.inf], np.nan))
 
 
 def _percentile(
@@ -169,7 +170,7 @@ def _percentile(
     score = rank.mean(axis=1, skipna=True)
     if not higher:
         score = 1.0 - score
-    return score
+    return cast(pd.Series, score)
 
 
 def build_stable_compounder_label(

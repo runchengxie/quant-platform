@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
 import pandas as pd
 
@@ -15,7 +17,7 @@ def _zscore_series(values: pd.Series) -> pd.Series:
     std = clean.std(ddof=0)
     if not np.isfinite(std) or std == 0:
         return pd.Series(0.0, index=clean.index, dtype=float).where(clean.notna())
-    return (clean - clean.mean()) / std
+    return cast(pd.Series, (clean - clean.mean()) / std)
 
 
 def _cap_positive_weights(weights: pd.Series, max_weight: float | None) -> pd.Series:
@@ -24,7 +26,7 @@ def _cap_positive_weights(weights: pd.Series, max_weight: float | None) -> pd.Se
         return pd.Series(dtype=float)
     out = clean / clean.sum()
     if max_weight is None or max_weight <= 0 or max_weight >= 1:
-        return out
+        return cast(pd.Series, out)
     cap = pd.Series(float(max_weight), index=out.index, dtype=float)
     fixed = pd.Series(False, index=out.index)
     for _ in range(50):
@@ -43,7 +45,7 @@ def _cap_positive_weights(weights: pd.Series, max_weight: float | None) -> pd.Se
         else:
             out.loc[free] = residual * base / base.sum()
     total = out.sum()
-    return out / total if total > 0 else out
+    return cast(pd.Series, out / total if total > 0 else out)
 
 
 def _apply_turnover_budget(
@@ -64,4 +66,4 @@ def _apply_turnover_budget(
     adjusted = prev + delta * (float(max_l1_turnover) / turnover)
     adjusted = adjusted.clip(lower=0.0)
     total = adjusted.sum()
-    return adjusted / total if total > 0 else tgt
+    return cast(pd.Series, adjusted / total if total > 0 else tgt)

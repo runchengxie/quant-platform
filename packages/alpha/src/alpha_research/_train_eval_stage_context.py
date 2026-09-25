@@ -9,7 +9,7 @@ smaller while preserving the exact public/private symbol surface.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import pandas as pd
 
@@ -246,4 +246,4 @@ def _test_window_full_data(data: TrainEvalData) -> pd.DataFrame:
     ].copy()
     if test_df_full.empty:
         raise SystemExit("Not enough test data after applying the split window.")
-    return test_df_full
+    return cast(pd.DataFrame, test_df_full)

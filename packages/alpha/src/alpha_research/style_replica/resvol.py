@@ -15,20 +15,23 @@ upgrade to a full specific-volatility model.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 
 _RESVOL_WINDOW = 60
 _MIN_OBS = 40  # minimum valid observations in the window
 
 
 def _rolling_resvol_single(
-    returns: np.ndarray,
-    market_returns: np.ndarray,
+    returns: NDArray[Any],
+    market_returns: NDArray[Any],
     *,
     window: int = _RESVOL_WINDOW,
     min_obs: int = _MIN_OBS,
-) -> np.ndarray:
+) -> NDArray[Any]:
     """Compute rolling residual volatility for a single asset.
 
     Uses an expanding-then-rolling approach: the first valid output appears

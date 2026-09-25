@@ -1,16 +1,18 @@
 from __future__ import annotations
 
-import numpy as np
+from typing import Any
+
+from numpy.typing import NDArray
 
 
 def build_walk_forward_windows(
-    all_dates: np.ndarray,
+    all_dates: NDArray[Any],
     test_size: float,
     n_windows: int,
     step_size: float | None,
     gap_days: int,
     anchor_end: bool,
-) -> list[dict]:
+) -> list[dict[Any, Any]]:
     n_dates = len(all_dates)
     if n_dates == 0:
         return []

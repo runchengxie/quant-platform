@@ -7,6 +7,7 @@ from typing import Any, cast
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 
 from .rebalance_calendar import get_rebalance_dates
 from .symbols import canonicalize_symbol_columns
@@ -43,7 +44,7 @@ def apply_universe_by_date(data: pd.DataFrame, universe: pd.DataFrame) -> pd.Dat
     idx = np.searchsorted(rebalance_dates, trade_dates, side="right") - 1
     valid_mask = idx >= 0
     if not np.any(valid_mask):
-        return data.iloc[0:0].copy()
+        return cast(pd.DataFrame, data.iloc[0:0].copy())
     date_map = pd.DataFrame(
         {
             "trade_date": trade_dates[valid_mask],
@@ -155,7 +156,7 @@ def _prefilter_to_rebalance_dates(
     target: str,
     features: list[str],
     rebalance_frequency: str,
-    reference_trade_dates: np.ndarray | None = None,
+    reference_trade_dates: NDArray[Any] | None = None,
     require_target: bool = False,
 ) -> tuple[pd.DataFrame, list[pd.Timestamp]]:
     required_values = [price_col, *features, *([target] if require_target else [])]
@@ -274,8 +275,8 @@ def _build_modeling_column_plan(
 
 def _resolve_reference_trade_dates(
     out: pd.DataFrame,
-    reference_trade_dates: np.ndarray | None,
-) -> np.ndarray:
+    reference_trade_dates: NDArray[Any] | None,
+) -> NDArray[Any]:
     if reference_trade_dates is None:
         return np.sort(pd.to_datetime(out["trade_date"].unique()).to_numpy())
     return np.sort(pd.to_datetime(reference_trade_dates).to_numpy())
@@ -304,7 +305,7 @@ def _sample_modeling_rows(
     features: list[str],
     sample_on_rebalance_dates: bool,
     rebalance_frequency: str,
-    reference_trade_dates: np.ndarray,
+    reference_trade_dates: NDArray[Any],
     extra_sample_dates_without_target: list[object] | None,
 ) -> pd.DataFrame:
     if not sample_on_rebalance_dates:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import pandas as pd
 
@@ -27,7 +28,7 @@ class DatasetSchema:
             cols.append(self.tradable_col)
         return list(dict.fromkeys(cols))
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[Any, Any]:
         return {
             "date_col": self.date_col,
             "instrument_col": self.instrument_col,

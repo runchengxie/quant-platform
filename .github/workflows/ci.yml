@@ -22,8 +22,7 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - name: Typecheck configured source surface
-        # Existing legacy packages still have advisory warnings; every source error is blocking.
-        run: .venv/bin/ty check --exit-zero-on-warning
+        run: .venv/bin/ty check --error-on-warning
       - run: .venv/bin/pytest -q
       - name: Audit public dependencies
         run: >-

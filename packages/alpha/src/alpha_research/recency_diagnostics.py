@@ -82,7 +82,7 @@ def parse_recency_window(value: object) -> tuple[str, int, str] | None:
     unit = match.group(2).lower()
     if amount <= 0:
         return None
-    return f"{amount}{unit}", amount, unit
+    return cast(tuple[str, int, str] | None, (f"{amount}{unit}", amount, unit))
 
 
 def build_recency_diagnostics(
@@ -135,7 +135,7 @@ def _prepare_recency_series(series: pd.Series | None) -> pd.Series:
     work.index = pd.to_datetime(work.index, errors="coerce")
     work = work[work.index.notna()]
     work = pd.to_numeric(work, errors="coerce")
-    return work[work.notna()].astype(float).sort_index()
+    return cast(pd.Series, work[work.notna()].astype(float).sort_index())
 
 
 def _latest_recency_end(series_list: Iterable[pd.Series]) -> pd.Timestamp | None:
@@ -146,7 +146,7 @@ def _latest_recency_end(series_list: Iterable[pd.Series]) -> pd.Timestamp | None
     ]
     if not ends:
         return None
-    return pd.to_datetime(max(ends))
+    return cast(pd.Timestamp | None, pd.to_datetime(max(ends)))
 
 
 def _recency_window_start(end: pd.Timestamp, *, amount: int, unit: str) -> pd.Timestamp:
@@ -164,7 +164,7 @@ def _slice_recency_window(
 ) -> pd.Series:
     if series.empty:
         return series
-    return series[(series.index >= start) & (series.index <= end)]
+    return cast(pd.Series, series[(series.index >= start) & (series.index <= end)])
 
 
 def _recency_window_row(

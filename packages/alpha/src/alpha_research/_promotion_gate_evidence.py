@@ -229,6 +229,15 @@ def _evidence(
 
 
 def _is_missing_evidence_category(evidence: dict[str, Any], category: str) -> bool:
+    if category in {
+        "recency_diagnostics",
+        "benchmark",
+        "cpcv",
+        "dsr",
+        "dynamic_ensemble",
+        "exposure_screen",
+    }:
+        return _is_missing_extended_category(evidence, category)
     if category == "main_eval":
         return (
             evidence["main_eval"]["eval_ic_ir"] is None
@@ -247,6 +256,10 @@ def _is_missing_evidence_category(evidence: dict[str, Any], category: str) -> bo
         )
     if category == "feature_stability":
         return not evidence["feature_stability"]["available"]
+    return False
+
+
+def _is_missing_extended_category(evidence: dict[str, Any], category: str) -> bool:
     if category == "recency_diagnostics":
         return not any(
             evidence["recency_diagnostics"]["test"][window]["status"] is not None
