@@ -66,8 +66,11 @@ vn.py 属于本仓库范围外。本仓库不维护 Gateway、实时订单传输
 - `CanonicalBacktestResult`
 - `BackendRegistry`
 - `NativePositionReplayBackend`
+- `write_execution_aware_result_bundle`
 
 每个后端都要声明订单生命周期、部分成交、每日账本和多空能力。缺少相应能力时，规范化结果中的相关表保持为空。
+
+原生回放显式启用 `ledger=True` 后，`CanonicalBacktestResult.unified_ledger` 会携带同一次执行模拟得到的八张完整账本表。订单、成交 ID 和每日现金、持仓价值、净值必须与结果视图一致。默认回放的该字段为 `None`。调用 `write_execution_aware_result_bundle` 并提供完整 `research.clock.v1`、producer 和输入来源后，平台用标准 bundle writer 校验能力与账户对账并原子发布证据。`CanonicalBacktestResult.performance` 仍是历史持仓周期收益视图。执行感知净值应读取 bundle 的 `daily_nav.parquet`。
 
 `NativePositionReplayBackend` 对当前持仓周期回放做安全收口：
 

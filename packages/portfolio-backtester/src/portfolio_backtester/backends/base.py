@@ -11,6 +11,9 @@ from typing import Any, Protocol, TypeVar, runtime_checkable
 import numpy as np
 import pandas as pd
 
+from ..backtest_bundle import reconcile_unified_ledger
+from ..execution_sim.results import UnifiedLedger
+
 RequestT = TypeVar("RequestT", contravariant=True)
 
 CANONICAL_BACKTEST_RESULT_SCHEMA = "canonical_backtest_result.v1"
@@ -57,6 +60,7 @@ class CanonicalBacktestResult:
     summary: Mapping[str, Any] = field(default_factory=dict)
     metadata: Mapping[str, Any] = field(default_factory=dict)
     schema_version: str = CANONICAL_BACKTEST_RESULT_SCHEMA
+    unified_ledger: UnifiedLedger | None = None
 
     def validate(self) -> None:
         if not self.backend_name.strip():
@@ -70,6 +74,14 @@ class CanonicalBacktestResult:
         _validate_performance_and_positions(self.performance, self.positions)
         _validate_order_lifecycle(self.capabilities, self.orders, self.fills)
         _validate_daily_ledger(self.capabilities, self.daily_ledger)
+        if self.unified_ledger is not None:
+            _validate_unified_ledger(
+                self.capabilities,
+                self.unified_ledger,
+                orders=self.orders,
+                fills=self.fills,
+                daily_ledger=self.daily_ledger,
+            )
         _assert_json_compatible(self.capabilities.to_mapping(), label="capabilities")
         _assert_json_compatible(self.summary, label="summary")
         _assert_json_compatible(self.metadata, label="metadata")
@@ -134,6 +146,32 @@ def _validate_daily_ledger(capabilities: BackendCapabilities, ledger: pd.DataFra
         raise ValueError(
             "A backend without daily_ledger capability must not emit daily ledger rows."
         )
+
+
+def _validate_unified_ledger(
+    capabilities: BackendCapabilities,
+    ledger: UnifiedLedger,
+    *,
+    orders: pd.DataFrame,
+    fills: pd.DataFrame,
+    daily_ledger: pd.DataFrame,
+) -> None:
+    if not capabilities.order_lifecycle or not capabilities.daily_ledger:
+        raise ValueError(
+            "A full execution ledger requires order_lifecycle and daily_ledger capabilities."
+        )
+    reconcile_unified_ledger(ledger)
+    if not ledger.orders.equals(orders) or not ledger.fills.equals(fills):
+        raise ValueError("Full execution ledger orders/fills disagree with canonical result.")
+    for frame, column in (
+        (ledger.daily_cash, "cash"),
+        (ledger.daily_positions, "positions_value"),
+        (ledger.daily_nav, "nav"),
+    ):
+        if not frame[["trade_date", column]].reset_index(drop=True).equals(
+            daily_ledger[["trade_date", column]].reset_index(drop=True)
+        ):
+            raise ValueError(f"Full execution ledger {column} disagrees with canonical result.")
 
 
 @runtime_checkable

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import ClassVar, Literal
 
 import pandas as pd
@@ -119,6 +119,7 @@ class NativePositionReplayBackend:
         ledger = ledger_result.to_unified_ledger(portfolio_value=float(sim_config.portfolio_value))
         orders = _attach_order_ids(ledger.orders)
         fills = _attach_fill_ids(ledger.fills, orders)
+        ledger = replace(ledger, orders=orders, fills=fills)
         daily_ledger = pd.DataFrame(
             {
                 "trade_date": ledger.daily_cash["trade_date"].to_numpy(),
@@ -143,6 +144,7 @@ class NativePositionReplayBackend:
             orders=orders,
             fills=fills,
             daily_ledger=daily_ledger,
+            unified_ledger=ledger,
             summary=to_json_compatible(result.summary),
             metadata={
                 "accounting_mode": "period_return_replay_with_ledger",

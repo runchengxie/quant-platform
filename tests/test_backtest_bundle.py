@@ -1,3 +1,4 @@
+from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -5,6 +6,11 @@ from typing import Any
 import pandas as pd
 import pytest
 
+from portfolio_backtester.backends import (
+    BackendCapabilities,
+    NativePositionReplayBackend,
+    NativePositionReplayRequest,
+)
 from portfolio_backtester.backtest_bundle import (
     BacktestBundleInventoryItem,
     BacktestBundleManifest,
@@ -16,7 +22,9 @@ from portfolio_backtester.backtest_bundle_io import (
     read_backtest_bundle,
     write_backtest_bundle,
 )
+from portfolio_backtester.execution_sim import ExecutionSimConfig
 from portfolio_backtester.execution_sim.results import UnifiedLedger
+from portfolio_backtester.position_backtest import PositionBacktestConfig
 
 SHA_A = "a" * 64
 
@@ -126,6 +134,54 @@ def writer_kwargs() -> dict[str, Any]:
     }
 
 
+def native_result(*, with_ledger: bool = True):
+    positions = pd.DataFrame(
+        [
+            {
+                "rebalance_date": "20260902",
+                "entry_date": "20260903",
+                "symbol": "AAA",
+                "weight": 1.0,
+                "side": "long",
+            }
+        ]
+    )
+    pricing = pd.DataFrame(
+        [
+            {"trade_date": "20260903", "symbol": "AAA", "close": 10.0, "amount": 10_000_000.0},
+            {"trade_date": "20260904", "symbol": "AAA", "close": 11.0, "amount": 10_000_000.0},
+        ]
+    )
+    periods = pd.DataFrame(
+        [{"rebalance_date": "20260902", "entry_date": "20260903", "exit_date": "20260904"}]
+    )
+    request = NativePositionReplayRequest(
+        positions=positions,
+        pricing=pricing,
+        periods=periods,
+        config=PositionBacktestConfig(transaction_cost_bps=10.0),
+        ledger=with_ledger,
+        ledger_config=ExecutionSimConfig(
+            enabled=True,
+            portfolio_value=100_000.0,
+            participation_rate=1.0,
+            liquidity_cols=("amount",),
+        ),
+    )
+    return NativePositionReplayBackend().run(request)
+
+
+def result_bundle_kwargs(result) -> dict[str, Any]:
+    return {
+        "result": result,
+        "run_id": "run-001",
+        "research_clock": execution_clock(),
+        "producer": writer_kwargs()["producer"],
+        "configuration_sha256": SHA_A,
+        "input_refs": writer_kwargs()["input_refs"],
+    }
+
+
 def test_evidence_tier_rejects_unknown_value():
     with pytest.raises(ValueError):
         BacktestEvidenceTier("trust_me")
@@ -232,6 +288,83 @@ def test_write_read_bundle_round_trip_and_hash_verification(tmp_path: Path):
     (output / "diagnostics.json").write_text('{"tampered":true}', encoding="utf-8")
     with pytest.raises(ValueError, match="SHA-256 mismatch"):
         read_backtest_bundle(output)
+
+
+def test_native_result_publishes_official_execution_aware_bundle(tmp_path: Path) -> None:
+    from portfolio_backtester.backends import write_execution_aware_result_bundle
+
+    result = native_result()
+    output = tmp_path / "backtest_result"
+    manifest = write_execution_aware_result_bundle(output, **result_bundle_kwargs(result))
+
+    assert manifest.evidence_tier is BacktestEvidenceTier.EXECUTION_AWARE
+    assert manifest.reconciliation["status"] == "passed"
+    assert read_backtest_bundle(output) == manifest
+    assert pd.read_parquet(output / "orders.parquet")["order_id"].tolist() == result.orders[
+        "order_id"
+    ].tolist()
+    assert pd.read_parquet(output / "fills.parquet")["fill_id"].tolist() == result.fills[
+        "fill_id"
+    ].tolist()
+    assert pd.read_parquet(output / "daily_nav.parquet")["nav"].tolist() == result.daily_ledger[
+        "nav"
+    ].tolist()
+
+
+def test_result_bundle_rejects_diagnostic_result(tmp_path: Path) -> None:
+    from portfolio_backtester.backends import write_execution_aware_result_bundle
+
+    output = tmp_path / "backtest_result"
+    with pytest.raises(ValueError, match="full execution ledger"):
+        write_execution_aware_result_bundle(
+            output, **result_bundle_kwargs(native_result(with_ledger=False))
+        )
+    assert not output.exists()
+
+
+def test_result_bundle_rejects_missing_execution_clock(tmp_path: Path) -> None:
+    from portfolio_backtester.backends import write_execution_aware_result_bundle
+
+    output = tmp_path / "backtest_result"
+    kwargs = result_bundle_kwargs(native_result())
+    clock = execution_clock()
+    del clock["information_cutoff_at"]
+    kwargs["research_clock"] = clock
+    with pytest.raises(ValueError, match=r"research_clock\.information_cutoff_at"):
+        write_execution_aware_result_bundle(output, **kwargs)
+    assert not output.exists()
+
+
+def test_result_bundle_rejects_false_capability_and_unbalanced_nav(tmp_path: Path) -> None:
+    from portfolio_backtester.backends import write_execution_aware_result_bundle
+
+    result = native_result()
+    false_capability = replace(
+        result,
+        capabilities=BackendCapabilities(order_lifecycle=False, daily_ledger=True),
+    )
+    with pytest.raises(ValueError, match="order_lifecycle"):
+        write_execution_aware_result_bundle(
+            tmp_path / "false-capability", **result_bundle_kwargs(false_capability)
+        )
+
+    ledger = result.unified_ledger
+    assert ledger is not None
+    bad_nav = ledger.daily_nav.copy()
+    bad_nav.loc[0, "nav"] -= 100.0
+    bad_view = result.daily_ledger.copy()
+    bad_view.loc[0, "nav"] -= 100.0
+    unbalanced = replace(
+        result,
+        unified_ledger=replace(ledger, daily_nav=bad_nav),
+        daily_ledger=bad_view,
+    )
+    with pytest.raises(ValueError, match=r"nav = cash \+ positions_value"):
+        write_execution_aware_result_bundle(
+            tmp_path / "unbalanced", **result_bundle_kwargs(unbalanced)
+        )
+    assert not (tmp_path / "false-capability").exists()
+    assert not (tmp_path / "unbalanced").exists()
 
 
 def test_execution_aware_manifest_rejects_incomplete_clock_on_read():
