@@ -8,6 +8,7 @@ from .base import (
     CanonicalBacktestResult,
     to_json_compatible,
 )
+from .bundle import write_execution_aware_result_bundle
 from .native import (
     IntradayExecutionAssumption,
     NativePositionReplayBackend,
@@ -24,4 +25,5 @@ __all__ = [
     "NativePositionReplayBackend",
     "NativePositionReplayRequest",
     "to_json_compatible",
+    "write_execution_aware_result_bundle",
 ]

@@ -79,6 +79,8 @@ Artifact Envelope，最后通过原子目录替换发布。目标目录已存在
 
 Reader 不重新执行组合、订单、成交或 PnL 计算。
 
+已有 `CanonicalBacktestResult` 的调用方可以使用 `portfolio_backtester.backends.write_execution_aware_result_bundle`。它要求结果携带完整 `unified_ledger`，检查结果视图与完整账本一致，并调用上述 writer。`NativePositionReplayBackend` 在 `ledger=True` 且有非空每日账本时提供该账本。零成交区间可以保留空订单或成交表及其 ID 列。调用方必须传入完整、时序合法的执行时钟、producer、配置哈希与至少一个输入来源。缺失或对账失败时不会发布有效目录。bundle 的 `daily_nav.parquet` 是执行感知净值来源，结果对象的 `performance` 是历史周期回放收益视图。
+
 ## ResearchClock 边界
 
 本仓当前已固定依赖 `research-contracts` 的 main 可达提交。该提交尚未包含新的 `ResearchClock` 类型时，

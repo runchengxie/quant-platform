@@ -15,6 +15,8 @@ from portfolio_backtester.backends import (
     NativePositionReplayBackend,
     NativePositionReplayRequest,
 )
+from portfolio_backtester.backtest_bundle import reconcile_unified_ledger
+from portfolio_backtester.execution_sim import ExecutionSimConfig
 from portfolio_backtester.position_backtest import PositionBacktestConfig
 
 FIXTURE_PATH = Path(__file__).parent / "fixtures" / "backends" / "liquid_long_only.expected.json"
@@ -82,6 +84,47 @@ def test_native_backend_matches_committed_liquid_golden_result() -> None:
     assert result.orders.empty
     assert result.fills.empty
     assert result.daily_ledger.empty
+
+
+def test_native_ledger_result_exposes_matching_full_execution_ledger() -> None:
+    base = _request()
+    pricing = base.pricing.assign(amount=10_000_000.0)
+    request = _request(
+        pricing=pricing,
+        ledger=True,
+        ledger_config=ExecutionSimConfig(
+            enabled=True,
+            portfolio_value=100_000.0,
+            participation_rate=1.0,
+            liquidity_cols=("amount",),
+        ),
+    )
+
+    result = NativePositionReplayBackend().run(request)
+    ledger = result.unified_ledger
+
+    assert ledger is not None
+    assert not ledger.orders.empty
+    assert not ledger.fills.empty
+    assert ledger.orders["order_id"].tolist() == result.orders["order_id"].tolist()
+    assert ledger.fills["fill_id"].tolist() == result.fills["fill_id"].tolist()
+    assert ledger.daily_cash["cash"].tolist() == result.daily_ledger["cash"].tolist()
+    assert ledger.daily_nav["nav"].tolist() == result.daily_ledger["nav"].tolist()
+    assert reconcile_unified_ledger(ledger)["status"] == "passed"
+
+
+def test_native_diagnostic_result_has_no_full_execution_ledger() -> None:
+    result = NativePositionReplayBackend().run(_request())
+    assert result.unified_ledger is None
+
+
+def test_native_disabled_ledger_does_not_claim_execution_evidence() -> None:
+    result = NativePositionReplayBackend().run(
+        _request(ledger=True, ledger_config=ExecutionSimConfig(enabled=False))
+    )
+    assert result.unified_ledger is None
+    assert not result.capabilities.order_lifecycle
+    assert not result.capabilities.daily_ledger
 
 
 def test_native_backend_preserves_duplicate_period_end_rows(monkeypatch) -> None:

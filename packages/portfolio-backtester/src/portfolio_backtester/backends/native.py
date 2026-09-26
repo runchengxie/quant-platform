@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import ClassVar, Literal
 
 import pandas as pd
@@ -73,6 +73,14 @@ class NativePositionReplayBackend:
         )
         if request.ledger:
             return self._run_with_ledger(request, result, performance)
+        return self._diagnostic_result(request, result, performance)
+
+    def _diagnostic_result(
+        self,
+        request: NativePositionReplayRequest,
+        result: PositionBacktestResult,
+        performance: pd.DataFrame,
+    ) -> CanonicalBacktestResult:
         canonical = CanonicalBacktestResult(
             backend_name=self.name,
             capabilities=self.capabilities,
@@ -116,9 +124,16 @@ class NativePositionReplayBackend:
             trading_days_per_year=int(getattr(request.config, "trading_days_per_year", 252) or 252),
             slippage_model=request.slippage_model,
         )
+        if ledger_result.daily.empty:
+            if not ledger_result.orders.empty or not ledger_result.fills.empty:
+                raise ValueError(
+                    "Execution simulator returned orders or fills without a daily ledger"
+                )
+            return self._diagnostic_result(request, result, performance)
         ledger = ledger_result.to_unified_ledger(portfolio_value=float(sim_config.portfolio_value))
         orders = _attach_order_ids(ledger.orders)
         fills = _attach_fill_ids(ledger.fills, orders)
+        ledger = replace(ledger, orders=orders, fills=fills)
         daily_ledger = pd.DataFrame(
             {
                 "trade_date": ledger.daily_cash["trade_date"].to_numpy(),
@@ -143,6 +158,7 @@ class NativePositionReplayBackend:
             orders=orders,
             fills=fills,
             daily_ledger=daily_ledger,
+            unified_ledger=ledger,
             summary=to_json_compatible(result.summary),
             metadata={
                 "accounting_mode": "period_return_replay_with_ledger",
@@ -162,7 +178,9 @@ class NativePositionReplayBackend:
 
 def _attach_order_ids(orders: pd.DataFrame) -> pd.DataFrame:
     if orders.empty:
-        return orders.copy()
+        out = orders.copy()
+        out["order_id"] = pd.Series(dtype="str")
+        return out
     out = orders.copy()
     key_cols = [c for c in ("rebalance_date", "entry_date", "symbol", "side") if c in out.columns]
     out["order_id"] = out.apply(lambda row: "|".join(str(row[c]) for c in key_cols), axis=1)
@@ -171,7 +189,10 @@ def _attach_order_ids(orders: pd.DataFrame) -> pd.DataFrame:
 
 def _attach_fill_ids(fills: pd.DataFrame, orders: pd.DataFrame) -> pd.DataFrame:
     if fills.empty:
-        return fills.copy()
+        out = fills.copy()
+        out["order_id"] = pd.Series(dtype="str")
+        out["fill_id"] = pd.Series(dtype="str")
+        return out
     out = fills.copy()
     key_cols = [c for c in ("rebalance_date", "entry_date", "symbol", "side") if c in out.columns]
     out["order_id"] = out.apply(lambda row: "|".join(str(row[c]) for c in key_cols), axis=1)

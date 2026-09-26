@@ -149,6 +149,9 @@ def _validate_execution_metadata(
             raise ValueError(f"execution-aware bundle requires research_clock.{field}")
     if research_clock.get("schema_version") != "research.clock.v1":
         raise ValueError("execution-aware bundle requires research.clock.v1")
+    from research_contracts import validate_research_clock
+
+    validate_research_clock(research_clock, require_execution=True)
 
 
 def validate_execution_aware_bundle_inputs(
