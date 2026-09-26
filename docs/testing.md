@@ -20,6 +20,20 @@ uv sync --locked --all-groups --reinstall-package research-contracts
 完整测试和公共发布检查应在干净的任务 worktree 中运行。主检出中的 `.env.local`、`out/`、
 `state/` 和其他 worktree 属于本机环境，可能干扰发布边界检查。
 
+## 验证安装边界
+
+在独立 worktree 中验证基础环境，防止开发依赖掩盖缺失的运行依赖：
+
+```bash
+uv sync --locked --no-default-groups
+.venv/bin/python scripts/check_minimal_install.py
+uv run --locked --no-default-groups --group test pytest -q tests/test_backtest_backends.py tests/test_backtest_bundle.py tests/test_optimizer_backends.py tests/test_execution_sim.py
+uv sync --locked --no-default-groups --extra ml
+uv run --locked --no-default-groups --extra ml --group test pytest -q tests/alpha/test_modeling.py tests/alpha/test_feature_engineering_short_series.py
+```
+
+CI 在 Python 3.12 和 3.13 上运行这两种安装模式。基础环境会检查 XGBoost、scikit-learn、pandas-ta 及其专用的 Numba、llvmlite、NCCL 依赖均未安装，再验证实际回测和结果包。机器学习环境验证模型拟合与特征计算。微观结构 CI 还会独立安装 `microstructure` 并运行训练指标计算，验证其 scikit-learn 依赖。完整开发环境继续运行全部测试。
+
 ## 统一入口
 
 ```bash

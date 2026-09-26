@@ -1,12 +1,41 @@
 name: public-ci
 on: [push, pull_request]
 jobs:
+  dependency-modes:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked --no-default-groups --python ${{ matrix.python }}
+      - name: Verify lean runtime dependencies
+        run: .venv/bin/python scripts/check_minimal_install.py
+      - name: Run backtests without machine learning packages
+        run: >-
+          uv run --locked --no-default-groups --group test pytest -q
+          tests/test_backtest_backends.py tests/test_backtest_bundle.py
+          tests/test_optimizer_backends.py tests/test_execution_sim.py
+      - name: Install optional machine learning dependencies
+        run: uv sync --locked --no-default-groups --extra ml
+      - name: Test models and features with the ml extra
+        run: >-
+          uv run --locked --no-default-groups --extra ml --group test pytest -q
+          tests/alpha/test_modeling.py tests/alpha/test_feature_engineering_short_series.py
   rust-microstructure:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
       - uses: dtolnay/rust-toolchain@stable
+      - name: Install standalone microstructure extra
+        run: uv sync --locked --no-default-groups --extra microstructure
+      - name: Verify standalone training metrics
+        run: >-
+          .venv/bin/python -c "import numpy as np;
+          from ticknet.train import f1_metrics;
+          assert f1_metrics(np.array([0, 1, 1]), np.array([0, 1, 1]))['accuracy'] == 1.0"
       - run: uv sync --locked --all-groups --extra dev --extra microstructure
       - run: cargo fmt --check --manifest-path packages/microstructure/rust/Cargo.toml
       - run: cargo check --locked --manifest-path packages/microstructure/rust/Cargo.toml

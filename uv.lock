@@ -4058,26 +4058,32 @@ dependencies = [
     { name = "numpy" },
     { name = "pandas", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.14'" },
     { name = "pandas", version = "3.0.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.14'" },
-    { name = "pandas-ta" },
     { name = "pyarrow" },
     { name = "pyyaml" },
     { name = "research-contracts" },
-    { name = "scikit-learn" },
     { name = "scipy" },
-    { name = "xgboost" },
 ]
 
 [package.optional-dependencies]
 dev = [
     { name = "jsonschema" },
+    { name = "pandas-ta" },
     { name = "pytest" },
     { name = "research-code-quality" },
     { name = "ruff" },
+    { name = "scikit-learn" },
     { name = "ty" },
+    { name = "xgboost" },
 ]
 microstructure = [
     { name = "polars" },
+    { name = "scikit-learn" },
     { name = "torch" },
+]
+ml = [
+    { name = "pandas-ta" },
+    { name = "scikit-learn" },
+    { name = "xgboost" },
 ]
 qlib = [
     { name = "pyqlib" },
@@ -4086,16 +4092,22 @@ qlib = [
 [package.dev-dependencies]
 dev = [
     { name = "jsonschema" },
+    { name = "pandas-ta" },
     { name = "polars" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "research-code-quality" },
     { name = "ruff" },
+    { name = "scikit-learn" },
     { name = "torch" },
     { name = "ty" },
+    { name = "xgboost" },
 ]
 docs = [
     { name = "mkdocs-material" },
+]
+test = [
+    { name = "pytest" },
 ]
 
 [package.metadata]
@@ -4104,7 +4116,8 @@ requires-dist = [
     { name = "jsonschema", marker = "extra == 'dev'", specifier = ">=4.25" },
     { name = "numpy", specifier = ">=1.23" },
     { name = "pandas", specifier = ">=2.0" },
-    { name = "pandas-ta", specifier = ">=0.3.14b0" },
+    { name = "pandas-ta", marker = "extra == 'dev'", specifier = ">=0.3.14b0" },
+    { name = "pandas-ta", marker = "extra == 'ml'", specifier = ">=0.3.14b0" },
     { name = "polars", marker = "extra == 'microstructure'", specifier = ">=1.0" },
     { name = "pyarrow", specifier = ">=25.0.1" },
     { name = "pyqlib", marker = "extra == 'qlib'", specifier = ">=0.9.5" },
@@ -4113,26 +4126,33 @@ requires-dist = [
     { name = "research-code-quality", marker = "extra == 'dev'", git = "https://github.com/runchengxie/quant-code-quality.git?rev=1c754c3" },
     { name = "research-contracts", directory = "packages/research-contracts" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8" },
-    { name = "scikit-learn", specifier = ">=1.9.0" },
+    { name = "scikit-learn", marker = "extra == 'dev'", specifier = ">=1.9.0" },
+    { name = "scikit-learn", marker = "extra == 'microstructure'", specifier = ">=1.9.0" },
+    { name = "scikit-learn", marker = "extra == 'ml'", specifier = ">=1.9.0" },
     { name = "scipy", specifier = ">=1.14" },
     { name = "torch", marker = "extra == 'microstructure'", specifier = ">=2.0" },
     { name = "ty", marker = "extra == 'dev'", specifier = "==0.0.77" },
-    { name = "xgboost", specifier = ">=1.7" },
+    { name = "xgboost", marker = "extra == 'dev'", specifier = ">=1.7" },
+    { name = "xgboost", marker = "extra == 'ml'", specifier = ">=1.7" },
 ]
-provides-extras = ["dev", "qlib", "microstructure"]
+provides-extras = ["ml", "dev", "qlib", "microstructure"]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "jsonschema", specifier = ">=4.25" },
+    { name = "pandas-ta", specifier = ">=0.3.14b0" },
     { name = "polars", specifier = ">=1.0" },
     { name = "pytest", specifier = ">=9.0.3" },
     { name = "pytest-cov", specifier = ">=6.0" },
     { name = "research-code-quality", git = "https://github.com/runchengxie/quant-code-quality.git?rev=1c754c3" },
     { name = "ruff", specifier = ">=0.8" },
+    { name = "scikit-learn", specifier = ">=1.9.0" },
     { name = "torch", specifier = ">=2.0" },
     { name = "ty", specifier = "==0.0.77" },
+    { name = "xgboost", specifier = ">=1.7" },
 ]
 docs = [{ name = "mkdocs-material", specifier = ">=9.6,<10" }]
+test = [{ name = "pytest", specifier = ">=9.0.3" }]
 
 [[package]]
 name = "redis"
