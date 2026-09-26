@@ -19,7 +19,7 @@ def write_execution_aware_result_bundle(
     research_clock: Mapping[str, Any],
     producer: Mapping[str, Any],
     configuration_sha256: str,
-    input_refs: Sequence[Mapping[str, Any]] = (),
+    input_refs: Sequence[Mapping[str, Any]],
     diagnostics: Mapping[str, Any] | None = None,
 ) -> BacktestBundleManifest:
     """Write a hash-verified bundle from a backend's full execution ledger.
@@ -32,6 +32,8 @@ def write_execution_aware_result_bundle(
     ledger = result.unified_ledger
     if ledger is None:
         raise ValueError("Execution-aware bundle requires a full execution ledger.")
+    if not input_refs:
+        raise ValueError("Execution-aware bundle requires input_refs for artifact lineage")
     if producer.get("backend") != result.backend_name:
         raise ValueError("producer.backend must match the canonical result backend")
     return write_backtest_bundle(

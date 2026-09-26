@@ -21,9 +21,11 @@
 
 - A backend without a full ledger cannot publish an execution-aware bundle.
 - Canonical order/fill IDs and daily account values cannot disagree with the attached ledger.
-- Missing execution clock fields must reject before publishing an output directory.
+- Missing, malformed, or causally reversed execution clock fields must reject before publishing an output directory.
 - Unbalanced daily NAV must reject rather than produce official evidence.
 - Existing diagnostic replay output must retain its historical schema and values.
+- Empty execution ledgers must retain diagnostic semantics; zero-fill bundles retain ID columns.
+- Official publication requires at least one verifiable input lineage reference.
 
 ---
 
@@ -42,6 +44,7 @@
 - [x] Run `uv run pytest tests/test_backtest_backends.py -q` and confirm the new assertion fails because the field is absent (2 expected failures).
 - [x] Add the optional field and attach the native simulator ledger after stable IDs are added; validate capability and duplicated frame consistency.
 - [x] Run `uv run pytest tests/test_backtest_backends.py -q` and confirm green (10 passed).
+- [x] Fix the reviewed empty-ledger edge case: test a disabled simulator first, then retain a diagnostic result without claiming full execution evidence.
 
 ### Task 2: Publish a result with the official bundle writer
 
@@ -51,12 +54,13 @@
 - Test: `tests/test_backtest_bundle.py`
 
 **Interfaces:**
-- `write_execution_aware_result_bundle(output_dir: Path, *, result: CanonicalBacktestResult, run_id: str, research_clock: Mapping[str, Any], producer: Mapping[str, Any], configuration_sha256: str, input_refs: Sequence[Mapping[str, Any]] = (), diagnostics: Mapping[str, Any] | None = None) -> BacktestBundleManifest`.
+- `write_execution_aware_result_bundle(output_dir: Path, *, result: CanonicalBacktestResult, run_id: str, research_clock: Mapping[str, Any], producer: Mapping[str, Any], configuration_sha256: str, input_refs: Sequence[Mapping[str, Any]], diagnostics: Mapping[str, Any] | None = None) -> BacktestBundleManifest`.
 
 - [x] Write a failing synthetic test that publishes a native ledger result, reloads and verifies the official manifest, and checks the order/fill/daily tables. Add rejection tests for no ledger, false capabilities, missing clock, and unbalanced NAV.
 - [x] Run `uv run pytest tests/test_backtest_bundle.py -q` and confirm the new tests fail because the helper is absent (4 expected failures).
 - [x] Implement the helper using `write_backtest_bundle` and export it from `portfolio_backtester.backends`.
 - [x] Run `uv run pytest tests/test_backtest_bundle.py tests/test_backtest_backends.py -q` and confirm green (28 passed).
+- [x] Fix reviewed edge cases with failing tests first: reject malformed/reversed clocks and missing input lineage, and retain ID columns in zero-fill tables (33 focused tests passed).
 
 ### Task 3: Document, verify, and merge provider
 
@@ -65,7 +69,7 @@
 - Modify: `docs/concepts/canonical-backtest-bundle.md`
 
 - [x] Document the full-ledger result field, official writer, and distinction between historical period performance and execution-aware daily NAV.
-- [x] Run `uv run ruff check .`, `uv run ty check --error-on-warning`, `uv run pytest`, `uv run mkdocs build --strict`, and `git diff --check`; record exact results. Ruff and ty passed; after fixing the two new Chinese punctuation style violations, full pytest passed (1,465 passed, 12 skipped, 8 existing warnings), strict MkDocs passed, and diff check passed.
+- [x] Run `uv run ruff check .`, `uv run ruff format --check .`, `uv run ty check --error-on-warning`, `uv run pytest`, `uv run mkdocs build --strict`, and `git diff --check` after the reviewed fixes; record exact results. All passed: 1,470 tests passed, 12 skipped, 8 existing warnings; 986 Python files formatted; strict documentation build completed. The required `input_refs` signature was tightened after this run and received focused verification.
 - [ ] Review, commit, push, open a PR to main, complete required checks/review, merge, and clean only this task's branch/worktree.
 
 ### Task 4: Consume the merged provider in research Jobs

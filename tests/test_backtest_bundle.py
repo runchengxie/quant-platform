@@ -134,7 +134,7 @@ def writer_kwargs() -> dict[str, Any]:
     }
 
 
-def native_result(*, with_ledger: bool = True):
+def native_result(*, with_ledger: bool = True, liquidity_amount: float = 10_000_000.0):
     positions = pd.DataFrame(
         [
             {
@@ -148,8 +148,8 @@ def native_result(*, with_ledger: bool = True):
     )
     pricing = pd.DataFrame(
         [
-            {"trade_date": "20260903", "symbol": "AAA", "close": 10.0, "amount": 10_000_000.0},
-            {"trade_date": "20260904", "symbol": "AAA", "close": 11.0, "amount": 10_000_000.0},
+            {"trade_date": "20260903", "symbol": "AAA", "close": 10.0, "amount": liquidity_amount},
+            {"trade_date": "20260904", "symbol": "AAA", "close": 11.0, "amount": liquidity_amount},
         ]
     )
     periods = pd.DataFrame(
@@ -300,15 +300,18 @@ def test_native_result_publishes_official_execution_aware_bundle(tmp_path: Path)
     assert manifest.evidence_tier is BacktestEvidenceTier.EXECUTION_AWARE
     assert manifest.reconciliation["status"] == "passed"
     assert read_backtest_bundle(output) == manifest
-    assert pd.read_parquet(output / "orders.parquet")["order_id"].tolist() == result.orders[
-        "order_id"
-    ].tolist()
-    assert pd.read_parquet(output / "fills.parquet")["fill_id"].tolist() == result.fills[
-        "fill_id"
-    ].tolist()
-    assert pd.read_parquet(output / "daily_nav.parquet")["nav"].tolist() == result.daily_ledger[
-        "nav"
-    ].tolist()
+    assert (
+        pd.read_parquet(output / "orders.parquet")["order_id"].tolist()
+        == result.orders["order_id"].tolist()
+    )
+    assert (
+        pd.read_parquet(output / "fills.parquet")["fill_id"].tolist()
+        == result.fills["fill_id"].tolist()
+    )
+    assert (
+        pd.read_parquet(output / "daily_nav.parquet")["nav"].tolist()
+        == result.daily_ledger["nav"].tolist()
+    )
 
 
 def test_result_bundle_rejects_diagnostic_result(tmp_path: Path) -> None:
@@ -333,6 +336,44 @@ def test_result_bundle_rejects_missing_execution_clock(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match=r"research_clock\.information_cutoff_at"):
         write_execution_aware_result_bundle(output, **kwargs)
     assert not output.exists()
+
+
+@pytest.mark.parametrize("decision_at", ["invalid-time", "2026-09-03T10:30:00+08:00"])
+def test_result_bundle_rejects_malformed_or_reversed_clock(
+    tmp_path: Path, decision_at: str
+) -> None:
+    from portfolio_backtester.backends import write_execution_aware_result_bundle
+
+    output = tmp_path / "backtest_result"
+    kwargs = result_bundle_kwargs(native_result())
+    clock = execution_clock()
+    clock["decision_at"] = decision_at
+    kwargs["research_clock"] = clock
+    with pytest.raises(ValueError):
+        write_execution_aware_result_bundle(output, **kwargs)
+    assert not output.exists()
+
+
+def test_result_bundle_rejects_missing_input_lineage(tmp_path: Path) -> None:
+    from portfolio_backtester.backends import write_execution_aware_result_bundle
+
+    output = tmp_path / "backtest_result"
+    kwargs = result_bundle_kwargs(native_result())
+    kwargs["input_refs"] = []
+    with pytest.raises(ValueError, match="input_refs"):
+        write_execution_aware_result_bundle(output, **kwargs)
+    assert not output.exists()
+
+
+def test_zero_fill_bundle_retains_empty_fill_id_columns(tmp_path: Path) -> None:
+    from portfolio_backtester.backends import write_execution_aware_result_bundle
+
+    result = native_result(liquidity_amount=0.0)
+    assert result.fills.empty
+    assert {"fill_id", "order_id"} <= set(result.fills.columns)
+    output = tmp_path / "backtest_result"
+    write_execution_aware_result_bundle(output, **result_bundle_kwargs(result))
+    assert {"fill_id", "order_id"} <= set(pd.read_parquet(output / "fills.parquet").columns)
 
 
 def test_result_bundle_rejects_false_capability_and_unbalanced_nav(tmp_path: Path) -> None:

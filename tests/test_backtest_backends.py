@@ -118,6 +118,15 @@ def test_native_diagnostic_result_has_no_full_execution_ledger() -> None:
     assert result.unified_ledger is None
 
 
+def test_native_disabled_ledger_does_not_claim_execution_evidence() -> None:
+    result = NativePositionReplayBackend().run(
+        _request(ledger=True, ledger_config=ExecutionSimConfig(enabled=False))
+    )
+    assert result.unified_ledger is None
+    assert not result.capabilities.order_lifecycle
+    assert not result.capabilities.daily_ledger
+
+
 def test_native_backend_preserves_duplicate_period_end_rows(monkeypatch) -> None:
     class FakeResult:
         net_returns = pd.DataFrame(

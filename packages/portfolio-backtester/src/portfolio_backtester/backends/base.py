@@ -168,8 +168,10 @@ def _validate_unified_ledger(
         (ledger.daily_positions, "positions_value"),
         (ledger.daily_nav, "nav"),
     ):
-        if not frame[["trade_date", column]].reset_index(drop=True).equals(
-            daily_ledger[["trade_date", column]].reset_index(drop=True)
+        if (
+            not frame[["trade_date", column]]
+            .reset_index(drop=True)
+            .equals(daily_ledger[["trade_date", column]].reset_index(drop=True))
         ):
             raise ValueError(f"Full execution ledger {column} disagrees with canonical result.")
 
