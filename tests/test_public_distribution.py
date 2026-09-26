@@ -44,6 +44,7 @@ def test_distribution_declares_only_public_registry_dependencies() -> None:
         "xgboost>=1.7",
     ]
     assert dev_dependencies == [
+        "maturin>=1,<2",
         "pandas-ta>=0.3.14b0",
         "scikit-learn>=1.9.0",
         "xgboost>=1.7",
