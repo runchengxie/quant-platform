@@ -28,7 +28,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.98.1
+        with:
+          components: rustfmt, clippy
+      - name: Log Rust compiler version
+        run: rustc --version
       - name: Install standalone microstructure extra
         run: uv sync --locked --no-default-groups --extra microstructure
       - name: Verify standalone training metrics
