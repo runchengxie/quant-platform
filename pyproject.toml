@@ -11,12 +11,9 @@ dependencies = [
   "duckdb>=1.2",
   "numpy>=1.23",
   "pandas>=2.0",
-  "pandas-ta>=0.3.14b0",
   "pyarrow>=25.0.1",
   "PyYAML>=6.0",
   "scipy>=1.14",
-  "scikit-learn>=1.9.0",
-  "xgboost>=1.7",
   "research-contracts>=0.1.0",
 ]
 
@@ -24,7 +21,15 @@ dependencies = [
 strategy-pipeline = "strategy_pipeline.cli:main"
 
 [project.optional-dependencies]
+ml = [
+  "pandas-ta>=0.3.14b0",
+  "scikit-learn>=1.9.0",
+  "xgboost>=1.7",
+]
 dev = [
+  "pandas-ta>=0.3.14b0",
+  "scikit-learn>=1.9.0",
+  "xgboost>=1.7",
   "jsonschema>=4.25",
   "pytest>=9.0.3",
   "research-code-quality",
@@ -36,6 +41,9 @@ microstructure = ["polars>=1.0", "torch>=2.0"]
 
 [dependency-groups]
 dev = [
+  "pandas-ta>=0.3.14b0",
+  "scikit-learn>=1.9.0",
+  "xgboost>=1.7",
   "polars>=1.0",
   "torch>=2.0",
   "jsonschema>=4.25",

@@ -14,6 +14,20 @@ uv run ruff check .
 uv run pytest -q
 ```
 
+生产环境可以按用途安装：
+
+```bash
+# 只安装回测、组合和公共契约所需依赖
+uv sync --locked --no-default-groups
+
+# 需要模型训练、交叉验证或技术指标特征时
+uv sync --locked --no-default-groups --extra ml
+```
+
+`ml` 包含 XGBoost、scikit-learn 和 pandas-ta。基础安装保留回测使用的 NumPy、pandas、SciPy、Arrow 等依赖。开发依赖仍包含完整机器学习环境，因此原有开发和测试命令保持可用。使用 Qlib 研究流程时同时启用 `--extra ml --extra qlib`。
+
+其他仓库通过依赖声明 `quant-platform[ml]` 启用机器学习功能，并固定平台提交。只使用回测的运行时声明 `quant-platform` 即可。升级到这一安装方式时，使用 `alpha_research.modeling`、特征计算或训练流程的调用方需要显式启用 `ml`。
+
 项目保留 `portfolio_backtester` Python 命名空间，供现有研究代码兼容使用。常用入口和示例见[文档总览](docs/README.md)，Alpha 模块边界见[后端说明](docs/alpha/concepts/framework-backends.md)。
 
 微观结构模型和模拟器位于 `packages/microstructure/`。Python 实现是默认后端。需要 Rust 撮合与批量回放时，可按[微观结构开发说明](docs/development/microstructure-rust.md)单独构建并安装原生扩展。
