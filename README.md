@@ -4,6 +4,22 @@
 
 [在线文档](https://runchengxie.github.io/quant-platform/)
 
+## 系统定位
+
+角色：Quant Domain Framework。
+
+负责通用回测、组合构造、风险分析、执行模拟、微观结构能力和公开研究产物契约。不负责市场数据生产、研究任务调度、策略专属研究或生产晋升。
+
+```text
+quant-market-data-platform ── 发布数据 ──┐
+quant-platform ── 领域能力与契约 ────────┼──→ quant-research
+quant-backtest-runtime ── 执行已提交任务 ─┘
+                                              ↓
+                                       研究证据与交付
+```
+
+Agent Harness 通过研究层的 MCP 或 CLI 接口参与研究。运行时负责回测任务执行，不运行 LLM Agent loop。跨仓库完整架构和信任边界由私有 `quant-research` 维护，内部入口见[系统架构总览](https://github.com/runchengxie/quant-research/blob/main/docs/architecture/system-overview.md)，需要仓库权限。公开组件边界见下文及[数据平台接入文档](https://github.com/runchengxie/quant-market-data-platform/blob/main/docs/integrations.md)。
+
 ## 快速开始
 
 项目要求 Python 3.12 或更新版本，使用 `uv` 安装锁定依赖：
@@ -33,6 +49,8 @@ uv sync --locked --no-default-groups --extra ml
 微观结构模型和模拟器位于 `packages/microstructure/`。Python 实现是默认后端。需要 Rust 撮合与批量回放时，可按[微观结构开发说明](docs/development/microstructure-rust.md)单独构建并安装原生扩展。
 
 ## 项目边界
+
+下表是各仓库的职责地图。Agent Harness 通过研究层提供的 MCP、CLI 或受控 API 接口调用系统，不拥有研究状态、回测语义或生产晋升规则。
 
 - `quant-platform`：通用回测、组合、风险、执行模拟、微观结构机制和公开研究产物接口
 - `quant-backtest-runtime`：回测任务协议、SQLite 状态、worker、资源控制、CLI 和独立发布
