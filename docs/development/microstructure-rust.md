@@ -15,7 +15,7 @@ development dependency group supplies the Maturin version locked in `uv.lock`:
 
 ```bash
 uv sync --locked --all-groups --extra microstructure
-uv run --locked maturin build --release \
+uv run --locked maturin build --locked --release \
   -m packages/microstructure/rust/Cargo.toml --out /tmp/microstructure-wheels
 uv pip install --python .venv/bin/python /tmp/microstructure-wheels/*.whl
 TICKNET_REQUIRE_RUST=1 .venv/bin/pytest tests/microstructure -q
