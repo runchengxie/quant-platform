@@ -33,15 +33,20 @@ def test_distribution_declares_only_public_registry_dependencies() -> None:
         "duckdb>=1.2",
         "numpy>=1.23",
         "pandas>=2.0",
-        "pandas-ta>=0.3.14b0",
         "pyarrow>=25.0.1",
         "PyYAML>=6.0",
         "scipy>=1.14",
-        "scikit-learn>=1.9.0",
-        "xgboost>=1.7",
         "research-contracts>=0.1.0",
     ]
+    assert project["project"]["optional-dependencies"]["ml"] == [
+        "pandas-ta>=0.3.14b0",
+        "scikit-learn>=1.9.0",
+        "xgboost>=1.7",
+    ]
     assert dev_dependencies == [
+        "pandas-ta>=0.3.14b0",
+        "scikit-learn>=1.9.0",
+        "xgboost>=1.7",
         "polars>=1.0",
         "torch>=2.0",
         "jsonschema>=4.25",

@@ -37,7 +37,7 @@ dev = [
   "ty==0.0.77",
 ]
 qlib = ["pyqlib>=0.9.5"]
-microstructure = ["polars>=1.0", "torch>=2.0"]
+microstructure = ["polars>=1.0", "torch>=2.0", "scikit-learn>=1.9.0"]
 
 [dependency-groups]
 dev = [

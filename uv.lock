@@ -4077,6 +4077,7 @@ dev = [
 ]
 microstructure = [
     { name = "polars" },
+    { name = "scikit-learn" },
     { name = "torch" },
 ]
 ml = [
@@ -4123,6 +4124,7 @@ requires-dist = [
     { name = "research-contracts", directory = "packages/research-contracts" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8" },
     { name = "scikit-learn", marker = "extra == 'dev'", specifier = ">=1.9.0" },
+    { name = "scikit-learn", marker = "extra == 'microstructure'", specifier = ">=1.9.0" },
     { name = "scikit-learn", marker = "extra == 'ml'", specifier = ">=1.9.0" },
     { name = "scipy", specifier = ">=1.14" },
     { name = "torch", marker = "extra == 'microstructure'", specifier = ">=2.0" },
