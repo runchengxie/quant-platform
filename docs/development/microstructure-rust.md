@@ -10,11 +10,12 @@ execution engine remain in Python.
 ## Build and use
 
 Install project dependencies first, then build and install the wheel in the
-same environment:
+same environment. `rust-toolchain.toml` selects Rust 1.98.1, and the root
+development dependency group supplies the Maturin version locked in `uv.lock`:
 
 ```bash
 uv sync --locked --all-groups --extra microstructure
-uvx --from maturin maturin build --locked --release \
+uv run --locked maturin build --release \
   -m packages/microstructure/rust/Cargo.toml --out /tmp/microstructure-wheels
 uv pip install --python .venv/bin/python /tmp/microstructure-wheels/*.whl
 TICKNET_REQUIRE_RUST=1 .venv/bin/pytest tests/microstructure -q
