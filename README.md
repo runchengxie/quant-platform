@@ -1,82 +1,33 @@
 # quant-platform
 
-`quant-platform` 提供可复用的量化研究与组合基础能力，包括回测、组合构造、风险分析、执行模拟、微观结构实验和研究产物契约。项目面向研究代码与工具开发，不保存真实策略输入、专有特征、凭证或研究结论。
+`quant-platform` 是可复用的量化研究框架，提供回测、组合构造、风险分析、执行模拟和公共研究产物契约。它面向研究代码与工具开发，不保存真实策略数据、专有特征、凭证或研究结论。
+
+本项目属于 Quant Research 项目系列，与同系列的数据平台、研究控制面、回测运行时和报告交付项目各自独立维护、按接口协作。
 
 [在线文档](https://runchengxie.github.io/quant-platform/)
 
-## 系统定位
-
-角色：Quant Domain Framework。
-
-负责通用回测、组合构造、风险分析、执行模拟、微观结构能力和公开研究产物契约。不负责市场数据生产、研究任务调度、策略专属研究或生产晋升。
-
-```text
-quant-market-data-platform ── 发布数据 ──┐
-quant-platform ── 领域能力与契约 ────────┼──→ quant-research
-quant-backtest-runtime ── 执行已提交任务 ─┘
-                                              ↓
-                                       研究证据与交付
-```
-
-Agent Harness 通过研究层的 MCP 或 CLI 接口参与研究。运行时负责回测任务执行，不运行 LLM Agent loop。跨仓库完整架构和信任边界由私有 `quant-research` 维护，内部入口见[系统架构总览](https://github.com/runchengxie/quant-research/blob/main/docs/architecture/system-overview.md)，需要仓库权限。公开组件边界见下文及[数据平台接入文档](https://github.com/runchengxie/quant-market-data-platform/blob/main/docs/integrations.md)。
-
 ## 快速开始
 
-项目要求 Python 3.12 或更新版本，使用 `uv` 安装锁定依赖：
+项目需要 Python 3.12 或更新版本，并使用 `uv` 管理环境：
 
 ```bash
 uv sync --locked --all-groups
-uv run ruff check .
-uv run pytest -q
 ```
 
-生产环境可以按用途安装：
+安装后可以直接运行[第一个回测示例](docs/getting-started/first-backtest.md)。示例使用合成数据，不需要真实行情或数据供应商凭证。
 
-```bash
-# 只安装回测、组合和公共契约所需依赖
-uv sync --locked --no-default-groups
+## 接下来读什么
 
-# 需要模型训练、交叉验证或技术指标特征时
-uv sync --locked --no-default-groups --extra ml
-```
-
-`ml` 包含 XGBoost、scikit-learn 和 pandas-ta。基础安装保留回测使用的 NumPy、pandas、SciPy、Arrow 等依赖。开发依赖仍包含完整机器学习环境，因此原有开发和测试命令保持可用。`microstructure` 安装组保留训练指标使用的 scikit-learn。使用 Qlib 研究流程时同时启用 `--extra ml --extra qlib`。
-
-其他仓库通过依赖声明 `quant-platform[ml]` 启用机器学习功能，并固定平台提交。只使用回测的运行时声明 `quant-platform` 即可。升级到这一安装方式时，使用 `alpha_research.modeling`、特征计算或训练流程的调用方需要显式启用 `ml`。
-
-项目保留 `portfolio_backtester` Python 命名空间，供现有研究代码兼容使用。常用入口和示例见[文档总览](docs/README.md)，Alpha 模块边界见[后端说明](docs/alpha/concepts/framework-backends.md)。
-
-微观结构模型和模拟器位于 `packages/microstructure/`。Python 实现是默认后端。需要 Rust 撮合与批量回放时，可按[微观结构开发说明](docs/development/microstructure-rust.md)单独构建并安装原生扩展。
+- [平台概览](docs/concepts/platform-overview.md)：了解框架包含哪些能力
+- [安装与环境](docs/getting-started/installation.md)：了解依赖和可选组件
+- [第一个回测](docs/getting-started/first-backtest.md)：跟着示例跑通流程
+- [读取回测结果](docs/getting-started/understanding-results.md)：了解输出内容
+- Alpha 模块边界见[后端说明](docs/alpha/concepts/framework-backends.md)
+- [执行模拟指南](docs/guides/execution-simulation.md)和[AFML 仓位与风险](docs/concepts/afml-sizing-and-risk.md)
+- [文档总览](docs/README.md)：按主题查找接口、契约和开发说明
 
 ## 项目边界
 
-下表是各仓库的职责地图。Agent Harness 通过研究层提供的 MCP、CLI 或受控 API 接口调用系统，不拥有研究状态、回测语义或生产晋升规则。
+本项目维护策略无关的量化通用能力。策略研究假设、专有特征和晋升规则属于私有研究层。市场数据生产由 [`quant-market-data-platform`](https://github.com/runchengxie/quant-market-data-platform) 负责，研究状态与策略专属逻辑由私有 `quant-research` 负责，已提交任务的持久化执行由 [`quant-backtest-runtime`](https://github.com/runchengxie/quant-backtest-runtime) 负责。
 
-- `quant-platform`：通用回测、组合、风险、执行模拟、微观结构机制和公开研究产物接口
-- `quant-backtest-runtime`：回测任务协议、SQLite 状态、worker、资源控制、CLI 和独立发布
-- `quant-market-data-platform`：数据接入、标准化、质量治理、版本管理和数据发布
-- `quant-research`：具体策略、专有特征、模型选择、实验与晋升判断
-- `quant-intel-platform`：研究报告、看板和结果交付
-- `quant-intel-deploy`：研究结果发布与部署
-
-回测任务的通用脚本、合成数据示例和运维说明统一在[运行时仓库](https://github.com/runchengxie/quant-backtest-runtime)维护，具体步骤见[任务协议](https://github.com/runchengxie/quant-backtest-runtime/blob/main/docs/jobs.md)和[发布与恢复](https://github.com/runchengxie/quant-backtest-runtime/blob/main/docs/operations.md)。
-
-策略研究假设、专有特征和晋升规则由 `quant-research` 等私有研究层维护。
-
-平台通过已发布的数据资产和版本化产物与其他项目协作，不直接接入数据供应商，也不依赖私有策略模块。
-
-## 开发和质量检查
-
-完整测试、覆盖率、类型检查和维护性命令见[测试与质量检查](docs/testing.md)。Ruff 会按仓库配置扫描源码、脚本和测试，`ty` 在 CI 中对配置的源码范围执行严格检查。
-
-修改 `packages/research-contracts/` 后，如果测试仍读取旧构建产物，可重新安装本地包：
-
-```bash
-uv sync --locked --all-groups --reinstall-package research-contracts
-```
-
-公开发布边界检查应在干净 worktree 中运行，或按[测试说明](docs/testing.md)执行 clean export。不要把本地运行产物作为公开导出内容。
-
-## 许可证
-
-仓库采用 Apache License 2.0，许可范围以 [LICENSE](LICENSE) 为准。第三方依赖、真实数据、凭证和私有策略不属于本仓库许可证的覆盖范围。
+安装选项、依赖范围、项目边界和各模块的技术细节见 `docs/`。本项目保留现有 `portfolio_backtester` Python 导入名称，以兼容使用它的研究代码。
