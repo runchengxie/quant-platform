@@ -70,17 +70,17 @@
 
 - [x] Document the full-ledger result field, official writer, and distinction between historical period performance and execution-aware daily NAV.
 - [x] Run `uv run ruff check .`, `uv run ruff format --check .`, `uv run ty check --error-on-warning`, `uv run pytest`, `uv run mkdocs build --strict`, and `git diff --check` after the reviewed fixes; record exact results. All passed: 1,470 tests passed, 12 skipped, 8 existing warnings; 986 Python files formatted; strict documentation build completed. The required `input_refs` signature was tightened after this run and received focused verification.
-- [ ] Review, commit, push, open a PR to main, complete required checks/review, merge, and clean only this task's branch/worktree.
+- [x] Review, commit, push, open a PR to main, complete required checks/review, merge, and clean only this task's branch/worktree. Provider [PR #61](https://github.com/runchengxie/quant-platform/pull/61) merged as `3ede35924d124ebdb2ada89bbcd23d3f9ced82b9`; the task branch and worktree were removed.
 
 ### Task 4: Move Job orchestration into an independent runtime
 
 **Files:**
 - Create a dedicated `quant-backtest-runtime` repository and release unit after Task 3 merges.
 - Migrate the generic Job contract, SQLite lifecycle, worker, CLI, artifact resolver, and result verifier from `quant-research`.
-- Later modify `quant-research/src/ticknet/research/backtest_jobs.py`, `backtest_worker.py`, CLI, and `docs/agents/backtest-jobs.md` into a thin compatibility/client layer.
+- Replace the research Job implementation with a thin CLI client and retain read-only access to historical Jobs.
 
-- [ ] Pin the merged platform commit in the runtime, introduce strict versioned execution-aware Job request validation, and preserve v1 diagnostic behavior.
-- [ ] Write failing end-to-end tests for official bundle publication, hash-verified retrieval, and fail-closed invalid clock/account cases.
-- [ ] Implement runtime Job orchestration and worker controls in its own SQLite-backed service, review and merge the runtime PR.
-- [ ] Replace the research-side implementation with a thin client and historical-job reader, run the research repository's locked-dependency tests, and merge its own PR.
-- [ ] Build a commit-addressed runtime release and dry-run its service and rollback path with data, logs, and credentials outside the release directory before any production switch.
+- [x] Pin the merged platform commit in the runtime, introduce strict versioned execution-aware Job request validation, and preserve v1 diagnostic behavior.
+- [x] Write failing end-to-end tests for official bundle publication, hash-verified retrieval, and fail-closed invalid clock/account cases.
+- [x] Implement runtime Job orchestration and worker controls in its own SQLite-backed service, review and merge the runtime [PR #1](https://github.com/runchengxie/quant-backtest-runtime/pull/1). The public runtime's [main CI](https://github.com/runchengxie/quant-backtest-runtime/actions/runs/36213742003) passes locked dependency installation, Ruff, and all 18 tests.
+- [x] Replace the research-side implementation with a thin client and historical-job reader, run the research repository's locked-dependency tests, and merge [PR #247](https://github.com/runchengxie/quant-research/pull/247) as `40b787811a75b4b9ab249c1dacff48c757fc9df5` (3,825 passed, 6 skipped). The old Registry remains read-only for explicit historical status/result queries.
+- [x] Build a commit-addressed runtime release and dry-run its service and rollback path with data, logs, and credentials outside the release directory before any production switch. Runtime `current` points to `2dc8b44a4f3dd1bb71a3794cdaad88ffee4c79a0`; initial switch, rollback, and re-switch passed. Research `current` points to `40b787811a75b4b9ab249c1dacff48c757fc9df5` after the old-Job preflight passed. A production research CLI → stable runtime v2 Job completed and its official result verified with isolated data.
