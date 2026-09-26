@@ -14,14 +14,14 @@ jobs:
         run: .venv/bin/python scripts/check_minimal_install.py
       - name: Run backtests without machine learning packages
         run: >-
-          uv run --locked --no-default-groups --with pytest pytest -q
+          uv run --locked --no-default-groups --group test pytest -q
           tests/test_backtest_backends.py tests/test_backtest_bundle.py
           tests/test_optimizer_backends.py tests/test_execution_sim.py
       - name: Install optional machine learning dependencies
         run: uv sync --locked --no-default-groups --extra ml
       - name: Test models and features with the ml extra
         run: >-
-          uv run --locked --no-default-groups --extra ml --with pytest pytest -q
+          uv run --locked --no-default-groups --extra ml --group test pytest -q
           tests/alpha/test_modeling.py tests/alpha/test_feature_engineering_short_series.py
   rust-microstructure:
     runs-on: ubuntu-latest

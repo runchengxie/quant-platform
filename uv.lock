@@ -4106,6 +4106,9 @@ dev = [
 docs = [
     { name = "mkdocs-material" },
 ]
+test = [
+    { name = "pytest" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -4149,6 +4152,7 @@ dev = [
     { name = "xgboost", specifier = ">=1.7" },
 ]
 docs = [{ name = "mkdocs-material", specifier = ">=9.6,<10" }]
+test = [{ name = "pytest", specifier = ">=9.0.3" }]
 
 [[package]]
 name = "redis"

@@ -40,6 +40,7 @@ qlib = ["pyqlib>=0.9.5"]
 microstructure = ["polars>=1.0", "torch>=2.0", "scikit-learn>=1.9.0"]
 
 [dependency-groups]
+test = ["pytest>=9.0.3"]
 dev = [
   "pandas-ta>=0.3.14b0",
   "scikit-learn>=1.9.0",
