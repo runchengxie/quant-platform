@@ -21,10 +21,13 @@ uv run pytest -q
 ## 项目边界
 
 - `quant-platform`：通用回测、组合、风险、执行模拟、微观结构机制和公开研究产物接口
+- `quant-backtest-runtime`：回测任务协议、SQLite 状态、worker、资源控制、CLI 和独立发布
 - `quant-market-data-platform`：数据接入、标准化、质量治理、版本管理和数据发布
 - `quant-research`：具体策略、专有特征、模型选择、实验与晋升判断
 - `quant-intel-platform`：研究报告、看板和结果交付
 - `quant-intel-deploy`：研究结果发布与部署
+
+回测任务的通用脚本、合成数据示例和运维说明统一在[运行时仓库](https://github.com/runchengxie/quant-backtest-runtime)维护，具体步骤见[任务协议](https://github.com/runchengxie/quant-backtest-runtime/blob/main/docs/jobs.md)和[发布与恢复](https://github.com/runchengxie/quant-backtest-runtime/blob/main/docs/operations.md)。
 
 策略研究假设、专有特征和晋升规则由 `quant-research` 等私有研究层维护。
 

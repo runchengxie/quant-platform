@@ -1,5 +1,7 @@
 # Execution-aware Backtest Interface Implementation Plan
 
+本文件记录接口拆分时的实施过程。当前回测任务用法、合成示例和部署说明以 [quant-backtest-runtime 文档](https://github.com/runchengxie/quant-backtest-runtime)为准。文中的提交号和生产指针是当时的验证记录。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Expose the platform's complete native execution ledger and publish it through the official execution-aware bundle writer so a separately deployed backtest runtime can consume it.
