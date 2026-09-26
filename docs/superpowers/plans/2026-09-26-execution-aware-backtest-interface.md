@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Expose the platform's complete native execution ledger and publish it through the official execution-aware bundle writer so a durable research Job can consume it.
+**Goal:** Expose the platform's complete native execution ledger and publish it through the official execution-aware bundle writer so a separately deployed backtest runtime can consume it.
 
-**Architecture:** `CanonicalBacktestResult` carries an optional full `UnifiedLedger` when native replay runs the execution simulator. A public bundle helper validates the result and delegates serialization to the existing canonical writer. Research Job integration follows only after this provider PR merges.
+**Architecture:** `CanonicalBacktestResult` carries an optional full `UnifiedLedger` when native replay runs the execution simulator. A public bundle helper validates the result and delegates serialization to the existing canonical writer. The independent Job runtime and research compatibility migration follow only after this provider PR merges.
 
 **Tech Stack:** Python 3.13, pandas, Parquet, `research-contracts`, pytest.
 
@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - Keep `portfolio_backtester` import paths and diagnostic result behavior compatible.
-- Keep private research logic, vendor data, credentials, and Job scheduling out of `quant-platform`.
+- Keep private research logic, vendor data, credentials, Job scheduling, and deployment out of `quant-platform`.
 - The official `execution_aware` tier requires real order and daily ledger capabilities, a complete `research.clock.v1`, and passed account reconciliation.
 - Merge provider before consumer; use independent branches and worktrees.
 
@@ -72,13 +72,15 @@
 - [x] Run `uv run ruff check .`, `uv run ruff format --check .`, `uv run ty check --error-on-warning`, `uv run pytest`, `uv run mkdocs build --strict`, and `git diff --check` after the reviewed fixes; record exact results. All passed: 1,470 tests passed, 12 skipped, 8 existing warnings; 986 Python files formatted; strict documentation build completed. The required `input_refs` signature was tightened after this run and received focused verification.
 - [ ] Review, commit, push, open a PR to main, complete required checks/review, merge, and clean only this task's branch/worktree.
 
-### Task 4: Consume the merged provider in research Jobs
+### Task 4: Move Job orchestration into an independent runtime
 
 **Files:**
-- Create a separate `quant-research` worktree after Task 3 merges.
-- Modify: `src/ticknet/research/backtest_jobs.py`, `src/ticknet/research/backtest_worker.py`, `docs/agents/backtest-jobs.md`.
-- Test: `tests/microstructure/test_backtest_jobs.py` and relevant worker tests.
+- Create a dedicated `quant-backtest-runtime` repository and release unit after Task 3 merges.
+- Migrate the generic Job contract, SQLite lifecycle, worker, CLI, artifact resolver, and result verifier from `quant-research`.
+- Later modify `quant-research/src/ticknet/research/backtest_jobs.py`, `backtest_worker.py`, CLI, and `docs/agents/backtest-jobs.md` into a thin compatibility/client layer.
 
-- [ ] Pin the merged platform commit, introduce strict versioned execution-aware Job request validation, and preserve v1 diagnostic behavior.
+- [ ] Pin the merged platform commit in the runtime, introduce strict versioned execution-aware Job request validation, and preserve v1 diagnostic behavior.
 - [ ] Write failing end-to-end tests for official bundle publication, hash-verified retrieval, and fail-closed invalid clock/account cases.
-- [ ] Implement the worker integration, run the research repository's required locked-dependency tests and static checks, then review and merge its own PR.
+- [ ] Implement runtime Job orchestration and worker controls in its own SQLite-backed service, review and merge the runtime PR.
+- [ ] Replace the research-side implementation with a thin client and historical-job reader, run the research repository's locked-dependency tests, and merge its own PR.
+- [ ] Build a commit-addressed runtime release and dry-run its service and rollback path with data, logs, and credentials outside the release directory before any production switch.

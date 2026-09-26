@@ -2,9 +2,9 @@
 
 ## Intent and boundary
 
-The public `portfolio_backtester` package owns deterministic backtest execution and the versioned canonical bundle. `quant-research` owns durable Job scheduling, private strategies, artifact lookup, and run provenance. Published market data remains an input artifact; neither package downloads it during a backtest.
+The public `portfolio_backtester` package owns deterministic backtest execution and the versioned canonical bundle. Today, `quant-research` owns durable Job scheduling as well as private strategies and run provenance. The target is a separately deployable backtest runtime that owns Job scheduling, artifact lookup, workers, and result publication. Research retains private strategy decisions and run promotion. Published market data remains an input artifact; backtest execution does not download vendor data.
 
-The next deliverable is an execution-aware Job whose official evidence is `portfolio_backtester.backtest_result.v1`. Diagnostic v1 Jobs keep their existing behavior and result schema. This design does not promote a run by itself: research promotion still needs a matching root `ResearchRunManifest` and its own gate.
+The next deliverable is a public platform interface usable by that runtime, followed by an execution-aware Job whose official evidence is `portfolio_backtester.backtest_result.v1`. Existing diagnostic v1 Jobs keep their behavior and result schema during migration. This design does not promote a run by itself: research promotion still needs a matching root `ResearchRunManifest` and its own gate.
 
 ## Current gap
 
@@ -17,13 +17,14 @@ The next deliverable is an execution-aware Job whose official evidence is `portf
 3. Publish `write_execution_aware_result_bundle(output_dir, *, result, run_id, research_clock, producer, configuration_sha256, input_refs, diagnostics)` in `portfolio_backtester.backends`. It requires the complete ledger and at least one digest-bearing lineage input, delegates bundle validation and atomic publication to the existing `write_backtest_bundle`, and returns the official manifest. Incomplete capability, malformed or causally reversed clock, account reconciliation, or immutable output checks fail closed.
 4. `CanonicalBacktestResult.performance` remains the historical period-return view. For execution-aware evidence, consumers read `daily_nav` from the official bundle. This distinction is documented in the public backend and bundle guides.
 
-## Research consumer after provider merge
+## Independent runtime and research migration after provider merge
 
-1. Add an opt-in versioned Job request for execution-aware replay. It requires `ledger=True`, a complete caller-supplied `research.clock.v1`, producer identity, and immutable hash-addressed inputs. It rejects missing or ambiguous clock information before scheduling.
-2. The worker calls the merged public platform API and stores the official bundle beside the Job's versioned result manifest. The Job result points to both manifest digests, and retrieval verifies all official bundle files. A failure before publication leaves no successful result.
-3. Preserve v1 diagnostic requests and result reads. Add synthetic end-to-end tests for a valid ledger and for missing clock, false capability, mismatched account values, corrupted files, cancellation, and existing diagnostic behavior.
-4. The Job result does not itself satisfy research promotion. A later explicit research run may bind the verified bundle to a root run manifest.
+1. Create a dedicated runtime repository and release unit (working name `quant-backtest-runtime`). Move the generic local Job lifecycle, worker controls, CLI, artifact validation, and result publication out of the research Registry into its own SQLite store. Preserve existing Job identifiers and provide a read-only migration path for historical research jobs; do not copy live implementations into two owners.
+2. Add a versioned execution-aware Job request. It requires `ledger=True`, a complete caller-supplied `research.clock.v1`, producer identity, and immutable hash-addressed inputs. It rejects missing or ambiguous clock information before scheduling.
+3. The worker calls the merged public platform API and stores the official bundle beside a versioned Job result manifest. Retrieval verifies both manifest digests and every official bundle file. A failure before publication leaves no successful result. Preserve diagnostic v1 request and result compatibility during cutover, with synthetic end-to-end coverage for valid and invalid clocks, capabilities, account values, corrupted files, and cancellation.
+4. Replace the research-side Job implementation with a thin client/compatibility adapter. Research promotion binds a verified bundle to a separate root run manifest; the Job result alone does not satisfy promotion.
+5. Build and verify a dedicated release under `/home/richard/code/production/quant-backtest-runtime/releases/<commit>` with a stable `current` pointer. Put the SQLite database, inputs, results, logs, and credentials outside releases. Run a dry-run and rollback check before switching any scheduled task or production caller.
 
 ## Delivery order
 
-Merge the `quant-platform` provider PR, then pin that reachable commit in `quant-research` and merge the consumer PR. Do not depend on a development worktree or unmerged commit.
+Merge the `quant-platform` provider PR, then pin that reachable commit in the independent runtime. Migrate `quant-research` consumers only after the runtime API and release path exist. Each repository uses its own PR; no production path depends on a development worktree or unmerged commit.
