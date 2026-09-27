@@ -31,10 +31,12 @@ gh pr create --base main --head feat/<任务名>
 PR 合并到 `main` 后，删除远端和本地旧分支以及对应 worktree：
 
 ```bash
-git push origin --delete feat/<任务名>
-git branch -d feat/<任务名>
 git worktree remove /home/richard/code/.worktrees/<任务名>
+git branch -d feat/<任务名>
+git push origin --delete feat/<任务名>
 ```
+
+清理前确认 PR 已合并到 `main`，且任务 worktree 没有唯一未保存内容。只清理本任务资源；发现未提交或未合并改动时保留 worktree 和分支并报告。
 
 不要让多个 agent 直接修改同一个工作树，也不要在 `main` 上直接提交。
 
