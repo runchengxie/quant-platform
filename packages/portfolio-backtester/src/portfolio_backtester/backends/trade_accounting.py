@@ -111,9 +111,10 @@ def compute_trade_accounting_frame(
         raise ValueError("trade accounting input has invalid columns or no rows")
     if frame.symbol.isna().any() or frame.symbol.duplicated().any():
         raise ValueError("trade accounting symbols must be unique and non-null")
-    if frame.tradable.isna().any() or not frame.tradable.map(
-        lambda value: isinstance(value, bool)
-    ).all():
+    if (
+        frame.tradable.isna().any()
+        or not frame.tradable.map(lambda value: isinstance(value, bool)).all()
+    ):
         raise ValueError("tradable must contain booleans")
     indexed = frame.set_index("symbol")
     for name in ("previous_weight", "target_weight", "previous_price", "current_price"):
