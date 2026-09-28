@@ -69,3 +69,6 @@ def test_accounting_frame_matches_series_backend() -> None:
     assert result.total_cost == pytest.approx(1 / 3000 + 1 / 1200 + 1 / 1500)
     with pytest.raises(ValueError, match="unique"):
         compute_trade_accounting_frame(pd.concat([frame, frame.iloc[[0]]]), costs)
+    empty = compute_trade_accounting_frame(frame.iloc[:0], costs)
+    assert empty.turnover == 0.0
+    assert empty.total_cost == 0.0

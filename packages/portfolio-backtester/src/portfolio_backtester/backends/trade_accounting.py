@@ -107,8 +107,8 @@ def compute_trade_accounting_frame(
         "current_price",
         "tradable",
     }
-    if set(frame.columns) != required or frame.empty:
-        raise ValueError("trade accounting input has invalid columns or no rows")
+    if set(frame.columns) != required:
+        raise ValueError("trade accounting input has invalid columns")
     if frame.symbol.isna().any() or frame.symbol.duplicated().any():
         raise ValueError("trade accounting symbols must be unique and non-null")
     if (
