@@ -29,6 +29,11 @@ def write_execution_aware_result_bundle(
     """
 
     result.validate()
+    if int(result.metadata.get("decision_count", 1)) > 1:
+        raise ValueError(
+            "execution-aware bundle accepts one research clock; "
+            "sequenced results require a per-decision clock bundle schema"
+        )
     ledger = result.unified_ledger
     if ledger is None:
         raise ValueError("Execution-aware bundle requires a full execution ledger.")

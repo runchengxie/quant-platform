@@ -14,6 +14,7 @@ from .native import (
     NativePositionReplayBackend,
     NativePositionReplayRequest,
 )
+from .sequenced import SequencedExecutionBackend, SequencedExecutionRequest
 
 __all__ = [
     "CANONICAL_BACKTEST_RESULT_SCHEMA",
@@ -24,6 +25,8 @@ __all__ = [
     "IntradayExecutionAssumption",
     "NativePositionReplayBackend",
     "NativePositionReplayRequest",
+    "SequencedExecutionBackend",
+    "SequencedExecutionRequest",
     "to_json_compatible",
     "write_execution_aware_result_bundle",
 ]

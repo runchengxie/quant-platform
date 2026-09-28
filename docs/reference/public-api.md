@@ -71,6 +71,8 @@ realized return、MFE、MAE、peak giveback 和 holding period，返回收益分
 
 逐次决策的数据时钟视图从 `portfolio_backtester.point_in_time` 导入，使用方法和输入发布时间要求见 [按决策时点读取研究输入](../guides/point-in-time-data.md)。
 
+多次调仓的统一执行回放从 `portfolio_backtester.backends` 导入 `SequencedExecutionBackend` 与 `SequencedExecutionRequest`，输入时钟和证据边界见 [多次决策的统一执行回放](../guides/sequenced-execution.md)。
+
 未列在顶层导出中的模块仍可供仓库内部使用，其接口稳定性低于上表中的公开入口。
 
 完整导出列表见 `packages/portfolio-backtester/src/portfolio_backtester/__init__.py`。
