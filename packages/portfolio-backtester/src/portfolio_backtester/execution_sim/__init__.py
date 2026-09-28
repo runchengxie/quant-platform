@@ -30,6 +30,7 @@ from .core import (
 from .core import (
     simulate_ideal_daily_nav as simulate_ideal_daily_nav,
 )
+from .delisting import audit_delisting_exits as audit_delisting_exits
 from .models import (
     PreparedExecutionTables as PreparedExecutionTables,
 )
@@ -61,6 +62,7 @@ __all__ = [  # noqa: RUF022 - order is a compatibility contract
     "PreparedExecutionTables",
     "TradeFeeModel",
     "UnifiedLedger",
+    "audit_delisting_exits",
     "build_execution_sim_config",
     "describe_execution_sim_config",
     "describe_trade_fee_model",

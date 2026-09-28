@@ -26,6 +26,7 @@ def test_execution_sim_package_exports_are_stable() -> None:
         "PreparedExecutionTables",
         "TradeFeeModel",
         "UnifiedLedger",
+        "audit_delisting_exits",
         "build_execution_sim_config",
         "describe_execution_sim_config",
         "describe_trade_fee_model",
