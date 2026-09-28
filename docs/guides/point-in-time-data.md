@@ -5,12 +5,14 @@
 ```python
 from portfolio_backtester.point_in_time import PointInTimeDataView, PointInTimeTable
 
-view = PointInTimeDataView({
-    "financials": PointInTimeTable(financials, available_at_col="published_at"),
-    "daily_bars": PointInTimeTable(
-        bars, available_at_col="available_at", event_at_col="session_close_at"
-    ),
-})
+view = PointInTimeDataView(
+    {
+        "financials": PointInTimeTable(financials, available_at_col="published_at"),
+        "daily_bars": PointInTimeTable(
+            bars, available_at_col="available_at", event_at_col="session_close_at"
+        ),
+    }
+)
 
 for decision_clock in decision_clocks:
     visible_financials = view.at(decision_clock).read("financials")
