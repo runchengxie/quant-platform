@@ -7,8 +7,9 @@ from collections.abc import Mapping
 import pandas as pd
 
 
-def _quantity_trades(fills: pd.DataFrame, marks: pd.DataFrame, price_col: str,
-                     symbols: set[str]) -> pd.DataFrame:
+def _quantity_trades(
+    fills: pd.DataFrame, marks: pd.DataFrame, price_col: str, symbols: set[str]
+) -> pd.DataFrame:
     trades = fills[["trade_date", "symbol", "side", "filled_notional"]].copy()
     trades["trade_date"] = pd.to_datetime(trades.trade_date).dt.strftime("%Y%m%d")
     trades["symbol"] = trades.symbol.astype(str)
@@ -64,9 +65,7 @@ def audit_delisting_exits(
         raise ValueError("pricing has no trading dates")
     last_day = str(marks.trade_date.max())
     relevant = {
-        str(symbol): str(day)
-        for symbol, day in delist_dates.items()
-        if str(day) <= last_day
+        str(symbol): str(day) for symbol, day in delist_dates.items() if str(day) <= last_day
     }
     if not relevant:
         return pd.DataFrame(columns=["symbol", "delist_date", "residual_quantity", "status"])
@@ -77,8 +76,9 @@ def audit_delisting_exits(
         late = matching.loc[matching.trade_date.ge(day)]
         residual = float(matching.loc[matching.trade_date.lt(day), "quantity"].sum())
         status = "passed" if late.empty and abs(residual) <= tolerance else "failed"
-        rows.append({"symbol": symbol, "delist_date": day,
-                     "residual_quantity": residual, "status": status})
+        rows.append(
+            {"symbol": symbol, "delist_date": day, "residual_quantity": residual, "status": status}
+        )
     result = pd.DataFrame(rows)
     failed = result.loc[result.status.eq("failed")]
     if not failed.empty:
