@@ -42,6 +42,8 @@ from portfolio_backtester.execution_sim import (
 
 `build_execution_sim_config` 负责读取配置映射，`required_execution_sim_columns` 返回启用模拟后需要的价格和流动性列。
 
+`audit_delisting_exits` 使用成交名义金额和同日执行价重建模拟股数，核对退市日前仓位归零，且退市当日及之后没有成交。输入是 `fills`、`pricing`、证券到退市日期的映射及 `price_col`。发现残余仓位、退市后成交或缺失执行价时会抛出错误。该审计只覆盖模拟账本，不证明交易所现金结算或未建模的公司行为。
+
 ## 输入与结果
 
 目标持仓至少需要调仓日、建仓日、证券代码和权重。当前模拟只处理多头正权重。行情表需要交易日期、证券代码、价格列和配置中的流动性列。买卖方向可分别传入可交易标记。
