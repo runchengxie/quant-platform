@@ -69,6 +69,8 @@ realized return、MFE、MAE、peak giveback 和 holding period，返回收益分
 
 执行容量与每日净值模拟从 `portfolio_backtester.execution_sim` 导入，详细入口见 [执行容量与每日净值模拟](../guides/execution-simulation.md)。AFML 仓位和风险入口见 [AFML 仓位、分层风险平价（HRP）与策略风险](../concepts/afml-sizing-and-risk.md)。
 
+逐次决策的数据时钟视图从 `portfolio_backtester.point_in_time` 导入，使用方法和输入发布时间要求见 [按决策时点读取研究输入](../guides/point-in-time-data.md)。
+
 未列在顶层导出中的模块仍可供仓库内部使用，其接口稳定性低于上表中的公开入口。
 
 完整导出列表见 `packages/portfolio-backtester/src/portfolio_backtester/__init__.py`。
