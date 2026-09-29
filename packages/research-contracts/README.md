@@ -78,6 +78,13 @@ clock = ResearchClock.from_mapping(
 组合或会计结果。`evidence_tier` 第一版只允许 `diagnostic` 与 `execution_aware`。后者会要求完整
 `ResearchClock` 执行窗口。
 
+跨仓生产者的新代码可以使用同一实现的领域名称 `QuantRunManifest` 及
+`build_quant_run_manifest` / `validate_quant_run_manifest`。这不是第二套 schema；
+它们与兼容名称 `ResearchRunManifest` 共用 `research.backtest-run.v1`。
+`component_refs` 用角色名显式绑定跨仓组件 artifact，例如 `portfolio`、`risk`、`execution`
+和 `tca`。每个引用仍只保存 artifact id、相对路径和 SHA-256，消费者必须校验哈希后才能使用。
+角色图只描述因果交接，不自动判断研究是否晋升。
+
 `research.backtest-run.v1` 目前只发布 schema 与校验器。等真实 producer 和
 `portfolio-backtester` 的 canonical bundle 落地后，再把该 artifact 加入 `docs/artifact-contracts.yml`，
 避免在 registry 中登记不存在的 producer entrypoint。

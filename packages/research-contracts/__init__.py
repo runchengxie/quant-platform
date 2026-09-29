@@ -48,15 +48,19 @@ from .research_clock import (
     validate_research_clock,
 )
 from .research_run_manifest import (
+    QUANT_RUN_MANIFEST_SCHEMA_VERSION,
     RESEARCH_EVIDENCE_TIERS,
     RESEARCH_RUN_MANIFEST_SCHEMA_VERSION,
     ArtifactRef,
     ProducerVersion,
+    QuantRunManifest,
     ResearchRunManifest,
 )
 from .research_run_manifest_writer import (
     MANIFEST_FILENAME,
+    build_quant_run_manifest,
     build_research_run_manifest,
+    validate_quant_run_manifest,
     validate_research_run_manifest,
 )
 from .target_lineage import lineage_inputs, lineage_payload, targets_envelope_v2
@@ -71,6 +75,7 @@ __all__ = [
     "MANIFEST_FILENAME",
     "PLATFORM_PUBLICATION_SCHEMA_VERSION",
     "PUBLICATION_AUDIENCES",
+    "QUANT_RUN_MANIFEST_SCHEMA_VERSION",
     "RESEARCH_CLOCK_SCHEMA_VERSION",
     "RESEARCH_EVIDENCE_TIERS",
     "RESEARCH_RUN_MANIFEST_SCHEMA_VERSION",
@@ -86,12 +91,14 @@ __all__ = [
     "PlatformPublicationManifest",
     "ProducerIdentity",
     "ProducerVersion",
+    "QuantRunManifest",
     "ResearchClock",
     "ResearchRunManifest",
     "TargetHandoffContext",
     "attach_artifact_envelope_v2",
     "build_file_receipts",
     "build_platform_publication",
+    "build_quant_run_manifest",
     "build_research_run_manifest",
     "canonical_json_sha256",
     "file_receipt_payload",
@@ -106,6 +113,7 @@ __all__ = [
     "validate_artifact_contract_manifest",
     "validate_contract_ownership",
     "validate_file_receipts",
+    "validate_quant_run_manifest",
     "validate_research_clock",
     "validate_research_run_manifest",
 ]

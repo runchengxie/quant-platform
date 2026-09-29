@@ -9,6 +9,7 @@ from typing import Any
 from .research_clock import ResearchClock, validate_research_clock
 
 RESEARCH_RUN_MANIFEST_SCHEMA_VERSION = "research.backtest-run.v1"
+QUANT_RUN_MANIFEST_SCHEMA_VERSION = RESEARCH_RUN_MANIFEST_SCHEMA_VERSION
 RESEARCH_EVIDENCE_TIERS = frozenset({"diagnostic", "execution_aware"})
 PROVENANCE_FIELDS = (
     "data_vintage",
@@ -157,6 +158,20 @@ def _producer_versions(value: object) -> tuple[ProducerVersion, ...]:
     return items
 
 
+def _component_refs(value: object) -> dict[str, ArtifactRef]:
+    if value is None:
+        return {}
+    if not isinstance(value, Mapping):
+        raise ValueError("component_refs must be an object")
+    result: dict[str, ArtifactRef] = {}
+    for role, payload in value.items():
+        role_name = _required_text(role, "component_refs role")
+        if not isinstance(payload, Mapping):
+            raise ValueError(f"component_refs.{role_name} must be an object")
+        result[role_name] = _artifact_ref_from_mapping(payload, f"component_refs.{role_name}")
+    return result
+
+
 @dataclass(frozen=True)
 class ResearchRunManifest:
     run_id: str
@@ -172,6 +187,7 @@ class ResearchRunManifest:
     created_at: datetime
     benchmark_ref: ArtifactRef | None = None
     evidence_refs: tuple[ArtifactRef, ...] = ()
+    component_refs: Mapping[str, ArtifactRef] | None = None
     provenance: Mapping[str, str] | None = None
     schema_version: str = RESEARCH_RUN_MANIFEST_SCHEMA_VERSION
 
@@ -187,6 +203,12 @@ class ResearchRunManifest:
         _aware_datetime(self.created_at, "created_at")
         normalized = _provenance(self.provenance, required=self.evidence_tier == "execution_aware")
         object.__setattr__(self, "provenance", normalized)
+        normalized_components = dict(self.component_refs or {})
+        for role, artifact in normalized_components.items():
+            _required_text(role, "component_refs role")
+            if not isinstance(artifact, ArtifactRef):
+                raise ValueError(f"component_refs.{role} must be an artifact reference")
+        object.__setattr__(self, "component_refs", normalized_components)
 
     @classmethod
     def from_mapping(cls, payload: Mapping[str, Any]) -> ResearchRunManifest:
@@ -230,6 +252,7 @@ class ResearchRunManifest:
                 else None
             ),
             evidence_refs=_artifact_refs(payload.get("evidence_refs", []), "evidence_refs"),
+            component_refs=_component_refs(payload.get("component_refs")),
             created_at=_aware_datetime(payload.get("created_at"), "created_at"),
             provenance=_provenance(
                 payload.get("provenance"), required=evidence_tier == "execution_aware"
@@ -255,4 +278,14 @@ class ResearchRunManifest:
         }
         if self.benchmark_ref is not None:
             result["benchmark_ref"] = self.benchmark_ref.to_mapping()
+        if self.component_refs:
+            result["component_refs"] = {
+                role: artifact.to_mapping()
+                for role, artifact in sorted(self.component_refs.items())
+            }
         return result
+
+
+# ``ResearchRunManifest`` remains the compatibility name; new cross-repository
+# producers should use the domain name below without introducing a second schema.
+QuantRunManifest = ResearchRunManifest

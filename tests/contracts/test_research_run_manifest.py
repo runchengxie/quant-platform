@@ -6,6 +6,8 @@ from pathlib import Path
 import pytest
 from research_contracts import (
     MANIFEST_FILENAME,
+    QuantRunManifest,
+    build_quant_run_manifest,
     build_research_run_manifest,
     validate_research_run_manifest,
 )
@@ -62,6 +64,33 @@ def test_research_run_manifest_builds_and_validates_local_artifact_hashes(tmp_pa
         manifest.data_refs[0].sha256 == manifest.signal_refs[0].sha256
         or len(manifest.data_refs[0].sha256) == 64
     )
+
+
+def test_quant_run_manifest_exposes_typed_cross_repository_components(tmp_path: Path) -> None:
+    run_dir = _run_dir(tmp_path)
+    manifest_path = build_quant_run_manifest(
+        run_dir,
+        run_id="run-1",
+        strategy_ref="strategy:synthetic-v1",
+        research_purpose="cross-repository contract test",
+        evidence_tier="diagnostic",
+        clock=_clock(),
+        producer_versions=[{"repository": "quant-platform", "commit": "012345"}],
+        data_refs=[{"path": "input.parquet", "artifact_id": "input-1"}],
+        signal_refs=[{"path": "signal.json", "artifact_id": "signal-1"}],
+        component_refs={
+            "execution": {
+                "path": "backtest_bundle/manifest.json",
+                "artifact_id": "execution-1",
+            }
+        },
+    )
+
+    manifest = validate_research_run_manifest(manifest_path)
+
+    assert isinstance(manifest, QuantRunManifest)
+    assert manifest.component_refs["execution"].artifact_id == "execution-1"
+    assert manifest.to_mapping()["component_refs"]["execution"]["sha256"]
 
 
 def test_research_run_manifest_rejects_clock_causality_failure(tmp_path: Path) -> None:
