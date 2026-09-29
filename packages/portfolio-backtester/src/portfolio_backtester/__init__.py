@@ -145,6 +145,7 @@ from .strategy_risk import (
     strategy_failure_probability,
     summarize_strategy_risk,
 )
+from .tca_calibration import TCACalibrationReceipt, calibrate_cost_model
 from .trade_accounting import compute_trade_summary, drift_previous_weights
 from .turnover import (
     RebalanceTurnoverReport,
@@ -215,6 +216,7 @@ __all__ = [
     "StaggeredCohortExecutionResult",
     "StrategyRiskReport",
     "StrategySpec",
+    "TCACalibrationReceipt",
     "TradableFlagsContract",
     "TurnoverBreakdown",
     "add_conservative_score",
@@ -245,6 +247,7 @@ __all__ = [
     "build_sizing_receipt",
     "build_target_weights",
     "build_targets",
+    "calibrate_cost_model",
     "combine_targets",
     "compare_portfolio_returns",
     "compute_factor_correlations",
