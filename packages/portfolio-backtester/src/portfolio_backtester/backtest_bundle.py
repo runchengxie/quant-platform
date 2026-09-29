@@ -226,6 +226,18 @@ def _mapping_list(value: object, field: str) -> tuple[Mapping[str, Any], ...]:
     return tuple(dict(cast(Mapping[str, Any], item)) for item in value)
 
 
+def _validate_tca_calibration(value: object) -> dict[str, Any]:
+    payload = dict(_mapping(value, "tca_calibration"))
+    if payload.get("schema_version") != "portfolio_backtester.tca-calibration.v1":
+        raise ValueError("tca_calibration must use portfolio_backtester.tca-calibration.v1")
+    for field in ("model_version", "source_version", "status"):
+        _required_text(payload.get(field), f"tca_calibration.{field}")
+    observation_count = payload.get("observation_count")
+    if not isinstance(observation_count, int) or observation_count < 0:
+        raise ValueError("tca_calibration.observation_count must be a non-negative integer")
+    return payload
+
+
 @dataclass(frozen=True)
 class BacktestBundleManifest:
     run_id: str
@@ -237,6 +249,7 @@ class BacktestBundleManifest:
     input_refs: tuple[Mapping[str, Any], ...]
     inventory: tuple[BacktestBundleInventoryItem, ...]
     reconciliation: Mapping[str, Any]
+    tca_calibration: Mapping[str, Any] | None = None
     schema_version: str = BACKTEST_BUNDLE_SCHEMA_VERSION
 
     def __post_init__(self) -> None:
@@ -247,6 +260,12 @@ class BacktestBundleManifest:
         if self.artifact_envelope.get("schema_version") != "research.artifact-envelope.v2":
             raise ValueError("artifact_envelope must use research.artifact-envelope.v2")
         _sha256(self.artifact_envelope.get("content_sha256"), "artifact_envelope.content_sha256")
+        if self.tca_calibration is not None:
+            object.__setattr__(
+                self,
+                "tca_calibration",
+                _validate_tca_calibration(self.tca_calibration),
+            )
         paths = [item.path for item in self.inventory]
         if len(paths) != len(set(paths)):
             raise ValueError("inventory paths must be unique")
@@ -299,10 +318,15 @@ class BacktestBundleManifest:
                 BacktestBundleInventoryItem.from_mapping(item) for item in raw_inventory
             ),
             reconciliation=dict(_mapping(payload.get("reconciliation"), "reconciliation")),
+            tca_calibration=(
+                _validate_tca_calibration(payload.get("tca_calibration"))
+                if payload.get("tca_calibration") is not None
+                else None
+            ),
         )
 
     def to_mapping(self) -> dict[str, Any]:
-        return {
+        result = {
             "schema_version": self.schema_version,
             "run_id": self.run_id,
             "evidence_tier": self.evidence_tier.value,
@@ -314,6 +338,9 @@ class BacktestBundleManifest:
             "inventory": [item.to_mapping() for item in self.inventory],
             "reconciliation": dict(self.reconciliation),
         }
+        if self.tca_calibration is not None:
+            result["tca_calibration"] = dict(self.tca_calibration)
+        return result
 
 
 __all__ = [

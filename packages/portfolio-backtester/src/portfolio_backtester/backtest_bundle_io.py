@@ -112,6 +112,7 @@ def write_backtest_bundle(
     diagnostics: Mapping[str, Any] | None = None,
     created_at: datetime | None = None,
     artifact_id: str | None = None,
+    tca_calibration: Mapping[str, Any] | None = None,
 ) -> BacktestBundleManifest:
     output_dir = Path(output_dir)
     if output_dir.exists():
@@ -186,6 +187,7 @@ def write_backtest_bundle(
             input_refs=tuple(dict(item) for item in input_refs),
             inventory=inventory_tuple,
             reconciliation=reconciliation,
+            tca_calibration=tca_calibration,
         )
         _write_json(tmp_dir / "manifest.json", manifest.to_mapping())
         os.replace(tmp_dir, output_dir)
