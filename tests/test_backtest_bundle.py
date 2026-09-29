@@ -338,6 +338,56 @@ def test_native_result_publishes_official_execution_aware_bundle(tmp_path: Path)
     )
 
 
+def test_native_result_publishes_advisory_tca_calibration_in_bundle(tmp_path: Path) -> None:
+    from portfolio_backtester.backends import write_execution_aware_result_bundle
+
+    observations = pd.DataFrame(
+        {
+            "trade_date": pd.date_range("2026-01-01", periods=20, freq="D"),
+            "requested_notional": [100_000.0] * 20,
+            "filled_notional": [95_000.0] * 20,
+            "modeled_cost_bps": [10.0] * 20,
+            "realized_cost_bps": [12.0] * 20,
+        }
+    )
+
+    manifest = write_execution_aware_result_bundle(
+        tmp_path / "backtest_result",
+        **result_bundle_kwargs(native_result()),
+        tca_observations=observations,
+        tca_model_version="cost-model.v1",
+        tca_source_version="fills.2026-09",
+    )
+
+    assert manifest.tca_calibration is not None
+    assert manifest.tca_calibration["status"] == "ready"
+    assert manifest.tca_calibration["recommended_cost_bps"] == 12.0
+    assert read_backtest_bundle(tmp_path / "backtest_result").tca_calibration == (
+        manifest.tca_calibration
+    )
+
+
+def test_native_result_requires_tca_versions_for_observations(tmp_path: Path) -> None:
+    from portfolio_backtester.backends import write_execution_aware_result_bundle
+
+    observations = pd.DataFrame(
+        {
+            "trade_date": ["2026-01-01"],
+            "requested_notional": [100_000.0],
+            "filled_notional": [95_000.0],
+            "modeled_cost_bps": [10.0],
+            "realized_cost_bps": [12.0],
+        }
+    )
+
+    with pytest.raises(ValueError, match="tca_model_version and tca_source_version"):
+        write_execution_aware_result_bundle(
+            tmp_path / "backtest_result",
+            **result_bundle_kwargs(native_result()),
+            tca_observations=observations,
+        )
+
+
 def test_result_bundle_rejects_diagnostic_result(tmp_path: Path) -> None:
     from portfolio_backtester.backends import write_execution_aware_result_bundle
 

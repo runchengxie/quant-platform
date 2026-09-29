@@ -6,8 +6,11 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
+
 from ..backtest_bundle import BacktestBundleManifest, BacktestEvidenceTier
 from ..backtest_bundle_io import write_backtest_bundle
+from ..tca_calibration import calibrate_cost_model
 from .base import CanonicalBacktestResult
 
 
@@ -21,6 +24,10 @@ def write_execution_aware_result_bundle(
     configuration_sha256: str,
     input_refs: Sequence[Mapping[str, Any]],
     diagnostics: Mapping[str, Any] | None = None,
+    tca_observations: pd.DataFrame | None = None,
+    tca_model_version: str | None = None,
+    tca_source_version: str | None = None,
+    tca_min_observations: int = 20,
 ) -> BacktestBundleManifest:
     """Write a hash-verified bundle from a backend's full execution ledger.
 
@@ -41,6 +48,16 @@ def write_execution_aware_result_bundle(
         raise ValueError("Execution-aware bundle requires input_refs for artifact lineage")
     if producer.get("backend") != result.backend_name:
         raise ValueError("producer.backend must match the canonical result backend")
+    tca_calibration = None
+    if tca_observations is not None:
+        if not tca_model_version or not tca_source_version:
+            raise ValueError("TCA observations require tca_model_version and tca_source_version")
+        tca_calibration = calibrate_cost_model(
+            tca_observations,
+            model_version=tca_model_version,
+            source_version=tca_source_version,
+            min_observations=tca_min_observations,
+        ).to_mapping()
     return write_backtest_bundle(
         output_dir,
         run_id=run_id,
@@ -57,6 +74,7 @@ def write_execution_aware_result_bundle(
         configuration_sha256=configuration_sha256,
         input_refs=input_refs,
         diagnostics=diagnostics,
+        tca_calibration=tca_calibration,
     )
 
 
