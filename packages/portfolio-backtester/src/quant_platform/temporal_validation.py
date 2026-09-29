@@ -1,7 +1,6 @@
-"""Public platform primitives shared across private research consumers."""
+"""Stable platform namespace for strategy-neutral temporal validation."""
 
-from .publication import build_platform_publication, file_sha256
-from .temporal_validation import (
+from alpha_research.temporal_validation import (
     EventWindow,
     PurgedWalkForwardSplit,
     TemporalFold,
@@ -13,8 +12,6 @@ __all__ = [
     "EventWindow",
     "PurgedWalkForwardSplit",
     "TemporalFold",
-    "build_platform_publication",
     "effective_sample_size",
-    "file_sha256",
     "purge_overlap",
 ]
