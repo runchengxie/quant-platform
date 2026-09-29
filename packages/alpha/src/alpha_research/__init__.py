@@ -85,6 +85,7 @@ __all__ = [
     "structural_breaks",
     "style_factors",
     "style_replica",
+    "temporal_validation",
     "train_eval",
     "train_eval_contracts",
     "train_eval_diagnostics",
