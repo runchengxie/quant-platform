@@ -138,6 +138,7 @@ def test_docs_record_current_automation_status() -> None:
 
 def test_framework_backend_docs_match_current_main_surface() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    chinese_readme = (ROOT / "README.zh-CN.md").read_text(encoding="utf-8")
     docs_index = (ALPHA_DOCS / "README.md").read_text(encoding="utf-8")
     framework_docs = FRAMEWORK_BACKEND_DOC.read_text(encoding="utf-8")
     testing_docs = (ALPHA_DOCS / "operations" / "testing.md").read_text(encoding="utf-8")
@@ -153,7 +154,8 @@ def test_framework_backend_docs_match_current_main_surface() -> None:
 
     assert "`NativeDatasetBackend`" in framework_docs
     assert "Qlib 适配器" in framework_docs
-    assert "Alpha 模块边界见[后端说明]" in readme
+    assert "Alpha module boundary" in readme
+    assert "Alpha 模块边界见[后端说明]" in chinese_readme
     assert "concepts/framework-backends.md" in docs_index
     for backend in (
         "`NativeDatasetBackend`",

@@ -161,10 +161,12 @@ def test_docs_record_current_cost_and_position_limitations() -> None:
 
 def test_docs_record_public_private_boundary_and_index_new_pages() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    chinese_readme = (ROOT / "README.zh-CN.md").read_text(encoding="utf-8")
     agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
     index = (ROOT / "docs" / "README.md").read_text(encoding="utf-8")
 
-    assert "私有研究层" in readme
+    assert "private research layer" in readme
+    assert "私有研究层" in chinese_readme
     assert "策略研究假设、专有特征和晋升规则属于私有研究层" in agents
     assert "guides/execution-simulation.md" in index
     assert "concepts/afml-sizing-and-risk.md" in index
