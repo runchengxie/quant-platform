@@ -6,6 +6,8 @@
 
 [在线文档](https://runchengxie.github.io/quant-platform/)
 
+语言规范：[English](docs/LANGUAGE_POLICY.md) · [简体中文](docs/LANGUAGE_POLICY.zh-CN.md)
+
 ## 快速开始
 
 项目需要 Python 3.12 或更新版本，并使用 `uv` 管理环境：
