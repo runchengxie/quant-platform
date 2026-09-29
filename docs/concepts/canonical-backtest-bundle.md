@@ -42,6 +42,8 @@ backtest_result/
 - 上游 artifact 引用。
 - 每个文件的 SHA-256、required 状态和行数。
 - reconciliation 结果。
+- 可选的 `tca_calibration`：由真实成交 TCA 生成的版本化成本校准回执，包含模型、来源版本、样本量和建议成本。
+  它只作为审计和回测输入证据保存，bundle writer 不会自动应用建议，也不会因此改变 evidence tier 或晋升状态。
 
 Artifact Envelope 的 `content_sha256` 对 canonical inventory 做哈希。manifest 本身不进入 inventory，
 避免自引用哈希。

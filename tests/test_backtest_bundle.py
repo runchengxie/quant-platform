@@ -238,6 +238,30 @@ def test_execution_aware_manifest_requires_all_ledger_files():
         BacktestBundleManifest.from_mapping(payload)
 
 
+def test_backtest_bundle_can_carry_advisory_tca_calibration_receipt(tmp_path: Path) -> None:
+    receipt = {
+        "schema_version": "portfolio_backtester.tca-calibration.v1",
+        "model_version": "cost-model.v1",
+        "source_version": "tca.2026-09",
+        "status": "ready",
+        "observation_count": 20,
+        "coverage_ratio": 0.95,
+        "modeled_cost_bps": 12.0,
+        "realized_cost_bps": 15.0,
+        "residual_cost_bps": 3.0,
+        "recommended_cost_bps": 15.0,
+    }
+
+    manifest = write_backtest_bundle(
+        tmp_path / "bundle",
+        **writer_kwargs(),
+        tca_calibration=receipt,
+    )
+
+    assert manifest.tca_calibration == receipt
+    assert read_backtest_bundle(tmp_path / "bundle").tca_calibration == receipt
+
+
 def test_inventory_item_rejects_unsafe_path():
     with pytest.raises(ValueError, match="safe relative path"):
         BacktestBundleInventoryItem.from_mapping(
