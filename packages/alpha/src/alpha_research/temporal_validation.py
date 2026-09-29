@@ -57,7 +57,6 @@ def purge_overlap(
     """Remove training events that overlap test labels or the test embargo."""
     if embargo_days < 0:
         raise ValueError("embargo_days must be non-negative")
-    test_start = min((item.start for item in test), default=None)
     test_end = max((item.end for item in test), default=None)
     embargo_end = test_end + timedelta(days=embargo_days) if test_end else None
     kept: list[EventWindow] = []
@@ -68,12 +67,9 @@ def purge_overlap(
         if overlaps:
             purged += 1
             continue
-        in_embargo = (
-            embargo_end is not None
-            and test_start is not None
-            and item.start > test_end
-            and item.start <= embargo_end
-        )
+        in_embargo = False
+        if test_end is not None and embargo_end is not None:
+            in_embargo = item.start > test_end and item.start <= embargo_end
         if in_embargo:
             embargoed += 1
             continue
@@ -138,6 +134,8 @@ def effective_sample_size(
     if average_active_bets is not None:
         if average_active_bets <= 0:
             raise ValueError("average_active_bets must be positive")
+        if not isinstance(observations, (int, np.integer)):
+            raise TypeError("observations must be an integer when using active bets")
         return float(observations) / float(average_active_bets)
     values = np.asarray(observations, dtype=float)
     if values.ndim != 1 or values.size == 0 or not np.isfinite(values).all():
