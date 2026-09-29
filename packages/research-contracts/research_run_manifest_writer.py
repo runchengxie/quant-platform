@@ -43,6 +43,7 @@ def build_research_run_manifest(
     portfolio_result_path: str = "backtest_bundle/manifest.json",
     benchmark_ref: Mapping[str, Any] | None = None,
     evidence_refs: Sequence[Mapping[str, Any]] = (),
+    component_refs: Mapping[str, Mapping[str, Any]] | None = None,
     output_path: Path | None = None,
 ) -> Path:
     """Create and atomically publish a validated run manifest.
@@ -81,6 +82,10 @@ def build_research_run_manifest(
             _resolve_artifact_ref(root, benchmark_ref) if benchmark_ref is not None else None
         ),
         evidence_refs=tuple(_resolve_artifact_ref(root, item) for item in evidence_refs),
+        component_refs={
+            str(role): _resolve_artifact_ref(root, item)
+            for role, item in (component_refs or {}).items()
+        },
         created_at=datetime.now(UTC),
     )
     destination = (output_path or root / MANIFEST_FILENAME).resolve()
@@ -109,4 +114,14 @@ def validate_research_run_manifest(path: Path) -> ResearchRunManifest:
     return manifest
 
 
-__all__ = ["MANIFEST_FILENAME", "build_research_run_manifest", "validate_research_run_manifest"]
+__all__ = [
+    "MANIFEST_FILENAME",
+    "build_quant_run_manifest",
+    "build_research_run_manifest",
+    "validate_quant_run_manifest",
+    "validate_research_run_manifest",
+]
+
+
+build_quant_run_manifest = build_research_run_manifest
+validate_quant_run_manifest = validate_research_run_manifest
