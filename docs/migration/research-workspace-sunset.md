@@ -22,6 +22,8 @@
 
 平台通过 `quant-market-data-platform` 发布的资产、公开 API、版本化 schema 和 artifact contract 与研究层连接，不导入研究仓或数据平台的内部 Python 模块。
 
+2026-09-30 起，平台 distribution 不再打包 `market_data_platform` 兼容副本。旧 import 路径不再受支持。数据平台生产能力和数据契约仅由 `quant-market-data-platform` 维护，平台保留组合与编排自身所需的输入规范化逻辑。
+
 ## 历史兼容规则
 
 - 新平台能力不得只修改旧 `portfolio-backtester` 或旧工作区实现。

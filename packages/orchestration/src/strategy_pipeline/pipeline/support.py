@@ -9,12 +9,13 @@ from typing import Any, cast
 import numpy as np
 import pandas as pd
 
-from market_data_platform.data_provider_contracts import normalize_market
-from market_data_platform.symbols import (
+from portfolio_backtester._symbol_utils import canonicalize_symbol_columns
+
+from .symbols import (
     PROVIDER_SYMBOL_PRIORITY,
-    canonicalize_symbol_columns,
     ensure_symbol_columns,
     normalize_historical_hk_symbol,
+    normalize_market,
     normalize_symbol_for_market,
     normalize_symbol_standard_name,
 )

@@ -1,8 +1,18 @@
 import builtins
 import importlib
+from pathlib import Path
 
 
 def test_control_plane_imports_without_owner_packages(monkeypatch):
+    compatibility_package = (
+        Path(__file__).parents[3]
+        / "packages"
+        / "portfolio-backtester"
+        / "src"
+        / "market_data_platform"
+    )
+    assert not compatibility_package.exists()
+
     blocked = {
         "alpha_research",
         "market_data_platform",
