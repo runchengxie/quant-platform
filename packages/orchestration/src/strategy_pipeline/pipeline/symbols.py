@@ -27,7 +27,7 @@ def normalize_symbol_for_market(value: object, *, market: str | None) -> str:
     upper = text.upper()
     for suffix, exchange in ((".XSHG", ".SH"), (".XSHE", ".SZ"), (".SH", ".SH"), (".SZ", ".SZ")):
         if upper.endswith(suffix):
-            return f"{upper[:-len(suffix)].zfill(6)}{exchange}"
+            return f"{upper[: -len(suffix)].zfill(6)}{exchange}"
     if upper.isdigit():
         code = upper.zfill(6)
         if code.startswith(("5", "6", "9")):
@@ -44,7 +44,7 @@ def normalize_historical_hk_symbol(value: object) -> str:
     upper = text.upper()
     for suffix in (".XHKG", ".HK"):
         if upper.endswith(suffix):
-            upper = upper[:-len(suffix)]
+            upper = upper[: -len(suffix)]
             break
     return f"{upper.zfill(5)}.HK" if upper.isdigit() else text
 
