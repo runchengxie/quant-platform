@@ -1,19 +1,21 @@
-# 运行第一个回测
+# Run your first backtest
 
-本页使用一份很小的合成数据，演示从分数、执行模型到回测结果的完整流程。示例中的价格和信号只用于学习 API，不代表任何投资观点。
+Language: English · [简体中文](first-backtest.zh-CN.md)
 
-## 1. 准备数据
+This guide uses a small synthetic dataset to demonstrate the full flow from scores and an execution model to backtest results. Prices and signals are for learning the API only; they do not express investment views.
 
-回测输入是一张 `pandas.DataFrame`。最小示例需要以下列：
+## 1. Prepare data
 
-| 列 | 含义 |
+The backtest input is a `pandas.DataFrame`. The smallest example uses these columns:
+
+| Column | Meaning |
 | --- | --- |
-| `trade_date` | 交易日期 |
-| `symbol` | 证券标识 |
-| `signal` | 用于排序和选股的分数 |
-| `close` | 执行模型使用的价格 |
+| `trade_date` | Trading date |
+| `symbol` | Security identifier |
+| `signal` | Score used to rank and select securities |
+| `close` | Price used by the execution model |
 
-下面的四只证券有三个交易日，每天都会重新排名：
+The four synthetic securities below span three trading days and are ranked again each day:
 
 ```python
 import pandas as pd
@@ -23,27 +25,14 @@ scores = pd.DataFrame(
         "trade_date": pd.to_datetime(["2020-01-01"] * 4 + ["2020-01-02"] * 4 + ["2020-01-03"] * 4),
         "symbol": ["A", "B", "C", "D"] * 3,
         "signal": [4.0, 3.0, 2.0, 1.0, 3.0, 4.0, 2.0, 1.0, 3.0, 4.0, 2.0, 1.0],
-        "close": [
-            100.0,
-            100.0,
-            100.0,
-            100.0,
-            110.0,
-            90.0,
-            105.0,
-            100.0,
-            121.0,
-            81.0,
-            110.25,
-            100.0,
-        ],
+        "close": [100.0, 100.0, 100.0, 100.0, 110.0, 90.0, 105.0, 100.0, 121.0, 81.0, 110.25, 100.0],
     }
 )
 ```
 
-## 2. 配置执行模型
+## 2. Configure the execution model
 
-执行模型负责开仓价格、退出价格、成本和滑点。这个示例先关闭显式交易成本，让结果更容易理解：
+The execution model defines entry and exit prices, costs, and slippage. Explicit transaction costs are set to zero here to keep the example easy to follow:
 
 ```python
 from portfolio_backtester.execution import build_execution_model
@@ -57,9 +46,9 @@ execution = build_execution_model(
 )
 ```
 
-## 3. 配置策略和回测
+## 3. Configure the strategy and backtest
 
-`StrategySpec` 描述如何选股和分配权重。`BacktestSpec` 把策略、执行模型和回测区间组合在一起：
+`StrategySpec` describes security selection and target weighting. `BacktestSpec` combines the strategy, execution model, and backtest schedule:
 
 ```python
 from portfolio_backtester import BacktestSpec, StrategySpec, run_backtest
@@ -80,12 +69,12 @@ spec = BacktestSpec(
 
 result = run_backtest(scores, spec)
 if result is None:
-    raise RuntimeError("没有形成可回放的持仓")
+    raise RuntimeError("No replayable positions were formed")
 ```
 
-## 4. 读取结果
+## 4. Read the results
 
-默认返回值包含五部分：
+The default return value contains five parts:
 
 ```python
 stats, net_returns, gross_returns, turnover, periods = result
@@ -95,24 +84,22 @@ print(net_returns)
 print(periods[0]["entry_date"], periods[0]["exit_date"])
 ```
 
-其中：
+- `stats` is a summary-statistics dictionary.
+- `net_returns` contains holding-period returns after modeled costs.
+- `gross_returns` contains holding-period returns before modeled costs.
+- `turnover` contains turnover for each holding period.
+- `periods` stores dates, positions, and return details for each holding period.
 
-- `stats` 是汇总统计字典
-- `net_returns` 是扣除模型成本后的持有期收益
-- `gross_returns` 是未扣成本的持有期收益
-- `turnover` 是各持有期的换手率
-- `periods` 保存每个持有期的日期、持仓和收益明细
+See [understanding backtest results](understanding-results.md) for field details. For costs, slippage, or tradability constraints, continue to [costs and execution assumptions](../concepts/execution-costs.md).
 
-完整字段说明见[读取回测结果](understanding-results.md)。需要成本、滑点或可交易性约束时，再阅读[成本与执行假设](../concepts/execution-costs.md)。
+## What this example leaves out
 
-## 这个示例省略了什么
+Real research also needs to:
 
-真实研究通常还需要：
+- Use published data assets with version information.
+- Make signal formation and availability times explicit.
+- Check price, liquidity, and trading-status fields.
+- Set costs, slippage, and market rules.
+- Save configuration, positions, pricing data, and run artifacts.
 
-- 使用已发布、带版本信息的数据资产
-- 明确信号的形成时间和可用时间
-- 检查价格、流动性和交易状态字段
-- 设置成本、滑点和市场规则
-- 保存配置、持仓、定价数据和运行产物
-
-这个页面只负责帮助你理解调用关系。正式研究前，请阅读[组合式回测规范](../concepts/backtest-spec.md)和[回测结果解读](../concepts/backtest-interpretation.md)。
+This page explains the call flow only. Before formal research, read the [composable backtest specification](../concepts/backtest-spec.md) and [interpreting backtest results](../concepts/backtest-interpretation.md).

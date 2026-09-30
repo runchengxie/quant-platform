@@ -1,14 +1,16 @@
-# 读取回测结果
+# Understand backtest results
 
-`run_backtest` 的默认结果是一个五元素元组：
+Language: English · [简体中文](understanding-results.zh-CN.md)
+
+The default `run_backtest` result is a five-element tuple:
 
 ```python
 stats, net_returns, gross_returns, turnover, periods = result
 ```
 
-## 汇总统计
+## Summary statistics
 
-`stats` 通常包含总收益、年化收益、年化波动、Sharpe、最大回撤和平均换手率等指标。具体字段以当前代码和测试为准，常见读取方式如下：
+`stats` commonly includes total return, annualized return, annualized volatility, Sharpe ratio, maximum drawdown, and average turnover. Use the current implementation and tests as the authority for exact fields. A common access pattern is:
 
 ```python
 summary = {
@@ -20,41 +22,41 @@ summary = {
 }
 ```
 
-如果某个指标没有足够的数据计算，结果可能是 `None` 或 `NaN`。读取结果时，应先确认样本长度和指标定义，再比较不同实验。
+A metric may be `None` or `NaN` when there is not enough data to calculate it. Check the sample length and metric definition before comparing experiments.
 
-## 净收益和毛收益
+## Net and gross returns
 
-- `gross_returns` 只反映持仓路径带来的收益。
-- `net_returns` 在相同持仓路径上扣除了模型中的交易成本和滑点。
-- 两者的差异可以帮助判断收益是否被换手和执行假设显著侵蚀。
+- `gross_returns` reflects returns along the portfolio path before modeled costs.
+- `net_returns` uses the same path after modeled transaction costs and slippage.
+- Their difference helps show whether turnover and execution assumptions materially reduce returns.
 
-示例：
+For example:
 
 ```python
 cost_drag = gross_returns - net_returns
 ```
 
-这里的成本拖累是模型结果，不代表真实成交回报。真实成交需要订单、成交和账户账本等执行证据。
+This cost drag is a model result, not an estimate of actual fills. Actual execution requires evidence such as orders, fills, and account ledgers.
 
-## 持有期明细
+## Holding-period details
 
-`periods` 是按持有期组织的字典列表。常见字段包括：
+`periods` is a list of dictionaries organized by holding period. Common fields include:
 
-| 字段 | 含义 |
+| Field | Meaning |
 | --- | --- |
-| `entry_date` | 持有期开始日期 |
-| `exit_date` | 持有期结束日期 |
-| `net_return` | 该持有期净收益 |
-| `gross_return` | 该持有期毛收益 |
-| `turnover` | 该持有期换手率 |
-| `positions` | 该持有期使用的目标持仓 |
+| `entry_date` | Start date of the holding period |
+| `exit_date` | End date of the holding period |
+| `net_return` | Net return for the holding period |
+| `gross_return` | Gross return for the holding period |
+| `turnover` | Turnover for the holding period |
+| `positions` | Target positions used for the holding period |
 
-不同后端或配置可能附加更多字段。需要完整输出契约时，继续阅读[回测输出契约](../reference/outputs/backtest-outputs.md)和[持仓输出约定](../reference/outputs/positions.md)。
+Backends and configurations may add fields. For the full output contract, see [backtest outputs](../reference/outputs/backtest-outputs.md) and [position outputs](../reference/outputs/positions.md).
 
-## 阅读结果时先问三个问题
+## Ask three questions before interpreting results
 
-1. 收益来自持仓路径，还是来自成本和价格假设的遗漏？
-2. 回测使用的信号、价格和可交易性信息在当时是否已经可用？
-3. 当前结果属于诊断性研究，还是具备完整执行证据的结果？
+1. Did the return come from the portfolio path, or from omitted costs and pricing assumptions?
+2. Were the signal, price, and tradability inputs available at the time represented by the backtest?
+3. Is this a diagnostic result, or is it supported by complete execution evidence?
 
-回测指标本身不能回答这些问题。需要结合输入数据、配置、持仓产物和执行证据一起检查。
+Backtest metrics alone cannot answer these questions. Review the input data, configuration, position artifacts, and execution evidence together.

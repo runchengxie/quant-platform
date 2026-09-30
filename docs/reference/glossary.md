@@ -1,26 +1,26 @@
-# 术语表
+# Glossary
 
-本页解释文档中经常出现的术语。代码、配置和 API 名称保留英文写法。
+Language: English · [简体中文](glossary.zh-CN.md)
 
-| 术语 | 中文解释 |
+This page defines terms used throughout the documentation. Code, configuration, and API names retain their English spelling.
+
+| Term | Definition |
 | --- | --- |
-| signal | 信号。用于排序、筛选或构造目标持仓的数值。 |
-| target position | 目标持仓。策略希望在调仓后持有的证券和权重。 |
-| sleeve | 袖套。组合中的一个独立策略或配置单元。 |
-| backtest | 回测。根据历史输入和明确的执行假设，重放策略组合行为。 |
-| execution | 执行。描述订单如何成交，以及价格、成本、滑点和交易规则。 |
-| backend | 后端。实现某种回测或组合计算方式的组件。 |
-| ledger | 账本。按订单、成交、持仓、现金和净值记录账户状态。 |
-| artifact | 研究产物。一次运行生成的持仓、收益、摘要、清单或证据文件。 |
-| bundle | 产物包。按照约定目录和清单组织的一组相关文件。 |
-| sidecar | 附属证据文件。与主结果一起保存，用于记录诊断、哈希或晋升依据。 |
-| owner | 负责方。拥有某个领域逻辑、数据或接口维护责任的项目或模块。 |
-| pipeline | 编排流水线。负责组织配置、运行、评估和产物交接的流程。 |
-| PIT | Point-in-time。按当时可获得的信息进行时间对齐，避免使用未来信息。 |
-| OOS | Out-of-sample。样本外数据或样本外评估区间。 |
-| AFML | Advances in Financial Machine Learning。本文档中指与金融机器学习相关的仓位、风险和研究方法。 |
-| HRP | Hierarchical Risk Parity。分层风险平价组合方法。 |
+| signal | A value used to rank or filter securities, or construct target positions. |
+| target position | The securities and weights a strategy intends to hold after rebalancing. |
+| sleeve | An independent strategy or configuration unit within a portfolio. |
+| backtest | A replay of portfolio behavior from historical inputs under explicit execution assumptions. |
+| execution | The rules describing how orders fill, including prices, costs, slippage, and trading constraints. |
+| backend | A component that implements a backtesting or portfolio-computation method. |
+| ledger | A record of account state by order, fill, position, cash, and net asset value. |
+| artifact | A run output such as positions, returns, summaries, manifests, or evidence files. |
+| bundle | A related set of files organized under an agreed directory structure and manifest. |
+| sidecar | An evidence file stored alongside a primary result, for diagnostics, hashes, or promotion rationale. |
+| owner | The project or module responsible for maintaining a domain, data asset, or interface. |
+| pipeline | A workflow that coordinates configuration, execution, evaluation, and artifact handoff. |
+| PIT | Point-in-time: aligning information to what was available at the time, avoiding future information. |
+| OOS | Out-of-sample data or an out-of-sample evaluation period. |
+| AFML | *Advances in Financial Machine Learning*. Here, it refers to related position-sizing, risk, and research methods. |
+| HRP | Hierarchical Risk Parity, a portfolio-construction method. |
 
-## 阅读建议
-
-第一次遇到术语时，先看它在当前页面中的输入、输出和边界，再查看本页的简要解释。最终语义以当前代码、测试和公开契约为准。
+When a term first appears, read its inputs, outputs, and boundaries in context, then use this page for a short definition. Current code, tests, and public contracts determine the final semantics.

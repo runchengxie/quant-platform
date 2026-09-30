@@ -1,5 +1,7 @@
 # Language policy
 
+Language: English · [简体中文](LANGUAGE_POLICY.zh-CN.md)
+
 `quant-platform` uses English as the canonical language for public engineering
 interfaces and reusable documentation. A Chinese companion may be added for
 human readers, but it must not create a second source of truth.

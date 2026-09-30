@@ -1,84 +1,81 @@
-# quant-platform 文档
+# quant-platform documentation
 
-> status: active
-> owner: quant-platform
-> audience: human and agent
-> last_verified: 2026-09-25
-> source_of_truth: yes
-> superseded_by: n/a
+Language: English · [简体中文](README.zh-CN.md)
 
-这里集中记录 `quant-platform` 的输入约定、执行假设、输出契约和开发检查。
+Translation coverage and the remaining page queue are tracked in the [localization status](LANGUAGE_MIGRATION_STATUS.md).
 
-如果你第一次接触这个项目，建议先阅读下面的新人入口。它们使用合成数据和最小示例，帮助你先跑通完整流程，再进入详细的接口和契约说明。
+This documentation describes reusable quantitative research and portfolio mechanisms maintained by `quant-platform`. It is organized around current inputs, execution assumptions, output contracts, and development checks.
 
-## 新人入口
+## Start here
 
-1. [平台概览](concepts/platform-overview.md)
-2. [安装与环境](getting-started/installation.md)
-3. [运行第一个回测](getting-started/first-backtest.md)
-4. [读取回测结果](getting-started/understanding-results.md)
-5. [术语表](reference/glossary.md)
+1. [Platform overview](concepts/platform-overview.md)
+2. [Installation and environments](getting-started/installation.md)
+3. [Run your first backtest](getting-started/first-backtest.md)
+4. [Understand backtest results](getting-started/understanding-results.md)
+5. [Glossary](reference/glossary.md)
 
-## 深入阅读顺序
+These guides use synthetic data and small examples. They help you run the full flow before exploring detailed interfaces and contracts.
 
-1. [根目录 README](https://github.com/runchengxie/quant-platform/blob/main/README.md)
-2. [常用入口](guides/entry-points.md)
-3. [通用多策略袖套组合构造](guides/sleeve-portfolio.md)
-4. [组合式回测规范](concepts/backtest-spec.md)
-5. [回测配置解析](concepts/backtest-configuration.md)
-6. [回测后端与统一账本边界](concepts/backend-architecture.md)
-7. [机器可读框架状态账本](https://github.com/runchengxie/quant-platform/blob/main/docs/framework-integration-ledger.yml)
-8. [成本与执行假设](concepts/execution-costs.md)
-9. [执行容量与每日净值模拟](guides/execution-simulation.md)
-10. [风格因子组合权重](concepts/style-factor-portfolio-weighting.md)
-11. [AFML 仓位与策略风险](concepts/afml-sizing-and-risk.md)
-12. [换手率口径](concepts/turnover.md)
-13. [成本口径](concepts/cost-breakdown.md)
-14. [回测结果解读](concepts/backtest-interpretation.md)
-15. [市场基准阶梯](concepts/benchmark-ladder.md)
-16. [持仓输出约定](reference/outputs/positions.md)
-17. [回测输出契约](reference/outputs/backtest-outputs.md)
-18. [执行分配参考资产](reference/allocation-reference.md)
-19. [公开 API](reference/public-api.md)
-20. [测试和质量检查](testing.md)
-21. [微观结构开发说明](microstructure/README.md)
-22. [可选 Rust 模拟内核](development/microstructure-rust.md)
-23. [会计与执行路线图](governance/accounting-execution-roadmap.md)
-24. [网格回测辅助函数](grid-support.md)
+## Further reading
 
-编码代理默认读取根 README、本页和一个与任务相关的分类目录，不递归读取全部 Markdown 文件。
+1. [Repository README](https://github.com/runchengxie/quant-platform/blob/main/README.md)
+2. [Common entry points](guides/entry-points.md)
+3. [Multi-sleeve portfolio construction](guides/sleeve-portfolio.md)
+4. [Composable backtest specification](concepts/backtest-spec.md)
+5. [Backtest configuration parsing](concepts/backtest-configuration.md)
+6. [Backtest backends and unified ledger boundary](concepts/backend-architecture.md)
+7. [Machine-readable framework integration ledger](https://github.com/runchengxie/quant-platform/blob/main/docs/framework-integration-ledger.yml)
+8. [Costs and execution assumptions](concepts/execution-costs.md)
+9. [Execution capacity and daily NAV simulation](guides/execution-simulation.md)
+10. [Style-factor portfolio weighting](concepts/style-factor-portfolio-weighting.md)
+11. [AFML sizing and strategy risk](concepts/afml-sizing-and-risk.md)
+12. [Turnover definitions](concepts/turnover.md)
+13. [Cost definitions](concepts/cost-breakdown.md)
+14. [Interpreting backtest results](concepts/backtest-interpretation.md)
+15. [Market benchmark ladder](concepts/benchmark-ladder.md)
+16. [Position output contract](reference/outputs/positions.md)
+17. [Backtest output contract](reference/outputs/backtest-outputs.md)
+18. [Execution allocation reference assets](reference/allocation-reference.md)
+19. [Public API](reference/public-api.md)
+20. [Testing and quality checks](testing.md)
+21. [Microstructure development](microstructure/README.md)
+22. [Optional Rust simulation kernel](development/microstructure-rust.md)
+23. [Accounting and execution roadmap](governance/accounting-execution-roadmap.md)
+24. [Grid backtest helpers](grid-support.md)
 
-## 事实来源
+Agents should start with the root README, this page, and the relevant category directory. They do not need to recursively read every Markdown file.
 
-| 内容 | 代码位置 |
+## Sources of truth
+
+| Area | Implementation |
 | --- | --- |
-| 顶层公开入口 | `packages/portfolio-backtester/src/portfolio_backtester/__init__.py` |
-| 通用多袖组合构造 | `packages/portfolio-backtester/src/portfolio_backtester/sleeve_portfolio.py` |
-| 回测规范 | `packages/portfolio-backtester/src/portfolio_backtester/backtest_spec.py` |
-| 回测配置解析 | `packages/portfolio-backtester/src/portfolio_backtester/backtest_config.py` |
-| 高层 API | `packages/portfolio-backtester/src/portfolio_backtester/api.py` |
-| 输入和输出契约 | `packages/portfolio-backtester/src/portfolio_backtester/contracts.py` |
-| 执行领域契约 | `packages/portfolio-backtester/src/portfolio_backtester/execution_contracts.py` |
-| 执行分配参考资产 | `packages/portfolio-backtester/src/portfolio_backtester/allocation_reference.py` |
-| 后端协议与规范化结果 | `packages/portfolio-backtester/src/portfolio_backtester/backends/` |
-| 成本与滑点 | `packages/portfolio-backtester/src/portfolio_backtester/execution.py` |
-| 持仓回放 | `packages/portfolio-backtester/src/portfolio_backtester/position_backtest.py` |
-| 晋级证据成交模拟 | `packages/portfolio-backtester/src/portfolio_backtester/promotion_sidecar.py` |
-| 测试入口 | `scripts/dev/run_tests.sh` |
-| 网格回测辅助函数 | `packages/portfolio-backtester/src/portfolio_backtester/grid_support.py` |
-| 微观结构模拟接口 | `packages/microstructure/src/ticknet/simulator/` |
-| Rust 模拟内核 | `packages/microstructure/rust/src/lib.rs` |
+| Public package entry points | `packages/portfolio-backtester/src/portfolio_backtester/__init__.py` |
+| Multi-sleeve portfolio construction | `packages/portfolio-backtester/src/portfolio_backtester/sleeve_portfolio.py` |
+| Backtest specification | `packages/portfolio-backtester/src/portfolio_backtester/backtest_spec.py` |
+| Backtest configuration parsing | `packages/portfolio-backtester/src/portfolio_backtester/backtest_config.py` |
+| High-level API | `packages/portfolio-backtester/src/portfolio_backtester/api.py` |
+| Input and output contracts | `packages/portfolio-backtester/src/portfolio_backtester/contracts.py` |
+| Execution-domain contracts | `packages/portfolio-backtester/src/portfolio_backtester/execution_contracts.py` |
+| Execution allocation reference | `packages/portfolio-backtester/src/portfolio_backtester/allocation_reference.py` |
+| Backend protocols and normalized results | `packages/portfolio-backtester/src/portfolio_backtester/backends/` |
+| Costs and slippage | `packages/portfolio-backtester/src/portfolio_backtester/execution.py` |
+| Position replay | `packages/portfolio-backtester/src/portfolio_backtester/position_backtest.py` |
+| Promotion-evidence execution simulation | `packages/portfolio-backtester/src/portfolio_backtester/promotion_sidecar.py` |
+| Test entry point | `scripts/dev/run_tests.sh` |
+| Grid backtest helpers | `packages/portfolio-backtester/src/portfolio_backtester/grid_support.py` |
+| Microstructure simulation API | `packages/microstructure/src/ticknet/simulator/` |
+| Rust simulation kernel | `packages/microstructure/rust/src/lib.rs` |
 
-代码、测试和文档发生冲突时，应先核对当前实现，再在同一次改动中修正文档。
+When code, tests, and documentation disagree, verify the current implementation and correct the documentation in the same change.
 
-## 文档边界
+## Project boundary
 
-本仓库记录通用组合构造和回测行为。数据下载、因子研究、模型训练、具体策略规则、任务编排和券商下单由调用方负责。
+This repository documents general portfolio construction and backtesting behavior. Data downloads, factor research, model training, strategy-specific rules, job orchestration, and broker order placement belong to callers or other projects.
 
-历史迁移记录保留在 PR、发布说明或维护记录中。用户指南优先说明当前版本的输入、行为和输出。
+Historical migration records remain in pull requests, release notes, or maintenance records. User guides describe current inputs, behavior, and outputs.
 
-## 历史归属
+## Historical ownership
 
-- [组合回测命名空间](namespace-migration.md)
-- [DailyWatch20 组合职责归属](ownership-migration.md)
-- [旧仓再资格样本外（OOS）对照桥](guides/incumbent-requalification-oos-controls.md)
+- [Backtesting namespace](namespace-migration.md)
+- [DailyWatch20 portfolio ownership](ownership-migration.md)
+- [Incumbent requalification out-of-sample comparison bridge](guides/incumbent-requalification-oos-controls.md)
