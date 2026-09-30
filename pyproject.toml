@@ -64,7 +64,6 @@ packages = [
   "portfolio_backtester",
   "portfolio_backtester.backends",
   "portfolio_backtester.execution_sim",
-  "market_data_platform",
   "quant_platform",
   "alpha_research",
   "alpha_research.backends",
@@ -84,7 +83,6 @@ packages = [
 ]
 [tool.setuptools.package-dir]
 portfolio_backtester = "packages/portfolio-backtester/src/portfolio_backtester"
-market_data_platform = "packages/portfolio-backtester/src/market_data_platform"
 quant_platform = "packages/portfolio-backtester/src/quant_platform"
 alpha_research = "packages/alpha/src/alpha_research"
 research_contracts = "packages/research-contracts"
@@ -118,7 +116,7 @@ select = ["E", "F", "I", "UP", "B", "C4", "RET", "SIM", "RUF", "C90"]
 allowed-confusables = ["，", "：", "；", "（", "）", "｜", "×"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["portfolio_backtester", "market_data_platform", "strategy_pipeline", "quant_execution_engine"]
+known-first-party = ["portfolio_backtester", "strategy_pipeline", "quant_execution_engine"]
 
 [tool.ty.src]
 include = ["packages/portfolio-backtester/src", "packages/orchestration/src", "packages/execution/src", "packages/alpha/src", "packages/microstructure/src", "scripts"]

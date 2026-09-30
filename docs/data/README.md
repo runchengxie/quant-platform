@@ -1,5 +1,5 @@
-# 公开市场数据能力
+# 市场数据消费边界
 
-`quant-platform` 中的 `market_data_platform` 提供可复用的数据集契约、市场和数据供应商边界辅助工具、已发布资产元数据类型，以及确定性的文件和排序工具。
+`quant-platform` 不包含 `market_data_platform` 兼容副本，也不承担市场数据生产。数据接入、规范化、质量治理、版本和已发布资产由 [`quant-market-data-platform`](https://github.com/runchengxie/quant-market-data-platform) 唯一维护。
 
-供应商适配器、凭证、原始数据集、本地数据根目录和生产清单由私有研究仓库或部署环境负责。公开包必须能够使用合成夹具运行，不依赖数据供应商凭证。
+平台仅通过公开产物、稳定文件格式和研究层输入消费数据。不直接导入数据平台的 Python 模块。平台自己的证券标识处理属于组合回测与编排输入处理，不保留旧兼容导入路径。
