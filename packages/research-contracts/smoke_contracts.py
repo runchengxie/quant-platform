@@ -158,7 +158,7 @@ def run_smoke(root: Path, timeout: int) -> list[SmokeResult]:
         root,
         "quant-market-data-platform",
         "marketdata",
-        "market_data_platform.cli",
+        "quant_market_data_platform.cli",
     )
     if marketdata is None:
         results.append(_skip("marketdata", "marketdata CLI is unavailable"))
