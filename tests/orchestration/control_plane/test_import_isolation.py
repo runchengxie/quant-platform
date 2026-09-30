@@ -4,18 +4,18 @@ from pathlib import Path
 
 
 def test_control_plane_imports_without_owner_packages(monkeypatch):
-    compatibility_package = (
+    bundled_provider_package = (
         Path(__file__).parents[3]
         / "packages"
         / "portfolio-backtester"
         / "src"
-        / "market_data_platform"
+        / "quant_market_data_platform"
     )
-    assert not compatibility_package.exists()
+    assert not bundled_provider_package.exists()
 
     blocked = {
         "alpha_research",
-        "market_data_platform",
+        "quant_market_data_platform",
         "portfolio_backtester",
         "strategy_app",
         "strategy_pipeline_internal",
