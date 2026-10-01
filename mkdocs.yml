@@ -168,10 +168,10 @@ nav:
   - References:
       - Public API: reference/public-api.md
       - Allocation reference: reference/allocation-reference.md
+      - Data boundary: data/README.md
       - Chinese originals (translation in progress):
           - 持仓: reference/outputs/positions.md
           - 回测输出: reference/outputs/backtest-outputs.md
-          - 数据边界: data/README.md
   - Development (Chinese originals; translation in progress):
       - 测试: testing.md
       - 网格辅助工具: grid-support.md
