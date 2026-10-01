@@ -146,6 +146,33 @@ def test_english_testing_guide_matches_current_scripts_and_ci() -> None:
     assert "TICKNET_REQUIRE_RUST=1" in ci
 
 
+def test_orchestration_configuration_docs_match_loader_and_tests() -> None:
+    docs = (ROOT / "docs" / "orchestration" / "reference" / "configuration.md").read_text(
+        encoding="utf-8"
+    )
+    implementation = (
+        ROOT / "packages" / "orchestration" / "src" / "strategy_pipeline" / "config.py"
+    ).read_text(encoding="utf-8")
+    tests = (ROOT / "tests" / "orchestration" / "test_config.py").read_text(encoding="utf-8")
+
+    assert "Language: English · [简体中文](configuration.zh-CN.md)" in docs
+    for behavior in (
+        "def resolve_config(",
+        "def deep_merge(",
+        'EXTENDS_KEY = "extends"',
+        "Circular extends detected",
+        'source=f"package:{package}/{filename}"',
+    ):
+        assert behavior in implementation
+    for behavior in (
+        "test_resolve_config_supports_alias_and_relative_extends",
+        "test_resolve_config_falls_back_to_filename_in_search_roots",
+        "test_resolve_config_rejects_circular_extends",
+        "test_resolve_config_accepts_an_injected_normalizer",
+    ):
+        assert behavior in tests
+
+
 def test_docs_distinguish_current_backends_from_history_and_plans() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
