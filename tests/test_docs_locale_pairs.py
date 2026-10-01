@@ -13,6 +13,7 @@ PAIRS = (
     ("reference/glossary.md", "reference/glossary.zh-CN.md"),
     ("reference/public-api.md", "reference/public-api.zh-CN.md"),
     ("reference/allocation-reference.md", "reference/allocation-reference.zh-CN.md"),
+    ("concepts/backtest-configuration.md", "concepts/backtest-configuration.zh-CN.md"),
 )
 
 

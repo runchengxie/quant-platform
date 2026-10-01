@@ -1,16 +1,18 @@
-# 回测配置解析
+# Backtest Configuration Resolution
 
-`portfolio_backtester.backtest_config.resolve_backtest_base_settings` 负责解析不依赖数据提供方的通用回测配置。它统一处理以下内容：
+Language: English · [简体中文](backtest-configuration.zh-CN.md)
 
-- 基准标的和对比基准
-- 组合权重、分组限制和选股 tie-break
-- 退出方式、退出价格策略和回退策略
-- 成本、换手、可交易字段和多空选项
-- tearsheet 和回测后处理开关
+`portfolio_backtester.backtest_config.resolve_backtest_base_settings` normalizes shared backtest configuration that does not depend on a data provider. It handles:
 
-该函数只返回规范化的回测运行参数。数据字段检查、执行模型构建和执行模拟所需列的补全仍由调用方负责。这样组合回测规则由本仓库维护，pipeline 只负责把数据、评估和运行时配置组合起来。
+- Benchmark symbols and comparison benchmarks
+- Portfolio weighting, group limits, and selection tie-breaks
+- Exit mode, exit-price policy, and fallback policy
+- Costs, turnover, tradability fields, and long/short options
+- Tear sheets and post-backtest processing switches
 
-## 使用方式
+The function returns normalized run settings. Callers remain responsible for validating data fields, building execution models, and supplying the columns required for execution simulation. This keeps portfolio and backtest rule semantics in `quant-platform`, while a pipeline composes data, evaluation, and runtime configuration.
+
+## Usage
 
 ```python
 from portfolio_backtester.backtest_config import resolve_backtest_base_settings
@@ -24,4 +26,4 @@ settings = resolve_backtest_base_settings(
 )
 ```
 
-配置错误会通过 `SystemExit` 报告，错误文本保留 `backtest.<option>` 前缀，便于命令行调用方定位配置位置。
+Explicit validation errors are reported through `SystemExit` and generally include the `backtest.<option>` prefix to help CLI callers locate the setting. Numeric conversions are not all wrapped, so malformed numeric values may also raise standard `TypeError` or `ValueError` exceptions.
