@@ -1,10 +1,12 @@
-# 常用入口
+# Common entry points
 
-`portfolio-backtester` 提供五类调用入口，覆盖从高层回测规范到低层持仓回放的不同需求。初次使用时，建议从入口 1 开始。
+Language: English · [简体中文](entry-points.zh-CN.md)
 
-## 1. 使用组合规范运行回测（推荐）
+`portfolio-backtester` provides five public ways to move from a backtest specification to position replay and benchmark evaluation. For a new score-driven backtest, start with `BacktestSpec` and `run_backtest`.
 
-新代码建议使用 `BacktestSpec` 和 `run_backtest`。`StrategySpec` 负责选股和权重设置，`ExecutionModel` 负责开仓价、退出规则、成本、滑点和筛选约束。回测区间和调仓设置保存在 `BacktestSpec` 中。
+## 1. Run a backtest from a composable specification
+
+Use `StrategySpec` for selection and weighting settings, `ExecutionModel` for entry and exit behavior, costs, slippage, and selection constraints, and `BacktestSpec` for the rebalance schedule and other run-level settings.
 
 ```python
 import pandas as pd
@@ -12,7 +14,7 @@ import pandas as pd
 from portfolio_backtester import BacktestSpec, StrategySpec, run_backtest
 from portfolio_backtester.execution import build_execution_model
 
-# scores 的 DataFrame 构造省略。它至少包含 trade_date、symbol、signal 和 close。
+# Build scores with trade_date, symbol, signal, and close columns.
 execution = build_execution_model(
     None,
     default_cost_bps=10.0,
@@ -41,41 +43,41 @@ spec = BacktestSpec(
 result = run_backtest(scores, spec)
 ```
 
-`BacktestSpec.to_mapping()` 可以生成适合写入 JSON 或 YAML 的配置，`BacktestSpec.from_mapping()` 可以恢复规范。行情表不写入配置，信号和定价数据在运行时传给 `run_backtest`。
+`BacktestSpec.to_mapping()` returns a JSON/YAML-safe configuration, and `BacktestSpec.from_mapping()` restores it. Market frames stay outside the mapping and are supplied to `run_backtest` at runtime.
 
-研究低换手策略时，可以设置 `selection_min_score` 和 `max_new_names_per_rebalance`。如果需要限制新证券排名，并让未填满的槽位保留现金，可以组合使用 `entry_rank_cutoff` 和 `target_weight_policy="fixed_slot"`。如果目标名单不应受开仓日价格或可交易性影响，可以设置 `selection_price_policy="target_first"`。这些字段默认关闭，不改变历史结果。完整语义见[组合式回测规范](../concepts/backtest-spec.md)。
+For low-turnover selection, set `selection_min_score` and `max_new_names_per_rebalance`. To cap entry ranks and leave unfilled slots in cash, combine `entry_rank_cutoff` with `target_weight_policy="fixed_slot"`. Set `selection_price_policy="target_first"` when target names should be selected before entry-date price or tradability checks. The defaults preserve the existing behavior: no entry-rank cutoff, normalized target weights, and execution-aware selection. See [Composable backtest specification](../concepts/backtest-spec.md) for the complete field semantics.
 
-输入数据通常需要以下字段：
+The score frame generally needs these columns:
 
 - `trade_date`
 - `symbol`
-- 分数列，例如 `signal`
-- 价格列，例如 `close`
-- 执行模型需要的流动性列或可交易标记
+- A score column such as `signal`
+- A price column such as `close`
+- Any liquidity or tradability columns required by the execution model
 
-## 2. 使用历史 Top-K 兼容入口
+## 2. Use the historical Top-K compatibility API
 
-`backtest_topk` 保留原有签名和默认行为。它会把参数转换为 `StrategySpec`、`ExecutionModel` 和 `BacktestSpec`，再调用统一的执行路径。现阶段该入口不会发出弃用警告。
+`backtest_topk` retains the historical parameter-based interface. It converts those arguments into `StrategySpec`, `ExecutionModel`, and `BacktestSpec`, then calls the unified execution path.
 
 ```python
 from portfolio_backtester import backtest_topk
 ```
 
-## 3. 先构造持仓，再单独回测
+## 3. Construct positions before running the backtest
 
-使用 `StrategySpec` 和 `construct_positions_from_strategy` 生成标准持仓，再把结果交给 `run_position_backtest`。这种方式便于检查目标持仓、保存中间结果和复用定价逻辑。
+Use `StrategySpec` with `construct_positions_from_strategy` to create standard target positions, then pass those positions to `run_position_backtest`. This separates selection from position replay and makes the target positions available for inspection or reuse.
 
 ```python
 from portfolio_backtester import StrategySpec, construct_positions_from_strategy
 ```
 
-## 4. 回放已有目标持仓
+## 4. Replay existing target positions
 
-使用 `PositionBacktestConfig` 和 `run_position_backtest`。这种方式适合从其他模型、优化器或人工流程接收持仓。这个底层入口只负责策略自身收益、成本和风险汇总，不持有 benchmark 数据。
+Use `PositionBacktestConfig` and `run_position_backtest` when positions come from another model, optimizer, or manual process. This lower-level path calculates strategy returns, costs, and risk summaries. It does not take benchmark data as an input.
 
-## 5. 对持仓回测做 benchmark 评估
+## 5. Evaluate a position backtest against a benchmark
 
-需要 tracking error、Information Ratio、alpha、beta、相关系数和主动收益时，使用 `evaluate_position_backtest`。benchmark 日收益会先按每个持有期的 entry/exit 日期复合，随后才与策略 period returns 对齐。
+Use `evaluate_position_backtest` when you need tracking error, Information Ratio, alpha, beta, correlation, and active-return statistics. Daily benchmark returns are compounded over each position period's entry and exit dates before they are aligned with strategy-period returns.
 
 ```python
 from portfolio_backtester import PositionBacktestConfig, evaluate_position_backtest
@@ -93,4 +95,4 @@ benchmark_stats = evaluation.benchmark_stats
 active_stats = evaluation.active_stats
 ```
 
-基准行情表也可以通过 `benchmark_df` 传入。价格列与策略不一致时，显式设置 `benchmark_entry_price_col` 和 `benchmark_exit_price_col`。
+Pass benchmark prices with `benchmark_df` instead when returns should be derived from a price frame. If benchmark price columns differ from the strategy's columns, set `benchmark_entry_price_col` and `benchmark_exit_price_col` explicitly.
