@@ -93,8 +93,10 @@ nav:
   - Core concepts:
       - Backtest configuration: concepts/backtest-configuration.md
       - Backtest specification: concepts/backtest-spec.md
+      - Execution costs and assumptions: concepts/execution-costs.md
       - 简体中文:
           - 回测规范: concepts/backtest-spec.zh-CN.md
+          - 成本与执行假设: concepts/execution-costs.zh-CN.md
       - 后端架构: concepts/backend-architecture.md
       - LEAN feasibility spike: concepts/lean-differential-spike-2026-09.md
       - 回测结果解读: concepts/backtest-interpretation.md
@@ -105,7 +107,6 @@ nav:
       - 因子归因: concepts/factor-attribution.md
       - 基准阶梯: concepts/benchmark-ladder.md
       - 换手率: concepts/turnover.md
-      - 执行成本: concepts/execution-costs.md
       - 组合执行性能基线: development/portfolio-execution-profiling-2026-09.md
       - 成本拆解: concepts/cost-breakdown.md
       - 日期执行费用: dated-execution-fees.md

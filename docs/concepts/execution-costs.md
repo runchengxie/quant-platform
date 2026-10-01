@@ -1,144 +1,144 @@
-# 成本与执行假设
+# Execution costs and assumptions
 
-本页说明仓库当前支持的成本模型、滑点模型、价格列、流动性约束和退出价格规则。
+Language: English · [简体中文](execution-costs.zh-CN.md)
 
-这些功能用于研究回测。参数需要根据市场、账户、券商和成交方式重新校准，默认值只能作为起点。
+This page describes the cost and slippage models, price columns, liquidity constraints, and exit-price policies currently supported by the repository. The contracts are implemented in [`_execution_models.py`](https://github.com/runchengxie/quant-platform/blob/main/packages/portfolio-backtester/src/portfolio_backtester/_execution_models.py) and [`_execution_build.py`](https://github.com/runchengxie/quant-platform/blob/main/packages/portfolio-backtester/src/portfolio_backtester/_execution_build.py), with behavior covered by [`test_execution.py`](https://github.com/runchengxie/quant-platform/blob/main/tests/test_execution.py) and [`test_backtest.py`](https://github.com/runchengxie/quant-platform/blob/main/tests/test_backtest.py).
 
-## 执行模型的组成
+These features are intended for research backtests. Recalibrate parameters for the market, account, broker, and execution method being studied. Defaults are starting points, not current broker quotes.
 
-`ExecutionModel` 由五部分组成：
+## Execution model components
 
-| 组成部分 | 作用 |
+`ExecutionModel` contains five components:
+
+| Component | Responsibility |
 | --- | --- |
-| `entry_policy` | 指定开仓使用的价格列 |
-| `exit_policy` | 指定退出价格列和缺失价格的处理方式 |
-| `cost_model` | 估算佣金、税费和其他显式成本 |
-| `slippage_model` | 估算买卖价差和市场冲击 |
-| `selection_constraints` | 按价格和流动性过滤候选证券 |
+| `entry_policy` | Selects the entry price column |
+| `exit_policy` | Selects the exit price column and handling for missing prices |
+| `cost_model` | Estimates commissions, taxes, and other explicit costs |
+| `slippage_model` | Estimates spread and market impact |
+| `selection_constraints` | Filters candidates by price and liquidity |
 
-执行模型还可以指定交易日历，以及额外的开市日和休市日。
+The model can also specify a trading calendar and additional open or closed dates.
 
-## 成本模型
+## Cost models
 
-### 固定基点成本
+### Fixed basis-point cost
 
-`BpsCostModel` 按换手率和基点数计算成本。
+`BpsCostModel` calculates cost from turnover and a basis-point rate.
 
-初始建仓按组合总暴露收取单边成本。后续调仓默认按双边成本处理，可以通过 `round_trip=False` 改为单边。
+Initial construction charges one-way cost on gross portfolio exposure. Later rebalances default to round-trip cost; set `round_trip=False` for one-way cost.
 
-### 分方向基点成本
+### Side-specific basis-point cost
 
-`SideBpsCostModel` 可以分别设置：
+`SideBpsCostModel` accepts separate rates for:
 
-- 多头开仓成本
-- 多头退出成本
-- 空头开仓成本
-- 空头退出成本
-- 空头每日借券成本
+- Long entries
+- Long exits
+- Short entries
+- Short exits
+- Daily short-borrow cost
 
-这种方式适合不同交易方向具有不同费率的研究。
+Use this model when trading direction has different assumed rates.
 
-### A 股明细费用模型
+### Detailed A-share trade-fee model
 
-`DetailedTradeFeeModel` 把佣金、印花税、过户费、最低佣金和滑点放在同一个模型中。
+`DetailedTradeFeeModel` combines commission, stamp duty, transfer fees, minimum commission, and slippage.
 
-直接构造 `DetailedTradeFeeModel()` 时，默认值如下：
+Directly constructing `DetailedTradeFeeModel()` uses these defaults:
 
-| 参数 | 默认值 |
+| Parameter | Default |
 | --- | ---: |
-| 买入佣金 | 2.5 个基点 |
-| 卖出佣金 | 2.5 个基点 |
-| 卖出印花税 | 5.0 个基点 |
-| 过户费 | 0.1 个基点 |
-| 单笔最低佣金 | 5 元 |
-| 买入滑点 | 6.0 个基点 |
-| 卖出滑点 | 8.0 个基点 |
-| 组合规模 | 1,000,000 元 |
+| Buy commission | 2.5 bps |
+| Sell commission | 2.5 bps |
+| Sell stamp duty | 5.0 bps |
+| Transfer fee | 0.1 bps |
+| Minimum commission floor | CNY 5 |
+| Buy slippage | 6.0 bps |
+| Sell slippage | 8.0 bps |
+| Portfolio value | CNY 1,000,000 |
 
-最低佣金需要名义成交金额。模型使用 `portfolio_value` 把权重换手换算为成交金额，因此组合规模会影响成本结果。
+The commission floor applies to the aggregate entry or exit notional passed to the model. Turnover weights are converted into notional using `portfolio_value`, so portfolio size affects the cost result.
 
-通过配置字典构造明细费用模型时，未指定方向滑点会使用买卖各 10 个基点。该值与直接调用 `DetailedTradeFeeModel()` 的 6 个和 8 个基点不同。正式研究应显式传入 `buy_slippage_bps` 和 `sell_slippage_bps`。
+When built from a configuration mapping, unspecified directional slippage defaults to 10 bps for both buys and sells. This differs from the 6 bps buy and 8 bps sell defaults of direct construction. Set `buy_slippage_bps` and `sell_slippage_bps` explicitly in formal research.
 
-明细费用模型的内置滑点随成本模型结果进入 `fee_cost`。同时配置独立滑点模型会叠加两套滑点假设。需要在结果中分开报告费用与滑点时，应把明细费用模型的方向滑点设为 0，再使用独立滑点模型。
+Slippage embedded in this fee model is included in `fee_cost`. Configuring a separate slippage model adds a second slippage assumption. To report fees and slippage separately, set the fee model's directional slippage to zero and use the separate model.
 
-默认费率不代表任何券商的实时收费标准。使用前应根据账户和回测时期调整。
+The default rates do not represent any broker's current fee schedule. Adjust them for the account and backtest period.
 
-### 关闭显式成本
+### Disabling explicit costs
 
-`NoCostModel` 返回零显式成本。配置中的 `none`、`off` 和 `zero` 会构造该模型。
+`NoCostModel` returns zero explicit cost. The configuration names `none`, `off`, and `zero` construct this model.
 
-## 滑点模型
+## Slippage models
 
-### 固定基点滑点
+### Fixed basis-point slippage
 
-`BpsSlippageModel` 按交易权重绝对值乘以固定基点数。
+`BpsSlippageModel` multiplies the absolute trade weight by a fixed basis-point rate.
 
-### 参与率滑点
+### Participation-based slippage
 
-`ParticipationSlippageModel` 使用组合规模、交易权重和流动性列估算成交参与率。
-
-近似计算过程如下：
+`ParticipationSlippageModel` estimates trade participation using portfolio value, trade weights, and a liquidity column. Its approximate calculation is:
 
 ```text
-成交金额 = abs(交易权重) × portfolio_value
-参与率 = 成交金额 ÷ amount_col
-单证券滑点基点 = base_bps + impact_bps × 参与率 ^ power
+Trade notional = abs(trade weight) × portfolio_value
+Participation = trade notional ÷ amount_col
+Per-security slippage (bps) = base_bps + impact_bps × participation ^ power
 ```
 
-`max_participation` 可以限制参与率上限。该限制用于稳定估算，不会自动完成分日成交或拒绝超量订单。
+`max_participation` can cap the participation used in the estimate. This stabilizes the estimate; it does not schedule multi-day execution or reject oversized orders.
 
-流动性列由 `amount_col` 指定。使用开盘价成交时，建议传入开盘前已经可知的滞后流动性指标，例如上一交易日计算完成的 `adv20_amount`。直接使用当日总成交额会引入未来信息。
+Set the liquidity column with `amount_col`. For open-price execution, prefer a lagged liquidity measure known before the open, such as `adv20_amount` calculated through the prior session. Using the current day's full traded value introduces look-ahead information.
 
-### 价格分档滑点辅助函数
+### Price-tiered slippage helper
 
-`l2_price_tiered_slippage` 根据收盘价区间返回一个研究用滑点基点数。卖出方向会在买入基准上增加 2 个基点。
+`l2_price_tiered_slippage` returns a research slippage rate based on closing-price tiers. The sell-side rate adds 2 bps to the buy-side baseline.
 
-该函数使用仓库内置的价格分档表。它没有读取实时盘口，也没有根据证券、日期和订单规模动态更新。使用者应把它视为简化参数，不应视为真实成交报价。
+The helper uses a built-in price-tier table. It does not read a live order book or update rates by security, date, or order size. Treat it as a simplified assumption; it does not calculate live quotes.
 
-## 开仓和退出价格
+## Entry and exit prices
 
-`EntryPolicy` 只负责指定开仓价格列，例如 `open`、`close` 或调用方准备的其他列。
+`EntryPolicy` selects the column used for entry, such as `open`, `close`, or another column prepared by the caller.
 
-`ExitPolicy` 支持三种退出规则：
+`ExitPolicy` supports three exit rules:
 
-| 规则 | 行为 |
+| Rule | Behavior |
 | --- | --- |
-| `strict` | 计划退出日缺少有效价格或无法交易时，放弃该证券的退出价格 |
-| `ffill` | 在计划退出日及之前寻找最近的有效价格 |
-| `delay` | 从计划退出日开始向后寻找首个有效价格 |
+| `strict` | If the planned exit date has no valid price or the security is not tradable, no exit price is returned for that security |
+| `ffill` | Find the most recent valid price on or before the planned exit date |
+| `delay` | Find the first valid price on or after the planned exit date |
 
-`delay` 可以配合 `fallback_policy='ffill'`。向后找不到有效价格时，模型会回到计划退出日及之前的最近价格。设置为 `none` 时不会回退。
+`delay` can use `fallback_policy='ffill'`. If no later valid price is found, the model falls back to the most recent valid price on or before the planned date. With `none`, it does not fall back.
 
-可交易标记通过调用方指定的布尔列传入。它只能表达该列提供的状态，无法自动补全涨跌停、T+1、停牌原因、订单拒绝和券商规则。
+Tradability is supplied through a caller-provided Boolean column. The model can only use the state in that column; it does not infer price limits, T+1 sellability, suspension causes, order rejections, or broker rules.
 
-## 价格列和盘中数据
+## Price columns and intraday data
 
-`PositionBacktestConfig` 支持分别设置：
+`PositionBacktestConfig` can set these columns separately:
 
 - `price_col`
 - `entry_price_col`
 - `exit_price_col`
 
-`entry_price_col` 或 `exit_price_col` 为空时，会回退到 `price_col`。
+When `entry_price_col` or `exit_price_col` is unset, it falls back to `price_col`.
 
-`run_position_backtest` 还可以接收 `intraday_bars`。传入盘中数据后，函数会计算盘中成交量加权价格，并在有结果时替换对应的日线开仓价和退出价。缺失部分继续使用日线价格表。
+`run_position_backtest` also accepts `intraday_bars`. When intraday data is supplied, the function calculates intraday volume-weighted prices and overrides corresponding daily entry and exit prices where available. Missing intraday values continue to use the daily price table.
 
-## `tr_close` 的含义
+## Meaning of `tr_close`
 
-本包把 `tr_close` 视为调用方提供的普通价格列。仓库不会下载复权因子，也不会构造现金分红账本。
+The package treats `tr_close` as an ordinary caller-supplied price column. The repository does not download adjustment factors or build a cash-dividend ledger.
 
-使用 `tr_close` 前，需要由数据提供方明确以下内容：
+Before using `tr_close`, confirm with the data provider:
 
-- 前复权、后复权或总回报口径
-- 分红和拆股的处理方式
-- 缺失复权因子的回退规则
-- 不同证券和时期是否使用一致口径
+- Whether the series is forward-adjusted, backward-adjusted, or total-return adjusted
+- How dividends and stock splits are handled
+- What fallback is used when adjustment factors are missing
+- Whether the convention is consistent across securities and periods
 
-`tr_close` 适合减少除权除息造成的价格跳变。它无法表示实际分红到账日、税后现金、再投资时点和账户级现金流。
+`tr_close` can reduce price jumps caused by ex-dividend and split events. It does not represent the actual dividend payment date, after-tax cash, reinvestment timing, or account-level cash flows.
 
-## 配置示例
+## Configuration example
 
-下面的配置使用分方向费用、参与率滑点、开盘建仓和延迟退出：
+This example combines side-specific fees, participation-based slippage, open-price entry, and delayed exit:
 
 ```python
 from portfolio_backtester.execution import build_execution_model
@@ -178,24 +178,24 @@ execution = build_execution_model(
 )
 ```
 
-该配置需要定价数据提供 `open`、`close` 和 `adv20_amount`。
+The pricing data must provide `open`, `close`, and `adv20_amount`.
 
-## 适用边界
+## Scope and limitations
 
-当前实现适合：
+The current implementation supports:
 
-- 日线或低频组合研究
-- 比较不同成本和滑点假设
-- 检查流动性筛选和退出延迟的敏感性
-- 回放外部生成的目标持仓
+- Daily or lower-frequency portfolio research
+- Comparing cost and slippage assumptions
+- Sensitivity analysis for liquidity filters and delayed exits
+- Replaying externally generated target positions
 
-需要更细实现的场景包括：
+More detailed implementations are needed for:
 
-- 逐笔或盘口级撮合
-- 真实订单队列和部分成交
-- 账户级现金、税费和分红账本
-- T+1 可卖数量
-- 融券可用量和动态借券费
-- 券商拒单和交易所微观规则
+- Tick- or order-book-level matching
+- Real order queues and partial fills
+- Account-level cash, taxes, and dividend ledgers
+- T+1 sellable quantities
+- Short availability and dynamic borrow fees
+- Broker rejections and exchange microstructure rules
 
-回测结果高度依赖输入数据和执行假设。报告中应保存价格列、成本参数、滑点参数、组合规模和可交易标记来源。
+Backtest results depend heavily on input data and execution assumptions. Preserve the price columns, cost parameters, slippage parameters, portfolio value, and source of tradability flags with each report.

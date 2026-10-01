@@ -146,7 +146,7 @@ def test_public_api_docs_cover_root_exports_and_execution_sim_surface() -> None:
 
 def test_docs_record_current_cost_and_position_limitations() -> None:
     cost_docs = FACT_DOCS[0].read_text(encoding="utf-8")
-    execution_cost_docs = (ROOT / "docs" / "concepts" / "execution-costs.md").read_text(
+    execution_cost_docs = (ROOT / "docs" / "concepts" / "execution-costs.zh-CN.md").read_text(
         encoding="utf-8"
     )
     positions_docs = (ROOT / "docs" / "reference" / "outputs" / "positions.md").read_text(
@@ -156,6 +156,11 @@ def test_docs_record_current_cost_and_position_limitations() -> None:
     assert "内置滑点会进入 `fee_cost`" in cost_docs
     assert "buy_slippage_bps` 与 `sell_slippage_bps` 设为 0" in cost_docs
     assert "买卖各 10 个基点" in execution_cost_docs
+    english_execution_cost_docs = (ROOT / "docs" / "concepts" / "execution-costs.md").read_text(
+        encoding="utf-8"
+    )
+    assert "DetailedTradeFeeModel" in english_execution_cost_docs
+    assert "does not calculate live quotes" in english_execution_cost_docs
     assert "`long_only=False` 不会启用空头回放" in positions_docs
 
 
