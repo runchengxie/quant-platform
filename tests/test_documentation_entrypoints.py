@@ -180,9 +180,7 @@ def test_cli_helpers_docs_match_public_helpers_and_behavior_tests() -> None:
     implementation = (
         ROOT / "packages" / "orchestration" / "src" / "strategy_pipeline" / "cli_helpers.py"
     ).read_text(encoding="utf-8")
-    tests = (ROOT / "tests" / "orchestration" / "test_cli_helpers.py").read_text(
-        encoding="utf-8"
-    )
+    tests = (ROOT / "tests" / "orchestration" / "test_cli_helpers.py").read_text(encoding="utf-8")
 
     assert "Language: English · [简体中文](cli-helpers.zh-CN.md)" in docs
     for helper in (
@@ -194,7 +192,7 @@ def test_cli_helpers_docs_match_public_helpers_and_behavior_tests() -> None:
         "append_bool_switch",
         "append_passthrough",
     ):
-        assert f"`{helper}`" in docs
+        assert f"`{helper}(" in docs
         assert f'"{helper}"' in implementation
     assert "def test_cli_value_formatters" in tests
     assert "def test_cli_argument_helpers" in tests
