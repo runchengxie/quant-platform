@@ -42,6 +42,7 @@ These guides use synthetic data and small examples. They help you run the full f
 22. [Optional Rust simulation kernel](development/microstructure-rust.md)
 23. [Accounting and execution roadmap](governance/accounting-execution-roadmap.md)
 24. [Grid backtest helpers](grid-support.md)
+25. [Historical migration material](migration/legacy-materials/README.md)
 
 Agents should start with the root README, this page, and the relevant category directory. They do not need to recursively read every Markdown file.
 
@@ -79,3 +80,7 @@ Historical migration records remain in pull requests, release notes, or maintena
 - [Backtesting namespace](namespace-migration.md)
 - [DailyWatch20 portfolio ownership](ownership-migration.md)
 - [Incumbent requalification out-of-sample comparison bridge](guides/incumbent-requalification-oos-controls.md)
+
+## Historical migration material
+
+The read-only source copies under [`migration/legacy-materials/`](migration/legacy-materials/) preserve former repository layouts for comparison. They are not current APIs or supported development entry points. Start with the current ownership and migration pages above; consult a legacy copy only when reproducing a historical implementation or checking migration parity. The cross-repository historical index and file-level inventory are maintained in the private [`quant-research` migration index](https://github.com/runchengxie/quant-research/blob/main/docs/migration/HISTORICAL-RESEARCH-INDEX.md).
