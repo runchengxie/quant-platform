@@ -47,6 +47,7 @@
 22. [可选 Rust 模拟内核](development/microstructure-rust.md)
 23. [会计与执行路线图](governance/accounting-execution-roadmap.md)
 24. [网格回测辅助函数](grid-support.md)
+25. [历史迁移材料](migration/legacy-materials/README.md)
 
 编码代理默认读取根 README、本页和一个与任务相关的分类目录，不递归读取全部 Markdown 文件。
 
@@ -78,6 +79,8 @@
 本仓库记录通用组合构造和回测行为。数据下载、因子研究、模型训练、具体策略规则、任务编排和券商下单由调用方负责。
 
 历史迁移记录保留在 PR、发布说明或维护记录中。用户指南优先说明当前版本的输入、行为和输出。
+
+`migration/legacy-materials/` 下的只读副本用于历史对照，不是当前 API、受支持的开发入口或现行行为的事实源。先查当前职责和迁移文档。只有需要复现历史实现或核对迁移一致性时再打开旧副本。跨仓历史索引和逐项清单由私有 `quant-research` 维护。
 
 ## 历史归属
 
