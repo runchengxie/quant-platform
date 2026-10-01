@@ -1,7 +1,10 @@
-# 参考资料
+# Orchestration reference
 
-本目录说明公共 API、配置解析和 CLI 辅助能力。
+Language: English · [简体中文](README.zh-CN.md)
 
-- [CLI 辅助函数](cli-helpers.zh-CN.md) · [English](cli-helpers.md)
-- [配置解析](configuration.zh-CN.md) · [English](configuration.md)
-- [运行时辅助能力](runtime-helpers.md)
+This section documents public helpers used by orchestration adapters. These APIs support the shared `strategy_pipeline` package; they do not define strategy behavior.
+
+- [CLI adapter helpers](cli-helpers.md) for formatting values and building argument lists.
+- [Configuration resolution](configuration.md) for YAML loading, aliases, inheritance, and nested merges.
+
+The [runtime helpers](runtime-helpers.md) page is currently available in Chinese while its English translation is in progress.

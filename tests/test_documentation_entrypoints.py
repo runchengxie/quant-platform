@@ -198,6 +198,37 @@ def test_cli_helpers_docs_match_public_helpers_and_behavior_tests() -> None:
     assert "def test_cli_argument_helpers" in tests
 
 
+def test_orchestration_overview_matches_package_exports_and_cli_registration() -> None:
+    docs = (ROOT / "docs" / "orchestration" / "README.md").read_text(encoding="utf-8")
+    exports = (
+        ROOT / "packages" / "orchestration" / "src" / "strategy_pipeline" / "__init__.py"
+    ).read_text(encoding="utf-8")
+    cli = (ROOT / "packages" / "orchestration" / "src" / "strategy_pipeline" / "cli.py").read_text(
+        encoding="utf-8"
+    )
+    pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+
+    assert "Language: English · [简体中文](README.zh-CN.md)" in docs
+    for public_name in (
+        "RunRequest",
+        "RunReceipt",
+        "ArtifactRef",
+        "PublicationRequest",
+        "HandoffRequest",
+        "run",
+        "publish_artifact",
+        "publish_handoff",
+    ):
+        assert f'"{public_name}"' in exports
+        assert f"`{public_name}`" in docs
+    assert 'strategy-pipeline = "strategy_pipeline.cli:main"' in pyproject
+    for command in ("export-targets", "cashflow-publish-shadow"):
+        assert f'commands.add_parser("{command}")' in cli
+    assert "register_afml_evidence_commands" in cli
+    assert "register_protocol_commands" in cli
+    assert "Chinese originals (translation in progress)" in docs
+
+
 def test_docs_distinguish_current_backends_from_history_and_plans() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")

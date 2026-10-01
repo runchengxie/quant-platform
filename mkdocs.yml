@@ -148,8 +148,14 @@ nav:
       - 开发指南: microstructure/development-guide.md
       - Rust 模拟内核: development/microstructure-rust.md
   - Orchestration:
+      - English:
+          - Overview: orchestration/README.md
+          - References:
+              - Reference overview: orchestration/reference/README.md
+              - CLI helpers: orchestration/reference/cli-helpers.md
+              - Configuration resolution: orchestration/reference/configuration.md
       - Chinese originals (translation in progress):
-          - 编排概览: orchestration/README.md
+          - 编排概览: orchestration/README.zh-CN.md
           - 控制平面: orchestration/control-plane.md
           - 评估: orchestration/evaluation.md
           - 输出产物: orchestration/output-artifacts.md
@@ -161,15 +167,13 @@ nav:
           - E2 晋升回执: orchestration/e2-promotion-receipt.md
           - 输出编排: orchestration/output-orchestration.md
           - 输出摘要: orchestration/output-summary.md
+          - 运行时辅助能力: orchestration/reference/runtime-helpers.md
           - 运维:
               - 概览: orchestration/operations/README.md
               - 质量门禁: orchestration/operations/quality-gates.md
       - References:
-          - Reference overview: orchestration/reference/README.md
-          - CLI helpers: orchestration/reference/cli-helpers.md
-          - Configuration resolution: orchestration/reference/configuration.md
-          - Runtime helpers: orchestration/reference/runtime-helpers.md
           - 简体中文:
+              - 参考资料: orchestration/reference/README.zh-CN.md
               - CLI 辅助函数: orchestration/reference/cli-helpers.zh-CN.md
               - 配置解析: orchestration/reference/configuration.zh-CN.md
   - References:

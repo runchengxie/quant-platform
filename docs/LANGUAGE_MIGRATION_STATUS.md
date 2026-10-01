@@ -4,7 +4,7 @@ English is the canonical language for public documentation. Chinese companions u
 
 ## Completed entry pages
 
-The repository README, documentation index, platform overview, installation guide, first-backtest tutorial, results guide, glossary, language policy, public API reference, allocation reference, position output contract, data boundary, backtest configuration reference, backtest specification, execution-cost assumptions, cost breakdown, testing and quality checks guide, and orchestration configuration reference have English canonical pages and linked Chinese companions. MkDocs uses English as its default interface language.
+The repository README, documentation index, platform overview, installation guide, first-backtest tutorial, results guide, glossary, language policy, public API reference, allocation reference, position output contract, data boundary, backtest configuration reference, backtest specification, execution-cost assumptions, cost breakdown, testing and quality checks guide, orchestration overview, orchestration reference index, orchestration configuration reference, and orchestration CLI-helper reference have English canonical pages and linked Chinese companions. The other orchestration guides remain Chinese originals pending translation. MkDocs uses English as its default interface language.
 
 ## Remaining work
 

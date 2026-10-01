@@ -1,6 +1,30 @@
-# 任务编排
+# Orchestration
 
-`strategy_pipeline` 提供可复用的运行控制、产物发布、质量门禁、回执和 owner 交接契约。
-策略专用逻辑、私有数据供应商和生产调度不属于这个公开包。
+Language: English · [简体中文](README.zh-CN.md)
 
-当前仓库继续提供 `strategy_pipeline` Python 命名空间和 CLI。它们是兼容名称，不代表仓库仍依赖旧的 `strategy-pipeline` 项目。
+The `strategy_pipeline` package provides reusable run control, artifact publication, quality gates, receipts, and owner-handoff contracts. Callers supply the owner logic and publication adapters; the public control plane coordinates them without defining the contents of research artifacts.
+
+The package exports `RunRequest`, `RunReceipt`, `ArtifactRef`, `PublicationRequest`, `HandoffRequest`, and the `run`, `publish_artifact`, and `publish_handoff` functions.
+
+## Responsibilities and boundaries
+
+- Owners implement domain work and return artifact references rather than in-memory domain objects or provider clients.
+- The control plane invokes the owner and publisher, validates returned `ArtifactRef` values, and emits a sanitized receipt.
+- Quality gates evaluate caller-provided checks and release-protocol reports. They do not calculate strategy metrics or access data providers.
+- Provider SDKs, credentials, network clients, storage backends, model implementations, and strategy registries remain outside the reusable control-plane contracts.
+
+The installable `strategy-pipeline` CLI is registered by the root project. Its command surface includes target export, research-protocol and AFML-evidence commands, and a cashflow shadow-publication adapter.
+
+## English documentation
+
+- [Reference pages](reference/README.md)
+
+## Chinese originals (translation in progress)
+
+- [Control-plane API](control-plane.md)
+- [Evaluation pipeline](evaluation.md)
+- [Output artifacts](output-artifacts.md), [output orchestration](output-orchestration.md), and [run summaries](output-summary.md)
+- [Owner integration](integrating-an-owner.md) and [target export](targets.md)
+- [Quality gates](operations/quality-gates.md)
+- [CLI and evidence-protocol guide](evidence-protocol-cli.md) and [cashflow publication guide](cashflow-publication.md)
+- [Runtime helpers](reference/runtime-helpers.md)
