@@ -25,7 +25,7 @@
 | AFML 方法组件 | [concepts/afml-methodology.md](concepts/afml-methodology.md) |
 | 研究后端与 Qlib 状态 | [concepts/framework-backends.md](concepts/framework-backends.md) |
 | 分钟因子边界 | [concepts/minute-factors.md](concepts/minute-factors.md) |
-| StyleReplica | [concepts/style-replica.md](concepts/style-replica.md) |
+| StyleReplica | [English canonical](concepts/style-replica.en.md) · [中文参考](concepts/style-replica.md) |
 | 研究模板设计 | [guides/research-template-design.md](guides/research-template-design.md) |
 | 信号产物契约 | [reference/signal-artifacts.md](reference/signal-artifacts.md) |
 | 研究产物契约 | [reference/research-outputs.md](reference/research-outputs.md) |

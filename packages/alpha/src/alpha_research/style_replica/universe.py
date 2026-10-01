@@ -39,12 +39,19 @@ def _filter_st_and_newly_listed(
     min_listed_days: int = _MIN_LISTED_DAYS,
 ) -> set[str]:
     """Use only exact-date security status for the formation date."""
-    required = {"symbol", "trade_date", "is_st", "is_suspended", "list_date"}
+    required = {
+        "symbol",
+        "trade_date",
+        "is_st",
+        "st_available_from",
+        "is_suspended",
+        "list_date",
+    }
     missing = required.difference(instruments.columns)
     if missing:
         raise ValueError(
             "historical instruments require symbol, trade_date, is_st, "
-            "is_suspended, list_date; missing: " + ", ".join(sorted(missing))
+            "st_available_from, is_suspended, list_date; missing: " + ", ".join(sorted(missing))
         )
     df = instruments.copy()
     df["trade_date"] = _normalize_trade_dates(df["trade_date"])
@@ -52,9 +59,14 @@ def _filter_st_and_newly_listed(
     if df.duplicated("symbol").any():
         raise ValueError("duplicate historical instrument status for symbol/date")
     df["list_date"] = _normalize_trade_dates(df["list_date"])
+    df["st_available_from"] = _normalize_trade_dates(df["st_available_from"])
     cutoff = as_of_date - pd.Timedelta(days=min_listed_days)
     df = df[df["list_date"].notna() & (df["list_date"] <= cutoff)]
     st = df["is_st"].astype("boolean")
+    availability_unknown = (
+        st.eq(True) & (df["st_available_from"].isna() | df["st_available_from"].gt(as_of_date))
+    ) | (st.eq(False) & df["st_available_from"].notna())
+    st.loc[availability_unknown.fillna(False)] = pd.NA
     suspended = df["is_suspended"].astype("boolean")
     df = df.loc[st.eq(False).fillna(False) & suspended.eq(False).fillna(False)]
     return set(df["symbol"].astype(str).tolist()) if "symbol" in df.columns else set()
@@ -74,7 +86,7 @@ def filter_style_replica_universe(
         price_panel: Wide-format DataFrame with dates as index, symbols as columns,
                      values = close prices. Must span at least `min_history` days.
         instruments: Dated status rows with ``symbol``, ``trade_date``, ``is_st``,
-                     ``is_suspended`` and ``list_date``.
+                     ``st_available_from``, ``is_suspended`` and ``list_date``.
         as_of_date: Reference date for filtering.
         min_history: Minimum number of daily closes required.
         min_listed_days: Minimum listing days required.
