@@ -9,7 +9,7 @@ from portfolio_backtester import execution_sim
 
 ROOT = Path(__file__).resolve().parents[1]
 FACT_DOCS = (
-    ROOT / "docs" / "concepts" / "cost-breakdown.md",
+    ROOT / "docs" / "concepts" / "cost-breakdown.zh-CN.md",
     ROOT / "docs" / "guides" / "execution-simulation.md",
     ROOT / "docs" / "reference" / "public-api.md",
 )
@@ -49,13 +49,14 @@ def test_docs_use_concise_chinese_style() -> None:
 
 def test_testing_docs_match_script_modes() -> None:
     script = (ROOT / "scripts" / "dev" / "run_tests.sh").read_text(encoding="utf-8")
-    docs = (ROOT / "docs" / "testing.md").read_text(encoding="utf-8")
+    docs = (ROOT / "docs" / "testing.zh-CN.md").read_text(encoding="utf-8")
 
     for mode in (
         "all",
         "fast",
         "unit",
         "coverage",
+        "contracts-coverage",
         "lint",
         "format",
         "typecheck",
@@ -74,7 +75,7 @@ def test_coverage_mode_scans_project_sources_and_dependency_is_installed() -> No
         *pyproject["dependency-groups"]["dev"],
     ]
 
-    assert "--cov=packages --cov=scripts" in script
+    assert "--cov=packages --cov=scripts --cov=research_contracts" in script
     assert any(dependency.startswith("pytest-cov") for dependency in dev_dependencies)
 
 
@@ -109,13 +110,206 @@ def test_ty_is_the_only_configured_type_checker() -> None:
 
 
 def test_docs_record_current_automation_status() -> None:
-    docs = (ROOT / "docs" / "testing.md").read_text(encoding="utf-8")
+    docs = (ROOT / "docs" / "testing.zh-CN.md").read_text(encoding="utf-8")
 
     assert "`.github/workflows/ci.yml`" in docs
     assert "PR 和主分支推送时运行公开质量门禁" in docs
     assert "`.github/workflows/docs.yml`" in docs
     assert (ROOT / ".github" / "workflows" / "ci.yml").is_file()
     assert (ROOT / ".github" / "workflows" / "docs.yml").is_file()
+
+
+def test_english_testing_guide_matches_current_scripts_and_ci() -> None:
+    docs = (ROOT / "docs" / "testing.md").read_text(encoding="utf-8")
+    script = (ROOT / "scripts" / "dev" / "run_tests.sh").read_text(encoding="utf-8")
+    ci = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+
+    assert "Language: English · [简体中文](testing.zh-CN.md)" in docs
+    for mode in (
+        "all",
+        "fast",
+        "unit",
+        "coverage",
+        "contracts-coverage",
+        "lint",
+        "format",
+        "format-all",
+        "typecheck",
+        "typecheck-release",
+        "maintainability",
+    ):
+        assert f"`{mode}`" in docs
+        assert mode in script
+    assert "Python 3.12 and 3.13" in docs
+    assert "3.12" in ci and "3.13" in ci
+    assert "TICKNET_REQUIRE_RUST=1" in docs
+    assert "TICKNET_REQUIRE_RUST=1" in ci
+
+
+def test_orchestration_configuration_docs_match_loader_and_tests() -> None:
+    docs = (ROOT / "docs" / "orchestration" / "reference" / "configuration.md").read_text(
+        encoding="utf-8"
+    )
+    implementation = (
+        ROOT / "packages" / "orchestration" / "src" / "strategy_pipeline" / "config.py"
+    ).read_text(encoding="utf-8")
+    tests = (ROOT / "tests" / "orchestration" / "test_config.py").read_text(encoding="utf-8")
+
+    assert "Language: English · [简体中文](configuration.zh-CN.md)" in docs
+    for behavior in (
+        "def resolve_config(",
+        "def deep_merge(",
+        'EXTENDS_KEY = "extends"',
+        "Circular extends detected",
+        'source=f"package:{package}/{filename}"',
+    ):
+        assert behavior in implementation
+    for behavior in (
+        "test_resolve_config_supports_alias_and_relative_extends",
+        "test_resolve_config_falls_back_to_filename_in_search_roots",
+        "test_resolve_config_rejects_circular_extends",
+        "test_resolve_config_accepts_an_injected_normalizer",
+    ):
+        assert behavior in tests
+
+
+def test_cli_helpers_docs_match_public_helpers_and_behavior_tests() -> None:
+    docs = (ROOT / "docs" / "orchestration" / "reference" / "cli-helpers.md").read_text(
+        encoding="utf-8"
+    )
+    implementation = (
+        ROOT / "packages" / "orchestration" / "src" / "strategy_pipeline" / "cli_helpers.py"
+    ).read_text(encoding="utf-8")
+    tests = (ROOT / "tests" / "orchestration" / "test_cli_helpers.py").read_text(encoding="utf-8")
+
+    assert "Language: English · [简体中文](cli-helpers.zh-CN.md)" in docs
+    for helper in (
+        "format_bytes",
+        "render_pct_bar",
+        "coerce_float",
+        "append_arg",
+        "append_repeat_args",
+        "append_bool_switch",
+        "append_passthrough",
+    ):
+        assert f"`{helper}(" in docs
+        assert f'"{helper}"' in implementation
+    assert "def test_cli_value_formatters" in tests
+    assert "def test_cli_argument_helpers" in tests
+
+
+def test_orchestration_overview_matches_package_exports_and_cli_registration() -> None:
+    docs = (ROOT / "docs" / "orchestration" / "README.md").read_text(encoding="utf-8")
+    exports = (
+        ROOT / "packages" / "orchestration" / "src" / "strategy_pipeline" / "__init__.py"
+    ).read_text(encoding="utf-8")
+    cli = (ROOT / "packages" / "orchestration" / "src" / "strategy_pipeline" / "cli.py").read_text(
+        encoding="utf-8"
+    )
+    pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+
+    assert "Language: English · [简体中文](README.zh-CN.md)" in docs
+    for public_name in (
+        "RunRequest",
+        "RunReceipt",
+        "ArtifactRef",
+        "PublicationRequest",
+        "HandoffRequest",
+        "run",
+        "publish_artifact",
+        "publish_handoff",
+    ):
+        assert f'"{public_name}"' in exports
+        assert f"`{public_name}`" in docs
+    assert 'strategy-pipeline = "strategy_pipeline.cli:main"' in pyproject
+    for command in ("export-targets", "cashflow-publish-shadow"):
+        assert f'commands.add_parser("{command}")' in cli
+    assert "register_afml_evidence_commands" in cli
+    assert "register_protocol_commands" in cli
+    assert "Chinese originals (translation in progress)" in docs
+
+
+def test_control_plane_docs_match_contracts_runner_and_failure_tests() -> None:
+    docs = (ROOT / "docs" / "orchestration" / "control-plane.md").read_text(encoding="utf-8")
+    contracts = (
+        ROOT
+        / "packages"
+        / "orchestration"
+        / "src"
+        / "strategy_pipeline"
+        / "control_plane"
+        / "contracts.py"
+    ).read_text(encoding="utf-8")
+    runner = (
+        ROOT
+        / "packages"
+        / "orchestration"
+        / "src"
+        / "strategy_pipeline"
+        / "control_plane"
+        / "runner.py"
+    ).read_text(encoding="utf-8")
+    lineage = (
+        ROOT
+        / "packages"
+        / "orchestration"
+        / "src"
+        / "strategy_pipeline"
+        / "control_plane"
+        / "afml_lineage.py"
+    ).read_text(encoding="utf-8")
+    tests = (ROOT / "tests" / "orchestration" / "control_plane" / "test_runner.py").read_text(
+        encoding="utf-8"
+    )
+
+    assert "Language: English · [简体中文](control-plane.zh-CN.md)" in docs
+    for contract in (
+        "class ArtifactRef:",
+        "class RunRequest:",
+        "class PublicationRequest:",
+        "class HandoffRequest:",
+        "class RunReceipt:",
+        '"digest": self.digest',
+        '"failure_category": self.failure_category',
+    ):
+        assert contract in contracts
+    for behavior in (
+        'failure_category="owner_failure"',
+        'failure_category="publication_failure"',
+        'failure_message="owner execution failed"',
+        'failure_message="artifact publication failed"',
+    ):
+        assert behavior in runner
+        assert behavior.split("=")[1].strip('"') in docs
+    assert "strategy-secret" in tests
+    assert 'level != "release" or status != "pass"' in lineage
+    assert "require_release_protocol=False" in docs
+
+
+def test_evaluation_docs_match_delegation_and_empty_result_contract() -> None:
+    docs = (ROOT / "docs" / "orchestration" / "evaluation.md").read_text(encoding="utf-8")
+    implementation = (
+        ROOT / "packages" / "orchestration" / "src" / "strategy_pipeline" / "pipeline" / "eval.py"
+    ).read_text(encoding="utf-8")
+    tests = (ROOT / "tests" / "orchestration" / "test_pipeline_eval.py").read_text(encoding="utf-8")
+
+    assert "Language: English · [简体中文](evaluation.zh-CN.md)" in docs
+    for behavior in (
+        "_score_and_record_period_eval_metrics_impl(",
+        "_record_period_backtest_nav_outputs(",
+        "_record_period_scored_data_and_exposure(",
+        "if test_df_full is None or test_df_full.empty:",
+        "allow_live_fallback: bool = True",
+    ):
+        assert behavior in implementation
+    for result_field in (
+        '"ic_series"',
+        '"bt_net_series"',
+        '"positions_by_rebalance"',
+        '"backtest_rebalance_dates"',
+    ):
+        assert result_field in tests or result_field in implementation
+    assert "test_empty_period_result_preserves_public_result_shape" in tests
 
 
 def test_docs_distinguish_current_backends_from_history_and_plans() -> None:
@@ -146,17 +340,32 @@ def test_public_api_docs_cover_root_exports_and_execution_sim_surface() -> None:
 
 def test_docs_record_current_cost_and_position_limitations() -> None:
     cost_docs = FACT_DOCS[0].read_text(encoding="utf-8")
-    execution_cost_docs = (ROOT / "docs" / "concepts" / "execution-costs.md").read_text(
+    execution_cost_docs = (ROOT / "docs" / "concepts" / "execution-costs.zh-CN.md").read_text(
         encoding="utf-8"
     )
-    positions_docs = (ROOT / "docs" / "reference" / "outputs" / "positions.md").read_text(
+    positions_docs = (ROOT / "docs" / "reference" / "outputs" / "positions.zh-CN.md").read_text(
         encoding="utf-8"
     )
 
     assert "内置滑点会进入 `fee_cost`" in cost_docs
     assert "buy_slippage_bps` 与 `sell_slippage_bps` 设为 0" in cost_docs
+    english_cost_docs = (ROOT / "docs" / "concepts" / "cost-breakdown.md").read_text(
+        encoding="utf-8"
+    )
+    assert "temporary_impact" in english_cost_docs
+    assert "from_components" in english_cost_docs
     assert "买卖各 10 个基点" in execution_cost_docs
+    english_execution_cost_docs = (ROOT / "docs" / "concepts" / "execution-costs.md").read_text(
+        encoding="utf-8"
+    )
+    assert "DetailedTradeFeeModel" in english_execution_cost_docs
+    assert "does not calculate live quotes" in english_execution_cost_docs
     assert "`long_only=False` 不会启用空头回放" in positions_docs
+    english_positions_docs = (ROOT / "docs" / "reference" / "outputs" / "positions.md").read_text(
+        encoding="utf-8"
+    )
+    assert "research.artifact-envelope.v2" in english_positions_docs
+    assert "does not enable short replay" in english_positions_docs
 
 
 def test_docs_record_public_private_boundary_and_index_new_pages() -> None:

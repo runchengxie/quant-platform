@@ -1,43 +1,45 @@
-# 安装与环境
+# Installation and environments
 
-`quant-platform` 是一个 Python 项目。推荐使用 `uv` 创建环境、安装锁定依赖并运行命令。
+Language: English · [简体中文](installation.zh-CN.md)
 
-## 安装开发环境
+`quant-platform` is a Python project. Use `uv` to create the environment, install the locked dependencies, and run project commands.
 
-在仓库根目录执行：
+## Install the development environment
+
+Run this command from the repository root:
 
 ```bash
 uv sync --locked --all-groups
 ```
 
-验证公开入口可以导入：
+Verify that the public package entry point imports:
 
 ```bash
 uv run python -c "import portfolio_backtester; print('portfolio_backtester is ready')"
 ```
 
-## 运行检查
+## Run checks
 
 ```bash
 uv run ruff check .
 uv run pytest -q
 ```
 
-完整测试会覆盖回测、组合构造、成本、执行模拟、产物契约和迁移兼容行为。第一次使用时，可以先阅读[第一个回测](first-backtest.md)，不需要先理解整个测试套件。
+The full test suite covers backtesting, portfolio construction, costs, execution simulation, artifact contracts, and migration compatibility. If this is your first time in the repository, start with [your first backtest](first-backtest.md); you do not need to understand the entire suite first.
 
-## 可选依赖
+## Optional dependencies
 
-部分能力通过可选依赖提供：
+Some capabilities use optional dependency groups:
 
-| 能力 | 安装方式 |
+| Capability | Installation |
 | --- | --- |
-| Qlib 后端 | `uv sync --locked --all-groups --extra qlib` |
-| 微观结构模型与 Python 模拟器 | `uv sync --locked --all-groups --extra microstructure` |
-| Rust 微观结构后端 | 按[开发说明](../development/microstructure-rust.md)单独构建和安装 wheel |
-| 文档站 | `uv sync --locked --all-groups` |
+| Qlib backend | `uv sync --locked --all-groups --extra qlib` |
+| Microstructure models and Python simulator | `uv sync --locked --all-groups --extra microstructure` |
+| Rust microstructure backend | Build and install the wheel separately using the [development guide](../development/microstructure-rust.md) |
+| Documentation site | `uv sync --locked --all-groups` |
 
-仓库的公开平台代码不需要数据供应商凭证，也不要求先接入真实行情数据。新人教程使用合成数据，便于先理解接口和输出。
+The public platform code does not require data-provider credentials or live market data. The introductory tutorials use synthetic data so you can understand the interfaces and outputs first.
 
-## 下一步
+## Next step
 
-完成安装后，继续阅读[运行第一个回测](first-backtest.md)。
+After installation, continue to [run your first backtest](first-backtest.md).

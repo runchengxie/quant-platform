@@ -46,7 +46,7 @@ error、beta、alpha、相关性、可比状态和 attribution 文件可用性�
 ## 持仓输出
 
 `positions_by_rebalance.csv`、`positions_current.csv` 与调仓差异文件字段见
-`docs/reference/outputs/positions.md`。
+`docs/reference/outputs/positions.zh-CN.md`。
 
 ## 执行模拟与容量
 

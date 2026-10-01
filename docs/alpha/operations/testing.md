@@ -1,6 +1,6 @@
 # 测试和质量检查
 
-本页说明 Alpha 模块自带测试脚本的入口和检查范围。它位于 `quant-platform` 仓库中，根目录统一测试入口见[全仓测试说明](../../testing.md)。
+本页说明 Alpha 模块自带测试脚本的入口和检查范围。它位于 `quant-platform` 仓库中，根目录统一测试入口见[全仓测试说明](../../testing.zh-CN.md)。
 
 ## 安装开发依赖
 
@@ -45,7 +45,7 @@ scripts/alpha-research/dev/run_tests.sh maintainability
 
 ## 依赖安全检查
 
-根目录公开 CI 使用 `pip-audit` 检查锁定依赖。本地可按[全仓测试说明](../../testing.md)运行同一检查。
+根目录公开 CI 使用 `pip-audit` 检查锁定依赖。本地可按[全仓测试说明](../../testing.zh-CN.md)运行同一检查。
 
 定点测试示例：
 

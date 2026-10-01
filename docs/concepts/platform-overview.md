@@ -1,19 +1,21 @@
-# 平台概览
+# Platform overview
 
-`quant-platform` 提供可复用的量化研究和组合基础能力。它连接研究信号与组合结果，主要负责组合构造、回测、风险、成本、执行模拟和公开产物契约。
+Language: English · [简体中文](platform-overview.zh-CN.md)
 
-## 一次回测经过什么流程
+`quant-platform` provides reusable quantitative research and portfolio capabilities. It connects research signals to portfolio results through portfolio construction, backtesting, risk analysis, costs, execution simulation, and public artifact contracts.
+
+## What happens in a backtest
 
 ```mermaid
 flowchart LR
-    Data[已发布数据资产] --> Signal[信号与分数]
-    Signal --> Portfolio[组合构造]
-    Portfolio --> Backtest[回测与账本]
-    Backtest --> Results[持仓、收益与研究产物]
-    Results --> Review[结果检查与交接]
+    Data[Published data assets] --> Signal[Signals and scores]
+    Signal --> Portfolio[Portfolio construction]
+    Portfolio --> Backtest[Backtest and ledger]
+    Backtest --> Results[Positions, returns, and research artifacts]
+    Results --> Review[Review and handoff]
 ```
 
-最小调用路径是：
+The minimal call path is:
 
 ```text
 DataFrame
@@ -24,37 +26,37 @@ DataFrame
   → stats / returns / periods
 ```
 
-## 各项目负责什么
+## Project responsibilities
 
-| 项目 | 主要职责 |
+| Project | Responsibility |
 | --- | --- |
-| `quant-market-data-platform` | 数据采集、清洗、质量检查、版本和发布 |
-| `quant-research` | 策略、特征、模型、实验和研究结论 |
-| `quant-platform` | 回测、组合构造、风险、成本、执行模拟和公开契约 |
-| `quant-intel-platform` | 报告、看板和研究结果交付 |
-| `quant-intel-deploy` | 研究结果发布和部署 |
+| `quant-market-data-platform` | Data ingestion, normalization, quality checks, versioning, and publication |
+| `quant-research` | Strategies, features, models, experiments, and research conclusions |
+| `quant-platform` | Backtesting, portfolio construction, risk, costs, execution simulation, and public contracts |
+| `quant-intel-platform` | Reports, dashboards, and research-result delivery |
+| `quant-intel-deploy` | Research-result publication and deployment |
 
-研究项目通过已发布的数据资产和版本化产物与本仓库协作。平台代码保持策略无关，不保存真实策略输入、凭证或专有选股逻辑。
+Research projects collaborate with this repository through published, versioned data assets and artifacts. The platform remains strategy-agnostic and does not store real strategy inputs, credentials, or proprietary selection logic.
 
-## 三个核心对象
+## Three core objects
 
 ### `StrategySpec`
 
-描述如何从分数中选择证券和分配目标权重，例如 `top_k`、权重方式、持仓缓冲和分组上限。
+Describes how securities are selected from scores and how target weights are assigned. Examples include `top_k`, weighting, holding buffers, and group limits.
 
 ### `ExecutionModel`
 
-描述开仓、退出、成本、滑点、交易日历和可交易性约束。
+Describes entry and exit, costs, slippage, trading calendars, and tradability constraints.
 
 ### `BacktestSpec`
 
-把策略、执行模型、调仓日期、持有期和年化口径组合成一个可序列化配置。
+Combines the strategy, execution model, rebalance dates, holding period, and annualization convention into a serializable configuration.
 
-## 当前平台不覆盖的内容
+## Out of scope
 
-- 数据供应商接入和凭证管理
-- 私有策略和专有特征
-- 模型训练和实验结论
-- 券商下单和生产交易运行时
+- Data-provider integration and credential management
+- Private strategies and proprietary features
+- Model training and research conclusions
+- Broker order placement and production trading runtime
 
-这些职责由调用方或其他项目承担。平台只提供可复用的机制和公开接口。
+Callers or other projects own these responsibilities. The platform provides reusable mechanisms and public interfaces.

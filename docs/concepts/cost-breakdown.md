@@ -1,15 +1,24 @@
-# 成本口径
+# Cost breakdown
 
-`CostBreakdown` 为回测结果提供统一的费用视图：
+Language: English · [简体中文](cost-breakdown.zh-CN.md)
 
-| 字段 | 含义 |
-|------|------|
-| `fee_cost` | 成本模型返回值，通常表示显式费用 |
-| `slippage_cost` | 独立滑点模型返回值 |
-| `total_cost` | 两者之和 |
+`CostBreakdown` provides a consistent view of portfolio-backtest costs. See the [`CostBreakdown` implementation](https://github.com/runchengxie/quant-platform/blob/main/packages/portfolio-backtester/src/portfolio_backtester/types.py) and its [tests](https://github.com/runchengxie/quant-platform/blob/main/tests/test_cost_breakdown.py).
 
-当前 `DetailedTradeFeeModel` 同时计算佣金、税费、过户费和内置滑点。使用该模型时，内置滑点会进入 `fee_cost`。因此 `fee_cost` 不能一概解释为纯显式费用。
+| Field | Meaning |
+| --- | --- |
+| `fee_cost` | Aggregate fee components: commission, stamp tax, and transfer fees |
+| `slippage_cost` | Aggregate spread, impact, opportunity, and financing components |
+| `total_cost` | `fee_cost + slippage_cost` |
 
-同时启用明细费用模型的内置滑点和独立滑点模型，会叠加两套滑点假设。需要把费用和滑点分列时，应把 `DetailedTradeFeeModel` 的 `buy_slippage_bps` 与 `sell_slippage_bps` 设为 0，再通过独立滑点模型计算 `slippage_cost`。
+The current breakdown also exposes eight auditable sub-items:
 
-报告应保存成本模型、滑点模型和全部参数。后续拆分佣金、税费、价差、市场冲击或机会成本时，应保持分项字段可以审计。
+| Aggregate | Sub-items |
+| --- | --- |
+| `fee_cost` | `commission`, `stamp_tax`, `transfer_fee` |
+| `slippage_cost` | `spread_cost`, `temporary_impact`, `permanent_impact`, `opportunity_cost`, `financing_cost` |
+
+When built with `CostBreakdown.from_components`, each aggregate equals the sum of its sub-items, and `total_cost` equals the sum of all eight. Existing callers can still pass only `fee_cost` and `slippage_cost`; sub-items then default to zero and are not a decomposition of those aggregates.
+
+`DetailedTradeFeeModel` also includes directional slippage in its returned fee cost. Therefore, `fee_cost` does not always represent only commissions and taxes. Combining that model's embedded slippage with a separate slippage model adds both assumptions. To report them separately, set `buy_slippage_bps` and `sell_slippage_bps` to zero on `DetailedTradeFeeModel`, then calculate `slippage_cost` through the separate model.
+
+Reports should preserve the cost model, slippage model, and all parameters. Do not infer an unreported sub-item from an aggregate total; retain only components actually supplied by the calculation.

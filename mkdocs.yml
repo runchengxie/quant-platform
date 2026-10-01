@@ -62,14 +62,27 @@ exclude_docs: |
   **/*.yml
 
 nav:
-  - 项目概览: README.md
-  - 新人入门:
-      - 平台概览: concepts/platform-overview.md
-      - 安装与环境: getting-started/installation.md
-      - 运行第一个回测: getting-started/first-backtest.md
-      - 读取回测结果: getting-started/understanding-results.md
-      - 术语表: reference/glossary.md
-  - 常用指南:
+  - Home: README.md
+  - English:
+      - Documentation index: README.md
+      - Localization status: LANGUAGE_MIGRATION_STATUS.md
+      - Language policy: LANGUAGE_POLICY.md
+      - Getting started:
+          - Platform overview: concepts/platform-overview.md
+          - Installation and environments: getting-started/installation.md
+          - Run your first backtest: getting-started/first-backtest.md
+          - Understand backtest results: getting-started/understanding-results.md
+          - Glossary: reference/glossary.md
+  - 简体中文:
+      - 文档首页: README.zh-CN.md
+      - 语言规范: LANGUAGE_POLICY.zh-CN.md
+      - 新人入门:
+          - 平台概览: concepts/platform-overview.zh-CN.md
+          - 安装与环境: getting-started/installation.zh-CN.md
+          - 运行第一个回测: getting-started/first-backtest.zh-CN.md
+          - 读取回测结果: getting-started/understanding-results.zh-CN.md
+          - 术语表: reference/glossary.zh-CN.md
+  - Guides (Chinese originals; translation in progress):
       - 常用入口: guides/entry-points.md
       - 袖套组合: guides/sleeve-portfolio.md
       - 执行模拟: guides/execution-simulation.md
@@ -77,9 +90,15 @@ nav:
       - 旧仓再资格: guides/incumbent-requalification.md
       - 旧仓再资格 OOS 控制: guides/incumbent-requalification-oos-controls.md
       - 晋升旁路: guides/promotion-sidecar.md
-  - 核心概念:
-      - 回测规范: concepts/backtest-spec.md
-      - 回测配置: concepts/backtest-configuration.md
+  - Core concepts:
+      - Backtest configuration: concepts/backtest-configuration.md
+      - Backtest specification: concepts/backtest-spec.md
+      - Execution costs and assumptions: concepts/execution-costs.md
+      - Cost breakdown: concepts/cost-breakdown.md
+      - 简体中文:
+          - 回测规范: concepts/backtest-spec.zh-CN.md
+          - 成本与执行假设: concepts/execution-costs.zh-CN.md
+          - 成本口径: concepts/cost-breakdown.zh-CN.md
       - 后端架构: concepts/backend-architecture.md
       - LEAN feasibility spike: concepts/lean-differential-spike-2026-09.md
       - 回测结果解读: concepts/backtest-interpretation.md
@@ -90,9 +109,7 @@ nav:
       - 因子归因: concepts/factor-attribution.md
       - 基准阶梯: concepts/benchmark-ladder.md
       - 换手率: concepts/turnover.md
-      - 执行成本: concepts/execution-costs.md
       - 组合执行性能基线: development/portfolio-execution-profiling-2026-09.md
-      - 成本拆解: concepts/cost-breakdown.md
       - 日期执行费用: dated-execution-fees.md
       - 公司行动账本: corporate-action-ledger.md
       - 差分回测: concepts/differential-backtesting.md
@@ -106,8 +123,8 @@ nav:
           - 研究协议: alpha/concepts/research-protocols.md
           - 风格因子截面: alpha/concepts/style-factor-cross-sections.md
           - Style Replica: alpha/concepts/style-replica.en.md
-          - Style Replica (中文参考): alpha/concepts/style-replica.md
-  - Alpha 与研究:
+          - Style Replica (Chinese reference): alpha/concepts/style-replica.md
+  - Alpha and research (Chinese originals; translation in progress):
       - Alpha 概览: alpha/README.md
       - AFML 方法论: alpha/concepts/afml-methodology.md
       - 因子目录: alpha/concepts/factor-catalog.md
@@ -124,46 +141,62 @@ nav:
       - 研究输出: alpha/reference/research-outputs.md
       - 信号产物: alpha/reference/signal-artifacts.md
       - 风险模型内核: risk-model-kernel.md
-  - 执行与微观结构:
+  - Execution and microstructure (Chinese originals; translation in progress):
       - 执行概览: execution/README.md
       - 微观结构概览: microstructure/README.md
       - 数据边界: microstructure/data-boundary.md
       - 开发指南: microstructure/development-guide.md
       - Rust 模拟内核: development/microstructure-rust.md
-  - 编排:
-      - 编排概览: orchestration/README.md
-      - 控制平面: orchestration/control-plane.md
-      - 评估: orchestration/evaluation.md
-      - 输出产物: orchestration/output-artifacts.md
-      - 接入负责人: orchestration/integrating-an-owner.md
-      - 目标文件: orchestration/targets.md
-      - 现金流发布: orchestration/cashflow-publication.md
-      - 开发: orchestration/development.md
-      - 证据协议 CLI: orchestration/evidence-protocol-cli.md
-      - E2 晋升回执: orchestration/e2-promotion-receipt.md
-      - 输出编排: orchestration/output-orchestration.md
-      - 输出摘要: orchestration/output-summary.md
-      - 运维:
-          - 概览: orchestration/operations/README.md
-          - 质量门禁: orchestration/operations/quality-gates.md
-      - 参考:
-          - 概览: orchestration/reference/README.md
-          - CLI 辅助工具: orchestration/reference/cli-helpers.md
-          - 配置: orchestration/reference/configuration.md
-          - 运行时辅助工具: orchestration/reference/runtime-helpers.md
-  - 参考:
-      - 公开 API: reference/public-api.md
-      - 分配参考: reference/allocation-reference.md
-      - 持仓: reference/outputs/positions.md
-      - 回测输出: reference/outputs/backtest-outputs.md
-      - 数据边界: data/README.md
-  - 开发:
-      - 测试: testing.md
-      - 网格辅助工具: grid-support.md
-      - 命名空间迁移: namespace-migration.md
-      - 归属迁移: ownership-migration.md
-      - 发布审计: orchestration/publication-audit.md
-  - 治理与迁移:
+  - Orchestration:
+      - English:
+          - Overview: orchestration/README.md
+          - Control-plane API: orchestration/control-plane.md
+          - Evaluation orchestration: orchestration/evaluation.md
+          - References:
+              - Reference overview: orchestration/reference/README.md
+              - CLI helpers: orchestration/reference/cli-helpers.md
+              - Configuration resolution: orchestration/reference/configuration.md
+      - Chinese originals (translation in progress):
+          - 编排概览: orchestration/README.zh-CN.md
+          - 控制平面: orchestration/control-plane.zh-CN.md
+          - 评估: orchestration/evaluation.zh-CN.md
+          - 输出产物: orchestration/output-artifacts.md
+          - 接入负责人: orchestration/integrating-an-owner.md
+          - 目标文件: orchestration/targets.md
+          - 现金流发布: orchestration/cashflow-publication.md
+          - 开发: orchestration/development.md
+          - 证据协议 CLI: orchestration/evidence-protocol-cli.md
+          - E2 晋升回执: orchestration/e2-promotion-receipt.md
+          - 输出编排: orchestration/output-orchestration.md
+          - 输出摘要: orchestration/output-summary.md
+          - 运行时辅助能力: orchestration/reference/runtime-helpers.md
+          - 运维:
+              - 概览: orchestration/operations/README.md
+              - 质量门禁: orchestration/operations/quality-gates.md
+      - References:
+          - 简体中文:
+              - 参考资料: orchestration/reference/README.zh-CN.md
+              - CLI 辅助函数: orchestration/reference/cli-helpers.zh-CN.md
+              - 配置解析: orchestration/reference/configuration.zh-CN.md
+  - References:
+      - Public API: reference/public-api.md
+      - Allocation reference: reference/allocation-reference.md
+      - Data boundary: data/README.md
+      - Position output contract: reference/outputs/positions.md
+      - Chinese originals (translation in progress):
+          - 回测输出: reference/outputs/backtest-outputs.md
+      - 简体中文:
+          - 持仓输出约定: reference/outputs/positions.zh-CN.md
+  - Development:
+      - Testing and quality checks: testing.md
+      - Chinese originals (translation in progress):
+          - 网格辅助工具: grid-support.md
+          - 命名空间迁移: namespace-migration.md
+          - 归属迁移: ownership-migration.md
+          - 发布审计: orchestration/publication-audit.md
+      - 简体中文:
+          - 测试和质量检查: testing.zh-CN.md
+  - Governance and migration (Chinese originals; translation in progress):
       - 历史迁移边界: migration/research-workspace-sunset.md
       - quant-market-research 边界: migration/market-research-boundary.md
       - 会计与执行路线图: governance/accounting-execution-roadmap.md
