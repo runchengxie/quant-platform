@@ -1,5 +1,7 @@
 # StyleReplica Alpha 信号研究
 
+> English canonical: [StyleReplica Alpha Signal Research](style-replica.en.md).
+
 `alpha_research.style_replica` 只维护 StyleReplica 的因子、研究分类、A/B 分数和标准信号产物。最终槽位分配、主题配额、持仓缓冲、替换限制、重叠处理和持仓权重已经移出 alpha owner。
 
 运行编排和 `targets.json` 导出由本仓库的 `strategy_pipeline` 负责，StyleReplica 冻结策略政策由 `strategy-app` 负责，通用目标持仓构造、回测、成本和容量由本仓库的 `portfolio_backtester` 负责。
@@ -21,7 +23,7 @@ from alpha_research.style_replica import (
 
 `StyleReplicaSignalGenerator` 接收价格、换手率、市值、行业和证券基础信息，计算 A、B 两套研究分数。
 
-回测或模拟使用的证券资格输入必须按交易日提供 `symbol`、`trade_date`、`is_st`、`is_suspended` 和 `list_date`。信号按各自日期筛选，未知资格和缺失记录不进入候选池。当前证券简称不能代替历史 ST 状态。未提供证券资格输入时可以生成探索性分数，但 `eligible_for_backtest` 和 `eligible_for_live` 为 false。历史价格只用于计算当时可用的因子，不以最后一个交易日的股票池回溯整段样本。
+回测或模拟使用的证券资格输入必须按交易日提供 `symbol`、`trade_date`、`is_st`、`st_available_from`、`is_suspended` 和 `list_date`。ST 状态只有在 `st_available_from` 不晚于信号决策日时才可确认。可用日期缺失或晚于决策日时，资格视为未知，不进入候选池。旧版 `daily_clean` 缺少该字段，不能提供新的 PIT 资格保证。当前证券简称不能代替历史 ST 状态。未提供证券资格输入时可以生成探索性分数，但 `eligible_for_backtest` 和 `eligible_for_live` 为 false。历史价格只用于计算当时可用的因子，不以最后一个交易日的股票池回溯整段样本。
 
 A 分数主要使用残差波动率、流动性、市值、20 日和 120 日动量、市场 beta、行业动量和可选分钟成交活跃信息。B 分数主要使用波动率收敛、低残差波动率、流动性、20 日和 120 日动量，以及可选 Hermite 稳定性指标。
 
