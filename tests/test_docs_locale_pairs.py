@@ -17,6 +17,7 @@ PAIRS = (
     ("concepts/backtest-spec.md", "concepts/backtest-spec.zh-CN.md"),
     ("data/README.md", "data/README.zh-CN.md"),
     ("concepts/execution-costs.md", "concepts/execution-costs.zh-CN.md"),
+    ("concepts/cost-breakdown.md", "concepts/cost-breakdown.zh-CN.md"),
 )
 
 

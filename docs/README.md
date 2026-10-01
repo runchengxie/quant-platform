@@ -30,7 +30,7 @@ These guides use synthetic data and small examples. They help you run the full f
 10. [Style-factor portfolio weighting](concepts/style-factor-portfolio-weighting.md)
 11. [AFML sizing and strategy risk](concepts/afml-sizing-and-risk.md)
 12. [Turnover definitions](concepts/turnover.md)
-13. [Cost definitions](concepts/cost-breakdown.md)
+13. [Cost breakdown](concepts/cost-breakdown.md)
 14. [Interpreting backtest results](concepts/backtest-interpretation.md)
 15. [Market benchmark ladder](concepts/benchmark-ladder.md)
 16. [Position output contract](reference/outputs/positions.md)

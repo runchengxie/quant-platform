@@ -9,7 +9,7 @@ from portfolio_backtester import execution_sim
 
 ROOT = Path(__file__).resolve().parents[1]
 FACT_DOCS = (
-    ROOT / "docs" / "concepts" / "cost-breakdown.md",
+    ROOT / "docs" / "concepts" / "cost-breakdown.zh-CN.md",
     ROOT / "docs" / "guides" / "execution-simulation.md",
     ROOT / "docs" / "reference" / "public-api.md",
 )
@@ -155,6 +155,11 @@ def test_docs_record_current_cost_and_position_limitations() -> None:
 
     assert "内置滑点会进入 `fee_cost`" in cost_docs
     assert "buy_slippage_bps` 与 `sell_slippage_bps` 设为 0" in cost_docs
+    english_cost_docs = (ROOT / "docs" / "concepts" / "cost-breakdown.md").read_text(
+        encoding="utf-8"
+    )
+    assert "temporary_impact" in english_cost_docs
+    assert "from_components" in english_cost_docs
     assert "买卖各 10 个基点" in execution_cost_docs
     english_execution_cost_docs = (ROOT / "docs" / "concepts" / "execution-costs.md").read_text(
         encoding="utf-8"

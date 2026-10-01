@@ -35,7 +35,7 @@
 10. [风格因子组合权重](concepts/style-factor-portfolio-weighting.md)
 11. [AFML 仓位与策略风险](concepts/afml-sizing-and-risk.md)
 12. [换手率口径](concepts/turnover.md)
-13. [成本口径](concepts/cost-breakdown.md)
+13. [成本口径](concepts/cost-breakdown.zh-CN.md)
 14. [回测结果解读](concepts/backtest-interpretation.md)
 15. [市场基准阶梯](concepts/benchmark-ladder.md)
 16. [持仓输出约定](reference/outputs/positions.md)
