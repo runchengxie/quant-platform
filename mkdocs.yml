@@ -73,6 +73,8 @@ nav:
           - Run your first backtest: getting-started/first-backtest.md
           - Understand backtest results: getting-started/understanding-results.md
           - Glossary: reference/glossary.md
+      - Guides:
+          - Common entry points: guides/entry-points.md
   - 简体中文:
       - 文档首页: README.zh-CN.md
       - 语言规范: LANGUAGE_POLICY.zh-CN.md
@@ -82,8 +84,9 @@ nav:
           - 运行第一个回测: getting-started/first-backtest.zh-CN.md
           - 读取回测结果: getting-started/understanding-results.zh-CN.md
           - 术语表: reference/glossary.zh-CN.md
+      - 常用指南:
+          - 常用入口: guides/entry-points.zh-CN.md
   - Guides (Chinese originals; translation in progress):
-      - 常用入口: guides/entry-points.md
       - 袖套组合: guides/sleeve-portfolio.md
       - 执行模拟: guides/execution-simulation.md
       - 收盘诊断回放: guides/diagnostic-close-replay.md

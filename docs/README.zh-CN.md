@@ -24,7 +24,7 @@
 ## 深入阅读顺序
 
 1. [根目录 README](https://github.com/runchengxie/quant-platform/blob/main/README.md)
-2. [常用入口](guides/entry-points.md)
+2. [常用入口](guides/entry-points.zh-CN.md)
 3. [通用多策略袖套组合构造](guides/sleeve-portfolio.md)
 4. [组合式回测规范](concepts/backtest-spec.md)
 5. [回测配置解析](concepts/backtest-configuration.md)
