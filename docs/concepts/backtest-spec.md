@@ -1,20 +1,22 @@
-# 组合式回测规范
+# Backtest specification
 
-`BacktestSpec` 是分数驱动回测的推荐配置入口。它复用现有的 `StrategySpec` 和 `ExecutionModel`，把原来散落在 `backtest_topk` 参数中的设置组合成一个不可变对象。
+Language: English · [简体中文](backtest-spec.zh-CN.md)
 
-## 职责划分
+`BacktestSpec` is the recommended configuration entry point for score-driven portfolio backtests. It combines the existing `StrategySpec` and `ExecutionModel` types into one immutable configuration, replacing settings previously passed as separate `backtest_topk` arguments.
 
-| 对象 | 负责内容 |
+## Responsibilities
+
+| Type | Responsibility |
 | --- | --- |
-| `StrategySpec` | 分数列、Top-K 数量、多空模式、权重方法、持仓缓冲和分组数量上限 |
-| `ExecutionModel` | 开仓价、退出规则、成本、滑点、交易日历和价格或流动性筛选约束 |
-| `BacktestSpec` | 策略与执行模型的组合、调仓日期、持有期、年化口径和其他运行设置 |
+| `StrategySpec` | Score column, Top-K size, long/short mode, weighting, holding buffers, and group caps |
+| `ExecutionModel` | Entry prices, exit rules, costs, slippage, trading calendar, and price or liquidity constraints |
+| `BacktestSpec` | Strategy and execution configuration, rebalance dates, holding period, annualization, and other run settings |
 
-`BacktestSpec` 不定义新的选择器、权重分配器、成本模型或退出规则类型。策略和执行语义继续由仓库中已有的类型负责。
+`BacktestSpec` does not introduce new selector, allocator, cost-model, or exit-rule types. Existing types continue to define strategy selection and execution semantics.
 
-## 基础示例
+## Basic example
 
-下面省略 `scores` 的 `DataFrame` 构造。输入至少需要 `trade_date`、`symbol`、分数列和执行模型使用的价格列。
+The example omits construction of the `scores` DataFrame. Inputs need at least `trade_date`, `symbol`, a score column, and the price columns used by the execution model.
 
 ```python
 import pandas as pd
@@ -58,20 +60,20 @@ spec = BacktestSpec(
 result = run_backtest(scores, spec)
 ```
 
-`run_backtest` 的返回值与 `backtest_topk` 保持一致。没有可计算的持有期时返回 `None`。有结果时返回统计字典、净收益序列、毛收益序列、换手率序列和持有期明细。
+`run_backtest` returns the same result shape as `backtest_topk`. It returns `None` when no holding period can be calculated. Otherwise, it returns a statistics mapping, net- and gross-return series, a turnover series, and holding-period details.
 
-## 弱信号、新增名称和固定槽位控制
+## Score and new-name controls
 
-`BacktestSpec` 提供两个默认关闭的研究参数：
+Two research controls are disabled by default:
 
-- `selection_min_score` 是硬性分数门槛。多头等降序选择保留分数大于等于门槛的证券，空头等升序选择保留分数小于等于门槛的证券。缺失或无法转换为数值的分数不合格。门槛在持仓缓冲和分数差保留规则之前执行，因此历史持仓也不能越过门槛。
-- `max_new_names_per_rebalance` 限制一次调仓中相对上一期非空持仓新增的证券数量。首次非空建仓不受该限制，此前只有空筛选期时仍按初始建仓处理。多空策略会分别计算多头侧和空头侧的新增数量。
+- `selection_min_score` is a hard score threshold. Long or descending selections retain securities with scores at or above the threshold; short or ascending selections retain scores at or below it. Missing or non-numeric scores are ineligible. The threshold applies before holding-buffer and score-margin retention, so existing holdings cannot bypass it.
+- `max_new_names_per_rebalance` limits how many securities can be added relative to the previous non-empty portfolio in one rebalance. The first non-empty portfolio is not limited; an initial build after empty screening periods is still treated as initial construction. Long and short sides are counted separately.
 
-两个字段均为 `None` 时完全沿用原有 Top-K 行为。启用后，合格证券或允许新增的证券不足时，选择器不会用较弱证券补满 `top_k`。价格、流动性和可交易性约束先于新增名称计数执行，未通过执行约束的证券不会消耗新增额度。分组数量上限继续作用于最终持仓。
+When both fields are `None`, the original Top-K behavior is preserved. When enabled, the selector does not fill `top_k` with weaker names if too few securities pass the threshold or new-name limit. Price, liquidity, and tradability constraints run before new-name counting, so rejected securities do not consume the allowance. Group caps still apply to final holdings.
 
-启用任一控制后，某一侧没有合格证券时，Top-K 收益回放会把该侧记为现金：毛收益为零，从已有持仓切到现金仍计算卖出换手与成本，且该期不会从收益序列中删除。持仓明细入口用`该期没有该侧的行`表示现金。首次出现合格证券前的空筛选期不会消耗初始建仓额度。
+With either control enabled, a side with no eligible securities is represented as cash in Top-K return replay: gross return is zero, moving existing holdings to cash still incurs sell turnover and costs, and the period remains in the return series. The holdings-detail interface represents cash with no rows for that side in the period. Empty screening periods before the first eligible portfolio do not consume the initial-construction allowance.
 
-`selection_min_score` 的资格约束优先于目标权重换手上限。启用 `max_turnover_per_rebalance` 时，插值后的目标权重也会再次剔除低于门槛的旧持仓，因此硬门槛可能使实际权重换手超过上限。
+`selection_min_score` takes precedence over the target-weight turnover limit. With `max_turnover_per_rebalance`, interpolated target weights are filtered again to remove existing holdings below the threshold, so enforcing the hard threshold can cause realized weight turnover to exceed the configured limit.
 
 ```python
 conservative_spec = BacktestSpec(
@@ -85,17 +87,19 @@ conservative_spec = BacktestSpec(
 )
 ```
 
-以下三个字段用于建立不靠候选回填、且能明确保留现金的研究基线：
+## Entry cutoff, fixed slots, and target-first selection
 
-- `entry_rank_cutoff` 是新证券的严格排名上限。设置为 `8` 时，新证券只有进入前 8 名才能买入。缓冲区允许旧持仓在更宽的退出排名内继续持有，但选择器不会用第 9 名以后的新证券补满组合。
-- `target_weight_policy="fixed_slot"` 只支持多头等权组合。每个目标槽位固定为 `1 / top_k`，不足 `top_k` 的部分保留现金。例如 Top10 只选出 8 只时，每只权重为 `0.10`，目标总敞口为 `0.80`。
-- `selection_price_policy="target_first"` 先用信号冻结目标名单，再单独检查开仓日价格、流动性和可交易性。未通过开仓约束的目标不由更低排名证券替换，其权重在模型持仓中保留为现金。
+Three additional fields support a research baseline that does not backfill rejected candidates and can explicitly retain cash:
 
-三个字段默认分别为 `None`、`"normalized"` 和 `"execution_aware"`，因此旧配置和旧调用结果不变。`fixed_slot` 与非等权或多空策略组合会直接报错。低换手 Top10 基线可以组合使用 `buffer_exit=5`、`buffer_entry=2`、`entry_rank_cutoff=8`、`target_weight_policy="fixed_slot"` 和 `selection_price_policy="target_first"`，具体阈值仍需由独立实验验证。
+- `entry_rank_cutoff` is a strict rank limit for new securities. At `8`, a new security must rank in the top eight to enter. A holding buffer can retain existing holdings beyond that entry limit, but lower-ranked new candidates do not backfill the portfolio.
+- `target_weight_policy="fixed_slot"` supports long-only equal-weight portfolios. Each target slot has weight `1 / top_k`; unfilled slots remain cash. For example, if a Top-10 selection contains eight securities, each receives weight `0.10` and total target exposure is `0.80`.
+- `selection_price_policy="target_first"` freezes the target list from signals before checking entry-date price, liquidity, and tradability. A target that fails an entry constraint is not replaced by a lower-ranked security; its weight remains cash in the modeled portfolio.
 
-## 配置序列化
+The defaults are `None`, `"execution_aware"`, and `"normalized"`, respectively, so existing configurations and calls retain their behavior. `fixed_slot` with a non-equal-weight or long-short strategy raises an error. A low-turnover Top-10 baseline can combine `buffer_exit=5`, `buffer_entry=2`, `entry_rank_cutoff=8`, `target_weight_policy="fixed_slot"`, and `selection_price_policy="target_first"`; the thresholds still require separate empirical validation.
 
-`BacktestSpec` 是 `frozen=True` 的数据类。`to_mapping()` 会把调仓日期和内置执行组件转换为适合 JSON 或 YAML 的值：
+## Configuration serialization
+
+`BacktestSpec` is a frozen dataclass. `to_mapping()` converts rebalance dates and built-in execution components to JSON- or YAML-compatible values:
 
 ```python
 import json
@@ -107,35 +111,35 @@ restored = BacktestSpec.from_mapping(json.loads(encoded))
 assert restored == spec
 ```
 
-映射包含 `schema_version`。当前版本为 1，读取未知版本时会直接报错，避免静默采用错误语义。
+The mapping contains `schema_version`, currently `1`. Reading an unknown version raises an error rather than silently applying potentially incorrect semantics.
 
-信号表和行情表不属于配置，因此不会写入映射。信号与定价使用同一个表时调用：
+Signal and market-data frames are not part of the configuration mapping. When signals and prices are in the same frame, call:
 
 ```python
 run_backtest(scores, spec)
 ```
 
-筛选后的信号表缺少完整退出价格时，可以另传只读定价表：
+If the filtered signal frame lacks complete exit prices, pass a separate read-only pricing frame:
 
 ```python
 run_backtest(filtered_scores, spec, pricing_data=published_prices)
 ```
 
-## 历史入口兼容
+## Compatibility with the legacy entry point
 
-`backtest_topk` 继续保留原有参数、默认值、返回结构和异常行为。兼容入口会完成以下映射：
+`backtest_topk` retains its existing arguments, defaults, return structure, and exception behavior. The compatibility entry point maps legacy settings as follows:
 
-| 历史参数 | 新对象中的位置 |
+| Legacy arguments | New configuration |
 | --- | --- |
-| `pred_col`、`top_k`、`weighting`、`long_only` | `StrategySpec` |
-| `buffer_exit`、`buffer_entry` | `StrategySpec` |
-| `group_col`、`max_names_per_group` | `StrategySpec.group_cap` |
-| `price_col`、`cost_bps`、退出规则 | 默认 `ExecutionModel` |
-| 显式 `execution` | `BacktestSpec.execution` |
-| 调仓、持有期、流动性、排序、分数门槛、新增名称和固定槽位限制 | `BacktestSpec` |
+| `pred_col`, `top_k`, `weighting`, `long_only` | `StrategySpec` |
+| `buffer_exit`, `buffer_entry` | `StrategySpec` |
+| `group_col`, `max_names_per_group` | `StrategySpec.group_cap` |
+| `price_col`, `cost_bps`, exit rules | Default `ExecutionModel` |
+| Explicit `execution` | `BacktestSpec.execution` |
+| Rebalance dates, holding period, liquidity, ranking, score thresholds, new-name limits, and fixed-slot controls | `BacktestSpec` |
 
-显式传入 `execution` 时，它仍覆盖 `price_col`、`cost_bps` 和历史退出参数，与原有行为一致。兼容入口暂不发出弃用警告，下游调用完成审计后再决定迁移期限。
+An explicitly supplied `execution` continues to override `price_col`, `cost_bps`, and legacy exit arguments. The compatibility entry point does not currently emit a deprecation warning; migration timing will be considered after downstream callers have been audited.
 
-## 适用边界
+## Scope
 
-`BacktestSpec` 描述分数驱动的 Top-K 组合回测。已有目标持仓的确定性回放继续使用 `PositionBacktestConfig` 和 `run_position_backtest`。配置对象不负责数据下载、模型训练、任务编排或实盘执行。
+`BacktestSpec` describes score-driven Top-K portfolio backtests. Deterministic replay from target positions remains in `PositionBacktestConfig` and `run_position_backtest`. The configuration does not handle data downloads, model training, task orchestration, or live execution.

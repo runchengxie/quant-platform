@@ -14,6 +14,7 @@ PAIRS = (
     ("reference/public-api.md", "reference/public-api.zh-CN.md"),
     ("reference/allocation-reference.md", "reference/allocation-reference.zh-CN.md"),
     ("concepts/backtest-configuration.md", "concepts/backtest-configuration.zh-CN.md"),
+    ("concepts/backtest-spec.md", "concepts/backtest-spec.zh-CN.md"),
 )
 
 
