@@ -229,6 +229,63 @@ def test_orchestration_overview_matches_package_exports_and_cli_registration() -
     assert "Chinese originals (translation in progress)" in docs
 
 
+def test_control_plane_docs_match_contracts_runner_and_failure_tests() -> None:
+    docs = (ROOT / "docs" / "orchestration" / "control-plane.md").read_text(encoding="utf-8")
+    contracts = (
+        ROOT
+        / "packages"
+        / "orchestration"
+        / "src"
+        / "strategy_pipeline"
+        / "control_plane"
+        / "contracts.py"
+    ).read_text(encoding="utf-8")
+    runner = (
+        ROOT
+        / "packages"
+        / "orchestration"
+        / "src"
+        / "strategy_pipeline"
+        / "control_plane"
+        / "runner.py"
+    ).read_text(encoding="utf-8")
+    lineage = (
+        ROOT
+        / "packages"
+        / "orchestration"
+        / "src"
+        / "strategy_pipeline"
+        / "control_plane"
+        / "afml_lineage.py"
+    ).read_text(encoding="utf-8")
+    tests = (ROOT / "tests" / "orchestration" / "control_plane" / "test_runner.py").read_text(
+        encoding="utf-8"
+    )
+
+    assert "Language: English · [简体中文](control-plane.zh-CN.md)" in docs
+    for contract in (
+        "class ArtifactRef:",
+        "class RunRequest:",
+        "class PublicationRequest:",
+        "class HandoffRequest:",
+        "class RunReceipt:",
+        '"digest": self.digest',
+        '"failure_category": self.failure_category',
+    ):
+        assert contract in contracts
+    for behavior in (
+        'failure_category="owner_failure"',
+        'failure_category="publication_failure"',
+        'failure_message="owner execution failed"',
+        'failure_message="artifact publication failed"',
+    ):
+        assert behavior in runner
+        assert behavior.split("=")[1].strip('"') in docs
+    assert "strategy-secret" in tests
+    assert 'level != "release" or status != "pass"' in lineage
+    assert "require_release_protocol=False" in docs
+
+
 def test_docs_distinguish_current_backends_from_history_and_plans() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")

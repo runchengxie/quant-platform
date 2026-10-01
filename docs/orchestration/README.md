@@ -6,6 +6,8 @@ The `strategy_pipeline` package provides reusable run control, artifact publicat
 
 The package exports `RunRequest`, `RunReceipt`, `ArtifactRef`, `PublicationRequest`, `HandoffRequest`, and the `run`, `publish_artifact`, and `publish_handoff` functions.
 
+See the [control-plane API](control-plane.md) for the request and receipt contracts, owner/publisher ports, failure handling, and handoff behavior.
+
 ## Responsibilities and boundaries
 
 - Owners implement domain work and return artifact references rather than in-memory domain objects or provider clients.
@@ -21,7 +23,6 @@ The installable `strategy-pipeline` CLI is registered by the root project. Its c
 
 ## Chinese originals (translation in progress)
 
-- [Control-plane API](control-plane.md)
 - [Evaluation pipeline](evaluation.md)
 - [Output artifacts](output-artifacts.md), [output orchestration](output-orchestration.md), and [run summaries](output-summary.md)
 - [Owner integration](integrating-an-owner.md) and [target export](targets.md)
