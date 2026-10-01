@@ -13,6 +13,7 @@ def test_historical_st_status_filters_only_its_own_date() -> None:
             "symbol": ["A", "B", "A", "B"],
             "trade_date": [20250102, 20250102, 20250103, 20250103],
             "is_st": [False, False, True, False],
+            "st_available_from": [None, None, "20250103", None],
             "is_suspended": [False] * 4,
             "list_date": ["20200101"] * 4,
             "name": ["ST 当前名称"] * 4,
@@ -42,6 +43,7 @@ def test_missing_dated_instrument_row_never_falls_back_to_price_history() -> Non
             "symbol": ["A"],
             "trade_date": ["20250103"],
             "is_st": [False],
+            "st_available_from": [None],
             "is_suspended": [False],
             "list_date": ["20200101"],
         }
@@ -56,8 +58,43 @@ def test_unknown_st_and_suspended_status_cannot_form_positions() -> None:
             "symbol": ["A", "B"],
             "trade_date": [20250102, 20250102],
             "is_st": [pd.NA, False],
+            "st_available_from": [None, None],
             "is_suspended": [False, True],
             "list_date": [20200101, 20200101],
         }
     )
+    assert filter_style_replica_universe(prices, instruments, "2025-01-02", min_history=1).empty
+
+
+def test_missing_st_availability_field_is_rejected() -> None:
+    prices = pd.DataFrame({"A": [10.0]}, index=pd.to_datetime(["2025-01-02"]))
+    instruments = pd.DataFrame(
+        {
+            "symbol": ["A"],
+            "trade_date": [20250102],
+            "is_st": [False],
+            "is_suspended": [False],
+            "list_date": ["20200101"],
+        }
+    )
+    with pytest.raises(ValueError, match="st_available_from"):
+        filter_style_replica_universe(prices, instruments, "2025-01-02", min_history=1)
+
+
+@pytest.mark.parametrize(
+    "is_st, available_from", [(True, "20250103"), (True, None), (False, "20250103")]
+)
+def test_unknown_or_future_st_availability_fails_closed(is_st, available_from) -> None:
+    prices = pd.DataFrame({"A": [10.0]}, index=pd.to_datetime(["2025-01-02"]))
+    instruments = pd.DataFrame(
+        {
+            "symbol": ["A"],
+            "trade_date": [20250102],
+            "is_st": [is_st],
+            "st_available_from": [available_from],
+            "is_suspended": [False],
+            "list_date": ["20200101"],
+        }
+    )
+
     assert filter_style_replica_universe(prices, instruments, "2025-01-02", min_history=1).empty

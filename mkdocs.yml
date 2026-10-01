@@ -105,7 +105,8 @@ nav:
           - 模型版图: alpha/concepts/model-landscape.md
           - 研究协议: alpha/concepts/research-protocols.md
           - 风格因子截面: alpha/concepts/style-factor-cross-sections.md
-          - Style Replica: alpha/concepts/style-replica.md
+          - Style Replica: alpha/concepts/style-replica.en.md
+          - Style Replica (中文参考): alpha/concepts/style-replica.md
   - Alpha 与研究:
       - Alpha 概览: alpha/README.md
       - AFML 方法论: alpha/concepts/afml-methodology.md

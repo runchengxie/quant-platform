@@ -68,6 +68,7 @@ def test_dated_st_status_filters_each_signal_date(monkeypatch) -> None:
             "symbol": ["A", "B", "A", "B"],
             "trade_date": [dates[-2], dates[-2], dates[-1], dates[-1]],
             "is_st": [False, False, True, False],
+            "st_available_from": [None, None, dates[-1], None],
             "is_suspended": [False] * 4,
             "list_date": ["20200101"] * 4,
             "name": ["ST 当前名称"] * 4,
