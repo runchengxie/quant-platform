@@ -11,6 +11,8 @@ PAIRS = (
     ("getting-started/first-backtest.md", "getting-started/first-backtest.zh-CN.md"),
     ("getting-started/understanding-results.md", "getting-started/understanding-results.zh-CN.md"),
     ("reference/glossary.md", "reference/glossary.zh-CN.md"),
+    ("reference/public-api.md", "reference/public-api.zh-CN.md"),
+    ("reference/allocation-reference.md", "reference/allocation-reference.zh-CN.md"),
 )
 
 

@@ -1,79 +1,66 @@
-# 公开入口
+# Public API
 
-下面这些对象可以直接从 `portfolio_backtester` 导入：
+Language: English · [简体中文](public-api.zh-CN.md)
 
-| 类别 | 入口 |
-|------|------|
-| 分数驱动回测 | `BacktestSpec`、`run_backtest`、`backtest_topk` |
-| 策略和持仓构造 | `StrategySpec`、`GroupCap`、`strategy_from_config`、`construct_positions_from_strategy` |
-| DailyWatch20 兼容入口 | `DailyWatch20Config`、`DailyWatch20Receipt`、`DailyWatch20Result`、`DailyWatch20SelectionError`、`GuardFactorSpec`、`select_daily_watch20` |
-| DailyWatch20 组合策略 | `PORTFOLIO_POLICY_SCHEMA`、`DailyWatch20PortfolioPolicy` |
-| 旧仓再资格组合 | `INCUMBENT_REQUALIFICATION_SCHEMA`、`IncumbentRequalificationPolicy`、`IncumbentRequalificationConfig`、`IncumbentRequalificationResult`、`IncumbentRequalificationReceipt`、`select_incumbent_requalified_portfolio` |
-| 错位持有执行 | `StaggeredCohortExecutionConfig`、`StaggeredCohortExecutionResult`、`simulate_staggered_cohort_execution` |
-| 错位持有汇总 | `EXECUTION_SUMMARY_SCHEMA`、`summarize_staggered_execution`、`execution_summary_frame` |
-| 持仓回放 | `PositionBacktestConfig`、`PositionBacktestResult`、`run_position_backtest` |
-| 研究持仓回放 | `positions_by_rebalance_from_targets`、`build_position_replay_periods`、`run_native_position_replay` |
-| Canonical 回测证据 | `BACKTEST_BUNDLE_SCHEMA_VERSION`、`EXECUTION_AWARE_BUNDLE_FILES`、`BacktestEvidenceTier`、`BacktestBundleInventoryItem`、`BacktestBundleManifest`、`reconcile_unified_ledger`、`validate_execution_aware_bundle_inputs`、`write_backtest_bundle`、`read_backtest_bundle` |
-| 延迟成交诊断 | `attribute_delayed_fills` |
-| TCA 成本校准 | `TCACalibrationReceipt`、`calibrate_cost_model` |
-| 历史成交结算 | `settle_execution_fills` |
-| 持仓基准评估 | `PositionBacktestEvaluation`、`evaluate_position_backtest` |
-| 持仓契约 | `POSITIONS_BY_REBALANCE_CONTRACT`、`PositionsByRebalanceFrameContract`、`validate_positions_by_rebalance_frame`、`assert_positions_by_rebalance_frame` |
-| 回测输出契约 | `BACKTEST_PERIODS_CONTRACT`、`BACKTEST_RETURN_CONTRACT`、`TRADABLE_FLAGS_CONTRACT`、`BacktestPeriodsContract`、`BacktestReturnSeriesContract`、`TradableFlagsContract`、`build_backtest_periods_frame`、`build_backtest_return_frame`、`validate_backtest_periods_frame`、`validate_backtest_return_frame`、`validate_tradable_flags_frame`、`assert_backtest_periods_frame`、`assert_backtest_return_frame`、`assert_tradable_flags_frame` |
-| 持仓产物写入 | `CANONICAL_POSITIONS_BY_REBALANCE_META_FILE`、`write_positions_by_rebalance_artifact`、`build_positions_envelope_v2` |
-| 成本与滑点 | `DetailedTradeFeeModel`、`l2_price_tiered_slippage` |
-| 交易会话调仓 | `SessionRebalanceSchedule`、`get_session_interval_rebalance_dates` |
-| 指数增强构造 | `PortfolioConstructionVariant`、`build_target_weights` |
-| 组合比较与错峰调仓 | `build_comparison_receipt`、`compare_portfolio_returns`、`get_rebalance_events` |
-| 换手与成本 | `TurnoverBreakdown`、`RebalanceTurnoverReport`、`CostBreakdown`、`name_turnover`、`annualize_turnover`、`turnover_from_trade_weights`、`build_rebalance_turnover_report` |
-| 交易会计 | `compute_trade_summary`、`drift_previous_weights` |
-| 收益汇总 | `summarize_period_returns` |
-| A 股风格因子回测 | `available_factor_names`、`get_rebalance_dates`、`build_factor_returns`、`build_quantile_portfolio_returns`、`compute_summary`、`compute_factor_correlations`、`compute_yearly_breakdown` |
-| 信号腿归因 | `leg_attribution_frame`、`summarize_leg_attribution` |
-| 夏普推断 | `probabilistic_sharpe_ratio`、`probabilistic_sharpe_ratio_from_stats`、`deflated_sharpe_ratio`、`expected_max_sharpe`、`sharpe_standard_error`、`annualized_sharpe_to_periodic`、`annualized_variance_to_periodic` |
-| 仓位缩放 | `SizingConfig`、`average_active_bets`、`build_sized_weights`、`build_sizing_receipt`、`discretize_weights`、`probability_to_size` |
-| 分层风险平价 | `HrpConfig`、`HrpResult`、`hierarchical_risk_parity`、`rolling_hrp_weights` |
-| 组合优化 | `PORTFOLIO_OPTIMIZATION_RESULT_SCHEMA`、`PortfolioOptimizationRequest`、`PortfolioOptimizationResult`、`PortfolioOptimizerBackend`、`EqualWeightOptimizerBackend`、`HrpOptimizerBackend`、`InverseVolConfig`、`InverseVolOptimizerBackend`、`LinearExposureConstraint`、`OptimizerRegistry`、`PortfolioQpConfig`、`QpMinVarianceOptimizerBackend` |
-| 经济再平衡 | `EconomicRebalanceResult`、`apply_no_trade_band` |
-| 鲁棒不确定性原语 | `conservative_score`、`add_conservative_score`、`box_worst_case_return` |
-| 结果分布与路径诊断 | `OutcomeDistributionReport`、`summarize_outcome_distribution` |
-| 行业平衡袖套 | `SelectionSpec`、`select_industry_balanced`、`build_targets`、`combine_targets`、`attach_entry_dates`、`target_turnover`、`validate_targets` |
-| 策略风险 | `StrategyRiskReport`、`implementation_shortfall_metrics`、`return_concentration`、`strategy_failure_probability`、`summarize_strategy_risk` |
-| 证据回执 | `build_portfolio_sizing_receipt`、`series_sha256`、`sha256_file`、`write_receipt` |
+The following objects are exported directly from `portfolio_backtester`:
 
-标准回测 bundle 以现有 `UnifiedLedger` 为唯一账本来源，不重新实现订单、成交或现金模型。
-`diagnostic` 允许缺少可执行证据。`execution_aware` 要求 backend 明确支持订单生命周期和 daily ledger，
-要求完整 `research.clock.v1` 执行窗口，并且账户对账满足 `nav = cash + positions_value`。
-`write_backtest_bundle` 使用临时同级目录写入 Parquet/JSON，为文件生成 SHA-256 inventory，再原子切换为最终目录。
-`read_backtest_bundle` 默认验证 inventory 与文件内容哈希。完整语义见
-[Canonical 回测证据 bundle](../concepts/canonical-backtest-bundle.md)。
+| Category | Public exports |
+| --- | --- |
+| Score-driven backtests | `BacktestSpec`, `run_backtest`, `backtest_topk` |
+| Strategy and position construction | `StrategySpec`, `GroupCap`, `strategy_from_config`, `construct_positions_from_strategy` |
+| DailyWatch20 compatibility API | `DailyWatch20Config`, `DailyWatch20Receipt`, `DailyWatch20Result`, `DailyWatch20SelectionError`, `GuardFactorSpec`, `select_daily_watch20` |
+| DailyWatch20 portfolio policy | `PORTFOLIO_POLICY_SCHEMA`, `DailyWatch20PortfolioPolicy` |
+| Incumbent requalification portfolios | `INCUMBENT_REQUALIFICATION_SCHEMA`, `IncumbentRequalificationPolicy`, `IncumbentRequalificationConfig`, `IncumbentRequalificationResult`, `IncumbentRequalificationReceipt`, `select_incumbent_requalified_portfolio` |
+| Staggered-cohort execution | `StaggeredCohortExecutionConfig`, `StaggeredCohortExecutionResult`, `simulate_staggered_cohort_execution` |
+| Staggered-execution summaries | `EXECUTION_SUMMARY_SCHEMA`, `summarize_staggered_execution`, `execution_summary_frame` |
+| Position backtests | `PositionBacktestConfig`, `PositionBacktestResult`, `run_position_backtest` |
+| Research position replay | `positions_by_rebalance_from_targets`, `build_position_replay_periods`, `run_native_position_replay` |
+| Canonical backtest evidence | `BACKTEST_BUNDLE_SCHEMA_VERSION`, `EXECUTION_AWARE_BUNDLE_FILES`, `BacktestEvidenceTier`, `BacktestBundleInventoryItem`, `BacktestBundleManifest`, `reconcile_unified_ledger`, `validate_execution_aware_bundle_inputs`, `write_backtest_bundle`, `read_backtest_bundle` |
+| Delayed-fill diagnostics | `attribute_delayed_fills` |
+| TCA cost calibration | `TCACalibrationReceipt`, `calibrate_cost_model` |
+| Historical fill settlement | `settle_execution_fills` |
+| Position benchmark evaluation | `PositionBacktestEvaluation`, `evaluate_position_backtest` |
+| Position contracts | `POSITIONS_BY_REBALANCE_CONTRACT`, `PositionsByRebalanceFrameContract`, `validate_positions_by_rebalance_frame`, `assert_positions_by_rebalance_frame` |
+| Backtest output contracts | `BACKTEST_PERIODS_CONTRACT`, `BACKTEST_RETURN_CONTRACT`, `TRADABLE_FLAGS_CONTRACT`, `BacktestPeriodsContract`, `BacktestReturnSeriesContract`, `TradableFlagsContract`, `build_backtest_periods_frame`, `build_backtest_return_frame`, `validate_backtest_periods_frame`, `validate_backtest_return_frame`, `validate_tradable_flags_frame`, `assert_backtest_periods_frame`, `assert_backtest_return_frame`, `assert_tradable_flags_frame` |
+| Position artifact writing | `CANONICAL_POSITIONS_BY_REBALANCE_META_FILE`, `write_positions_by_rebalance_artifact`, `build_positions_envelope_v2` |
+| Fees and slippage | `DetailedTradeFeeModel`, `l2_price_tiered_slippage` |
+| Session-based rebalancing | `SessionRebalanceSchedule`, `get_session_interval_rebalance_dates` |
+| Index-enhancement construction | `PortfolioConstructionVariant`, `build_target_weights` |
+| Portfolio comparison and staggered rebalancing | `build_comparison_receipt`, `compare_portfolio_returns`, `get_rebalance_events` |
+| Turnover and costs | `TurnoverBreakdown`, `RebalanceTurnoverReport`, `CostBreakdown`, `name_turnover`, `annualize_turnover`, `turnover_from_trade_weights`, `build_rebalance_turnover_report` |
+| Trade accounting | `compute_trade_summary`, `drift_previous_weights` |
+| Return summaries | `summarize_period_returns` |
+| A-share style-factor backtests | `available_factor_names`, `get_rebalance_dates`, `build_factor_returns`, `build_quantile_portfolio_returns`, `compute_summary`, `compute_factor_correlations`, `compute_yearly_breakdown` |
+| Signal-leg attribution | `leg_attribution_frame`, `summarize_leg_attribution` |
+| Sharpe-ratio inference | `probabilistic_sharpe_ratio`, `probabilistic_sharpe_ratio_from_stats`, `deflated_sharpe_ratio`, `expected_max_sharpe`, `sharpe_standard_error`, `annualized_sharpe_to_periodic`, `annualized_variance_to_periodic` |
+| Position sizing | `SizingConfig`, `average_active_bets`, `build_sized_weights`, `build_sizing_receipt`, `discretize_weights`, `probability_to_size` |
+| Hierarchical risk parity | `HrpConfig`, `HrpResult`, `hierarchical_risk_parity`, `rolling_hrp_weights` |
+| Portfolio optimization | `PORTFOLIO_OPTIMIZATION_RESULT_SCHEMA`, `PortfolioOptimizationRequest`, `PortfolioOptimizationResult`, `PortfolioOptimizerBackend`, `EqualWeightOptimizerBackend`, `HrpOptimizerBackend`, `InverseVolConfig`, `InverseVolOptimizerBackend`, `LinearExposureConstraint`, `OptimizerRegistry`, `PortfolioQpConfig`, `QpMinVarianceOptimizerBackend` |
+| Economic rebalancing | `EconomicRebalanceResult`, `apply_no_trade_band` |
+| Robust-uncertainty primitives | `conservative_score`, `add_conservative_score`, `box_worst_case_return` |
+| Outcome distributions and path diagnostics | `OutcomeDistributionReport`, `summarize_outcome_distribution` |
+| Industry-balanced sleeves | `SelectionSpec`, `select_industry_balanced`, `build_targets`, `combine_targets`, `attach_entry_dates`, `target_turnover`, `validate_targets` |
+| Strategy risk | `StrategyRiskReport`, `implementation_shortfall_metrics`, `return_concentration`, `strategy_failure_probability`, `summarize_strategy_risk` |
+| Evidence receipts | `build_portfolio_sizing_receipt`, `series_sha256`, `sha256_file`, `write_receipt` |
 
-`probabilistic_sharpe_ratio` 接收收益序列。`probabilistic_sharpe_ratio_from_stats` 接收已经计算好的周期 Sharpe、偏度和超额峰度。
+The canonical backtest bundle uses the existing `UnifiedLedger` as its sole ledger source. It does not reimplement order, fill, or cash models. The `diagnostic` evidence tier may omit executable evidence. The `execution_aware` tier requires a backend that explicitly supports order lifecycles and a daily ledger, a complete `research.clock.v1` execution window, and account reconciliation satisfying `nav = cash + positions_value`. `write_backtest_bundle` writes Parquet and JSON files to a temporary sibling directory, creates a SHA-256 inventory, and atomically switches to the final directory. `read_backtest_bundle` validates the inventory against file hashes by default. See [Canonical backtest bundles](../concepts/canonical-backtest-bundle.md) for the full semantics.
 
-鲁棒不确定性入口只做调用方显式提供的 box uncertainty 变换：`conservative_score` 计算
-`score - aversion * uncertainty`，`box_worst_case_return` 计算固定权重下的线性最坏情形收益。
-它们不从 alpha 分数反推不确定性，也不执行 DRO、MILP 或组合优化。用于正式研究时，
-`uncertainty` / `uncertainty_radius` 应来自严格样本外证据，并与调仓时点保持 PIT 语义。
+`probabilistic_sharpe_ratio` accepts a return series. `probabilistic_sharpe_ratio_from_stats` accepts an already-computed periodic Sharpe ratio, skewness, and excess kurtosis.
 
-结果分布入口只汇总已经实现的交易或持仓结果。`summarize_outcome_distribution` 同时接收
-realized return、MFE、MAE、peak giveback 和 holding period，返回收益分位数、亏损概率、
-5% CVaR 以及路径和持有期摘要。接口会拒绝空输入、非有限数值、长度不一致和不符合路径
-语义的数据。它不预测未来，也不判断某个目标结果是否具备理论可实现性。
+The robust-uncertainty functions apply only box-uncertainty transformations explicitly supplied by the caller. `conservative_score` computes `score - aversion * uncertainty`; `box_worst_case_return` computes the linear worst-case return for fixed weights. They do not infer uncertainty from alpha scores and do not implement DRO, MILP, or portfolio optimization. For formal research, `uncertainty` and `uncertainty_radius` should come from strict out-of-sample evidence and preserve point-in-time semantics at each rebalance.
 
-`DailyWatch20` 是现有调用方使用的兼容例外。新增研究假设、特征和晋升规则由研究层与编排层维护。
+Outcome-distribution functions summarize realized trade or position results. `summarize_outcome_distribution` accepts realized return, MFE, MAE, peak giveback, and holding period, then returns return quantiles, loss probability, 5% CVaR, and path/holding-period summaries. It rejects empty inputs, non-finite values, inconsistent lengths, and data that violate path semantics. It does not forecast future outcomes or determine whether a target outcome is theoretically achievable.
 
-错位持有执行按 `horizon_days` 建立同样数量的独立 cohort，每个 cohort 初始分配
-`1 / horizon_days` 的组合资金。H1 只有一个 cohort，因此占用全部初始资金。汇总中的
-`total_return` 是整个账本（ledger）的累计收益，不是单个 cohort 收益再次除以持有期。
-信号候选数默认必须达到 `top_n`。只有显式设置 `allow_cash_shortfall=True` 时才允许少于
-`top_n`，此时未填满的固定槽位保留为现金，不向已选股票重新分配。
+`DailyWatch20` is a compatibility exception used by existing callers. New research assumptions, features, and promotion rules belong to the research and orchestration layers.
 
-执行容量与每日净值模拟从 `portfolio_backtester.execution_sim` 导入，详细入口见 [执行容量与每日净值模拟](../guides/execution-simulation.md)。AFML 仓位和风险入口见 [AFML 仓位、分层风险平价（HRP）与策略风险](../concepts/afml-sizing-and-risk.md)。
+Staggered-cohort execution creates `horizon_days` independent cohorts and initially allocates `1 / horizon_days` of portfolio capital to each cohort. H1 has one cohort and therefore uses all initial capital. The summary `total_return` is the cumulative return of the entire ledger, not a single-cohort return divided again by the holding period. By default, the number of signal candidates must be at least `top_n`. Fewer candidates are allowed only when `allow_cash_shortfall=True`; unfilled fixed slots then remain in cash instead of being reallocated to selected stocks.
 
-逐次决策的数据时钟视图从 `portfolio_backtester.point_in_time` 导入，使用方法和输入发布时间要求见 [按决策时点读取研究输入](../guides/point-in-time-data.md)。
+Execution capacity and daily-NAV simulation are imported from `portfolio_backtester.execution_sim`; see [Execution simulation](../guides/execution-simulation.md). AFML sizing and risk APIs are documented in [AFML sizing, hierarchical risk parity (HRP), and strategy risk](../concepts/afml-sizing-and-risk.md).
 
-多次调仓的统一执行回放从 `portfolio_backtester.backends` 导入 `SequencedExecutionBackend` 与 `SequencedExecutionRequest`，输入时钟和证据边界见 [多次决策的统一执行回放](../guides/sequenced-execution.md)。
+The decision-time data-clock view is imported from `portfolio_backtester.point_in_time`. See [Reading research inputs as of a decision time](../guides/point-in-time-data.md) for its use and input-publication requirements.
 
-未列在顶层导出中的模块仍可供仓库内部使用，其接口稳定性低于上表中的公开入口。
+The unified execution replay for multiple rebalances imports `SequencedExecutionBackend` and `SequencedExecutionRequest` from `portfolio_backtester.backends`. See [Unified execution replay for multiple decisions](../guides/sequenced-execution.md) for input clocks and evidence boundaries.
 
-完整导出列表见 `packages/portfolio-backtester/src/portfolio_backtester/__init__.py`。
+Modules not listed among the top-level exports may still be used internally, but their interfaces have lower stability guarantees than the public exports above.
+
+The complete export list is maintained in `packages/portfolio-backtester/src/portfolio_backtester/__init__.py`.

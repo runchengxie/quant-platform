@@ -163,12 +163,13 @@ nav:
           - CLI 辅助工具: orchestration/reference/cli-helpers.md
           - 配置: orchestration/reference/configuration.md
           - 运行时辅助工具: orchestration/reference/runtime-helpers.md
-  - References (Chinese originals; translation in progress):
-      - 公开 API: reference/public-api.md
-      - 分配参考: reference/allocation-reference.md
-      - 持仓: reference/outputs/positions.md
-      - 回测输出: reference/outputs/backtest-outputs.md
-      - 数据边界: data/README.md
+  - References:
+      - Public API: reference/public-api.md
+      - Allocation reference: reference/allocation-reference.md
+      - Chinese originals (translation in progress):
+          - 持仓: reference/outputs/positions.md
+          - 回测输出: reference/outputs/backtest-outputs.md
+          - 数据边界: data/README.md
   - Development (Chinese originals; translation in progress):
       - 测试: testing.md
       - 网格辅助工具: grid-support.md
