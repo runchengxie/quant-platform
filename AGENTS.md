@@ -1,5 +1,9 @@
 # quant-platform 工作规则
 
+## PR review 豁免
+
+用户明确授权合并由用户本人编写，或由用户明确委托 agent 完成的 PR 时，可以跳过单独的人工 review。本仓库的通用 PR 流程遵循此例外。必需检查仍须通过，合并冲突必须解决。不得绕过 GitHub 分支保护或 ruleset 强制要求的审批。
+
 这是公开的可复用量化研究平台仓库。保留 `portfolio_backtester` Python 命名空间，直到完成兼容迁移。
 
 公共框架迁移已经完成。新的通用回测、组合构造、风险、执行模拟和公共契约都维护在本仓库。`quant-market-data-platform` 独立负责数据接入、标准化、质量治理、版本和已发布数据资产，本仓库只消费其发布资产。`research-workspace`、旧 `portfolio-backtester` 和旧 `quant-execution-engine` 仅用于历史复现和兼容核对。
