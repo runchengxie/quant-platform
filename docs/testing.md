@@ -1,28 +1,28 @@
-# 测试和质量检查
+# Testing and quality checks
 
-本页说明 `quant-platform` 的本地测试入口、公开 CI 和实际检查范围。
+Language: English · [简体中文](testing.zh-CN.md)
 
-## 安装开发依赖
+This page documents local test entry points, public CI, and the actual scope of each check in `quant-platform`.
+
+## Install development dependencies
 
 ```bash
 uv sync --locked --all-groups
 ```
 
-项目使用 Python 3.12，依赖版本由 `uv.lock` 固定。
+The project uses Python 3.12, with dependency versions pinned by `uv.lock`.
 
-仓库中的 `research-contracts` 是本地路径依赖。修改这个包后，如果测试仍然读取旧版本，
-重新安装该包：
+The repository's `research-contracts` package is a local path dependency. If tests still read an older installed copy after changing that package, reinstall it:
 
 ```bash
 uv sync --locked --all-groups --reinstall-package research-contracts
 ```
 
-完整测试和公共发布检查应在干净的任务 worktree 中运行。主检出中的 `.env.local`、`out/`、
-`state/` 和其他 worktree 属于本机环境，可能干扰发布边界检查。
+Run the full test suite and public-release checks in a clean task worktree. A primary checkout's `.env.local`, `out/`, `state/`, and other worktrees are local environment state and can interfere with release-boundary checks.
 
-## 验证安装边界
+## Verify installation boundaries
 
-在独立 worktree 中验证基础环境，防止开发依赖掩盖缺失的运行依赖：
+Use an isolated worktree to test the base environment so development dependencies cannot mask missing runtime dependencies:
 
 ```bash
 uv sync --locked --no-default-groups
@@ -32,31 +32,31 @@ uv sync --locked --no-default-groups --extra ml
 uv run --locked --no-default-groups --extra ml --group test pytest -q tests/alpha/test_modeling.py tests/alpha/test_feature_engineering_short_series.py
 ```
 
-CI 在 Python 3.12 和 3.13 上运行这两种安装模式。基础环境会检查 XGBoost、scikit-learn、pandas-ta 及其专用的 Numba、llvmlite、NCCL 依赖均未安装，再验证实际回测和结果包。机器学习环境验证模型拟合与特征计算。微观结构 CI 还会独立安装 `microstructure` 并运行训练指标计算，验证其 scikit-learn 依赖。完整开发环境继续运行全部测试。
+CI runs these two installation modes on Python 3.12 and 3.13. The base environment checks that XGBoost, scikit-learn, `pandas-ta`, and their dedicated Numba, llvmlite, and NCCL dependencies are absent, then exercises actual backtesting and result bundles. The machine-learning environment tests model fitting and feature computation. A separate microstructure CI job installs `microstructure` and runs training-metric computation to verify its scikit-learn dependency. The full development environment also runs the complete test suite.
 
-## 统一入口
+## Unified test entry point
 
 ```bash
 scripts/dev/run_tests.sh <mode> [args...]
 ```
 
-| 模式 | 实际范围 |
-| --- | --- |
-| `all` | 完整 `pytest` 测试集 |
-| `fast` | `all` 的兼容别名 |
-| `unit` | `all` 的兼容别名 |
-| `coverage` | 完整测试集，并统计 `packages/` 与 `scripts/` 下 Python 源码覆盖率 |
-| `contracts-coverage` | 运行 `tests/contracts`，并要求已安装 `research-contracts` 的覆盖率至少达到 80% |
-| `lint` | Ruff 代码检查 |
-| `format` | Ruff 格式检查 |
-| `format-all` | `format` 的兼容别名 |
-| `typecheck` | `ty` 配置范围 |
-| `typecheck-release` | `typecheck` 的兼容别名 |
-| `maintainability` | 维护性指标和当前预算 |
+| Mode | Actual scope |
+|---|---|
+| `all` | Full pytest suite |
+| `fast` | Compatibility alias for `all` |
+| `unit` | Compatibility alias for `all` |
+| `coverage` | Full suite with coverage reporting for Python sources under `packages/`, `scripts/`, and `research_contracts` |
+| `contracts-coverage` | Runs `tests/contracts` and requires at least 80% coverage for installed `research-contracts` sources |
+| `lint` | Ruff code checks |
+| `format` | Ruff format checks |
+| `format-all` | Compatibility alias for `format` |
+| `typecheck` | Configured `ty` source scope |
+| `typecheck-release` | Compatibility alias for `typecheck` |
+| `maintainability` | Maintainability metrics against the current budget |
 
-`fast` 和 `unit` 没有缩小测试范围。
+`fast` and `unit` do not reduce the test scope.
 
-## 常用命令
+## Common commands
 
 ```bash
 scripts/dev/run_tests.sh all
@@ -71,25 +71,25 @@ scripts/dev/run_tests.sh typecheck-release
 scripts/dev/run_tests.sh maintainability
 ```
 
-`coverage` 模式依赖 `pytest-cov`，只生成报告，不设置全仓最低覆盖率门槛。`contracts-coverage` 单独对已安装的 `research-contracts` 设置 80% 门槛。Python 覆盖率报告不包括 Rust 扩展。
+The `coverage` mode requires `pytest-cov`. It generates a report without imposing a repository-wide minimum. `contracts-coverage` separately enforces an 80% floor for installed `research-contracts`. Python coverage reports exclude the Rust extension.
 
-## 依赖安全检查
+## Dependency security checks
 
-公开 CI 使用 `pip-audit` 检查锁定依赖中的已知漏洞。本地可运行同一命令：
+Public CI uses `pip-audit` to check locked dependencies for known vulnerabilities. Run the same check locally with:
 
 ```bash
 uvx --from pip-audit pip-audit --strict -r <(uv export --locked --all-groups --extra dev --extra microstructure --format requirements-txt --no-hashes --no-emit-project --no-emit-local --no-emit-package quant-platform --no-emit-package research-contracts --no-emit-package research-code-quality)
 ```
 
-当前 CI 不运行 Bandit 或未使用依赖扫描。新增此类门禁前，应先定义实际扫描的源码和依赖范围。
+Current CI does not run Bandit or unused-dependency scanning. Before adding either gate, define the source and dependency scope it will scan.
 
-## 推送前检查
+## Pre-push checks
 
-在包含工作区治理的检出中，顶层共享 `pre-push` 会按照工作区清单运行本仓库的导入检查、Ruff、格式检查、`ty` 和完整测试集。
+In a checkout with workspace governance, the shared top-level `pre-push` hook runs this repository's import checks, Ruff lint, formatting, `ty`, and the full test suite according to the workspace manifest.
 
-单独克隆本仓库时不会继承共享钩子。推送前应手动运行上方列出的 `lint`、`format`、`typecheck`、`all` 和 `maintainability`。
+A standalone clone does not inherit the shared hook. Before pushing, run the `lint`, `format`, `typecheck`, `all`, and `maintainability` modes listed above.
 
-公共发布边界检查使用干净导出目录：
+Public-release boundary checks use a clean export directory:
 
 ```bash
 bash scripts/public_release/build_clean_export.sh \
@@ -97,36 +97,36 @@ bash scripts/public_release/build_clean_export.sh \
   --destination /tmp/quant-platform-public-export
 ```
 
-不要把主检出目录中的本地运行产物直接当作公开导出结果。
+Do not treat local runtime outputs in a primary checkout as evidence of a clean public export.
 
-## GitHub Actions 状态
+## GitHub Actions status
 
-`.github/workflows/ci.yml` 在 PR 和主分支推送时运行公开质量门禁。`.github/workflows/docs.yml` 独立构建 MkDocs 并发布在线文档。本地命令和工作区共享 `pre-push` 提交前提供反馈。
+`.github/workflows/ci.yml` runs public quality gates on pull requests and pushes to the main branch. `.github/workflows/docs.yml` builds MkDocs separately and publishes the online documentation. Local commands and the shared workspace `pre-push` hook provide feedback before remote checks.
 
-PR 与 `main` 推送会运行全仓 Ruff 代码和格式检查、严格类型检查、完整 pytest 测试集及 `pip-audit`。Rust job 会单独构建可选 wheel，并在 `TICKNET_REQUIRE_RUST=1` 下运行 microstructure 测试。在线文档 workflow 使用 strict 模式构建 MkDocs 并检查链接。维护性预算由本地 `maintainability` 模式检查。
+Pull requests and main-branch pushes run repository-wide Ruff lint and formatting, strict type checks, the full pytest suite, and `pip-audit`. The Rust job builds the optional wheel separately and runs microstructure tests with `TICKNET_REQUIRE_RUST=1`. The documentation workflow uses strict MkDocs mode and checks links. The local `maintainability` mode checks the maintainability budget.
 
-## 类型检查范围
+## Type-check scope
 
-`scripts/dev/run_tests.sh typecheck` 和 `typecheck-release` 会按 `pyproject.toml` 的 `[tool.ty.src]` 检查配置范围，并启用 `--error-on-warning`。当前范围包括 `portfolio-backtester`、orchestration、execution、alpha、microstructure 和 `scripts/`。CI 运行相同的严格检查，不传入缩小后的路径列表。
+`scripts/dev/run_tests.sh typecheck` and `typecheck-release` use the configured `[tool.ty.src]` scope in `pyproject.toml` and enable `--error-on-warning`. The current scope includes `portfolio-backtester`, orchestration, execution, alpha, microstructure, and `scripts/`. CI runs the same strict check without passing a narrower path list.
 
-只有两个可选依赖保留逐文件导入例外：Qlib 后端需要 `qlib` extra，Rich 渲染器在没有 Rich 时使用纯文本输出。其他已配置源码的类型诊断都会阻断检查。
+Only two optional-dependency imports retain file-level exceptions: the Qlib backend requires the `qlib` extra, and the Rich renderer falls back to plain text when Rich is absent. Other diagnostics in configured source files fail the check.
 
-## 测试重点
+## Test coverage priorities
 
-当前测试集主要覆盖：
+The current suite primarily covers:
 
-- Top-K 组合构造和收益计算
-- `BacktestSpec` 序列化和历史入口一致性
-- 持仓回放和退出规则
-- 成本、滑点和交易约束
-- 执行容量模拟
-- 持仓契约和策略配置
-- A 股整手约束
-- benchmark、容量、暴露和报告
-- 流动性代理、缓冲区和换手限制
-- 框架中立的订单状态、重复事件和乱序事件归约
-- 规范化后端结果与固定对照场景
-- 包导入和跨仓库依赖隔离
-- 维护性指标脚本
+- Top-K portfolio construction and return calculations
+- `BacktestSpec` serialization and consistency with historical entry points
+- Position replay and exit rules
+- Costs, slippage, and trading constraints
+- Execution-capacity simulation
+- Position contracts and strategy configuration
+- A-share board-lot constraints
+- Benchmarks, capacity, exposures, and reports
+- Liquidity proxies, buffers, and turnover limits
+- Framework-neutral order states, duplicate events, and out-of-order event reduction
+- Normalized backend results and fixed reference scenarios
+- Package imports and cross-repository dependency isolation
+- Maintainability metric scripts
 
-新增公开入口或修改输出契约时，应增加行为测试、固定对照样例和导入测试。
+When adding a public entry point or changing an output contract, add behavioral tests, fixed reference cases, and import tests.

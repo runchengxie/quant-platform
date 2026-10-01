@@ -49,13 +49,14 @@ def test_docs_use_concise_chinese_style() -> None:
 
 def test_testing_docs_match_script_modes() -> None:
     script = (ROOT / "scripts" / "dev" / "run_tests.sh").read_text(encoding="utf-8")
-    docs = (ROOT / "docs" / "testing.md").read_text(encoding="utf-8")
+    docs = (ROOT / "docs" / "testing.zh-CN.md").read_text(encoding="utf-8")
 
     for mode in (
         "all",
         "fast",
         "unit",
         "coverage",
+        "contracts-coverage",
         "lint",
         "format",
         "typecheck",
@@ -74,7 +75,7 @@ def test_coverage_mode_scans_project_sources_and_dependency_is_installed() -> No
         *pyproject["dependency-groups"]["dev"],
     ]
 
-    assert "--cov=packages --cov=scripts" in script
+    assert "--cov=packages --cov=scripts --cov=research_contracts" in script
     assert any(dependency.startswith("pytest-cov") for dependency in dev_dependencies)
 
 
@@ -109,13 +110,40 @@ def test_ty_is_the_only_configured_type_checker() -> None:
 
 
 def test_docs_record_current_automation_status() -> None:
-    docs = (ROOT / "docs" / "testing.md").read_text(encoding="utf-8")
+    docs = (ROOT / "docs" / "testing.zh-CN.md").read_text(encoding="utf-8")
 
     assert "`.github/workflows/ci.yml`" in docs
     assert "PR 和主分支推送时运行公开质量门禁" in docs
     assert "`.github/workflows/docs.yml`" in docs
     assert (ROOT / ".github" / "workflows" / "ci.yml").is_file()
     assert (ROOT / ".github" / "workflows" / "docs.yml").is_file()
+
+
+def test_english_testing_guide_matches_current_scripts_and_ci() -> None:
+    docs = (ROOT / "docs" / "testing.md").read_text(encoding="utf-8")
+    script = (ROOT / "scripts" / "dev" / "run_tests.sh").read_text(encoding="utf-8")
+    ci = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+
+    assert "Language: English · [简体中文](testing.zh-CN.md)" in docs
+    for mode in (
+        "all",
+        "fast",
+        "unit",
+        "coverage",
+        "contracts-coverage",
+        "lint",
+        "format",
+        "format-all",
+        "typecheck",
+        "typecheck-release",
+        "maintainability",
+    ):
+        assert f"`{mode}`" in docs
+        assert mode in script
+    assert "Python 3.12 and 3.13" in docs
+    assert "3.12" in ci and "3.13" in ci
+    assert "TICKNET_REQUIRE_RUST=1" in docs
+    assert "TICKNET_REQUIRE_RUST=1" in ci
 
 
 def test_docs_distinguish_current_backends_from_history_and_plans() -> None:

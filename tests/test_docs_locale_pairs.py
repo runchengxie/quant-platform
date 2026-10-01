@@ -19,6 +19,7 @@ PAIRS = (
     ("concepts/execution-costs.md", "concepts/execution-costs.zh-CN.md"),
     ("concepts/cost-breakdown.md", "concepts/cost-breakdown.zh-CN.md"),
     ("reference/outputs/positions.md", "reference/outputs/positions.zh-CN.md"),
+    ("testing.md", "testing.zh-CN.md"),
 )
 
 

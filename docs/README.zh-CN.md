@@ -42,7 +42,7 @@
 17. [回测输出契约](reference/outputs/backtest-outputs.md)
 18. [执行分配参考资产](reference/allocation-reference.zh-CN.md)
 19. [公开 API](reference/public-api.zh-CN.md)
-20. [测试和质量检查](testing.md)
+20. [测试和质量检查](testing.zh-CN.md) · [English](testing.md)
 21. [微观结构开发说明](microstructure/README.md)
 22. [可选 Rust 模拟内核](development/microstructure-rust.md)
 23. [会计与执行路线图](governance/accounting-execution-roadmap.md)

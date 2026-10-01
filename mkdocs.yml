@@ -177,12 +177,15 @@ nav:
           - 回测输出: reference/outputs/backtest-outputs.md
       - 简体中文:
           - 持仓输出约定: reference/outputs/positions.zh-CN.md
-  - Development (Chinese originals; translation in progress):
-      - 测试: testing.md
-      - 网格辅助工具: grid-support.md
-      - 命名空间迁移: namespace-migration.md
-      - 归属迁移: ownership-migration.md
-      - 发布审计: orchestration/publication-audit.md
+  - Development:
+      - Testing and quality checks: testing.md
+      - Chinese originals (translation in progress):
+          - 网格辅助工具: grid-support.md
+          - 命名空间迁移: namespace-migration.md
+          - 归属迁移: ownership-migration.md
+          - 发布审计: orchestration/publication-audit.md
+      - 简体中文:
+          - 测试和质量检查: testing.zh-CN.md
   - Governance and migration (Chinese originals; translation in progress):
       - 历史迁移边界: migration/research-workspace-sunset.md
       - quant-market-research 边界: migration/market-research-boundary.md

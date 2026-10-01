@@ -37,7 +37,7 @@ These guides use synthetic data and small examples. They help you run the full f
 17. [Backtest output contract](reference/outputs/backtest-outputs.md)
 18. [Execution allocation reference assets](reference/allocation-reference.md)
 19. [Public API](reference/public-api.md)
-20. [Testing and quality checks](testing.md)
+20. [Testing and quality checks](testing.md) · [简体中文](testing.zh-CN.md)
 21. [Microstructure development](microstructure/README.md)
 22. [Optional Rust simulation kernel](development/microstructure-rust.md)
 23. [Accounting and execution roadmap](governance/accounting-execution-roadmap.md)
