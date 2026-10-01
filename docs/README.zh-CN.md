@@ -38,7 +38,7 @@
 13. [成本口径](concepts/cost-breakdown.zh-CN.md)
 14. [回测结果解读](concepts/backtest-interpretation.md)
 15. [市场基准阶梯](concepts/benchmark-ladder.md)
-16. [持仓输出约定](reference/outputs/positions.md)
+16. [持仓输出约定](reference/outputs/positions.zh-CN.md)
 17. [回测输出契约](reference/outputs/backtest-outputs.md)
 18. [执行分配参考资产](reference/allocation-reference.zh-CN.md)
 19. [公开 API](reference/public-api.zh-CN.md)

@@ -51,7 +51,7 @@ cost_drag = gross_returns - net_returns
 | `turnover` | 该持有期换手率 |
 | `positions` | 该持有期使用的目标持仓 |
 
-不同后端或配置可能附加更多字段。需要完整输出契约时，继续阅读[回测输出契约](../reference/outputs/backtest-outputs.md)和[持仓输出约定](../reference/outputs/positions.md)。
+不同后端或配置可能附加更多字段。需要完整输出契约时，继续阅读[回测输出契约](../reference/outputs/backtest-outputs.md)和[持仓输出约定](../reference/outputs/positions.zh-CN.md)。
 
 ## 阅读结果时先问三个问题
 

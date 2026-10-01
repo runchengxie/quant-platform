@@ -1,39 +1,41 @@
-# 持仓输出约定
+# Position output contract
 
-本页说明 `positions_by_rebalance.csv` 的稳定字段、校验行为和下游使用方式。
+Language: English · [简体中文](positions.zh-CN.md)
 
-## 标准文件名
+This page describes the stable fields, validation behavior, and downstream use of `positions_by_rebalance.csv`. The contract and writer are implemented in [`contracts.py`](https://github.com/runchengxie/quant-platform/blob/main/packages/portfolio-backtester/src/portfolio_backtester/contracts.py) and [`positions_artifact.py`](https://github.com/runchengxie/quant-platform/blob/main/packages/portfolio-backtester/src/portfolio_backtester/positions_artifact.py); behavior is covered by [contract tests](https://github.com/runchengxie/quant-platform/blob/main/tests/test_contracts.py) and [artifact tests](https://github.com/runchengxie/quant-platform/blob/main/tests/test_positions_artifact.py).
 
-组合构造结果的标准文件名为：
+## Canonical file and contract
+
+The canonical file name is:
 
 ```text
 positions_by_rebalance.csv
 ```
 
-对应的契约名称为 `portfolio_backtester.positions_by_rebalance`，当前版本为 `1`。
+Its contract name is `portfolio_backtester.positions_by_rebalance`, schema version `1`.
 
-## 必需字段
+## Required fields
 
-| 字段 | 类型要求 | 含义 |
+| Field | Validation | Meaning |
 | --- | --- | --- |
-| `rebalance_date` | 可以解析为日期 | 目标持仓对应的调仓日期 |
-| `symbol` | 非空字符串 | 证券代码 |
-| `weight` | 可以转换为数值 | 目标权重 |
+| `rebalance_date` | Must parse as a date | Rebalance date for the target positions |
+| `symbol` | Must be non-empty after string conversion | Security identifier |
+| `weight` | Must be convertible to numeric | Target weight |
 
-日期可以使用 `YYYYMMDD`、`YYYY-MM-DD` 或其他可以由 pandas 解析的格式。为了方便跨系统交换，建议统一使用 `YYYYMMDD`。
+Dates in `YYYYMMDD`, `YYYY-MM-DD`, and other pandas-parseable formats are accepted. Use `YYYYMMDD` for consistent cross-system exchange.
 
-## 常用可选字段
+## Common optional fields
 
-| 字段 | 含义 |
+| Field | Meaning |
 | --- | --- |
-| `entry_date` | 计划建仓日期 |
-| `side` | 持仓方向，例如 `long` |
-| `signal` | 构造持仓时使用的分数 |
-| `rank` | 证券在当期候选集中的排序 |
+| `entry_date` | Planned entry date |
+| `side` | Position direction, such as `long` |
+| `signal` | Score used when constructing positions |
+| `rank` | Security rank in that rebalance's candidate set |
 
-专用组合构造器可以增加额外字段，例如组合分组、主题、行业或模型版本。下游读取程序应保留未知字段，并只依赖已经约定的字段。
+Specialized portfolio constructors may add fields such as sleeve, theme, industry, or model version. Readers should preserve unknown columns and depend only on agreed fields.
 
-## 示例
+## Example
 
 ```csv
 rebalance_date,entry_date,symbol,weight,side,signal,rank
@@ -42,27 +44,27 @@ rebalance_date,entry_date,symbol,weight,side,signal,rank
 20260102,20260105,000002.SZ,0.25,long,0.98,3
 ```
 
-## 当前校验范围
+## Validation scope
 
-`validate_positions_by_rebalance_frame` 会检查：
+`validate_positions_by_rebalance_frame` checks:
 
-- 三个必需字段是否存在
-- `rebalance_date` 是否可以解析为日期
-- `symbol` 是否为空
-- `weight` 是否可以转换为数值
+- Whether the three required columns exist
+- Whether `rebalance_date` parses as a date
+- Whether `symbol` is non-empty
+- Whether `weight` can be converted to numeric
 
-当前契约不会自动检查：
+The contract does not automatically check:
 
-- 同一日期和证券是否重复
-- 单期权重和是否等于 1
-- 权重是否为负数
-- `side` 是否只包含允许值
-- `entry_date` 是否晚于调仓日期
-- 证券代码是否符合特定市场格式
+- Duplicate symbols on the same date
+- Whether weights sum to 1 for each rebalance
+- Negative weights
+- Whether `side` contains only allowed values
+- Whether `entry_date` is after the rebalance date
+- Whether symbols match a specific market format
 
-这些规则取决于组合类型和调用方需求。需要严格约束时，应在生成持仓的模块中补充校验，并为规则添加测试。
+These rules depend on portfolio type and caller requirements. Add stricter checks in the position-producing module and cover them with tests when needed.
 
-可以使用以下函数进行校验：
+Use the validation helpers as follows:
 
 ```python
 from portfolio_backtester import (
@@ -74,13 +76,11 @@ issues = validate_positions_by_rebalance_frame(positions)
 assert_positions_by_rebalance_frame(positions)
 ```
 
-`validate_positions_by_rebalance_frame` 返回问题列表。`assert_positions_by_rebalance_frame` 在发现问题时抛出 `ValueError`。
+`validate_positions_by_rebalance_frame` returns a list of issues. `assert_positions_by_rebalance_frame` raises `ValueError` when the frame is invalid.
 
-## 写入与 artifact envelope v2
+## Writing the artifact and envelope v2
 
-`write_positions_by_rebalance_artifact` 一次写出 `positions_by_rebalance.csv` 和 companion
-`positions_by_rebalance.meta.json`。meta JSON 在 `artifact_envelope` 键下携带
-`research.artifact-envelope.v2`，envelope 的 `content_sha256` 是写出 CSV 文件的 SHA-256。
+`write_positions_by_rebalance_artifact` writes `positions_by_rebalance.csv` and the companion `positions_by_rebalance.meta.json`. Under its `artifact_envelope` key, the metadata carries a `research.artifact-envelope.v2` envelope whose `content_sha256` is the SHA-256 of the written CSV.
 
 ```python
 from portfolio_backtester import write_positions_by_rebalance_artifact
@@ -94,54 +94,51 @@ csv_path, meta_path = write_positions_by_rebalance_artifact(
 )
 ```
 
-`run_id` 为必填。`configuration` 和 `lineage` 为可选，分别进入
-`configuration_sha256` 与 envelope 的 lineage 字段。envelope 只作为附加键写入，读取方可以
-继续用兼容 reader 读取不携带 envelope 的 v1 metadata。
+`run_id` is required. `configuration` and `lineage` are optional; they are used for `configuration_sha256` and the envelope lineage, respectively. The envelope is an additional metadata field alongside `artifact_type`, `schema_version`, file name, row count, and required-column list.
 
-## 持仓回放时的处理
+## How position replay uses the frame
 
-`run_position_backtest` 会先应用基础契约校验，然后执行以下处理：
+`run_position_backtest` first applies the base contract validation and then:
 
-- 把 `symbol` 转为字符串
-- 把 `weight` 转为数值
-- 如果存在 `side`，只保留值为 `long` 的行
-- 只保留正权重持仓
-- 同一调仓日的重复证券会在回放阶段按证券合计权重
-- 默认把有效权重重新归一化
-- `preserve_gross_exposure=True` 时允许保留现金权重
+- Converts `symbol` to string and `weight` to numeric
+- If a `side` column is present, keeps rows whose value is `long` (case-insensitive)
+- Keeps only positive weights
+- Aggregates duplicate symbols within a rebalance date by summing their weights
+- Renormalizes the remaining weights by default
+- Allows under-invested weights to remain as cash when `preserve_gross_exposure=True`
 
-`PositionBacktestConfig` 当前仍保留 `long_only` 字段，但 `long_only=False` 不会启用空头回放。标准化步骤仍只保留 `side=long` 和正权重，字段值只进入结果摘要。需要多空分数回测时，应使用支持多空构造的分数驱动入口。修改这项行为需要同步升级实现、测试和本页。
+`PositionBacktestConfig` still contains `long_only`, but `long_only=False` does not enable short replay. Normalization still keeps only `side=long` and positive weights; the flag is recorded in the result summary. Use a score-driven entry point that supports long-short construction when that is required. Changing this behavior requires coordinated implementation, test, and contract updates.
 
-持有期由单独的 `periods` 表决定。该表至少需要 `rebalance_date`、`entry_date` 和 `exit_date`。持仓文件中的 `entry_date` 主要用于记录和跨系统交换，回放时仍以 `periods` 表为准。
+Holding periods come from a separate `periods` table, which must contain at least `rebalance_date`, `entry_date`, and `exit_date`. The `entry_date` in the positions file is primarily descriptive and for interchange; replay uses the `periods` table.
 
-## 价格缺失
+## Missing prices
 
-某个持有期内缺少开仓价或退出价时，回放会移除缺少有效价格的证券。默认情况下，剩余持仓权重会重新归一化。
+If an entry or exit price cannot be resolved under the configured price and exit policies, the affected position is removed from that period. By default, the remaining weights are renormalized.
 
-这种处理会改变实际参与回测的证券数量。分析结果时应检查：
+This changes the number of securities included in the replay. Inspect the period outputs for:
 
 - `missing_price_count`
 - `position_count`
 - `gross_exposure`
 - `cash_weight`
 
-需要保留未投资现金时，可以设置：
+To retain uninvested cash, configure:
 
 ```python
 PositionBacktestConfig(preserve_gross_exposure=True)
 ```
 
-## 其他文件名
+## Other file names
 
-`positions_current.csv`、`trades_by_rebalance.csv` 和 `latest.json` 可能出现在上层任务编排或发布流程中。它们目前不属于本包的稳定输出契约。
+`positions_current.csv`, `trades_by_rebalance.csv`, and `latest.json` may be produced by higher-level orchestration or publication flows. They are not stable output contracts of this package.
 
-公共集成应优先依赖 `positions_by_rebalance.csv` 和契约校验函数。上层项目可以定义自己的快照、交易差异和便利指针，但应单独记录字段和更新规则。
+Public integrations should prefer `positions_by_rebalance.csv` and the contract validation helpers. Higher-level projects may define their own snapshots, trade deltas, and convenience pointers, but should document their fields and update rules separately.
 
-## 兼容性建议
+## Compatibility guidance
 
-- 新增可选字段通常可以保持向后兼容
-- 删除或改名必需字段会破坏契约
-- 修改日期含义、权重含义或重复行处理方式时，应升级契约版本
-- 写出文件前保持列名稳定
-- 保存生成持仓所使用的模型版本和参数
-- 在 PR 中说明对下游读取程序的影响
+- Adding optional fields is usually backward-compatible.
+- Removing or renaming required fields breaks the contract.
+- Changing date meaning, weight meaning, or duplicate-row handling requires a contract-version update.
+- Keep column names stable when writing files.
+- Record the model version and parameters used to generate positions.
+- Document impacts on downstream readers in the pull request.

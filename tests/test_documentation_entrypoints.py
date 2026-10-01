@@ -149,7 +149,7 @@ def test_docs_record_current_cost_and_position_limitations() -> None:
     execution_cost_docs = (ROOT / "docs" / "concepts" / "execution-costs.zh-CN.md").read_text(
         encoding="utf-8"
     )
-    positions_docs = (ROOT / "docs" / "reference" / "outputs" / "positions.md").read_text(
+    positions_docs = (ROOT / "docs" / "reference" / "outputs" / "positions.zh-CN.md").read_text(
         encoding="utf-8"
     )
 
@@ -167,6 +167,11 @@ def test_docs_record_current_cost_and_position_limitations() -> None:
     assert "DetailedTradeFeeModel" in english_execution_cost_docs
     assert "does not calculate live quotes" in english_execution_cost_docs
     assert "`long_only=False` 不会启用空头回放" in positions_docs
+    english_positions_docs = (ROOT / "docs" / "reference" / "outputs" / "positions.md").read_text(
+        encoding="utf-8"
+    )
+    assert "research.artifact-envelope.v2" in english_positions_docs
+    assert "does not enable short replay" in english_positions_docs
 
 
 def test_docs_record_public_private_boundary_and_index_new_pages() -> None:
