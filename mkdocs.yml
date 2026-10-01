@@ -170,6 +170,7 @@ nav:
           - Configuration resolution: orchestration/reference/configuration.md
           - Runtime helpers: orchestration/reference/runtime-helpers.md
           - 简体中文:
+              - CLI 辅助函数: orchestration/reference/cli-helpers.zh-CN.md
               - 配置解析: orchestration/reference/configuration.zh-CN.md
   - References:
       - Public API: reference/public-api.md

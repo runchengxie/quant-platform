@@ -173,6 +173,33 @@ def test_orchestration_configuration_docs_match_loader_and_tests() -> None:
         assert behavior in tests
 
 
+def test_cli_helpers_docs_match_public_helpers_and_behavior_tests() -> None:
+    docs = (ROOT / "docs" / "orchestration" / "reference" / "cli-helpers.md").read_text(
+        encoding="utf-8"
+    )
+    implementation = (
+        ROOT / "packages" / "orchestration" / "src" / "strategy_pipeline" / "cli_helpers.py"
+    ).read_text(encoding="utf-8")
+    tests = (ROOT / "tests" / "orchestration" / "test_cli_helpers.py").read_text(
+        encoding="utf-8"
+    )
+
+    assert "Language: English · [简体中文](cli-helpers.zh-CN.md)" in docs
+    for helper in (
+        "format_bytes",
+        "render_pct_bar",
+        "coerce_float",
+        "append_arg",
+        "append_repeat_args",
+        "append_bool_switch",
+        "append_passthrough",
+    ):
+        assert f"`{helper}`" in docs
+        assert f'"{helper}"' in implementation
+    assert "def test_cli_value_formatters" in tests
+    assert "def test_cli_argument_helpers" in tests
+
+
 def test_docs_distinguish_current_backends_from_history_and_plans() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")

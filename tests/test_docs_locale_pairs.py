@@ -24,6 +24,10 @@ PAIRS = (
         "orchestration/reference/configuration.md",
         "orchestration/reference/configuration.zh-CN.md",
     ),
+    (
+        "orchestration/reference/cli-helpers.md",
+        "orchestration/reference/cli-helpers.zh-CN.md",
+    ),
 )
 
 
