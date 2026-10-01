@@ -286,6 +286,32 @@ def test_control_plane_docs_match_contracts_runner_and_failure_tests() -> None:
     assert "require_release_protocol=False" in docs
 
 
+def test_evaluation_docs_match_delegation_and_empty_result_contract() -> None:
+    docs = (ROOT / "docs" / "orchestration" / "evaluation.md").read_text(encoding="utf-8")
+    implementation = (
+        ROOT / "packages" / "orchestration" / "src" / "strategy_pipeline" / "pipeline" / "eval.py"
+    ).read_text(encoding="utf-8")
+    tests = (ROOT / "tests" / "orchestration" / "test_pipeline_eval.py").read_text(encoding="utf-8")
+
+    assert "Language: English · [简体中文](evaluation.zh-CN.md)" in docs
+    for behavior in (
+        "_score_and_record_period_eval_metrics_impl(",
+        "_record_period_backtest_nav_outputs(",
+        "_record_period_scored_data_and_exposure(",
+        "if test_df_full is None or test_df_full.empty:",
+        "allow_live_fallback: bool = True",
+    ):
+        assert behavior in implementation
+    for result_field in (
+        '"ic_series"',
+        '"bt_net_series"',
+        '"positions_by_rebalance"',
+        '"backtest_rebalance_dates"',
+    ):
+        assert result_field in tests or result_field in implementation
+    assert "test_empty_period_result_preserves_public_result_shape" in tests
+
+
 def test_docs_distinguish_current_backends_from_history_and_plans() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")

@@ -7,4 +7,4 @@
 
 当前仓库继续提供 `strategy_pipeline` Python 命名空间和 `strategy-pipeline` CLI。它们是兼容名称，不代表仓库仍依赖旧的 `strategy-pipeline` 项目。
 
-更多内容： [控制平面 API](control-plane.zh-CN.md) · [English](control-plane.md)、[评估流程](evaluation.md)、[产物发布](output-artifacts.md)、[质量闸门](operations/quality-gates.md)和[参考资料](reference/README.zh-CN.md)。
+更多内容： [控制平面 API](control-plane.zh-CN.md) · [English](control-plane.md)、[评估流程](evaluation.zh-CN.md) · [English](evaluation.md)、[产物发布](output-artifacts.md)、[质量闸门](operations/quality-gates.md)和[参考资料](reference/README.zh-CN.md)。

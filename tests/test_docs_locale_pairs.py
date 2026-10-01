@@ -17,6 +17,7 @@ PAIRS = (
     ("concepts/backtest-spec.md", "concepts/backtest-spec.zh-CN.md"),
     ("orchestration/README.md", "orchestration/README.zh-CN.md"),
     ("orchestration/control-plane.md", "orchestration/control-plane.zh-CN.md"),
+    ("orchestration/evaluation.md", "orchestration/evaluation.zh-CN.md"),
     ("orchestration/reference/README.md", "orchestration/reference/README.zh-CN.md"),
     ("data/README.md", "data/README.zh-CN.md"),
     ("concepts/execution-costs.md", "concepts/execution-costs.zh-CN.md"),

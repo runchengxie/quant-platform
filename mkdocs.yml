@@ -151,6 +151,7 @@ nav:
       - English:
           - Overview: orchestration/README.md
           - Control-plane API: orchestration/control-plane.md
+          - Evaluation orchestration: orchestration/evaluation.md
           - References:
               - Reference overview: orchestration/reference/README.md
               - CLI helpers: orchestration/reference/cli-helpers.md
@@ -158,7 +159,7 @@ nav:
       - Chinese originals (translation in progress):
           - 编排概览: orchestration/README.zh-CN.md
           - 控制平面: orchestration/control-plane.zh-CN.md
-          - 评估: orchestration/evaluation.md
+          - 评估: orchestration/evaluation.zh-CN.md
           - 输出产物: orchestration/output-artifacts.md
           - 接入负责人: orchestration/integrating-an-owner.md
           - 目标文件: orchestration/targets.md

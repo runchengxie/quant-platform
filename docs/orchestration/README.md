@@ -19,11 +19,11 @@ The installable `strategy-pipeline` CLI is registered by the root project. Its c
 
 ## English documentation
 
+- [Evaluation orchestration](evaluation.md)
 - [Reference pages](reference/README.md)
 
 ## Chinese originals (translation in progress)
 
-- [Evaluation pipeline](evaluation.md)
 - [Output artifacts](output-artifacts.md), [output orchestration](output-orchestration.md), and [run summaries](output-summary.md)
 - [Owner integration](integrating-an-owner.md) and [target export](targets.md)
 - [Quality gates](operations/quality-gates.md)
