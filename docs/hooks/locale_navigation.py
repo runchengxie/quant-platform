@@ -26,6 +26,7 @@ ENGLISH_PAGES = {
     "concepts/backtest-configuration.md",
     "concepts/backtest-spec.md",
     "concepts/canonical-backtest-bundle.en.md",
+    "concepts/backtest-interpretation.en.md",
     "concepts/execution-costs.md",
     "concepts/cost-breakdown.md",
     "concepts/lean-differential-spike-2026-09.md",

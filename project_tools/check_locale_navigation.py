@@ -23,6 +23,7 @@ def main() -> None:
     assert "guides/point-in-time-data/" in english
     assert "guides/sequenced-execution/" in english
     assert "canonical-backtest-bundle.en/" in english
+    assert "backtest-interpretation.en/" in english
     assert "Execution simulation" in english_guide
     assert "指南（中文原文）" not in english_guide
     for navigation in (chinese_companion, chinese_original):
@@ -36,6 +37,7 @@ def main() -> None:
     assert "reference/allocation-reference.zh-CN/" in chinese_companion
     assert "data/README.zh-CN/" in chinese_companion
     assert "concepts/canonical-backtest-bundle/" in chinese_companion
+    assert "concepts/backtest-interpretation/" in chinese_companion
 
 
 if __name__ == "__main__":

@@ -1,5 +1,7 @@
 # 回测结果解读
 
+语言：简体中文 · [English](backtest-interpretation.en.md)
+
 本页说明组合回测侧的结果如何解读。预测质量、IC、CPCV、PBO 和特征重要度的解读见
 `quant-market-research` 的结果解读文档。通用运行摘要和产物生命周期见
 [输出摘要](../orchestration/output-summary.md)，跨项目字段约定见[公开 API 与产物契约](../reference/public-api.md)。
@@ -39,7 +41,7 @@
 - `avg_holding`：平均持有时间，通常近似为交易日数。
 - `periods_per_year`：年化换算用的周期数。
 - `avg_turnover`：每次调仓平均换手。
-- `avg_cost_drag`：每期平均被成本拖累多少收益，单位通常是基点。
+- `avg_cost_drag`：每期平均模拟成本。该字段按小数比例保存，例如 `0.001` 表示 0.1%。部分报告会转换为百分数显示。
 
 ## 风险指标
 
@@ -64,8 +66,8 @@
 - `recovery_time` / `recovery_time_days`：从低点回到前高的周期数或自然日数。
 - `skew`：收益分布偏度。明显为负时，要警惕突发大亏。
 - `kurtosis`：收益分布峰度。越高说明极端波动更常见。
-- `var_95`：历史最差 5% 情况下的单期收益下限。
-- `cvar_95`：落入最差 5% 后的平均损失，通常比 `var_95` 更保守。
+- `var_95`：单期收益分布的第 5 百分位数。
+- `cvar_95`：收益小于或等于 `var_95` 的观测值均值。这两个数描述历史样本，不代表未来损失上限。
 
 ## Benchmark 与主动收益
 
@@ -89,23 +91,23 @@
 
 - `tracking_error`：策略收益和基准收益的偏离波动。
 - `information_ratio`：主动收益相对主动风险是否划算。
-- `beta`：策略和基准的系统性联动。
-- `alpha`：剥离 beta 后的独立超额收益。
+- `beta`：策略收益与基准收益协方差相对基准收益方差的比值。
+- `alpha`：按拟合 beta 调整后的年化估计值。
 - `corr`：策略收益和基准收益的相关性。
-- `active_total_return`：复利后相对基准的累计超额收益。
+- `active_total_return`：策略累计收益相对基准累计收益的复利差值。
+
+这些指标使用策略与基准都有数据的配对观测。比较回测前应核对基准定义和覆盖范围。
 
 ## 风格与行业暴露
 
-如果回测有持仓，且 panel 里有可解析的暴露因子，系统会输出风格与行业暴露分析。暴露字段衡量
-组合相对基准在风格因子和行业维度上的偏离。`exposure-screen` 协议用于检查组合是否在某些维度过度
-集中。
+如果回测包含持仓，且输入面板有可解析的暴露列，系统可能写出风格与行业暴露文件。这些文件描述组合暴露，不表示系统执行了中性化。`exposure-screen` 用于单独检查特定维度的集中情况。
 
 ## 滚动 Sharpe
 
-`summary.json -> backtest.rolling_sharpe` 输出滚动 Sharpe，衡量收益稳定性随时间的变化。滚动
-研究统计的实现在 `alpha_research.recency_diagnostics`，本页只解释回测产物侧的含义。
+`summary.json -> backtest.rolling_sharpe` 记录滚动 Sharpe 摘要和序列文件路径，窗口设置位于 `windows_months`。它展示不同历史窗口的变化，不代表独立样本或未来稳定性保证。滚动研究统计的实现在 `alpha_research.recency_diagnostics`。
 
 ## 常见误读
 
-- 分桶 IC、暴露分析和容量压力测试各看一件事，不要混在一起下结论。
-- `hit_rate` 是辅助指标，不能替代收益和风险判断。
+- 分桶 IC、暴露分析和容量压力测试回答不同问题，应分开解读。
+- 预测侧的 `hit_rate` 不能替代回测收益、风险、成本和基准分析。
+- 指标本身不能验证数据质量、点时可得性或执行假设。这些输入需要单独核对。
