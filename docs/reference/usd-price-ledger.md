@@ -14,35 +14,63 @@ from decimal import Decimal as D
 from research_contracts import ArtifactRef, ResearchClock
 from portfolio_backtester.usd_ledger import run_usd_price_replay
 from portfolio_backtester.usd_ledger_models import (
-    USDInstrument, USDPriceObservation, USDRebalanceDecision,
-    USDReplayConfig, USDReplayRequest,
+    USDInstrument,
+    USDPriceObservation,
+    USDRebalanceDecision,
+    USDReplayConfig,
+    USDReplayRequest,
 )
+
 
 def t(day, hour=0):
     return datetime(2026, 1, day, hour, tzinfo=UTC)
+
 
 ref = ArtifactRef("synthetic-prices", "a" * 64)
 instrument = USDInstrument("example", "etf", "USD", 1, "synthetic-session.v1")
 prices = tuple(
     USDPriceObservation(
-        "example", time, time, value, "currency_per_share", ref,
-        "verified", "synthetic-session.v1", True,
+        "example",
+        time,
+        time,
+        value,
+        "currency_per_share",
+        ref,
+        "verified",
+        "synthetic-session.v1",
+        True,
     )
     for time, value in ((t(1), D("10")), (t(1, 1), D("10")), (t(3), D("20")))
 )
 clock = ResearchClock(
-    "UTC", t(1), t(1), t(1), t(3), "synthetic-next-mark.v1", "synthetic.v1",
-    t(1, 1), t(1, 1), t(1, 1),
+    "UTC",
+    t(1),
+    t(1),
+    t(1),
+    t(3),
+    "synthetic-next-mark.v1",
+    "synthetic.v1",
+    t(1, 1),
+    t(1, 1),
+    t(1, 1),
 )
 config = USDReplayConfig(
-    D("100"), "fractional", D("0"), D("0"), D("0"),
-    timedelta(days=5), timedelta(days=5), {},
+    D("100"),
+    "fractional",
+    D("0"),
+    D("0"),
+    D("0"),
+    timedelta(days=5),
+    timedelta(days=5),
+    {},
 )
 request = USDReplayRequest(
-    (instrument,), prices, (),
-    (USDRebalanceDecision("decision-1", clock, {"example": D("0.5")},
-                          {"example": t(1, 1)}),),
-    (t(1), t(2), t(3)), config,
+    (instrument,),
+    prices,
+    (),
+    (USDRebalanceDecision("decision-1", clock, {"example": D("0.5")}, {"example": t(1, 1)}),),
+    (t(1), t(2), t(3)),
+    config,
 )
 result = run_usd_price_replay(request)
 assert list(result.daily.nav_usd) == [D("100"), D("100"), D("150")]
