@@ -4,7 +4,7 @@ import re
 from collections.abc import Mapping
 from datetime import datetime, timedelta
 from decimal import Decimal, localcontext
-from typing import Any
+from typing import Any, cast
 
 from research_contracts import ArtifactRef, ResearchClock
 
@@ -180,6 +180,9 @@ def _validate_decisions(request: USDReplayRequest, instruments: dict) -> None:
             and clock.execution_window_end_at is not None,
             "explicit execution bounds required",
         )
+        earliest = cast(datetime, clock.earliest_order_at)
+        start = cast(datetime, clock.execution_window_start_at)
+        end = cast(datetime, clock.execution_window_end_at)
         require(
             previous_decision is None or clock.decision_at > previous_decision,
             "decision times must increase",
@@ -189,13 +192,13 @@ def _validate_decisions(request: USDReplayRequest, instruments: dict) -> None:
             utc_time(time)
             require(
                 time > clock.decision_at
-                and time >= clock.earliest_order_at
-                and clock.execution_window_start_at <= time <= clock.execution_window_end_at,
+                and time >= earliest
+                and start <= time <= end,
                 "execution outside causal bounds",
             )
         require(
             request.valuation_times[0] <= clock.decision_at
-            and request.valuation_times[-1] >= clock.execution_window_end_at,
+            and request.valuation_times[-1] >= end,
             "valuation grid too short",
         )
         previous_decision, previous_end = clock.decision_at, clock.execution_window_end_at

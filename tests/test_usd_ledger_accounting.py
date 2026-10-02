@@ -1,8 +1,8 @@
 import pytest
+from usd_ledger_fixtures import D, config, instrument
 
 from portfolio_backtester.usd_ledger_accounting import settle_usd_rebalance, value_usd_book
 from portfolio_backtester.usd_ledger_models import USDValidationError
-from usd_ledger_fixtures import D, config, instrument
 
 
 def settle(q, cash, desired, *, marks=None, instruments=None, cfg=None, ids=None):
