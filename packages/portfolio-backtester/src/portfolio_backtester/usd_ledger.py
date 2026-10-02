@@ -50,6 +50,20 @@ HOLDING_COLUMNS = [
     "fx_rate",
     "fx_unit",
 ]
+MARK_METADATA_COLUMNS = [
+    c
+    for c in HOLDING_COLUMNS
+    if c
+    not in (
+        "valuation_at",
+        "instrument_id",
+        "quantity",
+        "local_price",
+        "usd_per_local",
+        "value_usd",
+        "weight",
+    )
+]
 TARGET_COLUMNS = [
     "decision_id",
     "decision_at",
@@ -59,9 +73,9 @@ TARGET_COLUMNS = [
     "execution_at",
     "local_price",
     "usd_per_local",
-    "price_source_ref",
-    "fx_source_ref",
-    "session_policy_id",
+    "decision_nav_usd",
+    "event_sequence",
+    *MARK_METADATA_COLUMNS,
 ]
 
 
@@ -127,6 +141,12 @@ class _Replay:
         self.transactions: list[dict] = []
         self.targets: list[dict] = []
         self.desired: dict[str, Decimal] = {}
+        self.events: list[dict] = []
+
+    def audit(self, kind: str, time: datetime, **fields) -> int:
+        sequence = len(self.events)
+        self.events.append({"kind": kind, "at": time, "sequence": sequence, **fields})
+        return sequence
 
     def mark(self, name: str, time: datetime, *, execution: bool = False) -> None:
         price = select_usd_price(self.request, name, time, execution=execution)
@@ -134,11 +154,28 @@ class _Replay:
         if execution and fx is not None:
             require(fx.availability_basis == "verified", "assumed FX cannot fund a transaction")
         quantity = self.quantities.get(name, ZERO)
+        old_price, old_rate = self.prices.get(name), self.rates.get(name)
+        local_pnl, fx_pnl = ZERO, ZERO
         if quantity:
-            self.local_pnl += (price.price - self.prices[name]) * self.rates[name] * quantity
-            self.fx_pnl += price.price * (rate - self.rates[name]) * quantity
+            local_pnl = (price.price - self.prices[name]) * self.rates[name] * quantity
+            fx_pnl = price.price * (rate - self.rates[name]) * quantity
+        self.local_pnl += local_pnl
+        self.fx_pnl += fx_pnl
         self.prices[name], self.rates[name] = price.price, rate
         self.metadata[name] = _mark_metadata(price, fx, self.instruments[name].currency)
+        self.audit(
+            "mark",
+            time,
+            instrument_id=name,
+            quantity_before=quantity,
+            old_price=old_price,
+            old_usd_per_local=old_rate,
+            local_price=price.price,
+            usd_per_local=rate,
+            local_price_pnl_usd=local_pnl,
+            fx_pnl_usd=fx_pnl,
+            **self.metadata[name],
+        )
 
     def mark_held(self, time: datetime) -> None:
         for name, quantity in self.quantities.items():
@@ -146,12 +183,14 @@ class _Replay:
                 self.mark(name, time)
 
     def decide(self, decision: USDRebalanceDecision, time: datetime) -> None:
+        for name, weight in sorted(decision.weights.items()):
+            if weight:
+                self.mark(name, time)
         _, nav = value_usd_book(self.quantities, self.cash, self.prices, self.rates)
+        sequence = self.audit("decision", time, decision_id=decision.decision_id, nav_usd=nav)
         self.desired = {}
         for name in sorted(self.instruments):
             weight = decision.weights.get(name, ZERO)
-            if weight:
-                self.mark(name, time)
             desired = nav * weight / (self.prices[name] * self.rates[name]) if weight else ZERO
             self.desired[name] = desired
             self.targets.append(
@@ -164,9 +203,11 @@ class _Replay:
                     "execution_at": decision.execution_times[name],
                     "local_price": self.prices.get(name) if weight else None,
                     "usd_per_local": self.rates.get(name) if weight else None,
-                    "price_source_ref": self.metadata[name]["price_source_ref"] if weight else None,
-                    "fx_source_ref": self.metadata[name]["fx_source_ref"] if weight else None,
+                    "decision_nav_usd": nav,
+                    "event_sequence": sequence,
+                    **(self.metadata[name] if weight else dict.fromkeys(MARK_METADATA_COLUMNS)),
                     "session_policy_id": self.instruments[name].session_policy_id,
+                    "currency": self.instruments[name].currency,
                 }
             )
 
@@ -190,6 +231,9 @@ class _Replay:
             self.costs += trade["costs_usd"]
             trade.update(self.metadata[trade["instrument_id"]])
             trade.update({"execution_at": time, "decision_id": decision.decision_id})
+            trade["event_sequence"] = self.audit(
+                "transaction", time, transaction_index=len(self.transactions)
+            )
             self.transactions.append(trade)
 
     def value(self, time: datetime) -> None:
@@ -228,6 +272,7 @@ class _Replay:
                 }
             )
         self.previous_nav = nav
+        self.audit("valuation", time, daily_index=len(self.daily) - 1)
         self.local_pnl, self.fx_pnl, self.costs = ZERO, ZERO, ZERO
 
     def result(self) -> USDReplayResult:
@@ -262,6 +307,7 @@ class _Replay:
                     ],
                     "execution_at",
                     "decision_id",
+                    "event_sequence",
                 ],
             ),
             pd.DataFrame(self.targets, columns=TARGET_COLUMNS),
@@ -278,6 +324,7 @@ class _Replay:
                 "fx_cost_bps": self.request.config.fx_cost_bps,
                 "allow_assumed_availability": self.request.config.allow_assumed_availability,
                 "source_refs": [{"artifact_id": i, "sha256": h} for i, h in sorted(refs)],
+                "events": self.events,
             },
         )
 

@@ -162,3 +162,31 @@ def test_negative_target_weight_cannot_publish(tmp_path):
     targets.loc[0, "target_weight"] = D("-0.5")
     with pytest.raises(USDValidationError):
         publish(tmp_path / "bundle", replace(r, targets=targets))
+
+
+def test_offsetting_price_and_fx_pnl_mutations_cannot_publish(tmp_path):
+    r = result()
+    daily = r.daily.copy(deep=True)
+    daily.loc[1, "local_price_pnl_usd"] = D("10")
+    daily.loc[1, "fx_pnl_usd"] = D("-10")
+    with pytest.raises(USDValidationError):
+        publish(tmp_path / "bundle", replace(r, daily=daily))
+
+
+def test_target_weight_must_match_frozen_decision_sizing(tmp_path):
+    r = result()
+    targets = r.targets.copy(deep=True)
+    targets.loc[0, "target_weight"] = D("0.9")
+    with pytest.raises(USDValidationError):
+        publish(tmp_path / "bundle", replace(r, targets=targets))
+
+
+def test_target_mark_source_must_belong_to_lineage(tmp_path):
+    r = result()
+    targets = r.targets.copy(deep=True)
+    targets.at[0, "price_source_ref"] = {
+        "artifact_id": "unlisted-decision-source",
+        "sha256": "b" * 64,
+    }
+    with pytest.raises(USDValidationError):
+        publish(tmp_path / "bundle", replace(r, targets=targets))

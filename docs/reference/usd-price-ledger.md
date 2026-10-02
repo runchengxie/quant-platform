@@ -145,8 +145,14 @@ Daily NAV equals cash plus marked inventory. Between mark updates, local P&L is
 before the update. Costs reduce NAV once. Arithmetic uses local Decimal precision
 50; reconciliation permits only relative 1e-45 arithmetic roundoff.
 
-The publisher rechecks cash, inventory, costs, holdings, attribution, source
-lineage and root bounds before the existing immutable, hashed bundle writer.
+The replay retains a sequenced event log: mark updates include pre-update
+quantities and old/new price/FX; decisions retain pretrade NAV; modeled
+transactions and valuations reference their event sequence. Target records
+retain decision NAV and complete selected-mark metadata.
+
+The publisher independently replays these events and recomputes both P&L
+components, target sizing, cash, inventory, costs, holdings and source lineage
+before checking root bounds and using the existing immutable, hashed writer.
 Aggregate Parquet economic values and detailed JSON economic values are Decimal
 strings. This preserves precision; consumers must parse Decimal explicitly.
 The existing generic bundle reconciliation also produces its usual numeric

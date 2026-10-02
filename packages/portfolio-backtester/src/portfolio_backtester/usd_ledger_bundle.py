@@ -13,7 +13,7 @@ from .backtest_bundle import BacktestBundleManifest, BacktestEvidenceTier
 from .backtest_bundle_io import write_backtest_bundle
 from .execution_sim.results import UnifiedLedger
 from .usd_ledger import DAILY_COLUMNS, HOLDING_COLUMNS, TARGET_COLUMNS, _summary, assert_usd_equal
-from .usd_ledger_accounting import TRANSACTION_COLUMNS, ZERO
+from .usd_ledger_accounting import TRANSACTION_COLUMNS, ZERO, value_usd_book
 from .usd_ledger_inputs import decimal_value, require, utc_time
 from .usd_ledger_models import USDReplayResult
 
@@ -227,42 +227,172 @@ def _holdings(
     return total
 
 
-def _reconcile_inventory(result: USDReplayResult, lineage: set) -> None:
-    transactions = result.transactions.to_dict("records")
-    times = [utc_time(r["execution_at"]) for r in transactions]
-    require(times == sorted(times), "transactions must be chronological")
-    require(
-        not times
-        or (
-            result.daily.iloc[0].valuation_at <= times[0]
-            and times[-1] <= result.daily.iloc[-1].valuation_at
-        ),
-        "transactions outside grid",
-    )
-    targets = {(r["decision_id"], r["instrument_id"]): r for r in result.targets.to_dict("records")}
-    require(len(targets) == len(result.targets), "duplicate target records")
-    cash, book, cursor = result.diagnostics["initial_cash_usd"], {}, 0
-    seen = set()
-    for daily in result.daily.to_dict("records"):
-        costs = ZERO
-        while (
-            cursor < len(transactions)
-            and transactions[cursor]["execution_at"] <= daily["valuation_at"]
-        ):
-            tx = transactions[cursor]
-            key = (tx["decision_id"], tx["instrument_id"])
-            require(key in targets and key not in seen, "unknown or repeated modeled transaction")
-            seen.add(key)
-            cash = _transaction(tx, cash, book, result, lineage, targets[key])
-            costs += tx["costs_usd"]
-            cursor += 1
-        held = result.holdings[result.holdings.valuation_at == daily["valuation_at"]].to_dict(
+class _EvidenceReplay:
+    """Independently recompute ordered financial evidence at publication."""
+
+    def __init__(self, result: USDReplayResult, lineage: set):
+        self.result, self.lineage = result, lineage
+        self.cash = result.diagnostics["initial_cash_usd"]
+        self.book: dict[str, Decimal] = {}
+        self.prices: dict[str, Decimal] = {}
+        self.rates: dict[str, Decimal] = {}
+        self.marks: dict[str, Mapping] = {}
+        self.local_pnl, self.fx_pnl, self.costs = ZERO, ZERO, ZERO
+        self.clocks = {c["decision_id"]: c for c in result.decision_clocks}
+        self.targets = {
+            (r["decision_id"], r["instrument_id"]): r for r in result.targets.to_dict("records")
+        }
+        require(len(self.targets) == len(result.targets), "duplicate targets")
+        self.transactions = result.transactions.to_dict("records")
+        self.tx_cursor, self.daily_cursor = 0, 0
+        self.decisions: set[str] = set()
+        self.executed: set[tuple[str, str]] = set()
+
+    def mark(self, event: Mapping) -> None:
+        name, time = event["instrument_id"], event["at"]
+        _metadata(event, time, self.lineage)
+        quantity = decimal_value(event["quantity_before"], "mark quantity")
+        assert_usd_equal(quantity, self.book.get(name, ZERO), "pre-mark quantity")
+        require(
+            event["old_price"] == self.prices.get(name)
+            and event["old_usd_per_local"] == self.rates.get(name),
+            "mark chain mismatch",
+        )
+        price = decimal_value(event["local_price"], "event price", positive=True)
+        fx = decimal_value(event["usd_per_local"], "event FX", positive=True)
+        local = (price - self.prices[name]) * self.rates[name] * quantity if quantity else ZERO
+        fx_pnl = price * (fx - self.rates[name]) * quantity if quantity else ZERO
+        assert_usd_equal(
+            _signed(event["local_price_pnl_usd"], "event local PnL"), local, "event local PnL"
+        )
+        assert_usd_equal(_signed(event["fx_pnl_usd"], "event FX PnL"), fx_pnl, "event FX PnL")
+        self.local_pnl += local
+        self.fx_pnl += fx_pnl
+        self.prices[name], self.rates[name], self.marks[name] = price, fx, event
+
+    def decision(self, event: Mapping) -> None:
+        name, time = event["decision_id"], event["at"]
+        require(
+            name in self.clocks and name not in self.decisions, "unknown/repeated decision event"
+        )
+        require(
+            ResearchClock.from_mapping(self.clocks[name]).decision_at == time,
+            "decision event clock mismatch",
+        )
+        self.decisions.add(name)
+        _, nav = value_usd_book(self.book, self.cash, self.prices, self.rates)
+        assert_usd_equal(
+            decimal_value(event["nav_usd"], "decision NAV", positive=True),
+            nav,
+            "decision NAV snapshot",
+        )
+        for (decision_id, instrument), target in self.targets.items():
+            if decision_id != name:
+                continue
+            require(target["event_sequence"] == event["sequence"], "target event mismatch")
+            assert_usd_equal(
+                decimal_value(target["decision_nav_usd"], "target NAV", positive=True),
+                nav,
+                "target decision NAV",
+            )
+            weight = target["target_weight"]
+            if weight:
+                _metadata(target, time, self.lineage)
+                self.match_mark(target, instrument)
+                desired = nav * weight / (self.prices[instrument] * self.rates[instrument])
+                assert_usd_equal(target["desired_quantity"], desired, "frozen target sizing")
+
+    def match_mark(self, row: Mapping, name: str) -> None:
+        from .usd_ledger import MARK_METADATA_COLUMNS
+
+        require(name in self.marks, "missing selected mark evidence")
+        for field in ("local_price", "usd_per_local", *MARK_METADATA_COLUMNS):
+            require(row[field] == self.marks[name][field], "selected mark evidence mismatch")
+
+    def transaction(self, event: Mapping) -> None:
+        require(
+            event["transaction_index"] == self.tx_cursor
+            and self.tx_cursor < len(self.transactions),
+            "transaction event coverage mismatch",
+        )
+        tx = self.transactions[self.tx_cursor]
+        require(
+            tx["event_sequence"] == event["sequence"] and tx["execution_at"] == event["at"],
+            "transaction event clock mismatch",
+        )
+        key = (tx["decision_id"], tx["instrument_id"])
+        require(
+            key in self.targets and key not in self.executed and key[0] in self.decisions,
+            "unknown/repeated transaction event",
+        )
+        self.executed.add(key)
+        self.match_mark(tx, key[1])
+        self.cash = _transaction(
+            tx, self.cash, self.book, self.result, self.lineage, self.targets[key]
+        )
+        self.costs += tx["costs_usd"]
+        self.tx_cursor += 1
+
+    def valuation(self, event: Mapping) -> None:
+        require(
+            event["daily_index"] == self.daily_cursor
+            and self.daily_cursor < len(self.result.daily),
+            "valuation event coverage mismatch",
+        )
+        daily = self.result.daily.iloc[self.daily_cursor]
+        require(daily.valuation_at == event["at"], "valuation event clock mismatch")
+        positions, nav = value_usd_book(self.book, self.cash, self.prices, self.rates)
+        assert_usd_equal(daily.cash_usd, self.cash, "event cash")
+        assert_usd_equal(daily.positions_usd, positions, "event positions")
+        assert_usd_equal(daily.nav_usd, nav, "event NAV")
+        assert_usd_equal(daily.local_price_pnl_usd, self.local_pnl, "independent local PnL")
+        assert_usd_equal(daily.fx_pnl_usd, self.fx_pnl, "independent FX PnL")
+        assert_usd_equal(daily.costs_usd, self.costs, "event costs")
+        rows = self.result.holdings[self.result.holdings.valuation_at == event["at"]].to_dict(
             "records"
         )
-        total = _holdings(held, daily["valuation_at"], daily["nav_usd"], book, lineage)
-        assert_usd_equal(total, daily["positions_usd"], "aggregate holdings")
-        assert_usd_equal(cash, daily["cash_usd"], "valuation cash")
-        assert_usd_equal(costs, daily["costs_usd"], "interval costs")
+        total = _holdings(rows, event["at"], nav, self.book, self.lineage)
+        assert_usd_equal(total, positions, "aggregate holdings")
+        for row in rows:
+            self.match_mark(row, row["instrument_id"])
+        self.local_pnl, self.fx_pnl, self.costs = ZERO, ZERO, ZERO
+        self.daily_cursor += 1
+
+
+def _reconcile_events(result: USDReplayResult, lineage: set) -> None:
+    events = result.diagnostics.get("events")
+    require(isinstance(events, list) and bool(events), "ordered accounting events required")
+    events = cast(list[Mapping[str, Any]], events)
+    replay = _EvidenceReplay(result, lineage)
+    previous_time = result.daily.iloc[0].valuation_at
+    handlers = {
+        "mark": replay.mark,
+        "decision": replay.decision,
+        "transaction": replay.transaction,
+        "valuation": replay.valuation,
+    }
+    for index, event in enumerate(events):
+        require(
+            isinstance(event, Mapping)
+            and type(event.get("sequence")) is int
+            and event["sequence"] == index,
+            "invalid event sequence",
+        )
+        time = utc_time(event["at"])
+        require(
+            previous_time <= time <= result.daily.iloc[-1].valuation_at,
+            "accounting events must be chronological and within grid",
+        )
+        require(event["kind"] in handlers, "unsupported accounting event")
+        handlers[event["kind"]](event)
+        previous_time = time
+    require(
+        replay.tx_cursor == len(result.transactions)
+        and replay.daily_cursor == len(result.daily)
+        and replay.decisions == set(replay.clocks),
+        "incomplete accounting event coverage",
+    )
+    require(events[-1]["kind"] == "valuation", "terminal valuation evidence required")
     require(
         set(result.holdings.valuation_at) <= set(result.daily.valuation_at), "off-grid holdings"
     )
@@ -290,7 +420,7 @@ def _validate_result(result: USDReplayResult, input_refs: Sequence[Mapping[str, 
     _evidence(result.diagnostics)
     _validate_schedule(result)
     _validate_daily(result)
-    _reconcile_inventory(result, lineage)
+    _reconcile_events(result, lineage)
     expected = _summary(result.daily, result.diagnostics["initial_cash_usd"])
     for key in ("cumulative_return", "max_drawdown", "cagr"):
         require(key in result.summary, "missing performance metric")
