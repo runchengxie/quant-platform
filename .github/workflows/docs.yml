@@ -30,10 +30,10 @@ jobs:
         run: uv sync --locked --only-group docs
 
       - name: Build documentation
-        run: uv run mkdocs build --strict
+        run: uv run --only-group docs mkdocs build --strict
 
       - name: Check locale navigation
-        run: uv run python project_tools/check_locale_navigation.py
+        run: uv run --only-group docs python project_tools/check_locale_navigation.py
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
