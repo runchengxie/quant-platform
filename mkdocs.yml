@@ -102,6 +102,7 @@ nav:
   - Core concepts:
       - Backtest configuration: concepts/backtest-configuration.md
       - Backtest specification: concepts/backtest-spec.md
+      - Canonical backtest bundle: concepts/canonical-backtest-bundle.en.md
       - Execution costs and assumptions: concepts/execution-costs.md
       - Cost breakdown: concepts/cost-breakdown.md
       - 简体中文:
