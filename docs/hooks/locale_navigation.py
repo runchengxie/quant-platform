@@ -20,6 +20,7 @@ ENGLISH_PAGES = {
     "getting-started/understanding-results.md",
     "reference/glossary.md",
     "guides/entry-points.md",
+    "guides/execution-simulation.en.md",
     "concepts/backtest-configuration.md",
     "concepts/backtest-spec.md",
     "concepts/execution-costs.md",
