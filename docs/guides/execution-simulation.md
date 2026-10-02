@@ -1,5 +1,7 @@
 # 执行容量与每日净值模拟
 
+语言：简体中文 · [English](execution-simulation.en.md)
+
 `portfolio_backtester.execution_sim` 提供容量成交、执行后每日净值和理想每日净值三类模拟。该子包具有独立公开入口，当前没有从包根重新导出。
 
 `CorporateAction` 用于可选的原始价格公司行为账本。它记录现金应收、送转股应收及实际结算日，要求调用者显式提供规范化事件和 `price_basis="raw"`。缺少结算日期或原始价格标记时，模拟会阻断。
@@ -35,7 +37,7 @@ from portfolio_backtester.execution_sim import (
 | `liquidity_cols` | `medadv20_amount`、`amount` | 容量约束使用的流动性列 |
 | `liquidity_notional_multiplier` | 1.0 | 将流动性列换算为组合名义货币单位的乘数，Tushare `amount` 为千元时应设为 1,000 |
 | `buy_max_days` | 5 | 买单最长等待天数 |
-| `sell_max_days` | 10 | 卖单最长等待天数 |
+| `sell_max_days` | 10 | 卖单最长等待天数，也可用 `SELL_UNTIL_NEXT_REBALANCE` 延续到下一次调仓 |
 | `zero_fill_abort_days_buy` | 5 | 连续零成交后的买单终止天数 |
 | `unfilled_buy_action` | `keep_cash` | 未成交买单保留现金 |
 | `unfilled_sell_action` | `keep_position` | 未成交卖单保留持仓 |
