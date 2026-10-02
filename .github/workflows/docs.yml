@@ -32,6 +32,9 @@ jobs:
       - name: Build documentation
         run: uv run mkdocs build --strict
 
+      - name: Check locale navigation
+        run: uv run python project_tools/check_locale_navigation.py
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

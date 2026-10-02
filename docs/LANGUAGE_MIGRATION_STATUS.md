@@ -2,6 +2,8 @@
 
 English is the canonical language for public documentation. Chinese companions use the `.zh-CN.md` suffix. Both pages are published at distinct URLs, and each translated page links directly to its counterpart so readers can share a locale-specific URL.
 
+The MkDocs sidebar follows the current page language. English pages show the English navigation; Chinese companions and untranslated Chinese originals show the Chinese navigation. This changes navigation only: existing URLs are preserved, and site search can still return pages in either language. Chinese originals without a checked English counterpart remain available at their current URLs.
+
 ## Completed entry pages
 
 The repository README, documentation index, platform overview, installation guide, first-backtest tutorial, results guide, glossary, language policy, common entry points, public API reference, allocation reference, position output contract, data boundary, backtest configuration reference, backtest specification, execution-cost assumptions, cost breakdown, testing and quality checks guide, orchestration overview, control-plane API, evaluation orchestration, orchestration reference index, orchestration configuration reference, and orchestration CLI-helper reference have English canonical pages and linked Chinese companions. The other orchestration guides remain Chinese originals pending translation. MkDocs uses English as its default interface language.
