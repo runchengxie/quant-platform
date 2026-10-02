@@ -1,5 +1,7 @@
 # Canonical 回测证据 bundle
 
+语言：简体中文 · [English](canonical-backtest-bundle.en.md)
+
 `portfolio_backtester.backtest_result.v1` 把一次组合回测的统一账本保存成不可覆盖、可哈希、可重载的目录。
 它服务于研究证据和跨仓交接，不替代现有 `CanonicalBacktestResult` 返回对象，也不创建第二套订单、成交或现金模型。
 
@@ -85,9 +87,7 @@ Reader 不重新执行组合、订单、成交或 PnL 计算。
 
 ## ResearchClock 边界
 
-本仓当前已固定依赖 `research-contracts` 的 main 可达提交。该提交尚未包含新的 `ResearchClock` 类型时，
-bundle 只保存并检查 `research.clock.v1` 的 execution-aware 必需字段，不复制完整时钟解析器。
-等 workspace 契约种子 PR 合入后，下游 producer 升级 `research-contracts` pin，由根 `ResearchRunManifest`
-执行完整时钟因果校验。
-
-这样可以让 canonical bundle PR 独立审查，同时避免把功能分支 commit 写进正式 dependency pin。
+`execution_aware` writer 会先检查 `research.clock.v1` 必需字段，再调用
+`research_contracts.validate_research_clock(..., require_execution=True)` 校验完整执行时钟。
+`write_execution_aware_result_bundle` 只接受一次决策对应的时钟。当结果元数据中的
+`decision_count` 大于 1 时会拒绝写入。多次决策需要逐次时钟，不能把一个时钟当作整个序列的证明。
