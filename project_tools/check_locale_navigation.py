@@ -20,6 +20,8 @@ def main() -> None:
     assert "指南（中文原文）" not in english
     assert "execution-simulation/" not in english
     assert "guides/execution-simulation.en/" in english
+    assert "guides/point-in-time-data/" in english
+    assert "guides/sequenced-execution/" in english
     assert "Execution simulation" in english_guide
     assert "指南（中文原文）" not in english_guide
     for navigation in (chinese_companion, chinese_original):
@@ -28,6 +30,10 @@ def main() -> None:
         assert "lean-differential-spike-2026-09/" not in navigation
     assert "guides/execution-simulation/" in chinese_companion
     assert "README.zh-CN/" in chinese_original
+    assert "concepts/backtest-configuration.zh-CN/" in chinese_companion
+    assert "reference/public-api.zh-CN/" in chinese_companion
+    assert "reference/allocation-reference.zh-CN/" in chinese_companion
+    assert "data/README.zh-CN/" in chinese_companion
 
 
 if __name__ == "__main__":

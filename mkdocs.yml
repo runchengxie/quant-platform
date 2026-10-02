@@ -79,6 +79,8 @@ nav:
       - Guides:
           - Common entry points: guides/entry-points.md
           - Execution simulation: guides/execution-simulation.en.md
+          - Point-in-time research data: guides/point-in-time-data.md
+          - Sequenced execution: guides/sequenced-execution.md
   - 简体中文:
       - 文档首页: README.zh-CN.md
       - 语言规范: LANGUAGE_POLICY.zh-CN.md
@@ -103,6 +105,7 @@ nav:
       - Execution costs and assumptions: concepts/execution-costs.md
       - Cost breakdown: concepts/cost-breakdown.md
       - 简体中文:
+          - 回测配置解析: concepts/backtest-configuration.zh-CN.md
           - 回测规范: concepts/backtest-spec.zh-CN.md
           - 成本与执行假设: concepts/execution-costs.zh-CN.md
           - 成本口径: concepts/cost-breakdown.zh-CN.md
@@ -190,6 +193,10 @@ nav:
       - Allocation reference: reference/allocation-reference.md
       - Data boundary: data/README.md
       - Position output contract: reference/outputs/positions.md
+      - 简体中文:
+          - 公开入口: reference/public-api.zh-CN.md
+          - 执行分配参考资产: reference/allocation-reference.zh-CN.md
+          - 市场数据消费边界: data/README.zh-CN.md
       - Chinese originals (translation in progress):
           - 回测输出: reference/outputs/backtest-outputs.md
       - 简体中文:
