@@ -31,6 +31,9 @@ theme:
 extra_css:
   - stylesheets/extra.css
 
+hooks:
+  - docs/hooks/locale_navigation.py
+
 markdown_extensions:
   - admonition
   - attr_list
