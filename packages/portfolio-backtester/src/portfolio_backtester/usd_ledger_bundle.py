@@ -1,0 +1,422 @@
+"""Reconcile Decimal evidence before the existing diagnostic bundle writer."""
+
+from collections.abc import Mapping, Sequence
+from datetime import datetime
+from decimal import Decimal, localcontext
+from pathlib import Path
+from typing import Any, cast
+
+import pandas as pd
+from research_contracts import ArtifactRef, ResearchClock
+
+from .backtest_bundle import BacktestBundleManifest, BacktestEvidenceTier
+from .backtest_bundle_io import write_backtest_bundle
+from .execution_sim.results import UnifiedLedger
+from .usd_ledger import DAILY_COLUMNS, HOLDING_COLUMNS, TARGET_COLUMNS, _summary, assert_usd_equal
+from .usd_ledger_accounting import TRANSACTION_COLUMNS, ZERO
+from .usd_ledger_inputs import decimal_value, require, utc_time
+from .usd_ledger_models import USDReplayResult
+
+
+def _signed(value: Any, field: str) -> Decimal:
+    require(isinstance(value, Decimal) and value.is_finite(), f"{field} must be finite Decimal")
+    return value
+
+
+def _json(value: Any) -> Any:
+    if isinstance(value, Decimal):
+        return str(value)
+    if isinstance(value, datetime):
+        return value.isoformat()
+    if isinstance(value, Mapping):
+        return {k: _json(v) for k, v in value.items()}
+    if isinstance(value, (tuple, list)):
+        return [_json(v) for v in value]
+    return value
+
+
+def _evidence(payload: Any) -> None:
+    if not isinstance(payload, Mapping):
+        return
+    expected = {
+        "evidence_tier": "diagnostic",
+        "return_basis": "usd_price_nav",
+        "orders_submitted": False,
+        "order_lifecycle": False,
+        "total_return": False,
+    }
+    for key, value in payload.items():
+        if key in expected:
+            require(
+                type(value) is type(expected[key]) and value == expected[key],
+                "unsupported evidence/capability override",
+            )
+        if isinstance(value, Mapping):
+            _evidence(value)
+
+
+def _frame(frame: pd.DataFrame, columns: Sequence[str], label: str) -> None:
+    require(
+        isinstance(frame, pd.DataFrame) and set(columns) <= set(frame.columns),
+        f"invalid {label} table",
+    )
+
+
+def _root_clock(result: USDReplayResult, root: ResearchClock) -> None:
+    require(isinstance(root, ResearchClock), "ResearchClock required")
+    ResearchClock.from_mapping(root.to_mapping())
+    for key, value in vars(root).items():
+        if key.endswith("_at") and value is not None:
+            utc_time(value)
+    require(
+        root.timezone == "UTC" and root.valuation_at == result.daily.iloc[-1].valuation_at,
+        "root valuation clock mismatch",
+    )
+    if not result.decision_clocks:
+        require(
+            root.decision_at <= result.daily.iloc[0].valuation_at, "all-cash root clock mismatch"
+        )
+        return
+    clocks = [ResearchClock.from_mapping(c) for c in result.decision_clocks]
+    require(root.decision_at == clocks[0].decision_at, "root decision clock mismatch")
+    require(
+        root.execution_window_start_at is not None and root.execution_window_end_at is not None,
+        "root execution bounds required",
+    )
+    for clock in clocks:
+        require(
+            clock.execution_window_start_at is not None
+            and clock.execution_window_end_at is not None,
+            "per-decision bounds required",
+        )
+        require(
+            cast(datetime, root.execution_window_start_at)
+            <= cast(datetime, clock.execution_window_start_at)
+            and cast(datetime, root.execution_window_end_at)
+            >= cast(datetime, clock.execution_window_end_at),
+            "root must cover every execution window",
+        )
+
+
+def _metadata(row: Mapping, time: datetime, lineage: set, *, execution: bool = False) -> None:
+    require(
+        row["price_unit"] == "currency_per_share" and row["fx_unit"] == "quote_per_base",
+        "invalid observation units",
+    )
+    require(
+        utc_time(row["price_at"]) <= utc_time(row["price_available_at"]) <= time,
+        "unavailable price evidence",
+    )
+    ref = ArtifactRef.from_mapping(row["price_source_ref"])
+    require((ref.artifact_id, ref.sha256) in lineage, "unlisted price lineage")
+    if execution:
+        require(
+            row["price_at"] == time and row["price_availability_basis"] == "verified",
+            "ineligible execution evidence",
+        )
+    rate = decimal_value(row["fx_rate"], "raw FX", positive=True)
+    if row["currency"] == "USD":
+        require(
+            row["fx_source_ref"] is None
+            and row["fx_base_currency"] == "USD"
+            and row["fx_quote_currency"] == "USD"
+            and rate == 1,
+            "invalid USD identity evidence",
+        )
+        expected = Decimal(1)
+    else:
+        pair = (row["fx_base_currency"], row["fx_quote_currency"])
+        currency = row["currency"]
+        require(pair in ((currency, "USD"), ("USD", currency)), "invalid FX direction")
+        require(
+            utc_time(row["fx_at"]) <= utc_time(row["fx_available_at"]) <= time,
+            "unavailable FX evidence",
+        )
+        ref = ArtifactRef.from_mapping(row["fx_source_ref"])
+        require((ref.artifact_id, ref.sha256) in lineage, "unlisted FX lineage")
+        if execution:
+            require(row["fx_availability_basis"] == "verified", "assumed FX execution")
+        expected = rate if pair[0] == currency else Decimal(1) / rate
+    assert_usd_equal(
+        decimal_value(row["usd_per_local"], "conversion", positive=True), expected, "FX direction"
+    )
+
+
+def _validate_daily(result: USDReplayResult) -> None:
+    previous = decimal_value(result.diagnostics["initial_cash_usd"], "initial cash", positive=True)
+    times = [utc_time(t) for t in result.daily.valuation_at]
+    require(times == sorted(set(times)) and bool(times), "invalid valuation grid")
+    for row in result.daily.to_dict("records"):
+        for key in ("cash_usd", "positions_usd", "nav_usd", "costs_usd"):
+            decimal_value(row[key], key)
+        local = _signed(row["local_price_pnl_usd"], "local PnL")
+        fx = _signed(row["fx_pnl_usd"], "FX PnL")
+        ret = _signed(row["nav_return"], "NAV return")
+        assert_usd_equal(row["nav_usd"], row["cash_usd"] + row["positions_usd"], "cash + positions")
+        assert_usd_equal(
+            row["nav_usd"] - previous, local + fx - row["costs_usd"], "NAV attribution"
+        )
+        assert_usd_equal(ret, row["nav_usd"] / previous - 1, "NAV return")
+        previous = row["nav_usd"]
+
+
+def _transaction(
+    row: Mapping,
+    cash: Decimal,
+    book: dict[str, Decimal],
+    result: USDReplayResult,
+    lineage: set,
+    target: Mapping,
+) -> Decimal:
+    time = utc_time(row["execution_at"])
+    _metadata(row, time, lineage, execution=True)
+    name, delta = row["instrument_id"], _signed(row["executed_delta"], "executed delta")
+    requested = _signed(row["requested_delta"], "requested delta")
+    require(target["execution_at"] == time, "transaction schedule mismatch")
+    assert_usd_equal(
+        requested, target["desired_quantity"] - book.get(name, ZERO), "requested delta"
+    )
+    require(
+        delta == 0 or (delta * requested > 0 and abs(delta) <= abs(requested)),
+        "executed delta exceeds request",
+    )
+    notional = (
+        abs(delta)
+        * decimal_value(row["local_price"], "price", positive=True)
+        * row["usd_per_local"]
+    )
+    assert_usd_equal(decimal_value(row["notional_usd"], "notional"), notional, "trade notional")
+    components = []
+    for key, rate_key in (
+        ("commission_usd", "commission_bps"),
+        ("slippage_usd", "slippage_bps"),
+        ("fx_cost_usd", "fx_cost_bps"),
+    ):
+        rate = decimal_value(result.diagnostics[rate_key], rate_key)
+        expected = (
+            ZERO if key == "fx_cost_usd" and row["currency"] == "USD" else notional * rate / 10000
+        )
+        cost = decimal_value(row[key], key)
+        assert_usd_equal(cost, expected, key)
+        components.append(cost)
+    cost = decimal_value(row["costs_usd"], "costs")
+    assert_usd_equal(cost, sum(components, ZERO), "cost components")
+    book[name] = book.get(name, ZERO) + delta
+    cash -= delta * row["local_price"] * row["usd_per_local"] + cost
+    require(book[name] >= 0 and cash >= 0, "inventory/cash must be nonnegative")
+    assert_usd_equal(cash, row["cash_after_usd"], "transaction cash")
+    return cash
+
+
+def _holdings(
+    rows: list[Mapping], time: datetime, nav: Decimal, book: dict, lineage: set
+) -> Decimal:
+    names = [r["instrument_id"] for r in rows]
+    require(len(names) == len(set(names)), "duplicate holdings")
+    require(set(names) == {n for n, q in book.items() if q}, "holdings coverage mismatch")
+    total = ZERO
+    for row in rows:
+        _metadata(row, time, lineage)
+        quantity = decimal_value(row["quantity"], "held quantity", positive=True)
+        price = decimal_value(row["local_price"], "held price", positive=True)
+        value = decimal_value(row["value_usd"], "held value", positive=True)
+        assert_usd_equal(quantity, book[row["instrument_id"]], "held quantity")
+        assert_usd_equal(value, quantity * price * row["usd_per_local"], "held value")
+        assert_usd_equal(decimal_value(row["weight"], "weight"), value / nav, "held weight")
+        total += value
+    return total
+
+
+def _reconcile_inventory(result: USDReplayResult, lineage: set) -> None:
+    transactions = result.transactions.to_dict("records")
+    times = [utc_time(r["execution_at"]) for r in transactions]
+    require(times == sorted(times), "transactions must be chronological")
+    require(
+        not times
+        or (
+            result.daily.iloc[0].valuation_at <= times[0]
+            and times[-1] <= result.daily.iloc[-1].valuation_at
+        ),
+        "transactions outside grid",
+    )
+    targets = {(r["decision_id"], r["instrument_id"]): r for r in result.targets.to_dict("records")}
+    require(len(targets) == len(result.targets), "duplicate target records")
+    cash, book, cursor = result.diagnostics["initial_cash_usd"], {}, 0
+    seen = set()
+    for daily in result.daily.to_dict("records"):
+        costs = ZERO
+        while (
+            cursor < len(transactions)
+            and transactions[cursor]["execution_at"] <= daily["valuation_at"]
+        ):
+            tx = transactions[cursor]
+            key = (tx["decision_id"], tx["instrument_id"])
+            require(key in targets and key not in seen, "unknown or repeated modeled transaction")
+            seen.add(key)
+            cash = _transaction(tx, cash, book, result, lineage, targets[key])
+            costs += tx["costs_usd"]
+            cursor += 1
+        held = result.holdings[result.holdings.valuation_at == daily["valuation_at"]].to_dict(
+            "records"
+        )
+        total = _holdings(held, daily["valuation_at"], daily["nav_usd"], book, lineage)
+        assert_usd_equal(total, daily["positions_usd"], "aggregate holdings")
+        assert_usd_equal(cash, daily["cash_usd"], "valuation cash")
+        assert_usd_equal(costs, daily["costs_usd"], "interval costs")
+    require(
+        set(result.holdings.valuation_at) <= set(result.daily.valuation_at), "off-grid holdings"
+    )
+
+
+def _validate_result(result: USDReplayResult, input_refs: Sequence[Mapping[str, Any]]) -> None:
+    require(isinstance(result, USDReplayResult), "USDReplayResult required")
+    for field, columns in (
+        ("daily", DAILY_COLUMNS),
+        ("holdings", HOLDING_COLUMNS),
+        ("transactions", [*TRANSACTION_COLUMNS, "execution_at", "decision_id"]),
+        ("targets", TARGET_COLUMNS),
+    ):
+        _frame(getattr(result, field), columns, field)
+    require(not result.daily.empty and bool(input_refs), "nonempty daily/lineage inputs required")
+    lineage = {(ref.artifact_id, ref.sha256) for ref in map(ArtifactRef.from_mapping, input_refs)}
+    sources = {
+        (ref.artifact_id, ref.sha256)
+        for ref in map(ArtifactRef.from_mapping, result.diagnostics["source_refs"])
+    }
+    require(sources <= lineage, "source lineage mismatch")
+    for key in ("evidence_tier", "return_basis", "orders_submitted"):
+        require(key in result.summary, "missing authoritative evidence label")
+    _evidence(result.summary)
+    _evidence(result.diagnostics)
+    _validate_schedule(result)
+    _validate_daily(result)
+    _reconcile_inventory(result, lineage)
+    expected = _summary(result.daily, result.diagnostics["initial_cash_usd"])
+    for key in ("cumulative_return", "max_drawdown", "cagr"):
+        require(key in result.summary, "missing performance metric")
+        if expected[key] is None:
+            require(result.summary[key] is None, "undefined metric must remain undefined")
+        else:
+            assert_usd_equal(_signed(result.summary[key], key), expected[key], key)
+
+
+def _validate_schedule(result: USDReplayResult) -> None:
+    clocks, previous_end = {}, None
+    for record in result.decision_clocks:
+        name = record.get("decision_id")
+        require(
+            isinstance(name, str) and bool(name.strip()) and name not in clocks,
+            "invalid or duplicate decision identity",
+        )
+        clock = ResearchClock.from_mapping(record)
+        require(clock.timezone == "UTC", "decision timezone must be UTC")
+        for key, value in vars(clock).items():
+            if key.endswith("_at") and value is not None:
+                utc_time(value)
+        require(
+            previous_end is None or clock.decision_at > previous_end,
+            "overlapping decision evidence",
+        )
+        require(
+            clock.earliest_order_at is not None
+            and clock.execution_window_start_at is not None
+            and clock.execution_window_end_at is not None,
+            "decision execution bounds required",
+        )
+        clocks[name] = clock
+        previous_end = clock.execution_window_end_at
+    universes, weights = {}, {}
+    for row in result.targets.to_dict("records"):
+        name = row["decision_id"]
+        require(name in clocks, "unknown target decision")
+        clock = clocks[name]
+        require(row["decision_at"] == clock.decision_at, "target decision timestamp mismatch")
+        time = utc_time(row["execution_at"])
+        require(
+            time > clock.decision_at
+            and time >= cast(datetime, clock.earliest_order_at)
+            and cast(datetime, clock.execution_window_start_at)
+            <= time
+            <= cast(datetime, clock.execution_window_end_at),
+            "target execution clock mismatch",
+        )
+        weight = decimal_value(row["target_weight"], "target weight")
+        decimal_value(row["desired_quantity"], "desired quantity")
+        require(weight != 0 or row["desired_quantity"] == 0, "zero target must liquidate")
+        weights[name] = weights.get(name, ZERO) + weight
+        universes.setdefault(name, set()).add(row["instrument_id"])
+    require(all(w <= 1 for w in weights.values()), "target weights exceed one")
+    sets = [universes.get(name, set()) for name in clocks]
+    require(not sets or all(s == sets[0] for s in sets), "decision universe coverage mismatch")
+
+
+def _ledger(result: USDReplayResult) -> UnifiedLedger:
+    # Decimal strings preserve the authoritative values in Parquet, independently of
+    # the existing generic reconciliation's float conversion. Full records live in JSON.
+    dates = [t.isoformat() for t in result.daily.valuation_at]
+
+    def frame(column: str, name: str) -> pd.DataFrame:
+        return pd.DataFrame({"trade_date": dates, name: [str(v) for v in result.daily[column]]})
+
+    return UnifiedLedger(
+        targets=pd.DataFrame(_json(result.targets.to_dict("records"))),
+        orders=pd.DataFrame(),
+        fills=pd.DataFrame(),
+        daily_positions=frame("positions_usd", "positions_value"),
+        daily_cash=frame("cash_usd", "cash"),
+        daily_nav=frame("nav_usd", "nav"),
+        cost_breakdown=pd.DataFrame(
+            {"trade_date": dates, "transaction_cost": [str(v) for v in result.daily.costs_usd]}
+        ),
+        turnover_breakdown=pd.DataFrame(
+            {"filled_notional": [str(v) for v in result.transactions.notional_usd]}
+        ),
+    )
+
+
+def write_usd_price_replay_bundle(
+    output_dir: Path,
+    *,
+    result: USDReplayResult,
+    run_id: str,
+    research_clock: ResearchClock,
+    producer: Mapping[str, Any],
+    configuration_sha256: str,
+    input_refs: Sequence[Mapping[str, Any]],
+) -> BacktestBundleManifest:
+    with localcontext() as ctx:
+        ctx.prec = 50
+        _validate_result(result, input_refs)
+        _root_clock(result, research_clock)
+        diagnostics = {
+            "summary": result.summary,
+            "accounting": result.diagnostics,
+            "daily": result.daily.to_dict("records"),
+            "holdings": result.holdings.to_dict("records"),
+            "transactions": result.transactions.to_dict("records"),
+            "targets": result.targets.to_dict("records"),
+            "decision_clocks": result.decision_clocks,
+            "usd_reconciliation": {
+                "status": "passed",
+                "decimal_precision": 50,
+                "relative_tolerance": "1e-45",
+            },
+        }
+        return write_backtest_bundle(
+            output_dir,
+            run_id=run_id,
+            evidence_tier=BacktestEvidenceTier.DIAGNOSTIC,
+            ledger=_ledger(result),
+            research_clock=research_clock.to_mapping(),
+            backend={"name": "usd.price_ledger", "version": "1"},
+            backend_capabilities={
+                "order_lifecycle": False,
+                "daily_ledger": True,
+                "partial_fills": False,
+                "long_short": False,
+            },
+            producer=producer,
+            configuration_sha256=configuration_sha256,
+            input_refs=input_refs,
+            diagnostics=_json(diagnostics),
+        )

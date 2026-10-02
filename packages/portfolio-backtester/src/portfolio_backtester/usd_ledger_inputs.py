@@ -191,14 +191,11 @@ def _validate_decisions(request: USDReplayRequest, instruments: dict) -> None:
         for time in decision.execution_times.values():
             utc_time(time)
             require(
-                time > clock.decision_at
-                and time >= earliest
-                and start <= time <= end,
+                time > clock.decision_at and time >= earliest and start <= time <= end,
                 "execution outside causal bounds",
             )
         require(
-            request.valuation_times[0] <= clock.decision_at
-            and request.valuation_times[-1] >= end,
+            request.valuation_times[0] <= clock.decision_at and request.valuation_times[-1] >= end,
             "valuation grid too short",
         )
         previous_decision, previous_end = clock.decision_at, clock.execution_window_end_at

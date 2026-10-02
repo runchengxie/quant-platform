@@ -190,6 +190,7 @@ nav:
               - 配置解析: orchestration/reference/configuration.zh-CN.md
   - References:
       - Public API: reference/public-api.md
+      - USD price ledger: reference/usd-price-ledger.md
       - Allocation reference: reference/allocation-reference.md
       - Data boundary: data/README.md
       - Position output contract: reference/outputs/positions.md
