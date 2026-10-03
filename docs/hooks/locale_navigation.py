@@ -84,6 +84,10 @@ CHINESE_TITLES = {
     ),
 }
 
+ENGLISH_TITLES = {
+    "其他风险与研究主题": "Additional research topics",
+}
+
 
 def _for_locale(items, chinese):
     selected = []
@@ -99,6 +103,8 @@ def _for_locale(items, chinese):
                 section.children = children
                 if chinese:
                     section.title = CHINESE_TITLES.get(section.title, section.title)
+                else:
+                    section.title = ENGLISH_TITLES.get(section.title, section.title)
                 selected.append(section)
         elif item.is_link:
             selected.append(item)
