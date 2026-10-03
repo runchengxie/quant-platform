@@ -1,5 +1,7 @@
 # 因子风险模型边界
 
+语言：简体中文 · [English canonical](factor-risk-model.en-US.md)
+
 `quant-market-research` 当前维护一个与框架无关的轻量因子风险基础能力，将已经计算好的因子收益历史和特异收益历史转换为受 PIT 约束的风险估计。
 
 ## 模型
@@ -41,7 +43,7 @@ Sigma_asset = X F X' + D
 - 评估行业和风格因子集合以及估计窗口。
 - 增加估计器比较和稳定性诊断。
 - 通过研究产物发布风险模型证据。
-- 将权威估计接入 `portfolio-backtester` 优化请求。
+- 将权威估计接入 `portfolio_backtester` 优化请求。
 - 获得授权数据后，与获得许可的 RQData 风险模型输出比较。
 
 第三方风险模型对象必须保留在适配器内部。晋升证据必须区分估计器质量和优化器质量。

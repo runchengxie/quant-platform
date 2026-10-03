@@ -1,5 +1,7 @@
 # 因子目录
 
+语言：简体中文 · [English canonical](factor-catalog.en-US.md)
+
 因子目录把可复用因子登记为带版本的研究资产，避免只靠 Python 函数名识别因子。
 
 每个 `FactorSpec` 记录：
