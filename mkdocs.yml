@@ -167,10 +167,13 @@ nav:
           - Overview: orchestration/README.md
           - Control-plane API: orchestration/control-plane.md
           - Evaluation orchestration: orchestration/evaluation.md
+          - Run artifacts: orchestration/output-artifacts.en.md
+          - Quality gates: orchestration/operations/quality-gates.en.md
           - References:
               - Reference overview: orchestration/reference/README.md
               - CLI helpers: orchestration/reference/cli-helpers.md
               - Configuration resolution: orchestration/reference/configuration.md
+              - Runtime helpers: orchestration/reference/runtime-helpers.en.md
       - Chinese originals (translation in progress):
           - 编排概览: orchestration/README.zh-CN.md
           - 控制平面: orchestration/control-plane.zh-CN.md

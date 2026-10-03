@@ -29,3 +29,5 @@ The installable `strategy-pipeline` CLI is registered by the root project. Its c
 - [Quality gates](operations/quality-gates.md)
 - [CLI and evidence-protocol guide](evidence-protocol-cli.md) and [cashflow publication guide](cashflow-publication.md)
 - [Runtime helpers](reference/runtime-helpers.md)
+
+English companions are available for [run artifacts](output-artifacts.en.md), [quality gates](operations/quality-gates.en.md), and [runtime helpers](reference/runtime-helpers.en.md).

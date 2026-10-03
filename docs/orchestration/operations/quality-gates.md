@@ -1,5 +1,7 @@
 # 质量闸门
 
+语言：简体中文 · [English](quality-gates.en.md)
+
 `strategy_pipeline.pipeline.quality` 提供通用的运行质量闸门能力。
 
 它负责：

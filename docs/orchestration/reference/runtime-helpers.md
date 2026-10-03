@@ -1,5 +1,7 @@
 # 运行时辅助能力
 
+语言：简体中文 · [English](runtime-helpers.en.md)
+
 `strategy_pipeline.pipeline.runtime` 提供研究运行需要的通用辅助能力，包括日志配置、配置哈希、最终留出集长度换算、purge 和 embargo 步数换算，以及训练和测试日期切分。
 
 日期切分和评估规则通过 `quant-market-research` 的公共接口完成，rebalance 间隔通过 `portfolio-backtester` 的公共接口估算。模块不读取策略配置，也不访问凭证或数据 provider。
