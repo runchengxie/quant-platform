@@ -23,7 +23,7 @@ If `construction_grid.rolling_selection.output_json` is set, the command also wr
 
 ## Benchmark ladder
 
-`strategy backtest benchmark-ladder` reports active total return, information ratio, tracking error, beta, alpha, correlation, comparability status, and attribution-file availability for each benchmark. See the [benchmark ladder protocol](../../concepts/benchmark-ladder.md).
+The `backtest.benchmark_compare` setting adds same-run benchmark comparisons and writes a summary CSV plus a report CSV for each comparison. For a post-run comparison of existing return files, use the `portfolio_backtester.benchmark_ladder` Python module. It has no registered `strategy backtest benchmark-ladder` CLI command. See the [benchmark comparison guide](../../concepts/benchmark-ladder.en-US.md).
 
 ## Positions
 

@@ -13,6 +13,7 @@ def primary_navigation(path: str) -> str:
 def main() -> None:
     english = primary_navigation("concepts/lean-differential-spike-2026-09")
     english_turnover = primary_navigation("concepts/turnover.en-US")
+    english_benchmark_ladder = primary_navigation("concepts/benchmark-ladder.en-US")
     english_guide = primary_navigation("guides/execution-simulation.en")
     english_orchestration = primary_navigation("orchestration/output-artifacts.en")
     chinese_companion = primary_navigation("README.zh-CN")
@@ -20,7 +21,9 @@ def main() -> None:
 
     assert "Core concepts" in english
     assert "Turnover definitions" in english_turnover
+    assert "Market benchmark comparisons" in english_benchmark_ladder
     assert "../turnover.en-US/" in english
+    assert "../benchmark-ladder.en-US/" in english
     assert "指南（中文原文）" not in english
     assert "execution-simulation/" not in english
     assert "guides/execution-simulation.en/" in english
@@ -48,6 +51,8 @@ def main() -> None:
         assert "lean-differential-spike-2026-09/" not in navigation
     assert "../../concepts/turnover/" in chinese_original
     assert "../../concepts/turnover.en-US/" not in chinese_original
+    assert "../../concepts/benchmark-ladder/" in chinese_original
+    assert "../../concepts/benchmark-ladder.en-US/" not in chinese_original
     assert "guides/execution-simulation/" in chinese_companion
     assert "README.zh-CN/" in chinese_original
     assert "concepts/backtest-configuration.zh-CN/" in chinese_companion

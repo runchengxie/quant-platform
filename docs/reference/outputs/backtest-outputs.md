@@ -41,9 +41,10 @@ variant,scored_file,summary_path,target_col,price_col,eval_signal_col,backtest_s
 
 ## Benchmark 阶梯输出
 
-`strategy backtest benchmark-ladder` 输出每条 benchmark 的 active total return、IR、tracking
-error、beta、alpha、相关性、可比状态和 attribution 文件可用性。协议见
-`docs/concepts/benchmark-ladder.md`。
+`backtest.benchmark_compare` 可在同一次回测中追加 benchmark 对比，并生成汇总 CSV 和每条对比的报告 CSV。
+对已有策略收益和 benchmark 收益文件做事后比较，可使用 `portfolio_backtester.benchmark_ladder` 模块。
+当前没有注册 `strategy backtest benchmark-ladder` CLI 命令。详细说明见
+[`市场基准比较`](../../concepts/benchmark-ladder.en-US.md)。
 
 ## 持仓输出
 

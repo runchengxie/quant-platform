@@ -81,6 +81,53 @@ def test_turnover_reference_covers_bilingual_contract_fields() -> None:
     assert '"avg_rebalance_{field_name}"' in period_source
 
 
+def test_benchmark_comparison_docs_match_registered_interfaces() -> None:
+    english = (ROOT / "docs" / "concepts" / "benchmark-ladder.en-US.md").read_text(encoding="utf-8")
+    chinese = (ROOT / "docs" / "concepts" / "benchmark-ladder.md").read_text(encoding="utf-8")
+    output_docs = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in sorted((ROOT / "docs" / "reference" / "outputs").glob("backtest-outputs*.md"))
+    )
+    ladder = (
+        ROOT
+        / "packages"
+        / "portfolio-backtester"
+        / "src"
+        / "portfolio_backtester"
+        / "benchmark_ladder.py"
+    ).read_text(encoding="utf-8")
+    backtest_config = (
+        ROOT
+        / "packages"
+        / "portfolio-backtester"
+        / "src"
+        / "portfolio_backtester"
+        / "backtest_config.py"
+    ).read_text(encoding="utf-8")
+    artifacts = (
+        ROOT
+        / "packages"
+        / "orchestration"
+        / "src"
+        / "strategy_pipeline"
+        / "pipeline"
+        / "output_artifacts.py"
+    ).read_text(encoding="utf-8")
+
+    assert "build_benchmark_ladder(config, config_dir=...)" in english
+    assert "backtest.benchmark_compare" in english
+    assert "attribution_available" in english
+    assert "benchmark-ladder.en-US.md" in chinese
+    assert "当前没有注册 `strategy backtest benchmark-ladder` 命令" in chinese
+    assert "02800.HK" not in english + chinese
+    assert "```bash\nstrategy backtest benchmark-ladder" not in output_docs
+    assert "def build_benchmark_ladder" in ladder
+    assert "attribution_available" in ladder
+    assert "benchmark_compare" in backtest_config
+    assert "backtest_benchmark_compare_summary.csv" in artifacts
+    assert 'report_prefix="backtest_benchmark_compare"' in artifacts
+
+
 def test_testing_docs_match_script_modes() -> None:
     script = (ROOT / "scripts" / "dev" / "run_tests.sh").read_text(encoding="utf-8")
     docs = (ROOT / "docs" / "testing.zh-CN.md").read_text(encoding="utf-8")
