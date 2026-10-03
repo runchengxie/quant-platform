@@ -169,6 +169,10 @@ nav:
           - Evaluation orchestration: orchestration/evaluation.md
           - Run artifacts: orchestration/output-artifacts.en.md
           - Quality gates: orchestration/operations/quality-gates.en.md
+          - Owner integration: orchestration/integrating-an-owner.en.md
+          - Target export: orchestration/targets.en.md
+          - Output orchestration: orchestration/output-orchestration.en.md
+          - Run summary sections: orchestration/output-summary.en.md
           - References:
               - Reference overview: orchestration/reference/README.md
               - CLI helpers: orchestration/reference/cli-helpers.md

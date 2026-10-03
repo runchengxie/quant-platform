@@ -1,5 +1,7 @@
 # 运行输出编排
 
+语言：简体中文 · [English](output-orchestration.en.md)
+
 `strategy_pipeline.pipeline.output.persist_run_outputs` 负责协调一次运行的输出生命周期。
 它依次写入运行产物、生成可选证据、构建摘要、写入元数据。
 
