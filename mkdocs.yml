@@ -79,8 +79,9 @@ nav:
       - Guides:
           - Common entry points: guides/entry-points.md
           - Execution simulation: guides/execution-simulation.en.md
-          - Point-in-time research data: guides/point-in-time-data.md
-          - Sequenced execution: guides/sequenced-execution.md
+          - Point-in-time research data: guides/point-in-time-data.en.md
+          - Sequenced execution: guides/sequenced-execution.en.md
+          - Backtest output reference: reference/outputs/backtest-outputs.en.md
   - 简体中文:
       - 文档首页: README.zh-CN.md
       - 语言规范: LANGUAGE_POLICY.zh-CN.md
@@ -95,6 +96,8 @@ nav:
   - Guides (Chinese originals; translation in progress):
       - 袖套组合: guides/sleeve-portfolio.md
       - 执行模拟: guides/execution-simulation.md
+      - 按决策时点读取研究输入: guides/point-in-time-data.md
+      - 多次决策的统一执行回放: guides/sequenced-execution.md
       - 收盘诊断回放: guides/diagnostic-close-replay.md
       - 旧仓再资格: guides/incumbent-requalification.md
       - 旧仓再资格 OOS 控制: guides/incumbent-requalification-oos-controls.md

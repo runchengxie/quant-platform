@@ -20,8 +20,9 @@ def main() -> None:
     assert "指南（中文原文）" not in english
     assert "execution-simulation/" not in english
     assert "guides/execution-simulation.en/" in english
-    assert "guides/point-in-time-data/" in english
-    assert "guides/sequenced-execution/" in english
+    assert "guides/point-in-time-data.en/" in english
+    assert "guides/sequenced-execution.en/" in english
+    assert "reference/outputs/backtest-outputs.en/" in english
     assert "canonical-backtest-bundle.en/" in english
     assert "backtest-interpretation.en/" in english
     assert "Execution simulation" in english_guide
