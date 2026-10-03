@@ -38,6 +38,7 @@ ENGLISH_PAGES = {
     "concepts/differential-backtesting.en.md",
     "concepts/portfolio-optimization-backends.en.md",
     "concepts/backend-architecture.en.md",
+    "concepts/turnover.en-US.md",
     "concepts/lean-differential-spike-2026-09.md",
     "alpha/concepts/style-replica.en.md",
     "alpha/concepts/model-selection.en-US.md",

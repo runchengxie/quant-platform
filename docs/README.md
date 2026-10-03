@@ -35,7 +35,7 @@ These guides use synthetic data and small examples. They help you run the full f
 15. [Execution capacity and daily NAV simulation](guides/execution-simulation.md)
 16. [Style-factor portfolio weighting](concepts/style-factor-portfolio-weighting.md)
 17. [AFML sizing and strategy risk](concepts/afml-sizing-and-risk.md)
-18. [Turnover definitions](concepts/turnover.md)
+18. [Turnover definitions](concepts/turnover.en-US.md)
 19. [Cost breakdown](concepts/cost-breakdown.md)
 20. [Interpreting backtest results](concepts/backtest-interpretation.en.md)
 21. [Market benchmark ladder](concepts/benchmark-ladder.md)

@@ -47,6 +47,40 @@ def test_docs_use_concise_chinese_style() -> None:
     assert offenders == []
 
 
+def test_turnover_reference_covers_bilingual_contract_fields() -> None:
+    english = (ROOT / "docs" / "concepts" / "turnover.en-US.md").read_text(encoding="utf-8")
+    chinese = (ROOT / "docs" / "concepts" / "turnover.md").read_text(encoding="utf-8")
+    turnover_source = (
+        ROOT / "packages" / "portfolio-backtester" / "src" / "portfolio_backtester" / "turnover.py"
+    ).read_text(encoding="utf-8")
+    period_source = (
+        ROOT
+        / "packages"
+        / "portfolio-backtester"
+        / "src"
+        / "portfolio_backtester"
+        / "topk_context.py"
+    ).read_text(encoding="utf-8")
+
+    for field in (
+        "name_turnover",
+        "one_way_turnover",
+        "half_l1_turnover",
+        "target_name_turnover",
+        "target_weight_full_l1",
+        "pretrade_demand_half_l1",
+        "executed_full_l1",
+        "executed_cost",
+        "avg_rebalance_",
+        "rebalance_interval_sessions",
+    ):
+        assert field in english
+    assert "annualize_turnover" in english
+    assert "English canonical page" in chinese
+    assert "def annualize_turnover" in turnover_source
+    assert '"avg_rebalance_{field_name}"' in period_source
+
+
 def test_testing_docs_match_script_modes() -> None:
     script = (ROOT / "scripts" / "dev" / "run_tests.sh").read_text(encoding="utf-8")
     docs = (ROOT / "docs" / "testing.zh-CN.md").read_text(encoding="utf-8")

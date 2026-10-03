@@ -1,5 +1,7 @@
 # 换手率口径
 
+[English canonical page](turnover.en-US.md)
+
 `portfolio-backtester` 区分两类容易被混用的换手率：
 
 | 指标 | 含义 | 适用场景 |
