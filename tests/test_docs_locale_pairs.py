@@ -21,7 +21,16 @@ PAIRS = (
     ("orchestration/README.md", "orchestration/README.zh-CN.md"),
     ("orchestration/control-plane.md", "orchestration/control-plane.zh-CN.md"),
     ("orchestration/evaluation.md", "orchestration/evaluation.zh-CN.md"),
+    ("orchestration/output-artifacts.en.md", "orchestration/output-artifacts.md"),
+    (
+        "orchestration/operations/quality-gates.en.md",
+        "orchestration/operations/quality-gates.md",
+    ),
     ("orchestration/reference/README.md", "orchestration/reference/README.zh-CN.md"),
+    (
+        "orchestration/reference/runtime-helpers.en.md",
+        "orchestration/reference/runtime-helpers.md",
+    ),
     ("data/README.md", "data/README.zh-CN.md"),
     ("concepts/execution-costs.md", "concepts/execution-costs.zh-CN.md"),
     ("concepts/cost-breakdown.md", "concepts/cost-breakdown.zh-CN.md"),

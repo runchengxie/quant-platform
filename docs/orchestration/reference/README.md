@@ -7,4 +7,4 @@ This section documents public helpers used by orchestration adapters. These APIs
 - [CLI adapter helpers](cli-helpers.md) for formatting values and building argument lists.
 - [Configuration resolution](configuration.md) for YAML loading, aliases, inheritance, and nested merges.
 
-The [runtime helpers](runtime-helpers.md) page is currently available in Chinese while its English translation is in progress.
+The [runtime helpers](runtime-helpers.en.md) page documents logging, configuration hashing, and date-splitting utilities; the [Chinese original](runtime-helpers.md) remains available.
