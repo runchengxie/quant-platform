@@ -20,6 +20,8 @@ PAIRS = (
         "guides/incumbent-requalification-oos-controls.md",
     ),
     ("guides/promotion-sidecar.en.md", "guides/promotion-sidecar.md"),
+    ("guides/sleeve-portfolio.en.md", "guides/sleeve-portfolio.md"),
+    ("guides/diagnostic-close-replay.en.md", "guides/diagnostic-close-replay.md"),
     ("reference/public-api.md", "reference/public-api.zh-CN.md"),
     ("reference/allocation-reference.md", "reference/allocation-reference.zh-CN.md"),
     ("concepts/backtest-configuration.md", "concepts/backtest-configuration.zh-CN.md"),

@@ -141,6 +141,53 @@ def test_incumbent_requalification_and_promotion_guides_match_public_contracts()
         assert f"`{artifact}`" in sidecar
 
 
+def test_multi_sleeve_and_close_replay_guides_match_implementation() -> None:
+    root = Path(__file__).resolve().parents[1]
+    sleeve_doc = (root / "docs" / "guides" / "sleeve-portfolio.en.md").read_text(encoding="utf-8")
+    close_doc = (root / "docs" / "guides" / "diagnostic-close-replay.en.md").read_text(
+        encoding="utf-8"
+    )
+    sleeve_impl = (
+        root
+        / "packages"
+        / "portfolio-backtester"
+        / "src"
+        / "portfolio_backtester"
+        / "sleeve_portfolio.py"
+    ).read_text(encoding="utf-8")
+    close_impl = (
+        root
+        / "packages"
+        / "portfolio-backtester"
+        / "src"
+        / "portfolio_backtester"
+        / "target_close_replay.py"
+    ).read_text(encoding="utf-8")
+
+    for public_name in (
+        "QuotaSleeveSpec",
+        "RankBufferedSleeveSpec",
+        "SleevePortfolioSpec",
+        "build_sleeve_positions",
+        "compute_position_changes",
+        "compute_position_exposure",
+    ):
+        assert public_name in sleeve_impl
+        assert public_name in sleeve_doc
+    for contract in (
+        "formation_date",
+        "cost_bps",
+        "buy_blocked",
+        "sell_blocked",
+        "suspended",
+        "exposure",
+    ):
+        assert contract in close_impl
+        assert contract in close_doc
+    assert "first available close strictly after its formation date" in close_doc
+    assert "does not model exchange queues, partial fills" in close_doc
+
+
 def test_typecheck_script_registers_all_source_roots() -> None:
     script = (ROOT / "scripts" / "dev" / "run_tests.sh").read_text(encoding="utf-8")
 

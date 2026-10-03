@@ -84,6 +84,8 @@ nav:
           - Incumbent requalification: guides/incumbent-requalification.en.md
           - Incumbent requalification OOS bridge: guides/incumbent-requalification-oos-controls.en.md
           - Promotion-evidence execution sidecar: guides/promotion-sidecar.en.md
+          - Multi-sleeve portfolio construction: guides/sleeve-portfolio.en.md
+          - Next-close diagnostic replay: guides/diagnostic-close-replay.en.md
           - Backtest output reference: reference/outputs/backtest-outputs.en.md
       - Alpha and research:
           - Model selection: alpha/concepts/model-selection.en-US.md
