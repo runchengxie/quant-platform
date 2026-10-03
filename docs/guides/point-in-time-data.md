@@ -1,5 +1,7 @@
 # 按决策时点读取研究输入
 
+语言：简体中文 · [English](point-in-time-data.en.md)
+
 `portfolio_backtester.point_in_time.PointInTimeDataView` 为每次策略决策绑定一个 `research.clock.v1`。读取时仅返回在 `information_cutoff_at` 之前已发布的记录。行情等需要限制事件日期的数据，还要声明 `event_at_col`。两个时间列都必须带时区，未知时间会拒绝加载。
 
 ```python

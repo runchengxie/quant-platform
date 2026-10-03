@@ -12,6 +12,8 @@ PAIRS = (
     ("getting-started/understanding-results.md", "getting-started/understanding-results.zh-CN.md"),
     ("reference/glossary.md", "reference/glossary.zh-CN.md"),
     ("guides/entry-points.md", "guides/entry-points.zh-CN.md"),
+    ("guides/point-in-time-data.en.md", "guides/point-in-time-data.md"),
+    ("guides/sequenced-execution.en.md", "guides/sequenced-execution.md"),
     ("reference/public-api.md", "reference/public-api.zh-CN.md"),
     ("reference/allocation-reference.md", "reference/allocation-reference.zh-CN.md"),
     ("concepts/backtest-configuration.md", "concepts/backtest-configuration.zh-CN.md"),
@@ -24,6 +26,10 @@ PAIRS = (
     ("concepts/execution-costs.md", "concepts/execution-costs.zh-CN.md"),
     ("concepts/cost-breakdown.md", "concepts/cost-breakdown.zh-CN.md"),
     ("reference/outputs/positions.md", "reference/outputs/positions.zh-CN.md"),
+    (
+        "reference/outputs/backtest-outputs.en.md",
+        "reference/outputs/backtest-outputs.md",
+    ),
     ("testing.md", "testing.zh-CN.md"),
     (
         "orchestration/reference/configuration.md",

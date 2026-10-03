@@ -1,5 +1,7 @@
 # 回测输出契约
 
+语言：简体中文 · [English](backtest-outputs.en.md)
+
 本页记录组合回测侧输出的报告文件与字段契约。运行编排和通用产物生命周期见
 [输出摘要](../../orchestration/output-summary.md)。`summary.json` 字段和文件交接见
 [公开 API 与产物契约](../../reference/public-api.md)。
