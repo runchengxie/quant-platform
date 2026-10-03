@@ -1,5 +1,7 @@
 """Check representative language-specific sidebars in a built MkDocs site."""
 
+import re
+from html.parser import HTMLParser
 from pathlib import Path
 
 SITE = Path(__file__).resolve().parents[1] / "site"
@@ -8,6 +10,23 @@ SITE = Path(__file__).resolve().parents[1] / "site"
 def primary_navigation(path: str) -> str:
     html = (SITE / path / "index.html").read_text(encoding="utf-8")
     return html.split("md-sidebar--primary", 1)[1].split("md-sidebar--secondary", 1)[0]
+
+
+class _VisibleText(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.parts: list[str] = []
+
+    def handle_data(self, data: str) -> None:
+        if data.strip():
+            self.parts.append(data.strip())
+
+
+def assert_no_chinese_navigation(html: str) -> None:
+    parser = _VisibleText()
+    parser.feed(html)
+    text = " ".join(parser.parts)
+    assert not re.search(r"[\u4e00-\u9fff]", text), text
 
 
 def main() -> None:
@@ -20,6 +39,11 @@ def main() -> None:
     chinese_original = primary_navigation("guides/execution-simulation")
 
     assert "Core concepts" in english
+    assert "Additional research topics" in english
+    assert "其他风险与研究主题" not in english
+    assert_no_chinese_navigation(english)
+    assert_no_chinese_navigation(english_guide)
+    assert_no_chinese_navigation(english_orchestration)
     assert "Turnover definitions" in english_turnover
     assert "Market benchmark comparisons" in english_benchmark_ladder
     assert "../turnover.en-US/" in english
