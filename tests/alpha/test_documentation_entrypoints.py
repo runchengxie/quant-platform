@@ -196,12 +196,8 @@ def test_model_selection_covers_training_and_artifact_roles() -> None:
 
 
 def test_english_model_docs_match_the_registered_types() -> None:
-    landscape = (ALPHA_DOCS / "concepts" / "model-landscape.en-US.md").read_text(
-        encoding="utf-8"
-    )
-    selection = (ALPHA_DOCS / "concepts" / "model-selection.en-US.md").read_text(
-        encoding="utf-8"
-    )
+    landscape = (ALPHA_DOCS / "concepts" / "model-landscape.en-US.md").read_text(encoding="utf-8")
+    selection = (ALPHA_DOCS / "concepts" / "model-selection.en-US.md").read_text(encoding="utf-8")
 
     for model_type in SUPPORTED_MODEL_TYPES:
         assert f"`{model_type}`" in landscape
