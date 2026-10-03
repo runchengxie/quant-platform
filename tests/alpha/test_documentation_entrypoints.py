@@ -179,7 +179,8 @@ def test_model_landscape_matches_current_registry_and_research_state() -> None:
     for model_type in SUPPORTED_MODEL_TYPES:
         assert f"`{model_type}`" in docs
     assert "当前默认研究主线是 A 股" in docs
-    assert "随机森林尚未进入模型注册表" in docs
+    assert "随机森林已进入模型注册表" in docs
+    assert "English canonical" in docs
     assert "Triple Barrier 标签已经" in docs
     assert "HK quarterly" not in docs
     assert len(docs.splitlines()) < 120
@@ -192,6 +193,23 @@ def test_model_selection_covers_training_and_artifact_roles() -> None:
         assert f"`{model_type}`" in docs
     assert "不训练预测模型" in docs
     assert "A 股预设当前使用 `xgb_regressor`" in docs
+
+
+def test_english_model_docs_match_the_registered_types() -> None:
+    landscape = (ALPHA_DOCS / "concepts" / "model-landscape.en-US.md").read_text(
+        encoding="utf-8"
+    )
+    selection = (ALPHA_DOCS / "concepts" / "model-selection.en-US.md").read_text(
+        encoding="utf-8"
+    )
+
+    for model_type in SUPPORTED_MODEL_TYPES:
+        assert f"`{model_type}`" in landscape
+        assert f"`{model_type}`" in selection
+    assert "six trainable models and one frozen-score replay adapter" in landscape
+    assert "random_forest_regressor" in selection
+    assert "out-of-bag scores do not replace out-of-time validation" in selection
+    assert "does not expose alpha model-tuning or linear-sweep commands" in selection
 
 
 def test_minute_and_signal_contract_docs_are_indexed_and_complete() -> None:

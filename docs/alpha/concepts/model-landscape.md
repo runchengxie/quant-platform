@@ -1,18 +1,20 @@
 # 模型范围与扩展条件
 
+语言：简体中文 · [English canonical](model-landscape.en-US.md)
+
 > status: reference
 > owner: quant-market-research
-> last_verified: 2026-07-16
+> last_verified: 2026-10-03
 > source_of_truth: yes
 > superseded_by: n/a
 
-本页记录当前模型注册表、尚未覆盖的诊断问题，以及新增模型需要满足的条件。模型选择和配置示例见 [model-selection.md](model-selection.md)。统一比较协议见[基准阶梯](../../concepts/benchmark-ladder.md)。
+本页记录当前模型注册表、尚未覆盖的诊断问题，以及新增模型需要满足的条件。模型选择和配置示例见 [model-selection.md](model-selection.md) · [English](model-selection.en-US.md)。统一比较协议见[基准阶梯](../../concepts/benchmark-ladder.md)。
 
 模型家族和扩展条件由 `quant-market-research` 维护。`quant-platform` 中的 `strategy_pipeline` 负责配置、命令和实验编排。
 
 ## 当前模型注册表
 
-当前默认研究主线是 A 股，示例配置使用 `xgb_regressor`。注册表共包含五类入口。
+当前默认研究主线是 A 股，示例配置使用 `xgb_regressor`。注册表包含六种可训练模型和一个冻结分数回放适配器。
 
 | 模型类型 | 当前角色 | 主要用途 |
 | --- | --- | --- |
@@ -24,20 +26,20 @@
 | `elasticnet` | 稀疏线性对照 | 检查收缩和特征稀疏化是否带来增量 |
 | `fixed_score_artifact` | 固定分数产物适配器 | 读取外部冻结分数，支持确定性回放和跨系统交接 |
 
-前四类会训练模型。`fixed_score_artifact` 只回放已有分数，不参与训练模型的优劣比较。
+前六种会训练模型。`fixed_score_artifact` 只回放已有分数，不参与训练模型的优劣比较。注册表及默认参数见 `packages/alpha/src/alpha_research/modeling.py`。
 
 ## 当前诊断空白
 
 ### 非线性基础校验
 
-现有模型可以比较线性关系、XGBoost 回归和排序目标，但缺少不使用 boosting 的树模型对照。随机森林适合回答非线性关系本身是否有增量。随机森林尚未进入模型注册表，也没有配置和行为契约。
+随机森林已进入模型注册表，可作为不使用 boosting 的树模型对照，用于检查树模型的非线性关系是否带来增量。
 
 建议使用以下诊断顺序：
 
 1. 无特征市场基准，确认策略是否只获得市场收益。
 2. `ridge_scaled`，在异尺度财务特征下检查线性信号。
 3. `ridge`，仅在特征已同尺度时作为兼容性对照。
-4. 随机森林候选，隔离树模型的非线性增量。
+4. `random_forest_regressor`，检查树模型非线性带来的增量。
 5. `xgb_regressor`，检查 boosting 带来的增量。
 6. `xgb_ranker`，检查排序目标带来的增量。
 
@@ -53,7 +55,6 @@ Triple Barrier 标签已经由 `alpha_research.event_labeling` 提供，可以�
 
 | 候选方向 | 能补充的证据 | 扩展条件 |
 | --- | --- | --- |
-| 随机森林 | 区分树模型非线性与 boosting 增量 | 完成注册、参数契约、行为测试和统一基准比较 |
 | LightGBM 或 CatBoost | 检查结果是否依赖 XGBoost 实现 | 现有协议稳定，新增依赖和维护成本可控 |
 | 分位数回归或 NGBoost | 提供收益分布和尾部风险证据 | 明确评价指标，并证明分布信息会改变组合决策 |
 | 生存模型 | 预测屏障事件及发生时间 | Triple Barrier 事件表稳定，生存训练与评价契约完整 |

@@ -82,6 +82,9 @@ nav:
           - Point-in-time research data: guides/point-in-time-data.en.md
           - Sequenced execution: guides/sequenced-execution.en.md
           - Backtest output reference: reference/outputs/backtest-outputs.en.md
+      - Alpha and research:
+          - Model selection: alpha/concepts/model-selection.en-US.md
+          - Model landscape: alpha/concepts/model-landscape.en-US.md
   - 简体中文:
       - 文档首页: README.zh-CN.md
       - 语言规范: LANGUAGE_POLICY.zh-CN.md

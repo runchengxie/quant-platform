@@ -1,12 +1,14 @@
 # 模型选择指南
 
+语言：简体中文 · [English canonical](model-selection.en-US.md)
+
 > status: active
 > owner: quant-market-research
-> last_verified: 2026-07-16
+> last_verified: 2026-10-03
 > source_of_truth: yes
 > superseded_by: n/a
 
-本页帮助研究者在四个可训练模型中选择起点。模型注册范围和扩展条件见 [model-landscape.md](model-landscape.md)。参数定义和命令说明见[编排配置](../../orchestration/reference/configuration.md)与[CLI 辅助工具](../../orchestration/reference/cli-helpers.md)。
+本页帮助研究者选择模型起点。模型注册范围和扩展条件见 [model-landscape.md](model-landscape.md) · [English](model-landscape.en-US.md)。参数定义和命令说明见[编排配置](../../orchestration/reference/configuration.md)与[CLI 辅助工具](../../orchestration/reference/cli-helpers.md)。
 
 模型注册表还包含 `fixed_score_artifact`。它读取外部冻结分数，不训练预测模型，因此单独放在产物回放流程中使用。
 
@@ -96,19 +98,7 @@ model:
 
 ## 参数搜索
 
-下列 `strategy` 命令由本仓库的 `strategy_pipeline` 提供，研究实现位于 alpha 研究层。
-
-线性模型搜索覆盖 `ridge` 和 `elasticnet`：
-
-```bash
-strategy alpha sweep-linear --config default --tag a_share_linear_probe --dry-run
-```
-
-XGBoost 参数和训练结构搜索使用：
-
-```bash
-strategy alpha tune --tune-config path/to/tune.yml
-```
+当前公开的 `strategy-pipeline` CLI 不提供 alpha 模型调参或线性模型扫描命令。旧文档中的 `strategy alpha tune`、`strategy alpha sweep-linear` 和 `strategy summarize` 已不属于当前 CLI。使用旧说明前，请先运行 `strategy-pipeline --help` 确认可用命令。
 
 调参时建议遵守以下边界：
 
@@ -120,18 +110,12 @@ strategy alpha tune --tune-config path/to/tune.yml
 
 ## 运行后检查
 
-至少检查 `summary.json` 中的以下内容：
+至少检查运行摘要和评估产物中的以下字段：
 
-1. `flag_constant_prediction`，识别常数预测。
-2. `flag_zero_feature_importance`，识别全零重要度。
+1. `eval.constant_prediction`，识别常数预测。
+2. `eval.zero_feature_importance`，识别全零重要度。
 3. `train_ic` 与 `test_ic`，观察训练和测试差距。
 4. `backtest_sharpe`、换手和成本，判断收益是否具备执行价值。
 5. 前推验证和最终样本外证据，判断结果是否跨时间稳定。
-
-汇总时可以排除已确认的退化运行：
-
-```bash
-strategy summarize --runs-dir artifacts/runs --exclude-flag-constant-prediction --exclude-flag-zero-feature-importance
-```
 
 正式比较模型时，应统一数据资产、标签、时间切分、成本和组合构造。研究治理要求见 [overfitting-controls.md](overfitting-controls.md)。

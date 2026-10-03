@@ -44,6 +44,8 @@ PAIRS = (
         "reference/outputs/backtest-outputs.md",
     ),
     ("testing.md", "testing.zh-CN.md"),
+    ("alpha/concepts/model-selection.en-US.md", "alpha/concepts/model-selection.md"),
+    ("alpha/concepts/model-landscape.en-US.md", "alpha/concepts/model-landscape.md"),
     (
         "orchestration/reference/configuration.md",
         "orchestration/reference/configuration.zh-CN.md",
