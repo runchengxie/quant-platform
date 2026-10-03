@@ -28,7 +28,7 @@
 3. [通用多策略袖套组合构造](guides/sleeve-portfolio.md)
 4. [组合式回测规范](concepts/backtest-spec.md)
 5. [回测配置解析](concepts/backtest-configuration.md)
-6. [回测后端与统一账本边界](concepts/backend-architecture.md)
+6. [回测后端边界](concepts/backend-architecture.md)
 7. [机器可读框架状态账本](https://github.com/runchengxie/quant-platform/blob/main/docs/framework-integration-ledger.yml)
 8. [成本与执行假设](concepts/execution-costs.md)
 9. [执行容量与每日净值模拟](guides/execution-simulation.md)

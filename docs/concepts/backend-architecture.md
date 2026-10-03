@@ -1,10 +1,12 @@
 # 回测后端边界
 
+语言：简体中文 · [English](backend-architecture.en.md)
+
 本页记录 `portfolio-backtester` 当前已经落地的后端边界，以及历史候选、参考框架和规划项的真实状态。
 
 ## 当前结论
 
-当前主分支只有 `NativePositionReplayBackend` 实现。当前 registry 只包含 `native.position_replay`。
+当前 `BackendRegistry` 只登记 `native.position_replay`，对应实现为 `NativePositionReplayBackend`。包还公开了独立调用的 `SequencedExecutionBackend`，它不在该 registry 中。
 
 ```text
 外部信号或目标持仓
@@ -22,7 +24,7 @@ NativePositionReplayBackend
 CanonicalBacktestResult
 ```
 
-`BackendRegistry` 提供显式登记和查找机制，不会自动发现插件。主分支没有第三方回测框架的适配器，也没有对应的运行时依赖。
+`BackendRegistry` 提供显式登记和查找机制，不会自动发现插件。主分支没有第三方回测框架适配器。`pyqlib` 仅作为可选依赖 extra 声明，不代表当前存在 Qlib 后端。两种原生 API 的输入与用途见下文。
 
 ## 框架状态
 
@@ -66,7 +68,10 @@ vn.py 属于本仓库范围外。本仓库不维护 Gateway、实时订单传输
 - `CanonicalBacktestResult`
 - `BackendRegistry`
 - `NativePositionReplayBackend`
+- `SequencedExecutionBackend`
 - `write_execution_aware_result_bundle`
+
+`NativePositionReplayBackend` 将现有持仓周期回放转换为规范化结果，并可通过 `ledger=True` 额外运行执行模拟、附加订单和每日账本。`SequencedExecutionBackend` 接收多次决策的目标持仓和逐决策时钟，调用共享的每日执行模拟器。它要求调用方另行证明生成目标所用输入在决策截止时点可见。两者都返回 `CanonicalBacktestResult`，但只有前者由当前 registry 登记。
 
 每个后端都要声明订单生命周期、部分成交、每日账本和多空能力。缺少相应能力时，规范化结果中的相关表保持为空。
 

@@ -34,6 +34,7 @@ PAIRS = (
         "concepts/portfolio-optimization-backends.en.md",
         "concepts/portfolio-optimization-backends.md",
     ),
+    ("concepts/backend-architecture.en.md", "concepts/backend-architecture.md"),
     ("orchestration/README.md", "orchestration/README.zh-CN.md"),
     ("orchestration/control-plane.md", "orchestration/control-plane.zh-CN.md"),
     ("orchestration/evaluation.md", "orchestration/evaluation.zh-CN.md"),

@@ -476,7 +476,9 @@ def test_docs_distinguish_current_backends_from_history_and_plans() -> None:
     )
     docs = "\n".join((readme, agents, architecture))
 
-    assert "registry 只包含 `native.position_replay`" in docs
+    assert "`BackendRegistry` 只登记 `native.position_replay`" in docs
+    assert "`SequencedExecutionBackend`" in architecture
+    assert "它不在该 registry 中" in architecture
     assert "Qlib 与 LEAN 的历史候选没有进入 `main`" in docs
     assert "LEAN 只" in docs and "架构参考" in docs
     assert "no-adoption" in docs
