@@ -132,6 +132,8 @@ def test_incumbent_requalification_and_promotion_guides_match_public_contracts()
         assert f"`{policy_field}`" in incumbent
     assert "rank_universe=\"hard_eligible\"" in incumbent
     assert "rank_universe=\"entry_plus_incumbents\"" in incumbent
+    assert "`cash_weight=1.0`" in oos
+    assert "Missing either field raises an error" in oos
     assert "stateful_incumbent_requalification_daily_rows" in bridge
     assert "stateless_incumbent_requalification_daily_rows" in bridge
     assert "hard_eligibility_col" in bridge
