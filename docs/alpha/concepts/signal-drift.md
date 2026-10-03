@@ -1,5 +1,7 @@
 # 信号分布漂移
 
+语言：简体中文 · [English canonical](signal-drift.en-US.md)
+
 `alpha_research.signal_drift` 提供与框架无关的分布诊断，用于比较冻结的研究或参考信号群体与后续纸面或实盘信号群体。
 
 首份报告包括：

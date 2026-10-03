@@ -16,6 +16,9 @@
 | 项目定位和安装 | [根目录 README](https://github.com/runchengxie/quant-platform/blob/main/README.md) |
 | 模型选择 | [English canonical](concepts/model-selection.en-US.md) · [中文参考](concepts/model-selection.md) |
 | 模型版图 | [English canonical](concepts/model-landscape.en-US.md) · [中文参考](concepts/model-landscape.md) |
+| 因子目录 | [English canonical](concepts/factor-catalog.en-US.md) · [中文参考](concepts/factor-catalog.md) |
+| 因子风险模型 | [English canonical](concepts/factor-risk-model.en-US.md) · [中文参考](concepts/factor-risk-model.md) |
+| 信号漂移 | [English canonical](concepts/signal-drift.en-US.md) · [中文参考](concepts/signal-drift.md) |
 | 过拟合控制 | [concepts/overfitting-controls.md](concepts/overfitting-controls.md) |
 | 分级研究协议 | [concepts/research-protocols.md](concepts/research-protocols.md) |
 | 特征研究协议 | [concepts/feature-research-protocol.md](concepts/feature-research-protocol.md) |

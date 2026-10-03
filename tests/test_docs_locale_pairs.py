@@ -46,6 +46,9 @@ PAIRS = (
     ("testing.md", "testing.zh-CN.md"),
     ("alpha/concepts/model-selection.en-US.md", "alpha/concepts/model-selection.md"),
     ("alpha/concepts/model-landscape.en-US.md", "alpha/concepts/model-landscape.md"),
+    ("alpha/concepts/factor-catalog.en-US.md", "alpha/concepts/factor-catalog.md"),
+    ("alpha/concepts/factor-risk-model.en-US.md", "alpha/concepts/factor-risk-model.md"),
+    ("alpha/concepts/signal-drift.en-US.md", "alpha/concepts/signal-drift.md"),
     (
         "orchestration/reference/configuration.md",
         "orchestration/reference/configuration.zh-CN.md",
