@@ -1,5 +1,7 @@
 # 收盘成交诊断回放
 
+语言：简体中文 · [English](diagnostic-close-replay.en.md)
+
 `portfolio_backtester.target_close_replay.replay_close_targets` 用于在明确的
 交易日历上比较目标持仓。它使用可分割的调整后份额，不是券商成交或现金分红账本。
 

@@ -26,6 +26,8 @@ ENGLISH_PAGES = {
     "guides/incumbent-requalification.en.md",
     "guides/incumbent-requalification-oos-controls.en.md",
     "guides/promotion-sidecar.en.md",
+    "guides/sleeve-portfolio.en.md",
+    "guides/diagnostic-close-replay.en.md",
     "reference/outputs/backtest-outputs.en.md",
     "concepts/backtest-configuration.md",
     "concepts/backtest-spec.md",

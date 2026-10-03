@@ -1,5 +1,7 @@
 # 通用多袖组合构造
 
+语言：简体中文 · [English](sleeve-portfolio.en.md)
+
 `portfolio_backtester.sleeve_portfolio` 负责把上游已经打分的候选转换为目标持仓。它只拥有通用组合机制，不保存具体策略名称、研究假设或模型版本。
 
 当前公开对象：
