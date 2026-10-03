@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from html.parser import HTMLParser
-from pathlib import Path
 import subprocess
 import sys
+from html.parser import HTMLParser
+from pathlib import Path
 
 PAIRS = (
     ("../README.md", "../README.zh-CN.md"),
