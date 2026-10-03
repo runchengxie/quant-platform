@@ -1,5 +1,7 @@
 # 运行摘要
 
+语言：简体中文 · [English](output-summary.en.md)
+
 `strategy_pipeline.pipeline.output_summary_sections` 负责把一次研究运行的上下文和产物引用整理成结构化摘要。
 
 它只处理通用的结果编排，包括运行信息、数据范围、数据集、信号产物、评估结果、组合回放、持仓、质量检查和 walk-forward 结果。策略逻辑、特征定义、数据 provider、凭证和执行策略由 owner 仓库提供。

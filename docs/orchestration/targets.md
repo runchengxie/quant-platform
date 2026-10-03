@@ -1,5 +1,7 @@
 # 目标文件导出
 
+语言：简体中文 · [English](targets.en.md)
+
 公共 pipeline 提供 `export-targets`，负责把 owner 生成的 holdings JSON 转换为标准
 `quant-execution-engine.targets/v2` 目标文件。它只处理文件格式、市场后缀和基本数值校验，
 不读取策略配置，不加载数据 provider，也不连接券商。

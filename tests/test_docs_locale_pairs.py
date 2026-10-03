@@ -22,6 +22,10 @@ PAIRS = (
     ("orchestration/control-plane.md", "orchestration/control-plane.zh-CN.md"),
     ("orchestration/evaluation.md", "orchestration/evaluation.zh-CN.md"),
     ("orchestration/output-artifacts.en.md", "orchestration/output-artifacts.md"),
+    ("orchestration/integrating-an-owner.en.md", "orchestration/integrating-an-owner.md"),
+    ("orchestration/targets.en.md", "orchestration/targets.md"),
+    ("orchestration/output-orchestration.en.md", "orchestration/output-orchestration.md"),
+    ("orchestration/output-summary.en.md", "orchestration/output-summary.md"),
     (
         "orchestration/operations/quality-gates.en.md",
         "orchestration/operations/quality-gates.md",

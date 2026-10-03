@@ -1,5 +1,7 @@
 # 接入 owner 实现
 
+语言：简体中文 · [English](integrating-an-owner.en.md)
+
 owner 仓库提供领域行为并实现公共 protocol。adapter 只负责转换公共 request、调用
 owner，然后返回经过校验的 `ArtifactRef`。
 
