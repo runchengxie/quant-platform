@@ -87,15 +87,13 @@ def test_documentation_build_excludes_historical_archives() -> None:
 
 def test_incumbent_requalification_and_promotion_guides_match_public_contracts() -> None:
     root = Path(__file__).resolve().parents[1]
-    incumbent = (
-        root / "docs" / "guides" / "incumbent-requalification.en.md"
-    ).read_text(encoding="utf-8")
-    oos = (
-        root / "docs" / "guides" / "incumbent-requalification-oos-controls.en.md"
-    ).read_text(encoding="utf-8")
-    sidecar = (root / "docs" / "guides" / "promotion-sidecar.en.md").read_text(
+    incumbent = (root / "docs" / "guides" / "incumbent-requalification.en.md").read_text(
         encoding="utf-8"
     )
+    oos = (root / "docs" / "guides" / "incumbent-requalification-oos-controls.en.md").read_text(
+        encoding="utf-8"
+    )
+    sidecar = (root / "docs" / "guides" / "promotion-sidecar.en.md").read_text(encoding="utf-8")
     selector = (
         root
         / "packages"
@@ -130,8 +128,8 @@ def test_incumbent_requalification_and_promotion_guides_match_public_contracts()
     ):
         assert policy_field in selector
         assert f"`{policy_field}`" in incumbent
-    assert "rank_universe=\"hard_eligible\"" in incumbent
-    assert "rank_universe=\"entry_plus_incumbents\"" in incumbent
+    assert 'rank_universe="hard_eligible"' in incumbent
+    assert 'rank_universe="entry_plus_incumbents"' in incumbent
     assert "`cash_weight=1.0`" in oos
     assert "Missing either field raises an error" in oos
     assert "stateful_incumbent_requalification_daily_rows" in bridge
