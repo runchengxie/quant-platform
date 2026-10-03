@@ -38,7 +38,7 @@ These guides use synthetic data and small examples. They help you run the full f
 18. [Turnover definitions](concepts/turnover.en-US.md)
 19. [Cost breakdown](concepts/cost-breakdown.md)
 20. [Interpreting backtest results](concepts/backtest-interpretation.en.md)
-21. [Market benchmark ladder](concepts/benchmark-ladder.md)
+21. [Market benchmark comparisons](concepts/benchmark-ladder.en-US.md)
 22. [Position output contract](reference/outputs/positions.md)
 23. [Backtest output contract](reference/outputs/backtest-outputs.md)
 24. [Execution allocation reference assets](reference/allocation-reference.md)

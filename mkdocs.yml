@@ -122,6 +122,7 @@ nav:
       - Execution costs and assumptions: concepts/execution-costs.md
       - Cost breakdown: concepts/cost-breakdown.md
       - Turnover definitions: concepts/turnover.en-US.md
+      - Market benchmark comparisons: concepts/benchmark-ladder.en-US.md
       - Differential backtesting: concepts/differential-backtesting.en.md
       - Portfolio optimization backends: concepts/portfolio-optimization-backends.en.md
       - Backtest backend boundary: concepts/backend-architecture.en.md
