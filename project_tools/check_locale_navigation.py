@@ -1,10 +1,13 @@
 """Check representative language-specific sidebars in a built MkDocs site."""
 
 import re
+import runpy
 from html.parser import HTMLParser
 from pathlib import Path
 
-SITE = Path(__file__).resolve().parents[1] / "site"
+ROOT = Path(__file__).resolve().parents[1]
+SITE = ROOT / "site"
+ENGLISH_PAGES = runpy.run_path(str(ROOT / "docs/hooks/locale_navigation.py"))["ENGLISH_PAGES"]
 
 
 def primary_navigation(path: str) -> str:
@@ -29,6 +32,14 @@ def assert_no_chinese_navigation(html: str) -> None:
     assert not re.search(r"[\u4e00-\u9fff]", text), text
 
 
+def check_all_english_pages() -> None:
+    for source in sorted(ENGLISH_PAGES):
+        path = Path(source)
+        route = path.parent if path.name in {"README.md", "index.md"} else path.with_suffix("")
+        navigation = primary_navigation(route.as_posix())
+        assert_no_chinese_navigation(navigation)
+
+
 def main() -> None:
     english = primary_navigation("concepts/lean-differential-spike-2026-09")
     english_turnover = primary_navigation("concepts/turnover.en-US")
@@ -44,6 +55,7 @@ def main() -> None:
     assert_no_chinese_navigation(english)
     assert_no_chinese_navigation(english_guide)
     assert_no_chinese_navigation(english_orchestration)
+    check_all_english_pages()
     assert "Turnover definitions" in english_turnover
     assert "Market benchmark comparisons" in english_benchmark_ladder
     assert "../turnover.en-US/" in english
