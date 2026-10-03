@@ -88,6 +88,7 @@ nav:
           - Factor catalog: alpha/concepts/factor-catalog.en-US.md
           - Factor risk model: alpha/concepts/factor-risk-model.en-US.md
           - Signal drift: alpha/concepts/signal-drift.en-US.md
+          - Factor-expression DSL: alpha/concepts/factor-expression.en-US.md
   - 简体中文:
       - 文档首页: README.zh-CN.md
       - 语言规范: LANGUAGE_POLICY.zh-CN.md

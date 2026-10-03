@@ -19,6 +19,7 @@
 | 因子目录 | [English canonical](concepts/factor-catalog.en-US.md) · [中文参考](concepts/factor-catalog.md) |
 | 因子风险模型 | [English canonical](concepts/factor-risk-model.en-US.md) · [中文参考](concepts/factor-risk-model.md) |
 | 信号漂移 | [English canonical](concepts/signal-drift.en-US.md) · [中文参考](concepts/signal-drift.md) |
+| 因子公式 DSL | [English canonical](concepts/factor-expression.en-US.md) · [中文参考](concepts/factor-expression.md) |
 | 过拟合控制 | [concepts/overfitting-controls.md](concepts/overfitting-controls.md) |
 | 分级研究协议 | [concepts/research-protocols.md](concepts/research-protocols.md) |
 | 特征研究协议 | [concepts/feature-research-protocol.md](concepts/feature-research-protocol.md) |
