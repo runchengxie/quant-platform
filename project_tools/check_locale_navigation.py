@@ -1,8 +1,8 @@
 """Check representative language-specific sidebars in a built MkDocs site."""
 
+import re
 from html.parser import HTMLParser
 from pathlib import Path
-import re
 
 SITE = Path(__file__).resolve().parents[1] / "site"
 
