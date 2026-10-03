@@ -26,6 +26,14 @@ PAIRS = (
     ("reference/allocation-reference.md", "reference/allocation-reference.zh-CN.md"),
     ("concepts/backtest-configuration.md", "concepts/backtest-configuration.zh-CN.md"),
     ("concepts/backtest-spec.md", "concepts/backtest-spec.zh-CN.md"),
+    (
+        "concepts/differential-backtesting.en.md",
+        "concepts/differential-backtesting.md",
+    ),
+    (
+        "concepts/portfolio-optimization-backends.en.md",
+        "concepts/portfolio-optimization-backends.md",
+    ),
     ("orchestration/README.md", "orchestration/README.zh-CN.md"),
     ("orchestration/control-plane.md", "orchestration/control-plane.zh-CN.md"),
     ("orchestration/evaluation.md", "orchestration/evaluation.zh-CN.md"),
