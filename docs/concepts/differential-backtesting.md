@@ -1,5 +1,7 @@
 # 差异化回测
 
+语言：简体中文 · [English](differential-backtesting.en.md)
+
 外部回测框架在这里主要用于独立对照，不作为新的事实来源。每个适配器先把输出归一化为 `CanonicalBacktestResult`，然后由 `compare_backtest_results()` 与指定参考后端比较。
 
 当前报告会按以下维度定位差异：

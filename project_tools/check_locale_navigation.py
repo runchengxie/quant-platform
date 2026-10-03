@@ -28,6 +28,8 @@ def main() -> None:
     assert "guides/promotion-sidecar.en/" in english
     assert "guides/sleeve-portfolio.en/" in english
     assert "guides/diagnostic-close-replay.en/" in english
+    assert "../differential-backtesting.en/" in english
+    assert "../portfolio-optimization-backends.en/" in english
     assert "reference/outputs/backtest-outputs.en/" in english
     assert "canonical-backtest-bundle.en/" in english
     assert "backtest-interpretation.en/" in english

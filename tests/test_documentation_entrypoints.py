@@ -188,6 +188,59 @@ def test_multi_sleeve_and_close_replay_guides_match_implementation() -> None:
     assert "does not model exchange queues, partial fills" in close_doc
 
 
+def test_differential_and_optimizer_guides_match_current_contracts() -> None:
+    root = Path(__file__).resolve().parents[1]
+    differential_doc = (root / "docs" / "concepts" / "differential-backtesting.en.md").read_text(
+        encoding="utf-8"
+    )
+    optimization_doc = (
+        root / "docs" / "concepts" / "portfolio-optimization-backends.en.md"
+    ).read_text(encoding="utf-8")
+    differential_impl = (
+        root
+        / "packages"
+        / "portfolio-backtester"
+        / "src"
+        / "portfolio_backtester"
+        / "differential_backtest.py"
+    ).read_text(encoding="utf-8")
+    optimization_impl = (
+        root
+        / "packages"
+        / "portfolio-backtester"
+        / "src"
+        / "portfolio_backtester"
+        / "optimization.py"
+    ).read_text(encoding="utf-8")
+    exports = (
+        root / "packages" / "portfolio-backtester" / "src" / "portfolio_backtester" / "__init__.py"
+    ).read_text(encoding="utf-8")
+
+    assert "CanonicalBacktestResult" in differential_impl
+    assert "compare_backtest_results" in differential_impl
+    assert '"daily_ledger"' in differential_impl
+    assert '"capability_differences"' in differential_impl
+    assert "compared by row count only" in differential_doc
+    for backend_name in (
+        "native.equal_weight",
+        "native.hrp",
+        "native.inverse_vol",
+        "native.qp_min_variance",
+    ):
+        assert backend_name in optimization_impl
+        assert f"`{backend_name}`" in optimization_doc
+    for public_name in (
+        "PortfolioOptimizationRequest",
+        "PortfolioOptimizationResult",
+        "LinearExposureConstraint",
+    ):
+        assert f'"{public_name}"' in exports
+        assert f"`{public_name}`" in optimization_doc
+    assert "constraint_residuals" in optimization_impl
+    assert "`<name>.upper`" in optimization_doc
+    assert "portfolio_optimization_result.v1" in optimization_impl
+
+
 def test_typecheck_script_registers_all_source_roots() -> None:
     script = (ROOT / "scripts" / "dev" / "run_tests.sh").read_text(encoding="utf-8")
 
