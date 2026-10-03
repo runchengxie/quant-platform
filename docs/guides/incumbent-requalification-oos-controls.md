@@ -1,5 +1,7 @@
 # 旧仓再资格样本外（OOS）对照桥
 
+语言：简体中文 · [English](incumbent-requalification-oos-controls.en.md)
+
 `portfolio_backtester.incumbent_requalification_oos` 提供两条共享同一组合政策和诊断口径的逐日 OOS 桥：
 
 - `stateful_incumbent_requalification_daily_rows`：把上一日目标持仓传给选择器，允许旧仓在退出缓冲区内继续持有。

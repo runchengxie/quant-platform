@@ -1,5 +1,7 @@
 # 晋级证据 sidecar
 
+语言：简体中文 · [English](promotion-sidecar.en.md)
+
 `portfolio_backtester.promotion_sidecar` 根据已构造的目标持仓和历史行情，模拟成交、订单、持仓、现金与约束事件。它用于研究晋级阶段的可交易性证据，不替代执行引擎的真实下单和风控流程。
 
 ```python

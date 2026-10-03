@@ -81,6 +81,9 @@ nav:
           - Execution simulation: guides/execution-simulation.en.md
           - Point-in-time research data: guides/point-in-time-data.en.md
           - Sequenced execution: guides/sequenced-execution.en.md
+          - Incumbent requalification: guides/incumbent-requalification.en.md
+          - Incumbent requalification OOS bridge: guides/incumbent-requalification-oos-controls.en.md
+          - Promotion-evidence execution sidecar: guides/promotion-sidecar.en.md
           - Backtest output reference: reference/outputs/backtest-outputs.en.md
       - Alpha and research:
           - Model selection: alpha/concepts/model-selection.en-US.md

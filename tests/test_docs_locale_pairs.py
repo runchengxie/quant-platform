@@ -14,6 +14,12 @@ PAIRS = (
     ("guides/entry-points.md", "guides/entry-points.zh-CN.md"),
     ("guides/point-in-time-data.en.md", "guides/point-in-time-data.md"),
     ("guides/sequenced-execution.en.md", "guides/sequenced-execution.md"),
+    ("guides/incumbent-requalification.en.md", "guides/incumbent-requalification.md"),
+    (
+        "guides/incumbent-requalification-oos-controls.en.md",
+        "guides/incumbent-requalification-oos-controls.md",
+    ),
+    ("guides/promotion-sidecar.en.md", "guides/promotion-sidecar.md"),
     ("reference/public-api.md", "reference/public-api.zh-CN.md"),
     ("reference/allocation-reference.md", "reference/allocation-reference.zh-CN.md"),
     ("concepts/backtest-configuration.md", "concepts/backtest-configuration.zh-CN.md"),
