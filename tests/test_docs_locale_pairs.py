@@ -49,6 +49,7 @@ PAIRS = (
     ("alpha/concepts/factor-catalog.en-US.md", "alpha/concepts/factor-catalog.md"),
     ("alpha/concepts/factor-risk-model.en-US.md", "alpha/concepts/factor-risk-model.md"),
     ("alpha/concepts/signal-drift.en-US.md", "alpha/concepts/signal-drift.md"),
+    ("alpha/concepts/factor-expression.en-US.md", "alpha/concepts/factor-expression.md"),
     (
         "orchestration/reference/configuration.md",
         "orchestration/reference/configuration.zh-CN.md",

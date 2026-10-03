@@ -1,5 +1,7 @@
 # FactorExpression 安全公式 DSL
 
+语言：简体中文 · [English canonical](factor-expression.en-US.md)
+
 `alpha_research.factor_expression` 提供一个策略无关的因子公式层。它借鉴了量化平台常见的公式体验，但只解释经过白名单校验的表达式，不执行任意 Python，也不负责加载数据或写入研究产物。
 
 ## 基本用法
