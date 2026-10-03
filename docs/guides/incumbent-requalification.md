@@ -1,5 +1,7 @@
 # 旧仓再资格组合构造
 
+语言：简体中文 · [English](incumbent-requalification.en.md)
+
 `portfolio_backtester.incumbent_requalification` 提供一个与模型无关的组合构造接口，适合候选池变化速度明显快于经济信号的策略。
 
 这套政策把两个容易混在一起的决策分开处理：

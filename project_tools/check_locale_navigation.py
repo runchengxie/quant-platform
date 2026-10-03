@@ -23,6 +23,9 @@ def main() -> None:
     assert "guides/execution-simulation.en/" in english
     assert "guides/point-in-time-data.en/" in english
     assert "guides/sequenced-execution.en/" in english
+    assert "guides/incumbent-requalification.en/" in english
+    assert "guides/incumbent-requalification-oos-controls.en/" in english
+    assert "guides/promotion-sidecar.en/" in english
     assert "reference/outputs/backtest-outputs.en/" in english
     assert "canonical-backtest-bundle.en/" in english
     assert "backtest-interpretation.en/" in english

@@ -85,6 +85,62 @@ def test_documentation_build_excludes_historical_archives() -> None:
     assert "migration/legacy-materials/**" in config
 
 
+def test_incumbent_requalification_and_promotion_guides_match_public_contracts() -> None:
+    root = Path(__file__).resolve().parents[1]
+    incumbent = (
+        root / "docs" / "guides" / "incumbent-requalification.en.md"
+    ).read_text(encoding="utf-8")
+    oos = (
+        root / "docs" / "guides" / "incumbent-requalification-oos-controls.en.md"
+    ).read_text(encoding="utf-8")
+    sidecar = (root / "docs" / "guides" / "promotion-sidecar.en.md").read_text(
+        encoding="utf-8"
+    )
+    selector = (
+        root
+        / "packages"
+        / "portfolio-backtester"
+        / "src"
+        / "portfolio_backtester"
+        / "incumbent_requalification.py"
+    ).read_text(encoding="utf-8")
+    bridge = (
+        root
+        / "packages"
+        / "portfolio-backtester"
+        / "src"
+        / "portfolio_backtester"
+        / "incumbent_requalification_oos.py"
+    ).read_text(encoding="utf-8")
+    sidecar_impl = (
+        root
+        / "packages"
+        / "portfolio-backtester"
+        / "src"
+        / "portfolio_backtester"
+        / "promotion_sidecar.py"
+    ).read_text(encoding="utf-8")
+
+    for policy_field in (
+        "entry_rank_limit",
+        "exit_rank_limit",
+        "max_new_positions",
+        "industry_cap",
+        "min_score_improvement",
+    ):
+        assert policy_field in selector
+        assert f"`{policy_field}`" in incumbent
+    assert "rank_universe=\"hard_eligible\"" in incumbent
+    assert "rank_universe=\"entry_plus_incumbents\"" in incumbent
+    assert "stateful_incumbent_requalification_daily_rows" in bridge
+    assert "stateless_incumbent_requalification_daily_rows" in bridge
+    assert "hard_eligibility_col" in bridge
+    assert "entry_eligibility_col" in bridge
+    for artifact in ("events", "orders", "fills", "positions", "cash", "violations"):
+        assert f'"{artifact}"' in sidecar_impl
+        assert f"`{artifact}`" in sidecar
+
+
 def test_typecheck_script_registers_all_source_roots() -> None:
     script = (ROOT / "scripts" / "dev" / "run_tests.sh").read_text(encoding="utf-8")
 
