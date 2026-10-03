@@ -48,9 +48,7 @@ def test_docs_use_concise_chinese_style() -> None:
 
 
 def test_turnover_reference_covers_bilingual_contract_fields() -> None:
-    english = (ROOT / "docs" / "concepts" / "turnover.en-US.md").read_text(
-        encoding="utf-8"
-    )
+    english = (ROOT / "docs" / "concepts" / "turnover.en-US.md").read_text(encoding="utf-8")
     chinese = (ROOT / "docs" / "concepts" / "turnover.md").read_text(encoding="utf-8")
     turnover_source = (
         ROOT / "packages" / "portfolio-backtester" / "src" / "portfolio_backtester" / "turnover.py"
