@@ -46,6 +46,7 @@ PAIRS = (
     ("orchestration/targets.en.md", "orchestration/targets.md"),
     ("orchestration/output-orchestration.en.md", "orchestration/output-orchestration.md"),
     ("orchestration/output-summary.en.md", "orchestration/output-summary.md"),
+    ("orchestration/evidence-protocol-cli.en.md", "orchestration/evidence-protocol-cli.md"),
     (
         "orchestration/operations/quality-gates.en.md",
         "orchestration/operations/quality-gates.md",

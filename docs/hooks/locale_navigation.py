@@ -57,6 +57,7 @@ ENGLISH_PAGES = {
     "orchestration/targets.en.md",
     "orchestration/output-orchestration.en.md",
     "orchestration/output-summary.en.md",
+    "orchestration/evidence-protocol-cli.en.md",
     "orchestration/reference/README.md",
     "orchestration/reference/cli-helpers.md",
     "orchestration/reference/configuration.md",
