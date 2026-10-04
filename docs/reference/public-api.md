@@ -41,8 +41,14 @@ The following objects are exported directly from `portfolio_backtester`:
 | Industry-balanced sleeves | `SelectionSpec`, `select_industry_balanced`, `build_targets`, `combine_targets`, `attach_entry_dates`, `target_turnover`, `validate_targets` |
 | Strategy risk | `StrategyRiskReport`, `implementation_shortfall_metrics`, `return_concentration`, `strategy_failure_probability`, `summarize_strategy_risk` |
 | Evidence receipts | `build_portfolio_sizing_receipt`, `series_sha256`, `sha256_file`, `write_receipt` |
+| Modeled USD next-open research | `USDModeledExecutionPrice`, `select_usd_modeled_execution_price` |
 
 The canonical backtest bundle uses the existing `UnifiedLedger` as its sole ledger source. It does not reimplement order, fill, or cash models. The `diagnostic` evidence tier may omit executable evidence. The `execution_aware` tier requires a backend that explicitly supports order lifecycles and a daily ledger, a complete `research.clock.v1` execution window, and account reconciliation satisfying `nav = cash + positions_value`. `write_backtest_bundle` writes Parquet and JSON files to a temporary sibling directory, creates a SHA-256 inventory, and atomically switches to the final directory. `read_backtest_bundle` validates the inventory against file hashes by default. See [Canonical backtest bundles](../concepts/canonical-backtest-bundle.md) for the full semantics.
+
+`USDModeledExecutionPrice` and `select_usd_modeled_execution_price` support an
+explicit opt-in diagnostic path for caller-supplied next-open references. They
+preserve model and source lineage and never create broker orders or fills. See
+[USD price ledger](usd-price-ledger.md) for the opt-in, timestamp, and FX rules.
 
 `probabilistic_sharpe_ratio` accepts a return series. `probabilistic_sharpe_ratio_from_stats` accepts an already-computed periodic Sharpe ratio, skewness, and excess kurtosis.
 

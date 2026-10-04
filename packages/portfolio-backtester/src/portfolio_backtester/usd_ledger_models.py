@@ -2,7 +2,7 @@
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import Any
 
@@ -37,6 +37,18 @@ class USDPriceObservation:
 
 
 @dataclass(frozen=True)
+class USDModeledExecutionPrice:
+    instrument_id: str
+    session_date: date
+    scheduled_open_at: datetime
+    reference_price: Decimal
+    unit: str
+    source_ref: ArtifactRef
+    session_policy_id: str
+    model_id: str
+
+
+@dataclass(frozen=True)
 class USDFXObservation:
     base_currency: str
     quote_currency: str
@@ -68,6 +80,7 @@ class USDReplayConfig:
     fx_pairs: Mapping[str, tuple[str, str]]
     allow_assumed_availability: bool = False
     return_basis: str = "price"
+    allow_modeled_execution_prices: bool = False
 
 
 @dataclass(frozen=True)
@@ -78,6 +91,7 @@ class USDReplayRequest:
     decisions: tuple[USDRebalanceDecision, ...]
     valuation_times: tuple[datetime, ...]
     config: USDReplayConfig
+    modeled_execution_prices: tuple[USDModeledExecutionPrice, ...] = ()
 
 
 @dataclass(frozen=True)

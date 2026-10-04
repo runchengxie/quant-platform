@@ -13,7 +13,13 @@ from .usd_ledger_accounting import (
     settle_usd_rebalance,
     value_usd_book,
 )
-from .usd_ledger_inputs import require, select_usd_fx, select_usd_price, validate_usd_request
+from .usd_ledger_inputs import (
+    require,
+    select_usd_fx,
+    select_usd_modeled_execution_price,
+    select_usd_price,
+    validate_usd_request,
+)
 from .usd_ledger_models import USDRebalanceDecision, USDReplayRequest, USDReplayResult
 
 DAILY_COLUMNS = [
@@ -49,6 +55,10 @@ HOLDING_COLUMNS = [
     "fx_quote_currency",
     "fx_rate",
     "fx_unit",
+    "execution_evidence_kind",
+    "modeled_price_session_date",
+    "modeled_price_model_id",
+    "execution_eligible",
 ]
 MARK_METADATA_COLUMNS = [
     c
@@ -102,6 +112,10 @@ def _mark_metadata(price, fx, currency) -> dict[str, Any]:
         "fx_source_ref": fx.source_ref.to_mapping() if fx else None,
         "fx_availability_basis": fx.availability_basis if fx else "usd_identity",
         "session_policy_id": price.session_policy_id,
+        "execution_evidence_kind": "verified",
+        "modeled_price_session_date": None,
+        "modeled_price_model_id": None,
+        "execution_eligible": price.execution_eligible and price.availability_basis == "verified",
     }
 
 
@@ -149,20 +163,69 @@ class _Replay:
         return sequence
 
     def mark(self, name: str, time: datetime, *, execution: bool = False) -> None:
-        price = select_usd_price(self.request, name, time, execution=execution)
+        modeled = None
+        if execution and self.request.config.allow_modeled_execution_prices:
+            modeled = select_usd_modeled_execution_price(self.request, name, time)
+            price_value = modeled.reference_price
+            metadata = {
+                "currency": self.instruments[name].currency,
+                "price_unit": modeled.unit,
+                "fx_base_currency": "USD",
+                "fx_quote_currency": "USD",
+                "fx_rate": Decimal(1),
+                "fx_unit": "quote_per_base",
+                "price_at": modeled.scheduled_open_at,
+                "price_available_at": None,
+                "price_source_ref": modeled.source_ref.to_mapping(),
+                "price_availability_basis": "modeled_reference",
+                "fx_at": None,
+                "fx_available_at": None,
+                "fx_source_ref": None,
+                "fx_availability_basis": "usd_identity",
+                "session_policy_id": modeled.session_policy_id,
+                "execution_evidence_kind": "modeled_reference",
+                "modeled_price_session_date": modeled.session_date,
+                "modeled_price_model_id": modeled.model_id,
+                "execution_eligible": False,
+            }
+        else:
+            price = select_usd_price(self.request, name, time, execution=execution)
+            price_value = price.price
+            metadata = _mark_metadata(price, None, self.instruments[name].currency)
         rate, fx = select_usd_fx(self.request, self.instruments[name].currency, time)
         if execution and fx is not None:
-            require(fx.availability_basis == "verified", "assumed FX cannot fund a transaction")
+            require(
+                fx.availability_basis == "verified"
+                or (
+                    modeled is not None
+                    and fx.availability_basis == "assumed_market_session"
+                    and self.request.config.allow_assumed_availability
+                ),
+                "FX availability basis cannot fund a transaction",
+            )
+        if fx is not None:
+            metadata.update(
+                {
+                    "fx_base_currency": fx.base_currency,
+                    "fx_quote_currency": fx.quote_currency,
+                    "fx_rate": fx.rate,
+                    "fx_unit": fx.unit,
+                    "fx_at": fx.price_at,
+                    "fx_available_at": fx.available_at,
+                    "fx_source_ref": fx.source_ref.to_mapping(),
+                    "fx_availability_basis": fx.availability_basis,
+                }
+            )
         quantity = self.quantities.get(name, ZERO)
         old_price, old_rate = self.prices.get(name), self.rates.get(name)
         local_pnl, fx_pnl = ZERO, ZERO
         if quantity:
-            local_pnl = (price.price - self.prices[name]) * self.rates[name] * quantity
-            fx_pnl = price.price * (rate - self.rates[name]) * quantity
+            local_pnl = (price_value - self.prices[name]) * self.rates[name] * quantity
+            fx_pnl = price_value * (rate - self.rates[name]) * quantity
         self.local_pnl += local_pnl
         self.fx_pnl += fx_pnl
-        self.prices[name], self.rates[name] = price.price, rate
-        self.metadata[name] = _mark_metadata(price, fx, self.instruments[name].currency)
+        self.prices[name], self.rates[name] = price_value, rate
+        self.metadata[name] = metadata
         self.audit(
             "mark",
             time,
@@ -170,7 +233,7 @@ class _Replay:
             quantity_before=quantity,
             old_price=old_price,
             old_usd_per_local=old_rate,
-            local_price=price.price,
+            local_price=price_value,
             usd_per_local=rate,
             local_price_pnl_usd=local_pnl,
             fx_pnl_usd=fx_pnl,
@@ -217,6 +280,18 @@ class _Replay:
         active = frozenset(n for n in names if self.desired[n] != self.quantities.get(n, ZERO))
         for name in sorted(active):
             self.mark(name, time, execution=True)
+        execution_prices = None
+        if self.request.config.allow_modeled_execution_prices:
+            slippage_rate = self.request.config.slippage_bps / 10000
+            execution_prices = {
+                name: self.prices[name]
+                * (
+                    1 + slippage_rate
+                    if self.desired[name] > self.quantities.get(name, ZERO)
+                    else 1 - slippage_rate
+                )
+                for name in active
+            }
         self.quantities, self.cash, trades = settle_usd_rebalance(
             self.quantities,
             self.cash,
@@ -226,6 +301,7 @@ class _Replay:
             self.instruments,
             self.request.config,
             execution_ids=active,
+            execution_prices=execution_prices,
         )
         for trade in trades.to_dict("records"):
             self.costs += trade["costs_usd"]
@@ -284,6 +360,10 @@ class _Replay:
             (r.source_ref.artifact_id, r.source_ref.sha256)
             for r in (*self.request.prices, *self.request.fx)
         }
+        refs.update(
+            (r.source_ref.artifact_id, r.source_ref.sha256)
+            for r in self.request.modeled_execution_prices
+        )
         return USDReplayResult(
             daily,
             pd.DataFrame(self.holdings, columns=HOLDING_COLUMNS),
@@ -291,20 +371,7 @@ class _Replay:
                 self.transactions,
                 columns=[
                     *TRANSACTION_COLUMNS,
-                    *[
-                        c
-                        for c in HOLDING_COLUMNS
-                        if c
-                        not in (
-                            "valuation_at",
-                            "instrument_id",
-                            "quantity",
-                            "local_price",
-                            "usd_per_local",
-                            "value_usd",
-                            "weight",
-                        )
-                    ],
+                    *MARK_METADATA_COLUMNS,
                     "execution_at",
                     "decision_id",
                     "event_sequence",
@@ -323,6 +390,7 @@ class _Replay:
                 "slippage_bps": self.request.config.slippage_bps,
                 "fx_cost_bps": self.request.config.fx_cost_bps,
                 "allow_assumed_availability": self.request.config.allow_assumed_availability,
+                "modeled_execution_enabled": self.request.config.allow_modeled_execution_prices,
                 "source_refs": [{"artifact_id": i, "sha256": h} for i, h in sorted(refs)],
                 "events": self.events,
             },

@@ -15,6 +15,7 @@ TRANSACTION_COLUMNS = [
     "requested_delta",
     "executed_delta",
     "local_price",
+    "execution_price",
     "usd_per_local",
     "notional_usd",
     "commission_usd",
@@ -87,11 +88,23 @@ def _validate_settlement(quantities, cash, desired, prices, fx, instruments, con
         require(type(ins.lot_size) is int and ins.lot_size > 0, "invalid lot")
 
 
-def _apply_transaction(name, delta, requested, cash, quantities, price, fx, rates, scale):
+def _apply_transaction(
+    name, delta, requested, cash, quantities, price, fx, rates, scale, execution_price=None
+):
     notional = abs(delta) * price * fx
-    commission, slippage, fx_cost = (notional * rate for rate in rates)
+    commission_rate, slippage_rate, fx_cost_rate = rates
+    commission = notional * commission_rate
+    fx_cost = notional * fx_cost_rate
+    effective_price = price if execution_price is None else execution_price
+    slippage = (
+        notional * slippage_rate
+        if execution_price is None
+        else abs(delta) * abs(effective_price - price) * fx
+    )
     costs = commission + slippage + fx_cost
-    cash -= delta * price * fx + costs
+    cash -= delta * effective_price * fx + commission + fx_cost
+    if execution_price is None:
+        cash -= slippage
     quantities[name] = quantities.get(name, ZERO) + delta
     require(cash >= 0 and quantities[name] >= 0, "settlement would borrow or oversell")
     return cash, {
@@ -99,6 +112,7 @@ def _apply_transaction(name, delta, requested, cash, quantities, price, fx, rate
         "requested_delta": requested,
         "executed_delta": delta,
         "local_price": price,
+        "execution_price": effective_price,
         "usd_per_local": fx,
         "notional_usd": notional,
         "commission_usd": commission,
@@ -120,6 +134,7 @@ def settle_usd_rebalance(
     config: USDReplayConfig,
     *,
     execution_ids: frozenset[str],
+    execution_prices: Mapping[str, Decimal] | None = None,
 ) -> tuple[dict[str, Decimal], Decimal, pd.DataFrame]:
     _validate_settlement(
         quantities,
@@ -131,6 +146,11 @@ def settle_usd_rebalance(
         config,
         execution_ids,
     )
+    execution_prices = {} if execution_prices is None else execution_prices
+    require(isinstance(execution_prices, Mapping), "execution_prices must be a mapping")
+    require(set(execution_prices) <= set(execution_ids), "execution price outside execution IDs")
+    for value in execution_prices.values():
+        decimal_value(value, "execution price", positive=True)
     with localcontext() as ctx:
         ctx.prec = 50
         book, rows = dict(quantities), []
@@ -155,6 +175,7 @@ def settle_usd_rebalance(
                 usd_per_local[name],
                 _rates(instruments[name], config),
                 Decimal(1),
+                execution_prices.get(name),
             )
             rows.append(row)
         buys = {
@@ -162,16 +183,22 @@ def settle_usd_rebalance(
             for name, delta in deltas.items()
             if delta > 0
         }
-        required = sum(
-            (
-                q
-                * local_prices[name]
-                * usd_per_local[name]
-                * (1 + sum(_rates(instruments[name], config)))
-                for name, q in buys.items()
-            ),
-            ZERO,
-        )
+        required = ZERO
+        for name, quantity in buys.items():
+            commission_rate, slippage_rate, fx_cost_rate = _rates(instruments[name], config)
+            if name in execution_prices:
+                required += (
+                    quantity
+                    * usd_per_local[name]
+                    * (
+                        execution_prices[name]
+                        + local_prices[name] * (commission_rate + fx_cost_rate)
+                    )
+                )
+            else:
+                buy_price = local_prices[name]
+                extra_cost_rate = commission_rate + slippage_rate + fx_cost_rate
+                required += quantity * buy_price * usd_per_local[name] * (1 + extra_cost_rate)
         scale = min(Decimal(1), cash / required) if required else Decimal(1)
         for name, quantity in buys.items():
             executed = _round_increment(quantity * scale, instruments[name], config)
@@ -185,6 +212,7 @@ def settle_usd_rebalance(
                 usd_per_local[name],
                 _rates(instruments[name], config),
                 scale,
+                execution_prices.get(name),
             )
             rows.append(row)
         return book, cash, pd.DataFrame(rows, columns=TRANSACTION_COLUMNS)

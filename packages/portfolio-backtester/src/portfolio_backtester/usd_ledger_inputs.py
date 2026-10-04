@@ -2,7 +2,7 @@
 
 import re
 from collections.abc import Mapping
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal, localcontext
 from typing import Any, cast
 
@@ -10,6 +10,7 @@ from research_contracts import ArtifactRef, ResearchClock
 
 from .usd_ledger_models import (
     USDFXObservation,
+    USDModeledExecutionPrice,
     USDPriceObservation,
     USDReplayConfig,
     USDReplayRequest,
@@ -59,6 +60,7 @@ def validate_usd_config(config: USDReplayConfig) -> None:
     require(config.sizing_mode in ("fractional", "integral"), "unsupported sizing mode")
     require(config.return_basis == "price", "only price NAV is supported")
     require(type(config.allow_assumed_availability) is bool, "availability flag must be bool")
+    require(type(config.allow_modeled_execution_prices) is bool, "modeled price flag must be bool")
     for age in (config.max_price_age, config.max_fx_age):
         require(isinstance(age, timedelta) and age > timedelta(0), "maximum age must be positive")
     require(isinstance(config.fx_pairs, Mapping), "fx_pairs must be mapping")
@@ -100,12 +102,18 @@ def _validate_observation(row: Any, config: USDReplayConfig) -> None:
     utc_time(row.available_at)
     require(row.price_at <= row.available_at, "availability precedes observation")
     require(
-        row.availability_basis in ("verified", "assumed_date_lag"), "invalid availability basis"
+        row.availability_basis in ("verified", "assumed_date_lag", "assumed_market_session"),
+        "invalid availability basis",
     )
-    require(
-        row.availability_basis == "verified" or config.allow_assumed_availability,
-        "assumed availability not enabled",
-    )
+    if row.availability_basis == "assumed_date_lag":
+        require(config.allow_assumed_availability, "assumed availability not enabled")
+    elif row.availability_basis == "assumed_market_session":
+        require(
+            isinstance(row, USDFXObservation)
+            and config.allow_assumed_availability
+            and config.allow_modeled_execution_prices,
+            "assumed market-session availability requires both explicit opt-ins",
+        )
     require(isinstance(row.source_ref, ArtifactRef), "immutable source reference required")
     try:
         ArtifactRef.from_mapping(row.source_ref.to_mapping())
@@ -141,6 +149,46 @@ def _validate_series(request: USDReplayRequest, instruments: dict) -> None:
         ref = (row.source_ref.artifact_id, row.source_ref.sha256)
         require(series not in sources or sources[series] == ref, "source series replacement")
         sources[series] = ref
+
+
+def _validate_modeled_execution_prices(request: USDReplayRequest, instruments: dict) -> None:
+    rows = request.modeled_execution_prices
+    require(isinstance(rows, tuple), "modeled_execution_prices must be tuple")
+    require(
+        not rows or request.config.allow_modeled_execution_prices,
+        "modeled execution prices require explicit opt-in",
+    )
+    seen = set()
+    scheduled = {
+        (instrument_id, timestamp)
+        for decision in request.decisions
+        for instrument_id, timestamp in decision.execution_times.items()
+    }
+    for row in rows:
+        require(isinstance(row, USDModeledExecutionPrice), "invalid modeled execution price")
+        _text(row.instrument_id)
+        require(row.instrument_id in instruments, "unknown modeled price instrument")
+        require(type(row.session_date) is date, "modeled session_date must be date")
+        utc_time(row.scheduled_open_at)
+        require(
+            (row.instrument_id, row.scheduled_open_at) in scheduled,
+            "modeled price does not match a scheduled execution",
+        )
+        require(row.unit == "currency_per_share", "invalid modeled price unit")
+        decimal_value(row.reference_price, "modeled reference price", positive=True)
+        require(isinstance(row.source_ref, ArtifactRef), "immutable source reference required")
+        try:
+            ArtifactRef.from_mapping(row.source_ref.to_mapping())
+        except ValueError as exc:
+            raise USDValidationError("invalid source reference") from exc
+        require(
+            row.session_policy_id == instruments[row.instrument_id].session_policy_id,
+            "modeled session policy mismatch",
+        )
+        _text(row.model_id)
+        key = (row.instrument_id, row.scheduled_open_at)
+        require(key not in seen, "duplicate modeled instrument and scheduled open")
+        seen.add(key)
 
 
 def _validate_decisions(request: USDReplayRequest, instruments: dict) -> None:
@@ -216,6 +264,7 @@ def validate_usd_request(request: USDReplayRequest) -> None:
     require(all(isinstance(f, USDFXObservation) for f in request.fx), "FX records required")
     _validate_series(request, instruments)
     _validate_decisions(request, instruments)
+    _validate_modeled_execution_prices(request, instruments)
 
 
 def _asof(rows: list[Any], at: datetime, age: timedelta) -> Any:
@@ -245,6 +294,26 @@ def select_usd_price(
             and row.availability_basis == "verified",
             "ineligible execution mark",
         )
+    return row
+
+
+def select_usd_modeled_execution_price(
+    request: USDReplayRequest, instrument_id: str, at: datetime
+) -> USDModeledExecutionPrice:
+    require(
+        request.config.allow_modeled_execution_prices,
+        "modeled execution prices require explicit opt-in",
+    )
+    utc_time(at)
+    rows = [
+        row
+        for row in request.modeled_execution_prices
+        if row.instrument_id == instrument_id and row.scheduled_open_at == at
+    ]
+    require(len(rows) == 1, "missing or ambiguous exact modeled execution reference")
+    row = rows[0]
+    _text(row.model_id)
+    decimal_value(row.reference_price, "modeled reference price", positive=True)
     return row
 
 

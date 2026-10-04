@@ -156,6 +156,8 @@ from .turnover import (
     turnover_from_trade_weights,
 )
 from .types import CostBreakdown
+from .usd_ledger_inputs import select_usd_modeled_execution_price
+from .usd_ledger_models import USDModeledExecutionPrice
 
 __all__ = [
     "BACKTEST_BUNDLE_SCHEMA_VERSION",
@@ -219,6 +221,7 @@ __all__ = [
     "TCACalibrationReceipt",
     "TradableFlagsContract",
     "TurnoverBreakdown",
+    "USDModeledExecutionPrice",
     "add_conservative_score",
     "annualize_turnover",
     "annualized_sharpe_to_periodic",
@@ -277,6 +280,7 @@ __all__ = [
     "select_daily_watch20",
     "select_incumbent_requalified_portfolio",
     "select_industry_balanced",
+    "select_usd_modeled_execution_price",
     "series_sha256",
     "settle_execution_fills",
     "sha256_file",

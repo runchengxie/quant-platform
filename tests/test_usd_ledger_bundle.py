@@ -1,16 +1,22 @@
 import json
 from dataclasses import replace
+from datetime import date
+from typing import Any
 
 import pandas as pd
 import pytest
 from research_contracts import ResearchClock
-from usd_ledger_fixtures import REF, D, at, decision, price, request
+from usd_ledger_fixtures import REF, D, at, decision, instrument, price, request
 
 from portfolio_backtester.backtest_bundle import BacktestEvidenceTier
 from portfolio_backtester.backtest_bundle_io import read_backtest_bundle
 from portfolio_backtester.usd_ledger import run_usd_price_replay
 from portfolio_backtester.usd_ledger_bundle import write_usd_price_replay_bundle
-from portfolio_backtester.usd_ledger_models import USDValidationError
+from portfolio_backtester.usd_ledger_models import (
+    USDFXObservation,
+    USDModeledExecutionPrice,
+    USDValidationError,
+)
 
 
 def result():
@@ -18,6 +24,59 @@ def result():
         request(
             prices=(price(), price(hour=1), price(day=2), price(day=2, hour=1)),
             decisions=(decision(), decision(day=2, weights={})),
+        )
+    )
+
+
+def modeled_result(
+    *, valuation_times=None, decisions=None, cfg_overrides=None, modeled_prices=None, prices=None
+):
+    from usd_ledger_fixtures import config
+
+    return run_usd_price_replay(
+        request(
+            instruments=(instrument(currency="GBP"),),
+            prices=prices or (price(), price(hour=1), price(day=2), price(day=2, hour=1)),
+            decisions=decisions or (decision(),),
+            valuation_times=valuation_times or (at(1), at(2), at(3)),
+            fx=(
+                USDFXObservation(
+                    "GBP",
+                    "USD",
+                    at(1),
+                    at(1),
+                    D("1.25"),
+                    "quote_per_base",
+                    REF,
+                    "assumed_market_session",
+                ),
+            ),
+            modeled_execution_prices=modeled_prices
+            or (
+                USDModeledExecutionPrice(
+                    "A",
+                    date(2026, 1, 1),
+                    at(1, 1),
+                    D("10"),
+                    "currency_per_share",
+                    REF,
+                    "synthetic-session.v1",
+                    "synthetic-open.v1",
+                ),
+            ),
+            config=config(
+                **(
+                    {
+                        "fx_pairs": {"GBP": ("GBP", "USD")},
+                        "commission_bps": D("5"),
+                        "slippage_bps": D("5"),
+                        "fx_cost_bps": D("5"),
+                        "allow_assumed_availability": True,
+                        "allow_modeled_execution_prices": True,
+                    }
+                    | (cfg_overrides or {})
+                )
+            ),
         )
     )
 
@@ -38,7 +97,7 @@ def root_clock():
 
 
 def publish(path, replay=None, **overrides):
-    fields = {
+    fields: dict[str, Any] = {
         "result": replay or result(),
         "run_id": "synthetic-usd",
         "research_clock": root_clock(),
@@ -190,3 +249,106 @@ def test_target_mark_source_must_belong_to_lineage(tmp_path):
     }
     with pytest.raises(USDValidationError):
         publish(tmp_path / "bundle", replace(r, targets=targets))
+
+
+def test_bundle_round_trip_preserves_modeled_reference_and_assumptions(tmp_path):
+    path = tmp_path / "modeled"
+    replay = modeled_result()
+    manifest = publish(path, replay)
+    diagnostics = json.loads((path / "diagnostics.json").read_text(encoding="utf-8"))
+    transaction = diagnostics["transactions"][0]
+    assert read_backtest_bundle(path) == manifest
+    assert transaction["execution_evidence_kind"] == "modeled_reference"
+    assert transaction["modeled_price_session_date"] == "2026-01-01"
+    assert transaction["modeled_price_model_id"] == "synthetic-open.v1"
+    assert transaction["execution_eligible"] is False
+    assert transaction["fx_availability_basis"] == "assumed_market_session"
+    assert D(transaction["slippage_usd"]) == D("0.025")
+    assert D(transaction["execution_price"]) == D("10.005")
+    assert D(transaction["commission_usd"]) == D("0.025")
+    assert D(transaction["fx_cost_usd"]) == D("0.025")
+    assert transaction["price_source_ref"] == REF.to_mapping()
+    assert diagnostics["summary"]["orders_submitted"] is False
+    assert diagnostics["summary"]["evidence_tier"] == "diagnostic"
+
+
+@pytest.mark.parametrize(
+    "column,value",
+    [
+        ("modeled_price_model_id", "different-valid-model.v1"),
+        ("modeled_price_session_date", date(2026, 1, 2)),
+    ],
+)
+def test_bundle_rejects_changed_modeled_execution_provenance(tmp_path, column, value):
+    replay = modeled_result()
+    transactions = replay.transactions.copy(deep=True)
+    transactions.at[0, column] = value
+    with pytest.raises(USDValidationError):
+        publish(tmp_path / "bad", replace(replay, transactions=transactions))
+
+
+def test_modeled_mark_at_open_keeps_metadata_for_valuation_and_publication(tmp_path):
+    replay = modeled_result(valuation_times=(at(1), at(1, 1), at(2), at(3)))
+    manifest = publish(tmp_path / "at-open", replay)
+    assert manifest.evidence_tier is BacktestEvidenceTier.DIAGNOSTIC
+    open_mark = replay.holdings.loc[replay.holdings.valuation_at == at(1, 1)].iloc[0]
+    assert open_mark.execution_evidence_kind == "modeled_reference"
+    diagnostics = json.loads(
+        (tmp_path / "at-open" / "diagnostics.json").read_text(encoding="utf-8")
+    )
+    assert diagnostics["holdings"][0]["execution_evidence_kind"] == "modeled_reference"
+
+
+def test_zero_quantity_integral_sell_keeps_requested_direction_for_publication(tmp_path):
+    replay = modeled_result(
+        decisions=(decision(), decision(day=2, weights={"A": D("0.45")})),
+        cfg_overrides={"sizing_mode": "integral", "slippage_bps": D("100")},
+        modeled_prices=(
+            USDModeledExecutionPrice(
+                "A",
+                date(2026, 1, 1),
+                at(1, 1),
+                D("10"),
+                "currency_per_share",
+                REF,
+                "synthetic-session.v1",
+                "synthetic-open.v1",
+            ),
+            USDModeledExecutionPrice(
+                "A",
+                date(2026, 1, 2),
+                at(2, 1),
+                D("10"),
+                "currency_per_share",
+                REF,
+                "synthetic-session.v1",
+                "synthetic-open.v1",
+            ),
+        ),
+        prices=(price(), price(hour=1), price(day=2), price(day=2, hour=1), price(day=3)),
+    )
+    zero_sell = replay.transactions.iloc[-1]
+    assert zero_sell.requested_delta < 0 and zero_sell.executed_delta == 0
+    manifest = publish(tmp_path / "zero-sell", replay)
+    assert manifest.evidence_tier is BacktestEvidenceTier.DIAGNOSTIC
+
+
+@pytest.mark.parametrize(
+    "column,value",
+    [
+        ("price_source_ref", {"artifact_id": "synthetic-prices", "sha256": "b" * 64}),
+        ("modeled_price_model_id", None),
+        ("execution_eligible", True),
+    ],
+)
+def test_bundle_rejects_corrupted_modeled_reference_lineage_or_eligibility(tmp_path, column, value):
+    replay = modeled_result()
+    transactions = replay.transactions.copy(deep=True)
+    transactions.at[0, column] = value
+    with pytest.raises(USDValidationError):
+        publish(tmp_path / "bad", replace(replay, transactions=transactions))
+
+
+def test_verified_bundle_validation_remains_unchanged(tmp_path):
+    manifest = publish(tmp_path / "verified", result())
+    assert manifest.evidence_tier is BacktestEvidenceTier.DIAGNOSTIC

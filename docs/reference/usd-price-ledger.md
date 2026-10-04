@@ -85,11 +85,13 @@ when the price doubles, cash remains 50, position value becomes 100 and NAV is
 ## Public interfaces
 
 - Records: `portfolio_backtester.usd_ledger_models` defines `USDInstrument`,
-  `USDPriceObservation`, `USDFXObservation`, `USDRebalanceDecision`,
+  `USDPriceObservation`, `USDModeledExecutionPrice`, `USDFXObservation`, `USDRebalanceDecision`,
   `USDReplayConfig`, `USDReplayRequest`, `USDReplayResult`, `USDValidationError`.
 - `validate_usd_request(request: USDReplayRequest) -> None` in `usd_ledger_inputs`.
 - `select_usd_price(request: USDReplayRequest, instrument_id: str, at: datetime,
   *, execution: bool = False) -> USDPriceObservation`.
+- `select_usd_modeled_execution_price(request, instrument_id, at)` selects only
+  an exact caller-scheduled UTC open from `USDReplayRequest.modeled_execution_prices`.
 - `select_usd_fx(request: USDReplayRequest, currency: str, at: datetime)
   -> tuple[Decimal, USDFXObservation | None]`.
 - `value_usd_book(quantities, cash, local_prices, usd_per_local)` in
@@ -123,15 +125,40 @@ overlap. Execution is strictly after decision time, requires an exact eligible
 price timestamp with matching session-policy identity, and rejects assumed
 availability. These flags are caller attestations; the ledger is not a market
 calendar service and cannot establish their truth. Date-only historical CSVs
-need real availability/session semantics before they can supply modeled trades.
-An assumed conservative lag may support valuations when explicitly enabled;
-it cannot turn a carried close into an eligible execution price or FX conversion.
+cannot supply verified execution marks. A caller may instead wrap an observed
+daily open as a modeled reference with an explicit assumed session timestamp;
+that remains a research diagnostic. An assumed conservative lag may support
+valuations when explicitly enabled, but cannot make a carried close eligible.
+
+For research-only next-open replay, set `allow_modeled_execution_prices=True`
+and provide a `USDModeledExecutionPrice` for each changed instrument and its
+exact scheduled execution timestamp. This separate input records the caller's
+local session date, assumed UTC open, reference price, immutable source, session
+policy and model ID. The timestamp must match a decision's execution schedule.
+The platform does not infer the local session date from UTC or verify exchange
+calendar correctness. In this mode, a missing exact reference is an error; the
+ledger does not fall back to a close or verified observation. The reference is
+not a broker fill and does not establish market availability; transactions
+carry `execution_evidence_kind="modeled_reference"` and
+`execution_eligible=False`, while orders and fills remain empty.
+
+Modeled buys apply positive signed slippage to the reference price and modeled
+sells apply negative signed slippage. Commission and FX costs remain separate;
+the replay and bundle publisher reconcile the resulting cash, inventory and
+NAV. An FX observation with `availability_basis="assumed_market_session"` is
+accepted only when both `allow_assumed_availability` and
+`allow_modeled_execution_prices` are enabled. This is an explicit FX timing
+assumption, not proof of a tradable conversion quote. The verified execution
+selector remains unchanged and cannot select a modeled reference.
 
 Desired quantities freeze from pretrade NAV and available marks at decision time.
 Events execute chronologically. Same-time sells settle first, then affordable buy
 increments scale proportionally including costs. Future sells cannot fund earlier
-buys; a scaled batch is never retried silently. Commission, slippage and FX costs
-are separate fractions of actual modeled USD notional. USD assets incur no FX fee.
+buys; a scaled batch is never retried silently. Commission and FX costs are
+separate fractions of reference USD notional. In modeled-reference mode,
+slippage is reflected in the signed execution price and reconciled separately as
+a cost; in verified mode the existing slippage cost treatment is retained. USD
+assets incur no FX fee.
 
 Fractional increments round down to 1e-12 shares. Integral increments round down
 to each positive integer instrument lot; partial sells also round down, while a
