@@ -176,12 +176,17 @@ nav:
       - 研究输出: alpha/reference/research-outputs.md
       - 信号产物: alpha/reference/signal-artifacts.md
       - 风险模型内核: risk-model-kernel.md
-  - Execution and microstructure (Chinese originals; translation in progress):
-      - 执行概览: execution/README.md
-      - 微观结构概览: microstructure/README.md
-      - 数据边界: microstructure/data-boundary.md
-      - 开发指南: microstructure/development-guide.md
-      - Rust 模拟内核: development/microstructure-rust.md
+  - Execution and microstructure:
+      - English:
+          - Execution domain: execution/README.en.md
+          - Microstructure overview: microstructure/README.en.md
+          - Data boundary: microstructure/data-boundary.en.md
+      - 简体中文:
+          - 执行概览: execution/README.md
+          - 微观结构概览: microstructure/README.md
+          - 数据边界: microstructure/data-boundary.md
+          - 开发指南: microstructure/development-guide.md
+          - Rust 模拟内核: development/microstructure-rust.md
   - Orchestration:
       - English:
           - Overview: orchestration/README.md
