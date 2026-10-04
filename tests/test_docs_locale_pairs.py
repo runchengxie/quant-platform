@@ -265,6 +265,10 @@ def test_rendered_sidebar_matches_the_current_page_locale(tmp_path: Path) -> Non
     assert result.returncode == 0, result.stdout + result.stderr
 
     rendered_pages = {
+        "English home": site_dir / "index.html",
+        "Chinese home": site_dir / "README.zh-CN/index.html",
+        "English orchestration": site_dir / "orchestration/index.html",
+        "Chinese orchestration": site_dir / "orchestration/README.zh-CN/index.html",
         "English": site_dir / "concepts/backtest-configuration/index.html",
         "Chinese": site_dir / "concepts/backtest-configuration.zh-CN/index.html",
         "Chinese dated fees": site_dir / "dated-execution-fees.zh-CN/index.html",
@@ -283,6 +287,15 @@ def test_rendered_sidebar_matches_the_current_page_locale(tmp_path: Path) -> Non
     assert "Dated execution fees" in navigation["English"]
     assert "USD price ledger" in navigation["English"]
     assert not re.search(r"[\u3400-\u9fff]", navigation["English"])
+    for locale in ("English home", "English orchestration", "English"):
+        assert not re.search(r"[\u3400-\u9fff]", navigation[locale])
+        assert "Chinese originals" not in navigation[locale]
+        assert "\n English \n" not in navigation[locale]
+        assert "简体中文" not in navigation[locale]
+    for locale in ("Chinese home", "Chinese orchestration", "Chinese"):
+        assert "Chinese originals" not in navigation[locale]
+        assert "Getting started" not in navigation[locale]
+        assert "\n English \n" not in navigation[locale]
     assert "安装与环境" in navigation["Chinese"]
     assert "Installation and environments" not in navigation["Chinese"]
     assert "Dated execution fees" not in navigation["Chinese"]

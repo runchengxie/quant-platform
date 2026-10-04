@@ -75,23 +75,33 @@ ENGLISH_PAGES = {
 }
 
 CHINESE_TITLES = {
-    "Guides (Chinese originals; translation in progress)": "指南（中文原文）",
+    "Guides (Chinese originals; translation in progress)": "指南",
     "Core concepts": "核心概念",
-    "Alpha and research (Chinese originals; translation in progress)": "Alpha 与研究（中文原文）",
+    "Alpha and research (Chinese originals; translation in progress)": "Alpha 与研究",
     "Execution and microstructure (Chinese originals; translation in progress)": (
-        "执行与微观结构（中文原文）"
+        "执行与微观结构"
     ),
     "Orchestration": "编排",
     "Chinese originals (translation in progress)": "中文原文",
     "References": "参考资料",
     "Development": "开发",
     "Governance and migration (Chinese originals; translation in progress)": (
-        "治理与迁移（中文原文）"
+        "治理与迁移"
     ),
 }
 
 ENGLISH_TITLES = {
     "其他风险与研究主题": "Additional research topics",
+    "Governance and migration (Chinese originals; translation in progress)": (
+        "Governance and migration"
+    ),
+}
+
+LOCALE_SECTION_TITLES = {
+    "English",
+    "简体中文",
+    "Chinese originals (translation in progress)",
+    "中文原文",
 }
 
 
@@ -111,7 +121,10 @@ def _for_locale(items, chinese):
                     section.title = CHINESE_TITLES.get(section.title, section.title)
                 else:
                     section.title = ENGLISH_TITLES.get(section.title, section.title)
-                selected.append(section)
+                if section.title in LOCALE_SECTION_TITLES:
+                    selected.extend(section.children)
+                else:
+                    selected.append(section)
         elif item.is_link:
             selected.append(item)
     return selected
@@ -120,13 +133,6 @@ def _for_locale(items, chinese):
 def on_page_context(context, page, config, nav):
     chinese = page.file.src_uri not in ENGLISH_PAGES
     items = _for_locale(nav.items, chinese)
-    # The two language headings add no information once the other language is hidden.
-    flattened = []
-    for item in items:
-        if item.is_section and item.title in {"English", "简体中文"}:
-            flattened.extend(item.children)
-        else:
-            flattened.append(item)
     pages = [p for p in nav.pages if (p.file.src_uri not in ENGLISH_PAGES) == chinese]
-    context["nav"] = Navigation(flattened, pages)
+    context["nav"] = Navigation(items, pages)
     return context
