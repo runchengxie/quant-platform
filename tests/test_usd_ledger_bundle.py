@@ -1,6 +1,8 @@
 import json
 from dataclasses import replace
-from datetime import date
+from datetime import UTC, date, datetime
+from decimal import localcontext
+from types import SimpleNamespace
 from typing import Any
 
 import pandas as pd
@@ -11,12 +13,38 @@ from usd_ledger_fixtures import REF, D, at, decision, instrument, price, request
 from portfolio_backtester.backtest_bundle import BacktestEvidenceTier
 from portfolio_backtester.backtest_bundle_io import read_backtest_bundle
 from portfolio_backtester.usd_ledger import run_usd_price_replay
-from portfolio_backtester.usd_ledger_bundle import write_usd_price_replay_bundle
+from portfolio_backtester.usd_ledger_bundle import _validate_daily, write_usd_price_replay_bundle
 from portfolio_backtester.usd_ledger_models import (
     USDFXObservation,
     USDModeledExecutionPrice,
     USDValidationError,
 )
+
+
+def test_daily_nav_attribution_validation_scales_tolerance_to_book_value():
+    previous = D("101900.54705038579563541177906091430535365285575171")
+    nav = D("101899.25559573451200155872588590763995443766930168")
+    fx_pnl = D("-1.2914546512836338530531750066653992151864500212752")
+    daily = pd.DataFrame(
+        [
+            {
+                "valuation_at": datetime(2026, 1, 1, tzinfo=UTC),
+                "cash_usd": D(0),
+                "positions_usd": nav,
+                "nav_usd": nav,
+                "local_price_pnl_usd": D(0),
+                "fx_pnl_usd": fx_pnl,
+                "costs_usd": D(0),
+                "nav_return": D(0),
+            }
+        ]
+    )
+    result = SimpleNamespace(diagnostics={"initial_cash_usd": previous}, daily=daily)
+
+    with localcontext() as context:
+        context.prec = 50
+        daily.at[0, "nav_return"] = nav / previous - 1
+        _validate_daily(result)
 
 
 def result():
