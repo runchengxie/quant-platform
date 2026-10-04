@@ -616,8 +616,8 @@ def test_docs_record_public_private_boundary_and_index_new_pages() -> None:
     assert "private research layer" in readme
     assert "私有研究层" in chinese_readme
     assert "策略研究假设、专有特征和晋升规则属于私有研究层" in agents
-    assert "guides/execution-simulation.md" in index
-    assert "concepts/afml-sizing-and-risk.md" in index
+    assert "guides/execution-simulation.en.md" in index
+    assert "concepts/afml-sizing-and-risk.md" not in index
 
 
 def test_backtest_output_docs_point_to_current_pipeline_owner() -> None:
