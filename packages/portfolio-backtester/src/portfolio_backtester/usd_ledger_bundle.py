@@ -26,6 +26,8 @@ def _signed(value: Any, field: str) -> Decimal:
 def _json(value: Any) -> Any:
     if isinstance(value, Decimal):
         return str(value)
+    if isinstance(value, pd.Timestamp):
+        return value.date().isoformat()
     if isinstance(value, datetime):
         return value.isoformat()
     if isinstance(value, date):
@@ -115,9 +117,12 @@ def _metadata(row: Mapping, time: datetime, lineage: set, *, execution: bool = F
     if modeled:
         require(
             utc_time(row["price_at"]) == time
-            and row["price_available_at"] is None
+            and pd.isna(row["price_available_at"])
             and not bool(eligible)
-            and type(row["modeled_price_session_date"]) is date
+            and (
+                type(row["modeled_price_session_date"]) is date
+                or isinstance(row["modeled_price_session_date"], pd.Timestamp)
+            )
             and isinstance(row["modeled_price_model_id"], str)
             and bool(row["modeled_price_model_id"].strip()),
             "invalid modeled price reference metadata",
@@ -125,8 +130,8 @@ def _metadata(row: Mapping, time: datetime, lineage: set, *, execution: bool = F
     else:
         require(
             evidence_kind == "verified"
-            and row.get("modeled_price_session_date") is None
-            and row.get("modeled_price_model_id") is None
+            and bool(pd.isna(row.get("modeled_price_session_date")))
+            and bool(pd.isna(row.get("modeled_price_model_id")))
             and utc_time(row["price_at"]) <= utc_time(row["price_available_at"]) <= time,
             "unavailable or invalid verified price evidence",
         )
@@ -241,7 +246,10 @@ def _transaction(
     execution_price = decimal_value(row["execution_price"], "execution price", positive=True)
     if modeled:
         rate = decimal_value(result.diagnostics["slippage_bps"], "slippage_bps") / 10000
-        expected_execution_price = row["local_price"] * (1 + rate if delta >= 0 else 1 - rate)
+        fill_direction = delta if delta else requested
+        expected_execution_price = row["local_price"] * (
+            1 + rate if fill_direction >= 0 else 1 - rate
+        )
         assert_usd_equal(execution_price, expected_execution_price, "signed modeled slippage price")
     else:
         assert_usd_equal(execution_price, row["local_price"], "verified reference price")
@@ -372,7 +380,12 @@ class _EvidenceReplay:
 
         require(name in self.marks, "missing selected mark evidence")
         for field in ("local_price", "usd_per_local", *MARK_METADATA_COLUMNS):
-            require(row[field] == self.marks[name][field], "selected mark evidence mismatch")
+            left, right = row[field], self.marks[name][field]
+            equal = (pd.isna(left) and pd.isna(right)) or left == right
+            require(
+                equal,
+                f"selected mark evidence mismatch: {field}",
+            )
 
     def transaction(self, event: Mapping) -> None:
         require(

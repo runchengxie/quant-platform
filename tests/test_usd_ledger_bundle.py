@@ -28,14 +28,17 @@ def result():
     )
 
 
-def modeled_result():
+def modeled_result(
+    *, valuation_times=None, decisions=None, cfg_overrides=None, modeled_prices=None, prices=None
+):
     from usd_ledger_fixtures import config
 
     return run_usd_price_replay(
         request(
             instruments=(instrument(currency="GBP"),),
-            prices=(price(), price(hour=1), price(day=2), price(day=2, hour=1)),
-            decisions=(decision(),),
+            prices=prices or (price(), price(hour=1), price(day=2), price(day=2, hour=1)),
+            decisions=decisions or (decision(),),
+            valuation_times=valuation_times or (at(1), at(2), at(3)),
             fx=(
                 USDFXObservation(
                     "GBP",
@@ -48,7 +51,8 @@ def modeled_result():
                     "assumed_market_session",
                 ),
             ),
-            modeled_execution_prices=(
+            modeled_execution_prices=modeled_prices
+            or (
                 USDModeledExecutionPrice(
                     "A",
                     date(2026, 1, 1),
@@ -61,12 +65,17 @@ def modeled_result():
                 ),
             ),
             config=config(
-                fx_pairs={"GBP": ("GBP", "USD")},
-                commission_bps=D("5"),
-                slippage_bps=D("5"),
-                fx_cost_bps=D("5"),
-                allow_assumed_availability=True,
-                allow_modeled_execution_prices=True,
+                **(
+                    {
+                        "fx_pairs": {"GBP": ("GBP", "USD")},
+                        "commission_bps": D("5"),
+                        "slippage_bps": D("5"),
+                        "fx_cost_bps": D("5"),
+                        "allow_assumed_availability": True,
+                        "allow_modeled_execution_prices": True,
+                    }
+                    | (cfg_overrides or {})
+                )
             ),
         )
     )
@@ -261,6 +270,67 @@ def test_bundle_round_trip_preserves_modeled_reference_and_assumptions(tmp_path)
     assert transaction["price_source_ref"] == REF.to_mapping()
     assert diagnostics["summary"]["orders_submitted"] is False
     assert diagnostics["summary"]["evidence_tier"] == "diagnostic"
+
+
+@pytest.mark.parametrize(
+    "column,value",
+    [
+        ("modeled_price_model_id", "different-valid-model.v1"),
+        ("modeled_price_session_date", date(2026, 1, 2)),
+    ],
+)
+def test_bundle_rejects_changed_modeled_execution_provenance(tmp_path, column, value):
+    replay = modeled_result()
+    transactions = replay.transactions.copy(deep=True)
+    transactions.at[0, column] = value
+    with pytest.raises(USDValidationError):
+        publish(tmp_path / "bad", replace(replay, transactions=transactions))
+
+
+def test_modeled_mark_at_open_keeps_metadata_for_valuation_and_publication(tmp_path):
+    replay = modeled_result(valuation_times=(at(1), at(1, 1), at(2), at(3)))
+    manifest = publish(tmp_path / "at-open", replay)
+    assert manifest.evidence_tier is BacktestEvidenceTier.DIAGNOSTIC
+    open_mark = replay.holdings.loc[replay.holdings.valuation_at == at(1, 1)].iloc[0]
+    assert open_mark.execution_evidence_kind == "modeled_reference"
+    diagnostics = json.loads(
+        (tmp_path / "at-open" / "diagnostics.json").read_text(encoding="utf-8")
+    )
+    assert diagnostics["holdings"][0]["execution_evidence_kind"] == "modeled_reference"
+
+
+def test_zero_quantity_integral_sell_keeps_requested_direction_for_publication(tmp_path):
+    replay = modeled_result(
+        decisions=(decision(), decision(day=2, weights={"A": D("0.45")})),
+        cfg_overrides={"sizing_mode": "integral", "slippage_bps": D("100")},
+        modeled_prices=(
+            USDModeledExecutionPrice(
+                "A",
+                date(2026, 1, 1),
+                at(1, 1),
+                D("10"),
+                "currency_per_share",
+                REF,
+                "synthetic-session.v1",
+                "synthetic-open.v1",
+            ),
+            USDModeledExecutionPrice(
+                "A",
+                date(2026, 1, 2),
+                at(2, 1),
+                D("10"),
+                "currency_per_share",
+                REF,
+                "synthetic-session.v1",
+                "synthetic-open.v1",
+            ),
+        ),
+        prices=(price(), price(hour=1), price(day=2), price(day=2, hour=1), price(day=3)),
+    )
+    zero_sell = replay.transactions.iloc[-1]
+    assert zero_sell.requested_delta < 0 and zero_sell.executed_delta == 0
+    manifest = publish(tmp_path / "zero-sell", replay)
+    assert manifest.evidence_tier is BacktestEvidenceTier.DIAGNOSTIC
 
 
 @pytest.mark.parametrize(

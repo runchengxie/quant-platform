@@ -224,3 +224,18 @@ def test_modeled_reference_allows_assumed_fx_only_in_opted_in_mode():
     verified_only = replace(r, config=config(fx_pairs={"GBP": ("GBP", "USD")}))
     with pytest.raises(USDValidationError):
         run_usd_price_replay(verified_only)
+
+
+def test_modeled_execution_rejects_assumed_date_lag_fx_even_when_opted_in():
+    r = request(
+        instruments=(instrument(currency="GBP"),),
+        fx=(fx("GBP", "USD", "1.25", availability_basis="assumed_date_lag"),),
+        modeled_execution_prices=(modeled(),),
+        config=config(
+            fx_pairs={"GBP": ("GBP", "USD")},
+            allow_assumed_availability=True,
+            allow_modeled_execution_prices=True,
+        ),
+    )
+    with pytest.raises(USDValidationError, match="availability basis"):
+        run_usd_price_replay(r)

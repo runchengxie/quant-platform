@@ -147,3 +147,20 @@ def test_signed_slippage_moves_buy_and_sell_execution_prices_once():
     assert sells.iloc[0].execution_price == D("9.9")
     assert sells.iloc[0].slippage_usd == D("0.2")
     assert cash == D("99.2")
+
+
+def test_integral_affordability_charges_commission_on_reference_not_slipped_price():
+    q, cash, trades = settle_usd_rebalance(
+        {},
+        D("10.2"),
+        {"A": D("1")},
+        {"A": D("10")},
+        {"A": D("1")},
+        {"A": instrument()},
+        config(commission_bps=D("100"), slippage_bps=D("100")),
+        execution_ids=frozenset({"A"}),
+        execution_prices={"A": D("10.1")},
+    )
+    assert q == {"A": D("1")}
+    assert cash == D("0")
+    assert trades.iloc[0].commission_usd == D("0.1")

@@ -55,6 +55,10 @@ HOLDING_COLUMNS = [
     "fx_quote_currency",
     "fx_rate",
     "fx_unit",
+    "execution_evidence_kind",
+    "modeled_price_session_date",
+    "modeled_price_model_id",
+    "execution_eligible",
 ]
 MARK_METADATA_COLUMNS = [
     c
@@ -189,8 +193,16 @@ class _Replay:
             price_value = price.price
             metadata = _mark_metadata(price, None, self.instruments[name].currency)
         rate, fx = select_usd_fx(self.request, self.instruments[name].currency, time)
-        if execution and fx is not None and modeled is None:
-            require(fx.availability_basis == "verified", "assumed FX cannot fund a transaction")
+        if execution and fx is not None:
+            require(
+                fx.availability_basis == "verified"
+                or (
+                    modeled is not None
+                    and fx.availability_basis == "assumed_market_session"
+                    and self.request.config.allow_assumed_availability
+                ),
+                "FX availability basis cannot fund a transaction",
+            )
         if fx is not None:
             metadata.update(
                 {
@@ -359,27 +371,10 @@ class _Replay:
                 self.transactions,
                 columns=[
                     *TRANSACTION_COLUMNS,
-                    *[
-                        c
-                        for c in HOLDING_COLUMNS
-                        if c
-                        not in (
-                            "valuation_at",
-                            "instrument_id",
-                            "quantity",
-                            "local_price",
-                            "usd_per_local",
-                            "value_usd",
-                            "weight",
-                        )
-                    ],
+                    *MARK_METADATA_COLUMNS,
                     "execution_at",
                     "decision_id",
                     "event_sequence",
-                    "execution_evidence_kind",
-                    "modeled_price_session_date",
-                    "modeled_price_model_id",
-                    "execution_eligible",
                 ],
             ),
             pd.DataFrame(self.targets, columns=TARGET_COLUMNS),
