@@ -63,6 +63,9 @@ PAIRS = (
     ("concepts/execution-costs.md", "concepts/execution-costs.zh-CN.md"),
     ("concepts/cost-breakdown.md", "concepts/cost-breakdown.zh-CN.md"),
     ("dated-execution-fees.md", "dated-execution-fees.zh-CN.md"),
+    ("execution/README.en.md", "execution/README.md"),
+    ("microstructure/README.en.md", "microstructure/README.md"),
+    ("microstructure/data-boundary.en.md", "microstructure/data-boundary.md"),
     (
         "concepts/style-factor-portfolio-weighting.en.md",
         "concepts/style-factor-portfolio-weighting.md",
@@ -275,6 +278,12 @@ def test_rendered_sidebar_matches_the_current_page_locale(tmp_path: Path) -> Non
         "English retired notice": site_dir
         / "concepts/style-factor-portfolio-weighting.en/index.html",
         "Chinese retired notice": site_dir / "concepts/style-factor-portfolio-weighting/index.html",
+        "English execution": site_dir / "execution/README.en/index.html",
+        "Chinese execution": site_dir / "execution/index.html",
+        "English microstructure": site_dir / "microstructure/README.en/index.html",
+        "Chinese microstructure": site_dir / "microstructure/index.html",
+        "English data boundary": site_dir / "microstructure/data-boundary.en/index.html",
+        "Chinese data boundary": site_dir / "microstructure/data-boundary/index.html",
     }
     navigation: dict[str, str] = {}
     for locale, path in rendered_pages.items():
@@ -307,3 +316,9 @@ def test_rendered_sidebar_matches_the_current_page_locale(tmp_path: Path) -> Non
     assert not re.search(r"[\u3400-\u9fff]", navigation["English retired notice"])
     assert "已退出公开发布的风格因子回测片段" in navigation["Chinese retired notice"]
     assert "Retired style-factor backtest slice" not in navigation["Chinese retired notice"]
+    for locale in ("English execution", "English microstructure", "English data boundary"):
+        assert not re.search(r"[\u3400-\u9fff]", navigation[locale])
+        assert "Execution domain" in navigation[locale]
+    for locale in ("Chinese execution", "Chinese microstructure", "Chinese data boundary"):
+        assert "执行概览" in navigation[locale]
+        assert "Execution domain" not in navigation[locale]
