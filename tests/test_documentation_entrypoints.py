@@ -494,7 +494,20 @@ def test_orchestration_overview_matches_package_exports_and_cli_registration() -
         assert f'commands.add_parser("{command}")' in cli
     assert "register_afml_evidence_commands" in cli
     assert "register_protocol_commands" in cli
-    assert "Chinese originals (translation in progress)" in docs
+    for english_page in (
+        "output-artifacts.en.md",
+        "output-orchestration.en.md",
+        "output-summary.en.md",
+        "integrating-an-owner.en.md",
+        "targets.en.md",
+        "operations/quality-gates.en.md",
+        "reference/runtime-helpers.en.md",
+    ):
+        assert f"]({english_page})" in docs
+    assert "## Pages currently available only in Chinese" in docs
+    assert "## 中文文档" in (ROOT / "docs/orchestration/README.zh-CN.md").read_text(
+        encoding="utf-8"
+    )
 
 
 def test_control_plane_docs_match_contracts_runner_and_failure_tests() -> None:

@@ -19,16 +19,17 @@ The installable `strategy-pipeline` CLI is registered by the root project. Its c
 
 ## English documentation
 
-- [Evaluation orchestration](evaluation.md)
-- [Evidence and protocol CLI](evidence-protocol-cli.en.md)
-- [Reference pages](reference/README.md)
-
-## Chinese originals (translation in progress)
-
+- [Evaluation orchestration](evaluation.md) and [control-plane API](control-plane.md)
 - [Run artifacts](output-artifacts.en.md), [output orchestration](output-orchestration.en.md), and [run summaries](output-summary.en.md)
-- [Owner integration](integrating-an-owner.en.md) and [target export](targets.en.md)
-- [Quality gates](operations/quality-gates.md)
-- [Cashflow publication guide](cashflow-publication.md)
-- [Runtime helpers](reference/runtime-helpers.md)
+- [Owner integration](integrating-an-owner.en.md), [target export](targets.en.md), and [evidence and protocol CLI](evidence-protocol-cli.en.md)
+- [Quality gates](operations/quality-gates.en.md)
+- [Reference pages](reference/README.md), including [CLI helpers](reference/cli-helpers.md), [configuration](reference/configuration.md), and [runtime helpers](reference/runtime-helpers.en.md)
 
-English companions are available for [run artifacts](output-artifacts.en.md), [quality gates](operations/quality-gates.en.md), and [runtime helpers](reference/runtime-helpers.en.md).
+## Pages currently available only in Chinese
+
+- [Cashflow publication guide](cashflow-publication.md)
+- [Development guide](development.md)
+- [E2 promotion receipt](e2-promotion-receipt.md)
+- [Publication audit](publication-audit.md)
+
+The [localization status](../LANGUAGE_MIGRATION_STATUS.md) tracks the remaining translation work. Pages with English versions link to their Chinese counterparts at the top.
