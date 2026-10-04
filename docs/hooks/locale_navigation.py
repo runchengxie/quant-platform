@@ -1,7 +1,7 @@
-"""Keep each MkDocs sidebar in the language of the current page.
+"""Keep page language metadata and the MkDocs sidebar aligned.
 
-This is a navigation-only transition. Existing page URLs and the search index
-remain unchanged while Chinese originals are translated selectively.
+Existing page URLs and the search index remain unchanged while Chinese
+originals are translated selectively.
 """
 
 from __future__ import annotations
@@ -136,4 +136,9 @@ def on_page_context(context, page, config, nav):
     items = _for_locale(nav.items, chinese)
     pages = [p for p in nav.pages if (p.file.src_uri not in ENGLISH_PAGES) == chinese]
     context["nav"] = Navigation(items, pages)
+    localized_config = copy(config)
+    localized_theme = copy(config.theme)
+    localized_theme.language = "zh" if chinese else "en"
+    localized_config.theme = localized_theme
+    context["config"] = localized_config
     return context
