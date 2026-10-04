@@ -41,6 +41,7 @@ ENGLISH_PAGES = {
     "concepts/turnover.en-US.md",
     "concepts/benchmark-ladder.en-US.md",
     "concepts/lean-differential-spike-2026-09.md",
+    "corporate-action-ledger.en.md",
     "dated-execution-fees.md",
     "reference/usd-price-ledger.md",
     "alpha/concepts/style-replica.en.md",
