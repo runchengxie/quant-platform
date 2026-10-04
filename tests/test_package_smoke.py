@@ -135,28 +135,22 @@ CORE_ENTRYPOINTS = frozenset(
         "attach_entry_dates",
         "attribute_delayed_fills",
         "calibrate_cost_model",
-        "available_factor_names",
         "average_active_bets",
         "backtest_topk",
         "box_worst_case_return",
-        "build_factor_returns",
         "build_backtest_periods_frame",
         "build_backtest_return_frame",
         "build_comparison_receipt",
         "build_portfolio_sizing_receipt",
         "build_position_replay_periods",
         "build_positions_envelope_v2",
-        "build_quantile_portfolio_returns",
         "build_rebalance_turnover_report",
         "build_sized_weights",
         "build_sizing_receipt",
         "build_target_weights",
         "build_targets",
         "combine_targets",
-        "compute_factor_correlations",
-        "compute_summary",
         "compute_trade_summary",
-        "compute_yearly_breakdown",
         "compare_portfolio_returns",
         "conservative_score",
         "construct_positions_from_strategy",
@@ -166,7 +160,6 @@ CORE_ENTRYPOINTS = frozenset(
         "evaluate_position_backtest",
         "execution_summary_frame",
         "expected_max_sharpe",
-        "get_rebalance_dates",
         "get_rebalance_events",
         "get_session_interval_rebalance_dates",
         "hierarchical_risk_parity",
@@ -237,6 +230,7 @@ def test_owned_modules_import(module_name: str) -> None:
 
 def test_portfolio_backtester_package_exports_core_entrypoints() -> None:
     assert set(portfolio_backtester.__all__) == CORE_ENTRYPOINTS
+    assert all(hasattr(portfolio_backtester, name) for name in portfolio_backtester.__all__)
 
 
 def test_owned_modules_do_not_load_sibling_namespaces() -> None:

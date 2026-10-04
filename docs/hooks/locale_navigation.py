@@ -44,6 +44,7 @@ ENGLISH_PAGES = {
     "concepts/factor-attribution.en.md",
     "corporate-action-ledger.en.md",
     "dated-execution-fees.md",
+    "concepts/style-factor-portfolio-weighting.en.md",
     "reference/usd-price-ledger.md",
     "alpha/concepts/style-replica.en.md",
     "alpha/concepts/model-selection.en-US.md",

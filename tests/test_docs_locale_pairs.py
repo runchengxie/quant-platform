@@ -63,6 +63,10 @@ PAIRS = (
     ("concepts/execution-costs.md", "concepts/execution-costs.zh-CN.md"),
     ("concepts/cost-breakdown.md", "concepts/cost-breakdown.zh-CN.md"),
     ("dated-execution-fees.md", "dated-execution-fees.zh-CN.md"),
+    (
+        "concepts/style-factor-portfolio-weighting.en.md",
+        "concepts/style-factor-portfolio-weighting.md",
+    ),
     ("reference/outputs/positions.md", "reference/outputs/positions.zh-CN.md"),
     (
         "reference/outputs/backtest-outputs.en.md",
@@ -176,6 +180,43 @@ def test_dated_execution_fee_translation_matches_public_contract() -> None:
     assert "class DatedFeeSchedule" in implementation
 
 
+def test_retired_style_factor_slice_is_not_described_as_a_current_api() -> None:
+    root = Path(__file__).resolve().parents[1]
+    english_notice = (root / "docs/concepts/style-factor-portfolio-weighting.en.md").read_text(
+        encoding="utf-8"
+    )
+    chinese_notice = (root / "docs/concepts/style-factor-portfolio-weighting.md").read_text(
+        encoding="utf-8"
+    )
+    english_api = (root / "docs/reference/public-api.md").read_text(encoding="utf-8")
+    chinese_api = (root / "docs/reference/public-api.zh-CN.md").read_text(encoding="utf-8")
+    package = (
+        root / "packages/portfolio-backtester/src/portfolio_backtester/__init__.py"
+    ).read_text(encoding="utf-8")
+
+    for retired in (
+        "available_factor_names",
+        "get_rebalance_dates",
+        "build_factor_returns",
+        "build_quantile_portfolio_returns",
+        "compute_factor_correlations",
+        "compute_summary",
+        "compute_yearly_breakdown",
+    ):
+        assert retired not in english_api
+        assert retired not in chinese_api
+        assert f'"{retired}"' not in package
+    for notice, phrase in (
+        (english_notice, "not supported by the current"),
+        (english_notice, "license and historical authorization"),
+        (chinese_notice, "不能视为当前受支持的"),
+        (chinese_notice, "许可证和历史授权尚未确认"),
+    ):
+        assert phrase in notice
+    assert "62d4a254409cd3111fc90083a892308fa598c98c" in english_notice
+    assert "62d4a254409cd3111fc90083a892308fa598c98c" in chinese_notice
+
+
 class _PrimaryNavigationText(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
@@ -227,6 +268,9 @@ def test_rendered_sidebar_matches_the_current_page_locale(tmp_path: Path) -> Non
         "English": site_dir / "concepts/backtest-configuration/index.html",
         "Chinese": site_dir / "concepts/backtest-configuration.zh-CN/index.html",
         "Chinese dated fees": site_dir / "dated-execution-fees.zh-CN/index.html",
+        "English retired notice": site_dir
+        / "concepts/style-factor-portfolio-weighting.en/index.html",
+        "Chinese retired notice": site_dir / "concepts/style-factor-portfolio-weighting/index.html",
     }
     navigation: dict[str, str] = {}
     for locale, path in rendered_pages.items():
@@ -246,3 +290,7 @@ def test_rendered_sidebar_matches_the_current_page_locale(tmp_path: Path) -> Non
     assert "USD price ledger" not in navigation["Chinese"]
     assert "Style Replica（中文参考）" in navigation["Chinese"]
     assert "Style Replica (Chinese reference)" not in navigation["Chinese"]
+    assert "Retired style-factor backtest slice" in navigation["English retired notice"]
+    assert not re.search(r"[\u3400-\u9fff]", navigation["English retired notice"])
+    assert "已退出公开发布的风格因子回测片段" in navigation["Chinese retired notice"]
+    assert "Retired style-factor backtest slice" not in navigation["Chinese retired notice"]

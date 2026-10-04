@@ -32,7 +32,7 @@
 7. [机器可读框架状态账本](https://github.com/runchengxie/quant-platform/blob/main/docs/framework-integration-ledger.yml)
 8. [成本与执行假设](concepts/execution-costs.md)
 9. [执行容量与每日净值模拟](guides/execution-simulation.md)
-10. [风格因子组合权重](concepts/style-factor-portfolio-weighting.md)
+10. [已退出公开发布的风格因子回测片段](concepts/style-factor-portfolio-weighting.md)
 11. [AFML 仓位与策略风险](concepts/afml-sizing-and-risk.md)
 12. [换手率口径](concepts/turnover.md)
 13. [成本口径](concepts/cost-breakdown.zh-CN.md)
