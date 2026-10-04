@@ -126,6 +126,7 @@ nav:
       - Differential backtesting: concepts/differential-backtesting.en.md
       - Portfolio optimization backends: concepts/portfolio-optimization-backends.en.md
       - Backtest backend boundary: concepts/backend-architecture.en.md
+      - Corporate-action ledger: corporate-action-ledger.en.md
       - 简体中文:
           - 回测配置解析: concepts/backtest-configuration.zh-CN.md
           - 回测规范: concepts/backtest-spec.zh-CN.md
