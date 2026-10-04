@@ -111,6 +111,17 @@ def test_locale_migration_status_is_linked_from_documentation_home() -> None:
     assert "LANGUAGE_MIGRATION_STATUS.md" in index
 
 
+def test_english_documentation_index_links_to_english_guides() -> None:
+    root = Path(__file__).resolve().parents[1]
+    index = (root / "docs" / "README.md").read_text(encoding="utf-8")
+
+    assert "guides/execution-simulation.en.md" in index
+    assert "reference/outputs/backtest-outputs.en.md" in index
+    assert "guides/execution-simulation.md" not in index
+    assert "microstructure/README.md" not in index
+    assert "governance/accounting-execution-roadmap.md" not in index
+
+
 class _PrimaryNavigationText(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
