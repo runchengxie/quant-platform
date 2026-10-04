@@ -89,9 +89,12 @@ TARGET_COLUMNS = [
 ]
 
 
-def assert_usd_equal(left: Decimal, right: Decimal, field: str) -> None:
-    """Allow only precision-50 arithmetic roundoff, never a monetary tolerance."""
-    tolerance = max(Decimal(1), abs(left), abs(right)) * Decimal("1e-45")
+def assert_usd_equal(
+    left: Decimal, right: Decimal, field: str, *, scale: Decimal | None = None
+) -> None:
+    """Allow precision-50 roundoff relative to the largest relevant amount."""
+    tolerance_scale = max(Decimal(1), abs(left), abs(right), abs(scale or Decimal(0)))
+    tolerance = tolerance_scale * Decimal("1e-45")
     require(abs(left - right) <= tolerance, f"unreconciled {field}")
 
 
@@ -318,6 +321,7 @@ class _Replay:
             nav - self.previous_nav,
             self.local_pnl + self.fx_pnl - self.costs,
             "interval NAV attribution",
+            scale=max(abs(nav), abs(self.previous_nav)),
         )
         self.daily.append(
             {
