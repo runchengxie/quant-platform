@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import subprocess
 import sys
 from html.parser import HTMLParser
@@ -181,5 +182,12 @@ def test_rendered_sidebar_matches_the_current_page_locale(tmp_path: Path) -> Non
 
     assert "Installation and environments" in navigation["English"]
     assert "安装与环境" not in navigation["English"]
+    assert "Dated execution fees" in navigation["English"]
+    assert "USD price ledger" in navigation["English"]
+    assert not re.search(r"[\u3400-\u9fff]", navigation["English"])
     assert "安装与环境" in navigation["Chinese"]
     assert "Installation and environments" not in navigation["Chinese"]
+    assert "Dated execution fees" not in navigation["Chinese"]
+    assert "USD price ledger" not in navigation["Chinese"]
+    assert "Style Replica（中文参考）" in navigation["Chinese"]
+    assert "Style Replica (Chinese reference)" not in navigation["Chinese"]
