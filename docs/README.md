@@ -34,14 +34,15 @@ These guides use synthetic data and small examples. They help you run the full f
 14. [Execution capacity and daily NAV simulation](guides/execution-simulation.en.md)
 15. [Turnover definitions](concepts/turnover.en-US.md)
 16. [Cost breakdown](concepts/cost-breakdown.md)
-17. [Raw-share corporate-action ledger](corporate-action-ledger.en.md)
-18. [Interpreting backtest results](concepts/backtest-interpretation.en.md)
-19. [Market benchmark comparisons](concepts/benchmark-ladder.en-US.md)
-20. [Position output contract](reference/outputs/positions.md)
-21. [Backtest output contract](reference/outputs/backtest-outputs.en.md)
-22. [Execution allocation reference assets](reference/allocation-reference.md)
-23. [Public API](reference/public-api.md)
-24. [Testing and quality checks](testing.md) · [简体中文](testing.zh-CN.md)
+17. [Factor return and risk attribution](concepts/factor-attribution.en.md)
+18. [Raw-share corporate-action ledger](corporate-action-ledger.en.md)
+19. [Interpreting backtest results](concepts/backtest-interpretation.en.md)
+20. [Market benchmark comparisons](concepts/benchmark-ladder.en-US.md)
+21. [Position output contract](reference/outputs/positions.md)
+22. [Backtest output contract](reference/outputs/backtest-outputs.en.md)
+23. [Execution allocation reference assets](reference/allocation-reference.md)
+24. [Public API](reference/public-api.md)
+25. [Testing and quality checks](testing.md) · [简体中文](testing.zh-CN.md)
 
 The [localization status](LANGUAGE_MIGRATION_STATUS.md) identifies pages that are still Chinese originals. They remain available in Chinese and are not linked here as English guides until their English versions are checked against the implementation.
 
