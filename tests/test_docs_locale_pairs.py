@@ -135,6 +135,23 @@ def test_english_documentation_index_links_to_english_guides() -> None:
     assert "governance/accounting-execution-roadmap.md" not in index
 
 
+def test_microstructure_guides_link_to_the_rust_page_in_the_same_locale() -> None:
+    root = Path(__file__).resolve().parents[1]
+    english_pages = (
+        root / "docs/microstructure/README.en.md",
+        root / "docs/microstructure/development-guide.en.md",
+    )
+    chinese_pages = (
+        root / "docs/microstructure/README.md",
+        root / "docs/microstructure/development-guide.md",
+    )
+
+    for page in english_pages:
+        assert "../development/microstructure-rust.en.md" in page.read_text(encoding="utf-8")
+    for page in chinese_pages:
+        assert "../development/microstructure-rust.md" in page.read_text(encoding="utf-8")
+
+
 def test_factor_attribution_docs_keep_schema_ids_and_scope_aligned() -> None:
     root = Path(__file__).resolve().parents[1]
     english = (root / "docs/concepts/factor-attribution.en.md").read_text(encoding="utf-8")
