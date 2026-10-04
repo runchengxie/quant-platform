@@ -20,6 +20,7 @@ The installable `strategy-pipeline` CLI is registered by the root project. Its c
 ## English documentation
 
 - [Evaluation orchestration](evaluation.md)
+- [Evidence and protocol CLI](evidence-protocol-cli.en.md)
 - [Reference pages](reference/README.md)
 
 ## Chinese originals (translation in progress)
@@ -27,7 +28,7 @@ The installable `strategy-pipeline` CLI is registered by the root project. Its c
 - [Run artifacts](output-artifacts.en.md), [output orchestration](output-orchestration.en.md), and [run summaries](output-summary.en.md)
 - [Owner integration](integrating-an-owner.en.md) and [target export](targets.en.md)
 - [Quality gates](operations/quality-gates.md)
-- [CLI and evidence-protocol guide](evidence-protocol-cli.md) and [cashflow publication guide](cashflow-publication.md)
+- [Cashflow publication guide](cashflow-publication.md)
 - [Runtime helpers](reference/runtime-helpers.md)
 
 English companions are available for [run artifacts](output-artifacts.en.md), [quality gates](operations/quality-gates.en.md), and [runtime helpers](reference/runtime-helpers.en.md).

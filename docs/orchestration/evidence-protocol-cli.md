@@ -1,5 +1,7 @@
 # 证据与协议 CLI
 
+语言：简体中文 · [English](evidence-protocol-cli.en.md)
+
 公共 `strategy-pipeline` 提供两个通用命令入口：`afml-evidence` 用于生成运行证据，
 `research-protocol` 用于初始化或评估研究协议 manifest。
 
