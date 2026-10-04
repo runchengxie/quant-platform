@@ -66,6 +66,8 @@ PAIRS = (
     ("execution/README.en.md", "execution/README.md"),
     ("microstructure/README.en.md", "microstructure/README.md"),
     ("microstructure/data-boundary.en.md", "microstructure/data-boundary.md"),
+    ("microstructure/development-guide.en.md", "microstructure/development-guide.md"),
+    ("development/microstructure-rust.en.md", "development/microstructure-rust.md"),
     (
         "concepts/style-factor-portfolio-weighting.en.md",
         "concepts/style-factor-portfolio-weighting.md",
@@ -284,6 +286,12 @@ def test_rendered_sidebar_matches_the_current_page_locale(tmp_path: Path) -> Non
         "Chinese microstructure": site_dir / "microstructure/index.html",
         "English data boundary": site_dir / "microstructure/data-boundary.en/index.html",
         "Chinese data boundary": site_dir / "microstructure/data-boundary/index.html",
+        "English microstructure development": site_dir
+        / "microstructure/development-guide.en/index.html",
+        "Chinese microstructure development": site_dir
+        / "microstructure/development-guide/index.html",
+        "English Rust kernel": site_dir / "development/microstructure-rust.en/index.html",
+        "Chinese Rust kernel": site_dir / "development/microstructure-rust/index.html",
     }
     navigation: dict[str, str] = {}
     for locale, path in rendered_pages.items():
@@ -316,9 +324,21 @@ def test_rendered_sidebar_matches_the_current_page_locale(tmp_path: Path) -> Non
     assert not re.search(r"[\u3400-\u9fff]", navigation["English retired notice"])
     assert "已退出公开发布的风格因子回测片段" in navigation["Chinese retired notice"]
     assert "Retired style-factor backtest slice" not in navigation["Chinese retired notice"]
-    for locale in ("English execution", "English microstructure", "English data boundary"):
+    for locale in (
+        "English execution",
+        "English microstructure",
+        "English data boundary",
+        "English microstructure development",
+        "English Rust kernel",
+    ):
         assert not re.search(r"[\u3400-\u9fff]", navigation[locale])
         assert "Execution domain" in navigation[locale]
-    for locale in ("Chinese execution", "Chinese microstructure", "Chinese data boundary"):
+    for locale in (
+        "Chinese execution",
+        "Chinese microstructure",
+        "Chinese data boundary",
+        "Chinese microstructure development",
+        "Chinese Rust kernel",
+    ):
         assert "执行概览" in navigation[locale]
         assert "Execution domain" not in navigation[locale]

@@ -47,6 +47,8 @@ ENGLISH_PAGES = {
     "execution/README.en.md",
     "microstructure/README.en.md",
     "microstructure/data-boundary.en.md",
+    "microstructure/development-guide.en.md",
+    "development/microstructure-rust.en.md",
     "concepts/style-factor-portfolio-weighting.en.md",
     "reference/usd-price-ledger.md",
     "alpha/concepts/style-replica.en.md",
