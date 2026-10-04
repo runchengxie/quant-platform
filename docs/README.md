@@ -45,6 +45,7 @@ These guides use synthetic data and small examples. They help you run the full f
 25. [Testing and quality checks](testing.md) · [简体中文](testing.zh-CN.md)
 26. [Execution domain](execution/README.en.md)
 27. [Microstructure framework](microstructure/README.en.md) · [TickNet data boundary](microstructure/data-boundary.en.md)
+28. [Microstructure development guide](microstructure/development-guide.en.md) · [Optional Rust kernel](development/microstructure-rust.en.md)
 
 The [localization status](LANGUAGE_MIGRATION_STATUS.md) identifies pages that are still Chinese originals. They remain available in Chinese and are not linked here as English guides until their English versions are checked against the implementation.
 
