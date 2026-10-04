@@ -142,7 +142,7 @@ nav:
       - 基准阶梯: concepts/benchmark-ladder.md
       - 换手率: concepts/turnover.md
       - 组合执行性能基线: development/portfolio-execution-profiling-2026-09.md
-      - 日期执行费用: dated-execution-fees.md
+      - Dated execution fees: dated-execution-fees.md
       - 公司行动账本: corporate-action-ledger.md
       - 差分回测: concepts/differential-backtesting.md
       - 运行时内核: architecture/runtime-kernel.md
@@ -155,7 +155,7 @@ nav:
           - 研究协议: alpha/concepts/research-protocols.md
           - 风格因子截面: alpha/concepts/style-factor-cross-sections.md
           - Style Replica: alpha/concepts/style-replica.en.md
-          - Style Replica (Chinese reference): alpha/concepts/style-replica.md
+          - Style Replica（中文参考）: alpha/concepts/style-replica.md
   - Alpha and research (Chinese originals; translation in progress):
       - Alpha 概览: alpha/README.md
       - AFML 方法论: alpha/concepts/afml-methodology.md
