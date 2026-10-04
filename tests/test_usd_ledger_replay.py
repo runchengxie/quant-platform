@@ -1,4 +1,5 @@
 from dataclasses import replace
+from datetime import date
 from datetime import timedelta
 
 import pytest
@@ -7,6 +8,7 @@ from usd_ledger_fixtures import D, at, config, decision, instrument, price, requ
 
 from portfolio_backtester.usd_ledger import run_usd_price_replay
 from portfolio_backtester.usd_ledger_models import USDValidationError
+from portfolio_backtester.usd_ledger_models import USDModeledExecutionPrice
 
 
 def test_quantities_stay_fixed_and_weights_drift():
@@ -169,3 +171,60 @@ def test_assumed_fx_is_never_a_transaction_conversion():
     )
     with pytest.raises(USDValidationError):
         run_usd_price_replay(r)
+
+
+def modeled(name="A", day=1, value="10"):
+    from usd_ledger_fixtures import REF
+
+    return USDModeledExecutionPrice(
+        name,
+        date(2026, 1, day),
+        at(day, 1),
+        D(value),
+        "currency_per_share",
+        REF,
+        "synthetic-session.v1",
+        "synthetic-open.v1",
+    )
+
+
+def test_modeled_reference_replay_uses_exact_open_and_marks_noneligible():
+    result = run_usd_price_replay(
+        request(
+            modeled_execution_prices=(modeled(),),
+            config=config(allow_modeled_execution_prices=True),
+        )
+    )
+    transaction = result.transactions.iloc[0]
+    assert transaction.local_price == D("10")
+    assert transaction.execution_evidence_kind == "modeled_reference"
+    assert transaction.modeled_price_session_date == date(2026, 1, 1)
+    assert transaction.modeled_price_model_id == "synthetic-open.v1"
+    assert bool(transaction.execution_eligible) is False
+    assert result.diagnostics["modeled_execution_enabled"] is True
+    assert result.summary["orders_submitted"] is False
+
+
+def test_missing_modeled_reference_never_falls_back_to_daily_close():
+    with pytest.raises(USDValidationError, match="modeled execution"):
+        run_usd_price_replay(
+            request(config=config(allow_modeled_execution_prices=True))
+        )
+
+
+def test_modeled_reference_allows_assumed_fx_only_in_opted_in_mode():
+    r = request(
+        instruments=(instrument(currency="GBP"),),
+        fx=(fx("GBP", "USD", "1.25", availability_basis="assumed_market_session"),),
+        modeled_execution_prices=(modeled(),),
+        config=config(
+            fx_pairs={"GBP": ("GBP", "USD")},
+            allow_assumed_availability=True,
+            allow_modeled_execution_prices=True,
+        ),
+    )
+    result = run_usd_price_replay(r)
+    assert result.transactions.iloc[0].fx_availability_basis == "assumed_market_session"
+    verified_only = replace(r, config=config(fx_pairs={"GBP": ("GBP", "USD")}))
+    with pytest.raises(USDValidationError):
+        run_usd_price_replay(verified_only)

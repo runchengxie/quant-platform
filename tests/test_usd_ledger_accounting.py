@@ -113,3 +113,37 @@ def test_local_currency_trade_has_separate_fx_and_slippage_costs():
         D("0.6"),
         D("0.9"),
     ]
+
+
+def test_signed_slippage_moves_buy_and_sell_execution_prices_once():
+    cfg = config(commission_bps=D("100"), slippage_bps=D("100"))
+    q, cash, buys = settle_usd_rebalance(
+        {},
+        D("100"),
+        {"A": D("2")},
+        {"A": D("10")},
+        {"A": D("1")},
+        {"A": instrument()},
+        cfg,
+        execution_ids=frozenset({"A"}),
+        execution_prices={"A": D("10.1")},
+    )
+    assert buys.iloc[0].local_price == D("10")
+    assert buys.iloc[0].execution_price == D("10.1")
+    assert buys.iloc[0].slippage_usd == D("0.2")
+    assert cash == D("79.6")
+    q, cash, sells = settle_usd_rebalance(
+        q,
+        cash,
+        {"A": D("0")},
+        {"A": D("10")},
+        {"A": D("1")},
+        {"A": instrument()},
+        cfg,
+        execution_ids=frozenset({"A"}),
+        execution_prices={"A": D("9.9")},
+    )
+    assert sells.iloc[0].local_price == D("10")
+    assert sells.iloc[0].execution_price == D("9.9")
+    assert sells.iloc[0].slippage_usd == D("0.2")
+    assert cash == D("99.2")
