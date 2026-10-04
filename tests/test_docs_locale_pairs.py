@@ -286,6 +286,14 @@ def test_rendered_sidebar_matches_the_current_page_locale(tmp_path: Path) -> Non
     )
     assert result.returncode == 0, result.stdout + result.stderr
 
+    navigation, html_languages = _read_rendered_locale_pages(site_dir)
+    _assert_home_and_core_navigation(navigation)
+    _assert_retired_notice_navigation(navigation)
+    _assert_execution_navigation(navigation)
+    _assert_rendered_html_languages(html_languages)
+
+
+def _read_rendered_locale_pages(site_dir: Path) -> tuple[dict[str, str], dict[str, str]]:
     rendered_pages = {
         "English home": site_dir / "index.html",
         "Chinese home": site_dir / "README.zh-CN/index.html",
@@ -320,7 +328,10 @@ def test_rendered_sidebar_matches_the_current_page_locale(tmp_path: Path) -> Non
         match = re.search(r'<html lang="([^"]+)"', rendered)
         assert match is not None, locale
         html_languages[locale] = match.group(1)
+    return navigation, html_languages
 
+
+def _assert_home_and_core_navigation(navigation: dict[str, str]) -> None:
     assert "Installation and environments" in navigation["English"]
     assert "安装与环境" not in navigation["English"]
     assert "Dated execution fees" in navigation["English"]
@@ -342,6 +353,9 @@ def test_rendered_sidebar_matches_the_current_page_locale(tmp_path: Path) -> Non
     assert "USD price ledger" not in navigation["Chinese"]
     assert "Style Replica（中文参考）" in navigation["Chinese"]
     assert "Style Replica (Chinese reference)" not in navigation["Chinese"]
+
+
+def _assert_rendered_html_languages(html_languages: dict[str, str]) -> None:
     for locale in (
         "English home",
         "English orchestration",
@@ -367,10 +381,16 @@ def test_rendered_sidebar_matches_the_current_page_locale(tmp_path: Path) -> Non
         "Chinese Rust kernel",
     ):
         assert html_languages[locale] == "zh"
+
+
+def _assert_retired_notice_navigation(navigation: dict[str, str]) -> None:
     assert "Retired style-factor backtest slice" in navigation["English retired notice"]
     assert not re.search(r"[\u3400-\u9fff]", navigation["English retired notice"])
     assert "已退出公开发布的风格因子回测片段" in navigation["Chinese retired notice"]
     assert "Retired style-factor backtest slice" not in navigation["Chinese retired notice"]
+
+
+def _assert_execution_navigation(navigation: dict[str, str]) -> None:
     for locale in (
         "English execution",
         "English microstructure",
