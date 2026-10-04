@@ -1,17 +1,14 @@
 # AFML 仓位、HRP 与策略风险
 
-本页说明组合层新增的校准仓位、active-bet 平滑、HRP 和策略风险指标。
+语言：简体中文 · [English](afml-sizing-and-risk.en.md)
+
+本页说明 `portfolio_backtester` 已实现的组合仓位、active-bet 聚合、层次风险平价（HRP）和策略风险工具。
 
 ## 校准仓位
 
-`portfolio_backtester.bet_sizing` 接受研究层已经严格样本外校准的概率或置信度，并在组合层完成：
+`portfolio_backtester.bet_sizing` 根据研究层提供的输入构造非负、按 gross exposure 归一化的目标权重。支持的方法包括 `probability`、`probability_vol_target`、`signal_vol_target`、`confidence_budget` 和 `risk_budget`。还可设置 gross target、单标的上限、权重步长和最小交易权重。
 
-- probability-to-size
-- 波动率缩放
-- 单标的上限
-- 仓位离散化
-- 最小交易权重
-- sizing receipt
+调用方提供 `calibrated_probability`。波动率目标方法还需要 `predicted_volatility`，也可以指定其他列名。该函数不会训练模型或拟合校准器。概率校准及其样本外证据属于研究层。仓位约束只作用于组合权重，不能证明输入具有预测能力，也不能证明组合适合实盘。
 
 ```python
 from portfolio_backtester import SizingConfig, build_sized_weights
@@ -28,45 +25,27 @@ weights = build_sized_weights(
 )
 ```
 
-概率校准由 `quant-market-research` 负责。组合层不会用训练内概率重新拟合校准器。
-
 ## Active bets
 
-`average_active_bets` 根据 `label_start`、`label_end` 和 `bet_size` 平均仍然有效的事件。它适合事件策略和 meta-label 路线，用于降低新预测覆盖旧预测造成的抖动。
+`average_active_bets` 会在每个时间点，对 `label_start` 至 `label_end` 范围内事件的 `bet_size` 求平均。
 
-`discretize_weights` 将连续目标仓位映射到固定步长。离散化之后仍需重新归一化和执行换手限制。
+`discretize_weights` 将权重四舍五入到给定步长。它与 active-bet 聚合是独立操作。单独离散化不会执行组合限额或换手约束。
 
 ## HRP
 
-`hierarchical_risk_parity` 和 `rolling_hrp_weights` 面向资产、模型或 sleeve 收益序列。推荐优先用于：
+`hierarchical_risk_parity` 根据收益 DataFrame 估计 HRP 权重。`rolling_hrp_weights` 在每个调仓日只使用该日之前、且受 lookback 限制的历史数据。HRP 需要 SciPy 和至少两个可用的收益序列。协方差中存在缺失值时会报错。
 
-- 多模型信号分配
-- value / quality / momentum 等 sleeve 分配
-- 多持有期策略分配
-
-HRP 输入必须严格早于调仓日。`rolling_hrp_weights` 使用 `returns.index < rebalance_date`，不会把调仓日收益放入协方差估计。
-
-不建议默认对每日变化的 Top-K 个股直接运行 HRP。动态股票集合和短历史会导致聚类与权重不稳定。个股层 HRP 应额外提供 cluster stability、换手和样本外风险贡献证据。
+这些函数可用于资产、模型或 sleeve 收益序列，但不会替你决定应当组合哪些序列。对每日变化的 Top-K 股票池使用 HRP 并不意味着结果稳定。依赖结果前应检查聚类与权重稳定性、换手和样本外表现。
 
 ## 策略风险
 
-`portfolio_backtester.strategy_risk` 提供：
+`portfolio_backtester.strategy_risk` 提供概率夏普比率、正负收益集中度、命中率及平均盈亏、隐含精度、策略失效概率，以及实现差额和成本韧性指标。返回字段以 `StrategyRiskReport` 和各指标字典的定义为准。
 
-- Probabilistic Sharpe Ratio
-- 正收益、负收益和时间集中度 HHI
-- hit ratio、average hit、average miss
-- implied precision
-- strategy failure probability
-- implementation shortfall
-- shortfall per turnover
-- return on execution costs
-- cost break-even multiple
-
-`strategy_failure_probability` 衡量在给定盈亏分布和交易频率下，未来评估窗口的 precision 低于目标 Sharpe 所需 precision 的 bootstrap 概率。它描述策略机制失效风险，不能替代账户或组合 VaR。
+`strategy_failure_probability` 根据观测到的盈亏分布和年交易频率假设，估计未来精度低于目标 Sharpe 所需精度的 bootstrap 概率。它是研究诊断指标，不能替代账户或组合 VaR。
 
 ## 产物
 
-`portfolio_backtester.afml_evidence` 可以从已保存的回测运行目录生成 sizing、策略风险和可选 HRP 证据 sidecar。它只读取运行产物并写入可审计文件，不包含具体策略规则。
+`portfolio_backtester.afml_evidence.generate_run_afml_evidence` 从已保存的运行目录读取数据并生成 sizing 和策略风险证据。配置 HRP 收益输入后，也会生成 HRP 证据。产物包括：
 
 ```python
 from portfolio_backtester.afml_evidence import generate_run_afml_evidence
@@ -74,12 +53,11 @@ from portfolio_backtester.afml_evidence import generate_run_afml_evidence
 generate_run_afml_evidence("artifacts/runs/example")
 ```
 
-建议由当前仓库的 `strategy_pipeline` 保存：
-
 ```text
 sizing_receipt.json
 strategy_risk_report.json
 hrp_receipt.json
+hrp_weights.csv
 ```
 
-这些文件进入 lineage sidecar，但不进入执行引擎的下单字段。执行输入仍然是标准 `targets.json`。
+HRP 收益输入是可选项，因此 HRP 文件也仅在提供该输入时生成。编排层可以把证据路径和哈希写入 lineage sidecar。这些报告不是下单指令。执行仍使用标准 `targets.json` 契约。

@@ -88,6 +88,7 @@ nav:
           - Next-close diagnostic replay: guides/diagnostic-close-replay.en.md
           - Backtest output reference: reference/outputs/backtest-outputs.en.md
       - Alpha and research:
+          - Portfolio sizing and strategy-risk evidence: concepts/afml-sizing-and-risk.en.md
           - Model selection: alpha/concepts/model-selection.en-US.md
           - Model landscape: alpha/concepts/model-landscape.en-US.md
           - Factor catalog: alpha/concepts/factor-catalog.en-US.md
