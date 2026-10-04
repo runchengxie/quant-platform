@@ -182,12 +182,12 @@ def test_dated_execution_fee_translation_matches_public_contract() -> None:
 
 def test_retired_style_factor_slice_is_not_described_as_a_current_api() -> None:
     root = Path(__file__).resolve().parents[1]
-    english_notice = (
-        root / "docs/concepts/style-factor-portfolio-weighting.en.md"
-    ).read_text(encoding="utf-8")
-    chinese_notice = (
-        root / "docs/concepts/style-factor-portfolio-weighting.md"
-    ).read_text(encoding="utf-8")
+    english_notice = (root / "docs/concepts/style-factor-portfolio-weighting.en.md").read_text(
+        encoding="utf-8"
+    )
+    chinese_notice = (root / "docs/concepts/style-factor-portfolio-weighting.md").read_text(
+        encoding="utf-8"
+    )
     english_api = (root / "docs/reference/public-api.md").read_text(encoding="utf-8")
     chinese_api = (root / "docs/reference/public-api.zh-CN.md").read_text(encoding="utf-8")
     package = (
@@ -270,8 +270,7 @@ def test_rendered_sidebar_matches_the_current_page_locale(tmp_path: Path) -> Non
         "Chinese dated fees": site_dir / "dated-execution-fees.zh-CN/index.html",
         "English retired notice": site_dir
         / "concepts/style-factor-portfolio-weighting.en/index.html",
-        "Chinese retired notice": site_dir
-        / "concepts/style-factor-portfolio-weighting/index.html",
+        "Chinese retired notice": site_dir / "concepts/style-factor-portfolio-weighting/index.html",
     }
     navigation: dict[str, str] = {}
     for locale, path in rendered_pages.items():
