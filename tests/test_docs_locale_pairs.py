@@ -40,6 +40,7 @@ PAIRS = (
     ),
     ("concepts/backend-architecture.en.md", "concepts/backend-architecture.md"),
     ("corporate-action-ledger.en.md", "corporate-action-ledger.md"),
+    ("concepts/factor-attribution.en.md", "concepts/factor-attribution.md"),
     ("orchestration/README.md", "orchestration/README.zh-CN.md"),
     ("orchestration/control-plane.md", "orchestration/control-plane.zh-CN.md"),
     ("orchestration/evaluation.md", "orchestration/evaluation.zh-CN.md"),
@@ -122,6 +123,29 @@ def test_english_documentation_index_links_to_english_guides() -> None:
     assert "guides/execution-simulation.md" not in index
     assert "microstructure/README.md" not in index
     assert "governance/accounting-execution-roadmap.md" not in index
+
+
+def test_factor_attribution_docs_keep_schema_ids_and_scope_aligned() -> None:
+    root = Path(__file__).resolve().parents[1]
+    english = (root / "docs/concepts/factor-attribution.en.md").read_text(encoding="utf-8")
+    chinese = (root / "docs/concepts/factor-attribution.md").read_text(encoding="utf-8")
+    source = (
+        root / "packages/portfolio-backtester/src/portfolio_backtester/factor_attribution.py"
+    ).read_text(encoding="utf-8")
+
+    for schema in ("factor_return_attribution.v1", "factor_risk_attribution.v1"):
+        assert schema in source
+        assert schema in english
+        assert schema in chinese
+    for helper in ("attribute_factor_return()", "attribute_factor_risk()"):
+        assert helper in english
+        assert helper in chinese
+    assert "positive semidefinite" in english
+    assert "半正定" in chinese
+    assert "They do not estimate those inputs." in english
+    assert "不负责估计这些输入" in chinese
+    assert "do not calculate Brinson allocation or selection effects" in english
+    assert "不计算 Brinson 配置或选股归因" in chinese
 
 
 class _PrimaryNavigationText(HTMLParser):
