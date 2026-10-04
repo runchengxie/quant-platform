@@ -111,7 +111,7 @@ def _mark_metadata(price, fx, currency) -> dict[str, Any]:
         "execution_evidence_kind": "verified",
         "modeled_price_session_date": None,
         "modeled_price_model_id": None,
-        "execution_eligible": True,
+        "execution_eligible": price.execution_eligible and price.availability_basis == "verified",
     }
 
 

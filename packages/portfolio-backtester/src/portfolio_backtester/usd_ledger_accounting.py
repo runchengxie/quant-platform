@@ -192,12 +192,7 @@ def settle_usd_rebalance(
             else:
                 buy_price = local_prices[name]
                 extra_cost_rate = commission_rate + slippage_rate + fx_cost_rate
-            required += (
-                quantity
-                * buy_price
-                * usd_per_local[name]
-                * (1 + extra_cost_rate)
-            )
+            required += quantity * buy_price * usd_per_local[name] * (1 + extra_cost_rate)
         scale = min(Decimal(1), cash / required) if required else Decimal(1)
         for name, quantity in buys.items():
             executed = _round_increment(quantity * scale, instruments[name], config)

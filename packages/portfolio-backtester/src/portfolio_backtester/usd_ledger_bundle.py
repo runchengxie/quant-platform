@@ -1,7 +1,7 @@
 """Reconcile Decimal evidence before the existing diagnostic bundle writer."""
 
 from collections.abc import Mapping, Sequence
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal, localcontext
 from pathlib import Path
 from typing import Any, cast
@@ -27,6 +27,8 @@ def _json(value: Any) -> Any:
     if isinstance(value, Decimal):
         return str(value)
     if isinstance(value, datetime):
+        return value.isoformat()
+    if isinstance(value, date):
         return value.isoformat()
     if isinstance(value, Mapping):
         return {k: _json(v) for k, v in value.items()}
@@ -103,17 +105,46 @@ def _metadata(row: Mapping, time: datetime, lineage: set, *, execution: bool = F
         row["price_unit"] == "currency_per_share" and row["fx_unit"] == "quote_per_base",
         "invalid observation units",
     )
+    evidence_kind = row.get("execution_evidence_kind", "verified")
+    modeled = evidence_kind == "modeled_reference"
+    eligible = row.get("execution_eligible", True)
     require(
-        utc_time(row["price_at"]) <= utc_time(row["price_available_at"]) <= time,
-        "unavailable price evidence",
+        isinstance(eligible, bool) or type(eligible).__name__ == "bool_",
+        "invalid execution eligibility flag",
     )
+    if modeled:
+        require(
+            utc_time(row["price_at"]) == time
+            and row["price_available_at"] is None
+            and not bool(eligible)
+            and type(row["modeled_price_session_date"]) is date
+            and isinstance(row["modeled_price_model_id"], str)
+            and bool(row["modeled_price_model_id"].strip()),
+            "invalid modeled price reference metadata",
+        )
+    else:
+        require(
+            evidence_kind == "verified"
+            and row.get("modeled_price_session_date") is None
+            and row.get("modeled_price_model_id") is None
+            and utc_time(row["price_at"]) <= utc_time(row["price_available_at"]) <= time,
+            "unavailable or invalid verified price evidence",
+        )
     ref = ArtifactRef.from_mapping(row["price_source_ref"])
     require((ref.artifact_id, ref.sha256) in lineage, "unlisted price lineage")
     if execution:
-        require(
-            row["price_at"] == time and row["price_availability_basis"] == "verified",
-            "ineligible execution evidence",
-        )
+        if modeled:
+            require(
+                row["price_availability_basis"] == "modeled_reference",
+                "invalid modeled price basis",
+            )
+        else:
+            require(
+                row["price_at"] == time
+                and row["price_availability_basis"] == "verified"
+                and bool(eligible),
+                "ineligible execution evidence",
+            )
     rate = decimal_value(row["fx_rate"], "raw FX", positive=True)
     if row["currency"] == "USD":
         require(
@@ -129,13 +160,22 @@ def _metadata(row: Mapping, time: datetime, lineage: set, *, execution: bool = F
         currency = row["currency"]
         require(pair in ((currency, "USD"), ("USD", currency)), "invalid FX direction")
         require(
+            row["fx_availability_basis"]
+            in ("verified", "assumed_date_lag", "assumed_market_session"),
+            "invalid FX availability basis",
+        )
+        require(
             utc_time(row["fx_at"]) <= utc_time(row["fx_available_at"]) <= time,
             "unavailable FX evidence",
         )
         ref = ArtifactRef.from_mapping(row["fx_source_ref"])
         require((ref.artifact_id, ref.sha256) in lineage, "unlisted FX lineage")
         if execution:
-            require(row["fx_availability_basis"] == "verified", "assumed FX execution")
+            require(
+                row["fx_availability_basis"] == "verified"
+                or (modeled and row["fx_availability_basis"] == "assumed_market_session"),
+                "assumed FX execution",
+            )
         expected = rate if pair[0] == currency else Decimal(1) / rate
     assert_usd_equal(
         decimal_value(row["usd_per_local"], "conversion", positive=True), expected, "FX direction"
@@ -180,12 +220,31 @@ def _transaction(
         delta == 0 or (delta * requested > 0 and abs(delta) <= abs(requested)),
         "executed delta exceeds request",
     )
+    modeled = row["execution_evidence_kind"] == "modeled_reference"
+    require(
+        modeled is bool(result.diagnostics.get("modeled_execution_enabled")),
+        "transaction evidence class conflicts with replay mode",
+    )
+    if row["fx_availability_basis"] == "assumed_market_session":
+        require(
+            modeled
+            and result.diagnostics.get("allow_assumed_availability") is True
+            and result.diagnostics.get("modeled_execution_enabled") is True,
+            "assumed market-session FX opt-ins are missing",
+        )
     notional = (
         abs(delta)
         * decimal_value(row["local_price"], "price", positive=True)
         * row["usd_per_local"]
     )
     assert_usd_equal(decimal_value(row["notional_usd"], "notional"), notional, "trade notional")
+    execution_price = decimal_value(row["execution_price"], "execution price", positive=True)
+    if modeled:
+        rate = decimal_value(result.diagnostics["slippage_bps"], "slippage_bps") / 10000
+        expected_execution_price = row["local_price"] * (1 + rate if delta >= 0 else 1 - rate)
+        assert_usd_equal(execution_price, expected_execution_price, "signed modeled slippage price")
+    else:
+        assert_usd_equal(execution_price, row["local_price"], "verified reference price")
     components = []
     for key, rate_key in (
         ("commission_usd", "commission_bps"),
@@ -196,13 +255,19 @@ def _transaction(
         expected = (
             ZERO if key == "fx_cost_usd" and row["currency"] == "USD" else notional * rate / 10000
         )
+        if key == "slippage_usd" and modeled:
+            expected = abs(delta) * abs(execution_price - row["local_price"]) * row["usd_per_local"]
         cost = decimal_value(row[key], key)
         assert_usd_equal(cost, expected, key)
         components.append(cost)
     cost = decimal_value(row["costs_usd"], "costs")
     assert_usd_equal(cost, sum(components, ZERO), "cost components")
     book[name] = book.get(name, ZERO) + delta
-    cash -= delta * row["local_price"] * row["usd_per_local"] + cost
+    cash -= (
+        delta * execution_price * row["usd_per_local"] + row["commission_usd"] + row["fx_cost_usd"]
+    )
+    if not modeled:
+        cash -= row["slippage_usd"]
     require(book[name] >= 0 and cash >= 0, "inventory/cash must be nonnegative")
     assert_usd_equal(cash, row["cash_after_usd"], "transaction cash")
     return cash
@@ -408,6 +473,11 @@ def _validate_result(result: USDReplayResult, input_refs: Sequence[Mapping[str, 
     ):
         _frame(getattr(result, field), columns, field)
     require(not result.daily.empty and bool(input_refs), "nonempty daily/lineage inputs required")
+    require(
+        type(result.diagnostics.get("modeled_execution_enabled")) is bool
+        and type(result.diagnostics.get("allow_assumed_availability")) is bool,
+        "invalid replay opt-in diagnostics",
+    )
     lineage = {(ref.artifact_id, ref.sha256) for ref in map(ArtifactRef.from_mapping, input_refs)}
     sources = {
         (ref.artifact_id, ref.sha256)
@@ -418,6 +488,15 @@ def _validate_result(result: USDReplayResult, input_refs: Sequence[Mapping[str, 
         require(key in result.summary, "missing authoritative evidence label")
     _evidence(result.summary)
     _evidence(result.diagnostics)
+    if any(
+        event.get("fx_availability_basis") == "assumed_market_session"
+        for event in result.diagnostics.get("events", [])
+    ):
+        require(
+            result.diagnostics.get("allow_assumed_availability") is True
+            and result.diagnostics.get("modeled_execution_enabled") is True,
+            "assumed market-session FX opt-ins are missing",
+        )
     _validate_schedule(result)
     _validate_daily(result)
     _reconcile_events(result, lineage)

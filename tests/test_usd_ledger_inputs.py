@@ -178,9 +178,7 @@ def test_modeled_execution_price_requires_exact_scheduled_open():
     with pytest.raises(USDValidationError):
         select_usd_modeled_execution_price(r, "A", at(1, 2))
     with pytest.raises(USDValidationError):
-        validate_usd_request(
-            replace(r, modeled_execution_prices=(row, modeled_price(value="11")))
-        )
+        validate_usd_request(replace(r, modeled_execution_prices=(row, modeled_price(value="11"))))
     with pytest.raises(USDValidationError):
         validate_usd_request(
             replace(r, modeled_execution_prices=(replace(row, session_date=at(2)),))
@@ -223,7 +221,11 @@ def test_assumed_market_session_fx_requires_assumed_availability_opt_in():
     row = fx("GBP", "USD", "1.25", availability_basis="assumed_market_session")
     config_kwargs = {"fx_pairs": {"GBP": ("GBP", "USD")}}
     with pytest.raises(USDValidationError):
-        validate_usd_request(request(instruments=(instrument(currency="GBP"),), fx=(row,), config=config(**config_kwargs)))
+        validate_usd_request(
+            request(
+                instruments=(instrument(currency="GBP"),), fx=(row,), config=config(**config_kwargs)
+            )
+        )
     validate_usd_request(
         request(
             instruments=(instrument(currency="GBP"),),

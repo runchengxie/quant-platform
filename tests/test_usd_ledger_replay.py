@@ -1,14 +1,12 @@
 from dataclasses import replace
-from datetime import date
-from datetime import timedelta
+from datetime import date, timedelta
 
 import pytest
 from test_usd_ledger_inputs import fx
 from usd_ledger_fixtures import D, at, config, decision, instrument, price, request
 
 from portfolio_backtester.usd_ledger import run_usd_price_replay
-from portfolio_backtester.usd_ledger_models import USDValidationError
-from portfolio_backtester.usd_ledger_models import USDModeledExecutionPrice
+from portfolio_backtester.usd_ledger_models import USDModeledExecutionPrice, USDValidationError
 
 
 def test_quantities_stay_fixed_and_weights_drift():
@@ -207,9 +205,7 @@ def test_modeled_reference_replay_uses_exact_open_and_marks_noneligible():
 
 def test_missing_modeled_reference_never_falls_back_to_daily_close():
     with pytest.raises(USDValidationError, match="modeled execution"):
-        run_usd_price_replay(
-            request(config=config(allow_modeled_execution_prices=True))
-        )
+        run_usd_price_replay(request(config=config(allow_modeled_execution_prices=True)))
 
 
 def test_modeled_reference_allows_assumed_fx_only_in_opted_in_mode():
