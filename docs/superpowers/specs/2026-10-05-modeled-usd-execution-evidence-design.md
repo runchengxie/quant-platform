@@ -1,7 +1,7 @@
 # Modeled USD Execution Reference Evidence
 
-Date: 2026-10-05  
-Status: Draft for review  
+Date: 2026-10-05
+Status: Draft for review
 Owner: `portfolio_backtester` in `quant-platform`.
 
 ## Purpose
