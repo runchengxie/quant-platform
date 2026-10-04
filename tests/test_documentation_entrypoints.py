@@ -322,6 +322,37 @@ def test_differential_and_optimizer_guides_match_current_contracts() -> None:
     assert "portfolio_optimization_result.v1" in optimization_impl
 
 
+def test_afml_sizing_and_risk_guide_matches_public_helpers() -> None:
+    root = Path(__file__).resolve().parents[1]
+    english = (root / "docs/concepts/afml-sizing-and-risk.en.md").read_text(encoding="utf-8")
+    chinese = (root / "docs/concepts/afml-sizing-and-risk.md").read_text(encoding="utf-8")
+    nav = (root / "mkdocs.yml").read_text(encoding="utf-8")
+    sizing = (
+        root / "packages/portfolio-backtester/src/portfolio_backtester/bet_sizing.py"
+    ).read_text(encoding="utf-8")
+    hrp = (root / "packages/portfolio-backtester/src/portfolio_backtester/hrp.py").read_text(
+        encoding="utf-8"
+    )
+    evidence = (
+        root / "packages/portfolio-backtester/src/portfolio_backtester/afml_evidence.py"
+    ).read_text(encoding="utf-8")
+
+    for method in (
+        "probability_vol_target",
+        "signal_vol_target",
+        "confidence_budget",
+        "risk_budget",
+    ):
+        assert method in sizing
+        assert f"`{method}`" in english
+        assert f"`{method}`" in chinese
+    assert "returns.index < date" in hrp
+    assert "generate_run_afml_evidence" in evidence
+    assert "targets.json" in english and "targets.json" in chinese
+    assert "concepts/afml-sizing-and-risk.en.md" in nav
+    assert "concepts/afml-sizing-and-risk.md" in nav
+
+
 def test_typecheck_script_registers_all_source_roots() -> None:
     script = (ROOT / "scripts" / "dev" / "run_tests.sh").read_text(encoding="utf-8")
 
