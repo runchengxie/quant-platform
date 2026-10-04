@@ -30,7 +30,6 @@ The following objects are exported directly from `portfolio_backtester`:
 | Turnover and costs | `TurnoverBreakdown`, `RebalanceTurnoverReport`, `CostBreakdown`, `name_turnover`, `annualize_turnover`, `turnover_from_trade_weights`, `build_rebalance_turnover_report` |
 | Trade accounting | `compute_trade_summary`, `drift_previous_weights` |
 | Return summaries | `summarize_period_returns` |
-| A-share style-factor backtests | `available_factor_names`, `get_rebalance_dates`, `build_factor_returns`, `build_quantile_portfolio_returns`, `compute_summary`, `compute_factor_correlations`, `compute_yearly_breakdown` |
 | Signal-leg attribution | `leg_attribution_frame`, `summarize_leg_attribution` |
 | Sharpe-ratio inference | `probabilistic_sharpe_ratio`, `probabilistic_sharpe_ratio_from_stats`, `deflated_sharpe_ratio`, `expected_max_sharpe`, `sharpe_standard_error`, `annualized_sharpe_to_periodic`, `annualized_variance_to_periodic` |
 | Position sizing | `SizingConfig`, `average_active_bets`, `build_sized_weights`, `build_sizing_receipt`, `discretize_weights`, `probability_to_size` |
