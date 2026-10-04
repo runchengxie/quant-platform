@@ -1,5 +1,6 @@
 from dataclasses import replace
 from datetime import date, timedelta
+from decimal import localcontext
 
 import pytest
 from test_usd_ledger_inputs import fx
@@ -14,14 +15,16 @@ def test_interval_nav_tolerance_scales_to_book_value_after_subtraction():
     attributed = D("-1.2914546512836338530531750066653992151864500212752")
     book_value = D("101900.54705038579563541177906091430535365285575171")
 
-    assert_usd_equal(nav_change, attributed, "interval NAV attribution", scale=book_value)
-    with pytest.raises(USDValidationError, match="unreconciled interval NAV attribution"):
-        assert_usd_equal(
-            nav_change,
-            attributed + D("1e-30"),
-            "interval NAV attribution",
-            scale=book_value,
-        )
+    with localcontext() as context:
+        context.prec = 50
+        assert_usd_equal(nav_change, attributed, "interval NAV attribution", scale=book_value)
+        with pytest.raises(USDValidationError, match="unreconciled interval NAV attribution"):
+            assert_usd_equal(
+                nav_change,
+                attributed + D("1e-30"),
+                "interval NAV attribution",
+                scale=book_value,
+            )
 
 
 def test_quantities_stay_fixed_and_weights_drift():
