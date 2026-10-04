@@ -62,6 +62,7 @@ PAIRS = (
     ("data/README.md", "data/README.zh-CN.md"),
     ("concepts/execution-costs.md", "concepts/execution-costs.zh-CN.md"),
     ("concepts/cost-breakdown.md", "concepts/cost-breakdown.zh-CN.md"),
+    ("dated-execution-fees.md", "dated-execution-fees.zh-CN.md"),
     ("reference/outputs/positions.md", "reference/outputs/positions.zh-CN.md"),
     (
         "reference/outputs/backtest-outputs.en.md",
@@ -148,6 +149,33 @@ def test_factor_attribution_docs_keep_schema_ids_and_scope_aligned() -> None:
     assert "不计算 Brinson 配置或选股归因" in chinese
 
 
+def test_dated_execution_fee_translation_matches_public_contract() -> None:
+    root = Path(__file__).resolve().parents[1]
+    english = (root / "docs/dated-execution-fees.md").read_text(encoding="utf-8")
+    chinese = (root / "docs/dated-execution-fees.zh-CN.md").read_text(encoding="utf-8")
+    implementation = (
+        root / "packages/portfolio-backtester/src/portfolio_backtester/dated_fees.py"
+    ).read_text(encoding="utf-8")
+
+    for contract in (
+        "DatedFeeSchedule",
+        "DatedTradeFeeModel",
+        "FeeQuoteContext",
+        "FeeSchedulePeriod",
+        "cumulative_group_notional",
+        "fee_group_id",
+        "simulate_execution_adjusted_nav",
+    ):
+        assert contract in english
+        assert contract in chinese
+    for limitation in ("no built-in market tariff", "fails closed", "not a claim"):
+        assert limitation in english
+    for limitation in ("不内置市场费率", "不会回退", "不代表完整模拟"):
+        assert limitation in chinese
+    assert "class DatedTradeFeeModel" in implementation
+    assert "class DatedFeeSchedule" in implementation
+
+
 class _PrimaryNavigationText(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
@@ -198,6 +226,7 @@ def test_rendered_sidebar_matches_the_current_page_locale(tmp_path: Path) -> Non
     rendered_pages = {
         "English": site_dir / "concepts/backtest-configuration/index.html",
         "Chinese": site_dir / "concepts/backtest-configuration.zh-CN/index.html",
+        "Chinese dated fees": site_dir / "dated-execution-fees.zh-CN/index.html",
     }
     navigation: dict[str, str] = {}
     for locale, path in rendered_pages.items():
@@ -213,6 +242,7 @@ def test_rendered_sidebar_matches_the_current_page_locale(tmp_path: Path) -> Non
     assert "安装与环境" in navigation["Chinese"]
     assert "Installation and environments" not in navigation["Chinese"]
     assert "Dated execution fees" not in navigation["Chinese"]
+    assert "分期执行费率" in navigation["Chinese dated fees"]
     assert "USD price ledger" not in navigation["Chinese"]
     assert "Style Replica（中文参考）" in navigation["Chinese"]
     assert "Style Replica (Chinese reference)" not in navigation["Chinese"]

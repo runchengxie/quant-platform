@@ -134,6 +134,7 @@ nav:
           - 回测规范: concepts/backtest-spec.zh-CN.md
           - 成本与执行假设: concepts/execution-costs.zh-CN.md
           - 成本口径: concepts/cost-breakdown.zh-CN.md
+          - 分期执行费率: dated-execution-fees.zh-CN.md
       - 后端架构: concepts/backend-architecture.md
       - LEAN feasibility spike: concepts/lean-differential-spike-2026-09.md
       - 回测结果解读: concepts/backtest-interpretation.md

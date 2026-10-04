@@ -30,7 +30,7 @@ These guides use synthetic data and small examples. They help you run the full f
 10. [Composable backtest specification](concepts/backtest-spec.md)
 11. [Backtest configuration parsing](concepts/backtest-configuration.md)
 12. [Backtest backend boundary](concepts/backend-architecture.en.md)
-13. [Costs and execution assumptions](concepts/execution-costs.md)
+13. [Costs and execution assumptions](concepts/execution-costs.md) · [Dated execution fees](dated-execution-fees.md)
 14. [Execution capacity and daily NAV simulation](guides/execution-simulation.en.md)
 15. [Turnover definitions](concepts/turnover.en-US.md)
 16. [Cost breakdown](concepts/cost-breakdown.md)

@@ -1,5 +1,7 @@
 # Dated execution fees
 
+Language: English · [简体中文](dated-execution-fees.zh-CN.md)
+
 `DatedTradeFeeModel` applies caller-supplied fee periods to actual fills in the
 continuous execution-adjusted NAV ledger. It has no built-in market tariff,
 vendor data, credentials, or strategy settings. Existing callers that omit a
