@@ -1,6 +1,7 @@
 import json
 from dataclasses import replace
 from datetime import date
+from typing import Any
 
 import pandas as pd
 import pytest
@@ -87,7 +88,7 @@ def root_clock():
 
 
 def publish(path, replay=None, **overrides):
-    fields = {
+    fields: dict[str, Any] = {
         "result": replay or result(),
         "run_id": "synthetic-usd",
         "research_clock": root_clock(),
