@@ -78,16 +78,12 @@ CHINESE_TITLES = {
     "Guides (Chinese originals; translation in progress)": "指南",
     "Core concepts": "核心概念",
     "Alpha and research (Chinese originals; translation in progress)": "Alpha 与研究",
-    "Execution and microstructure (Chinese originals; translation in progress)": (
-        "执行与微观结构"
-    ),
+    "Execution and microstructure (Chinese originals; translation in progress)": ("执行与微观结构"),
     "Orchestration": "编排",
     "Chinese originals (translation in progress)": "中文原文",
     "References": "参考资料",
     "Development": "开发",
-    "Governance and migration (Chinese originals; translation in progress)": (
-        "治理与迁移"
-    ),
+    "Governance and migration (Chinese originals; translation in progress)": ("治理与迁移"),
 }
 
 ENGLISH_TITLES = {
