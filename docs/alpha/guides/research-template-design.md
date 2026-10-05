@@ -1,5 +1,7 @@
 # 研究模板设计
 
+语言：简体中文 · [English](research-template-design.en-US.md)
+
 本页说明何时使用本地派生配置，何时把实验沉淀为仓库模板。配置字段和目录结构由当前仓库的 `strategy_pipeline` 维护，研究问题与验证协议由 `quant-market-research` 维护。
 
 ## 快速判断

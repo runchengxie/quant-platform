@@ -85,6 +85,17 @@ PAIRS = (
     ("testing.md", "testing.zh-CN.md"),
     ("grid-support.en.md", "grid-support.md"),
     ("alpha/concepts/model-selection.en-US.md", "alpha/concepts/model-selection.md"),
+    ("alpha/concepts/afml-methodology.en-US.md", "alpha/concepts/afml-methodology.md"),
+    (
+        "alpha/concepts/framework-backends.en-US.md",
+        "alpha/concepts/framework-backends.md",
+    ),
+    (
+        "alpha/guides/research-template-design.en-US.md",
+        "alpha/guides/research-template-design.md",
+    ),
+    ("alpha/namespace-migration.en-US.md", "alpha/namespace-migration.md"),
+    ("alpha/operations/testing.en-US.md", "alpha/operations/testing.md"),
     ("alpha/README.md", "alpha/README.zh-CN.md"),
     ("alpha/concepts/model-landscape.en-US.md", "alpha/concepts/model-landscape.md"),
     ("alpha/concepts/factor-catalog.en-US.md", "alpha/concepts/factor-catalog.md"),

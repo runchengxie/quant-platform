@@ -1,5 +1,7 @@
 # Alpha 命名空间
 
+语言：简体中文 · [English](namespace-migration.en-US.md)
+
 - 权威 Python 包：`alpha_research.*`
 - 权威契约前缀：`alpha_research.*`
 - 旧兼容入口删除版本：workspace 2.0

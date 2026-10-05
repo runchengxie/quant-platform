@@ -21,10 +21,12 @@ This section documents reusable alpha-research interfaces and model-related meth
 | StyleReplica | [English canonical](concepts/style-replica.en.md) · [Chinese companion](concepts/style-replica.md) |
 | Signal artifact contract | [English canonical](reference/signal-artifacts.en-US.md) · [Chinese companion](reference/signal-artifacts.md) |
 | Research output contract | [English canonical](reference/research-outputs.en-US.md) · [Chinese companion](reference/research-outputs.md) |
-| Other research concepts | [Fundamental-state forecasting](concepts/fundamental-state-forecasting.md), [formation-date cross-sections](concepts/style-factor-cross-sections.md), [contextual factors](concepts/contextual-factors.md), [AFML methods](concepts/afml-methodology.md), [research backends](concepts/framework-backends.md), and [minute-factor boundaries](concepts/minute-factors.md) (Chinese originals) |
-| Research template | [Design guide](guides/research-template-design.md) (Chinese original) |
-| Namespace migration | [Migration note](namespace-migration.md) (Chinese original) |
-| Testing | [Research testing and quality checks](operations/testing.md) (Chinese original) |
+| AFML methods | [English canonical](concepts/afml-methodology.en-US.md) · [Chinese reference](concepts/afml-methodology.md) |
+| Research backends | [English canonical](concepts/framework-backends.en-US.md) · [Chinese reference](concepts/framework-backends.md) |
+| Research template | [English canonical](guides/research-template-design.en-US.md) · [Chinese reference](guides/research-template-design.md) |
+| Namespace migration | [English canonical](namespace-migration.en-US.md) · [Chinese reference](namespace-migration.md) |
+| Testing | [English canonical](operations/testing.en-US.md) · [Chinese reference](operations/testing.md) |
+| Other research concepts | [Fundamental-state forecasting](concepts/fundamental-state-forecasting.md), [formation-date cross-sections](concepts/style-factor-cross-sections.md), [contextual factors](concepts/contextual-factors.md), and [minute-factor boundaries](concepts/minute-factors.md) (Chinese originals) |
 
 ## Ownership boundary
 

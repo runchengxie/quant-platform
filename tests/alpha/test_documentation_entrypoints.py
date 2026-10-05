@@ -12,6 +12,7 @@ from alpha_research.signal_artifact import CANONICAL_SIGNAL_COLUMNS
 ROOT = Path(__file__).resolve().parents[2]
 ALPHA_DOCS = ROOT / "docs" / "alpha"
 FRAMEWORK_BACKEND_DOC = ALPHA_DOCS / "concepts" / "framework-backends.md"
+FRAMEWORK_BACKEND_EN_DOC = ALPHA_DOCS / "concepts" / "framework-backends.en-US.md"
 NEW_CONTRACT_DOCS = (
     ALPHA_DOCS / "concepts" / "minute-factors.md",
     ALPHA_DOCS / "reference" / "signal-artifacts.md",
@@ -82,6 +83,7 @@ def test_testing_docs_match_script_modes() -> None:
         encoding="utf-8"
     )
     docs = (ALPHA_DOCS / "operations" / "testing.md").read_text(encoding="utf-8")
+    english_docs = (ALPHA_DOCS / "operations" / "testing.en-US.md").read_text(encoding="utf-8")
 
     for mode in (
         "all",
@@ -95,6 +97,7 @@ def test_testing_docs_match_script_modes() -> None:
         "maintainability",
     ):
         assert f"`{mode}`" in docs
+        assert f"`{mode}`" in english_docs
         assert mode in script
 
 
@@ -143,6 +146,7 @@ def test_framework_backend_docs_match_current_main_surface() -> None:
     chinese_readme = (ROOT / "README.zh-CN.md").read_text(encoding="utf-8")
     docs_index = (ALPHA_DOCS / "README.md").read_text(encoding="utf-8")
     framework_docs = FRAMEWORK_BACKEND_DOC.read_text(encoding="utf-8")
+    framework_docs_en = FRAMEWORK_BACKEND_EN_DOC.read_text(encoding="utf-8")
     testing_docs = (ALPHA_DOCS / "operations" / "testing.md").read_text(encoding="utf-8")
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     dependencies = [
@@ -155,16 +159,19 @@ def test_framework_backend_docs_match_current_main_surface() -> None:
     ]
 
     assert "`NativeDatasetBackend`" in framework_docs
+    assert "`NativeDatasetBackend`" in framework_docs_en
     assert "Qlib 适配器" in framework_docs
     assert "Alpha module boundary" in readme
     assert "Alpha 模块边界见[后端说明]" in chinese_readme
     assert "concepts/framework-backends.md" in docs_index
+    assert "concepts/framework-backends.en-US.md" in docs_index
     for backend in (
         "`NativeDatasetBackend`",
         "`NativeTrainerBackend`",
         "`NullExperimentRecorder`",
     ):
         assert backend in framework_docs
+        assert backend in framework_docs_en
     assert (
         "Qlib 适配器" in framework_docs and "位于 `alpha_research.backends.qlib`" in framework_docs
     )
@@ -223,6 +230,7 @@ def test_minute_and_signal_contract_docs_are_indexed_and_complete() -> None:
     assert "signal-artifacts.en-US.md" in index
     assert "signal-artifacts.en-US.md" in signal_docs
     assert "concepts/afml-methodology.md" in index
+    assert "concepts/afml-methodology.en-US.md" in index
     assert "minute_friend_factors" in minute_docs
     assert "minute_factors" in minute_docs
     for column in CANONICAL_SIGNAL_COLUMNS:
