@@ -96,6 +96,9 @@ nav:
           - Feature research protocol: alpha/concepts/feature-research-protocol.en-US.md
           - Matched model and risk tools: alpha/concepts/matched-model-risk.en-US.md
           - Minute-factor boundaries: alpha/concepts/minute-factors.en-US.md
+          - Contextual research features: alpha/concepts/contextual-factors.en-US.md
+          - Fundamental-state forecasting: alpha/concepts/fundamental-state-forecasting.en-US.md
+          - Formation-date style-factor cross-sections: alpha/concepts/style-factor-cross-sections.en-US.md
           - Portfolio sizing and strategy-risk evidence: concepts/afml-sizing-and-risk.en.md
           - Model selection: alpha/concepts/model-selection.en-US.md
           - Model landscape: alpha/concepts/model-landscape.en-US.md

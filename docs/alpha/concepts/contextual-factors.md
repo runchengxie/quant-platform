@@ -1,5 +1,7 @@
 # Contextual Alpha 特征
 
+语言：简体中文 · [English](contextual-factors.en-US.md)
+
 本页说明 `alpha_research.contextual` 的研究边界和公开接口。该模块把已经满足时间点语义的数据表转换为宏观情境特征、公司暴露和 `context × exposure` 交互特征。
 
 数据下载、raw snapshot、发布时间、vintage 和 current contract 由 `quant-market-data-platform` 维护。这里不导入 TuShare、国家统计局、国家能源局、AKShare 或其他 provider SDK。

@@ -26,9 +26,9 @@
 | 分级研究协议 | [English canonical](concepts/research-protocols.en-US.md) · [中文参考](concepts/research-protocols.md) |
 | 特征研究协议 | [English canonical](concepts/feature-research-protocol.en-US.md) · [中文参考](concepts/feature-research-protocol.md) |
 | 匹配模型与风险工具 | [English canonical](concepts/matched-model-risk.en-US.md) · [中文参考](concepts/matched-model-risk.md) |
-| 基本面状态预测 | [concepts/fundamental-state-forecasting.md](concepts/fundamental-state-forecasting.md) |
-| 风格因子形成日截面 | [concepts/style-factor-cross-sections.md](concepts/style-factor-cross-sections.md) |
-| Contextual Alpha 特征 | [concepts/contextual-factors.md](concepts/contextual-factors.md) |
+| 基本面状态预测 | [English canonical](concepts/fundamental-state-forecasting.en-US.md) · [中文参考](concepts/fundamental-state-forecasting.md) |
+| 风格因子形成日截面 | [English canonical](concepts/style-factor-cross-sections.en-US.md) · [中文参考](concepts/style-factor-cross-sections.md) |
+| Contextual Alpha 特征 | [English canonical](concepts/contextual-factors.en-US.md) · [中文参考](concepts/contextual-factors.md) |
 | AFML 方法组件 | [中文参考](concepts/afml-methodology.md) · [English canonical](concepts/afml-methodology.en-US.md) |
 | 研究后端与 Qlib 状态 | [中文参考](concepts/framework-backends.md) · [English canonical](concepts/framework-backends.en-US.md) |
 | 分钟因子边界 | [concepts/minute-factors.md](concepts/minute-factors.md) |

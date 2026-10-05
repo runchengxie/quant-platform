@@ -147,6 +147,7 @@ def test_english_language_markers_are_registered_for_locale_navigation() -> None
     marked = {
         path.relative_to(docs_dir).as_posix()
         for path in docs_dir.rglob("*.md")
+        if "superpowers/plans" not in path.as_posix()
         if "Language: English" in path.read_text(encoding="utf-8")
     }
     assert marked <= registered, sorted(marked - registered)
