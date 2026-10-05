@@ -32,7 +32,7 @@
 | StyleReplica | [English canonical](concepts/style-replica.en.md) · [中文参考](concepts/style-replica.md) |
 | 研究模板设计 | [guides/research-template-design.md](guides/research-template-design.md) |
 | 信号产物契约 | [English canonical](reference/signal-artifacts.en-US.md) · [中文参考](reference/signal-artifacts.md) |
-| 研究产物契约 | [reference/research-outputs.md](reference/research-outputs.md) |
+| 研究产物契约 | [English canonical](reference/research-outputs.en-US.md) · [中文参考](reference/research-outputs.md) |
 | 组合研究命名空间 | [namespace-migration.md](namespace-migration.md) |
 | 测试和质量检查 | [operations/testing.md](operations/testing.md) |
 
