@@ -48,6 +48,7 @@ def main() -> None:
     english_orchestration = primary_navigation("orchestration/output-artifacts.en")
     chinese_companion = primary_navigation("README.zh-CN")
     chinese_original = primary_navigation("guides/execution-simulation")
+    chinese_alpha = primary_navigation("alpha/README.zh-CN")
 
     assert "Core concepts" in english
     assert "Additional research topics" in english
@@ -97,6 +98,9 @@ def main() -> None:
     assert "data/README.zh-CN/" in chinese_companion
     assert "concepts/canonical-backtest-bundle/" in chinese_companion
     assert "concepts/backtest-interpretation/" in chinese_companion
+    assert "Alpha and research" not in chinese_alpha
+    assert "research-outputs.en-US/" not in chinese_alpha
+    assert "signal-artifacts.en-US/" not in chinese_alpha
 
 
 if __name__ == "__main__":
