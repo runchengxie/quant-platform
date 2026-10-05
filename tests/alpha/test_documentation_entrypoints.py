@@ -230,10 +230,18 @@ def test_minute_and_signal_contract_docs_are_indexed_and_complete() -> None:
 
 def test_overfitting_docs_use_owner_relative_source_path() -> None:
     docs = (ALPHA_DOCS / "concepts" / "overfitting-controls.md").read_text(encoding="utf-8")
+    english = (ALPHA_DOCS / "concepts" / "overfitting-controls.en-US.md").read_text(
+        encoding="utf-8"
+    )
+    index = (ALPHA_DOCS / "README.md").read_text(encoding="utf-8")
+    nav = (ROOT / "mkdocs.yml").read_text(encoding="utf-8")
 
-    assert "`packages/alpha/src/alpha_research/split.py`" in docs
-    assert "../alpha-research/src/alpha_research/split.py" not in docs
-    assert "根目录 `docs/platform-workflow.md`" in docs
+    assert "overfitting-controls.en-US.md" in docs
+    assert "English canonical" in index
+    assert "Overfitting controls: alpha/concepts/overfitting-controls.en-US.md" in nav
+    assert "strategy alpha cpcv" in docs
+    assert "strategy-pipeline" in english
+    assert "does not register" in english
 
 
 def test_research_output_docs_point_to_current_pipeline_owner() -> None:
