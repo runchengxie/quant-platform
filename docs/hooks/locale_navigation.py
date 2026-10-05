@@ -42,6 +42,7 @@ ENGLISH_PAGES = {
     "concepts/benchmark-ladder.en-US.md",
     "concepts/lean-differential-spike-2026-09.md",
     "concepts/factor-attribution.en.md",
+    "concepts/afml-sizing-and-risk.en.md",
     "corporate-action-ledger.en.md",
     "dated-execution-fees.md",
     "execution/README.en.md",
