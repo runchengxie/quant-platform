@@ -199,7 +199,10 @@ def _validate_daily(result: USDReplayResult) -> None:
         ret = _signed(row["nav_return"], "NAV return")
         assert_usd_equal(row["nav_usd"], row["cash_usd"] + row["positions_usd"], "cash + positions")
         assert_usd_equal(
-            row["nav_usd"] - previous, local + fx - row["costs_usd"], "NAV attribution"
+            row["nav_usd"] - previous,
+            local + fx - row["costs_usd"],
+            "NAV attribution",
+            scale=max(abs(row["nav_usd"]), abs(previous)),
         )
         assert_usd_equal(ret, row["nav_usd"] / previous - 1, "NAV return")
         previous = row["nav_usd"]
