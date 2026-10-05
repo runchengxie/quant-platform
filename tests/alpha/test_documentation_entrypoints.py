@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import re
+import subprocess
+import sys
 import tomllib
 from pathlib import Path
 
@@ -273,6 +275,40 @@ def test_research_protocol_docs_match_registered_cli_and_policy() -> None:
         assert artifact in chinese
     assert "ProtocolPolicy(level, candidate, True, 0.95, False)" in policy
     assert "ProtocolPolicy(level, release, True, 0.99, False)" in policy
+
+
+def test_feature_research_docs_match_helper_scope_and_cli_registration() -> None:
+    english_path = ALPHA_DOCS / "concepts" / "feature-research-protocol.en-US.md"
+    chinese_path = ALPHA_DOCS / "concepts" / "feature-research-protocol.md"
+    english = english_path.read_text(encoding="utf-8")
+    chinese = chinese_path.read_text(encoding="utf-8")
+    nav = (ROOT / "mkdocs.yml").read_text(encoding="utf-8")
+    helper = (
+        ROOT / "packages" / "alpha" / "src" / "alpha_research" / "_feature_evidence_ablation.py"
+    ).read_text(encoding="utf-8")
+    cli = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "from strategy_pipeline.cli import main; raise SystemExit(main(['--help']))",
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        check=True,
+        text=True,
+    ).stdout
+
+    assert "feature-research-protocol.en-US.md" in chinese
+    assert "Feature research protocol: alpha/concepts/feature-research-protocol.en-US.md" in nav
+    for page in (english, chinese):
+        assert "alpha_research.feature_evidence.generate_ablation_jobs" in page
+        assert "feature-evidence" in page
+        assert "strategy alpha feature-evidence" in page
+    assert "jobs.csv" in helper
+    assert "features.list" in helper
+    assert "afml-evidence" in cli
+    assert "research-protocol" in cli
+    assert "feature-evidence" not in cli
 
 
 def test_research_output_docs_point_to_current_pipeline_owner() -> None:

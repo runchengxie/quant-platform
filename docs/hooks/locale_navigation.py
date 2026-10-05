@@ -58,6 +58,7 @@ ENGLISH_PAGES = {
     "alpha/concepts/factor-risk-model.en-US.md",
     "alpha/concepts/signal-drift.en-US.md",
     "alpha/concepts/factor-expression.en-US.md",
+    "alpha/concepts/feature-research-protocol.en-US.md",
     "orchestration/README.md",
     "orchestration/control-plane.md",
     "orchestration/evaluation.md",

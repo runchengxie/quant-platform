@@ -85,6 +85,10 @@ PAIRS = (
     ("alpha/concepts/signal-drift.en-US.md", "alpha/concepts/signal-drift.md"),
     ("alpha/concepts/factor-expression.en-US.md", "alpha/concepts/factor-expression.md"),
     (
+        "alpha/concepts/feature-research-protocol.en-US.md",
+        "alpha/concepts/feature-research-protocol.md",
+    ),
+    (
         "orchestration/reference/configuration.md",
         "orchestration/reference/configuration.zh-CN.md",
     ),
