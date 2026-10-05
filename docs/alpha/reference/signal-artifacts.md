@@ -1,4 +1,6 @@
-# 信号产物契约
+# Signal Artifact Contract
+
+[Language: 简体中文 · English canonical](signal-artifacts.en-US.md)
 
 `signals.parquet` 是 alpha 研究层向回测和编排层交付的标准信号文件。对应元数据文件为 `signals.meta.json`，契约名称为 `alpha_research.signals`，当前版本为 1。
 

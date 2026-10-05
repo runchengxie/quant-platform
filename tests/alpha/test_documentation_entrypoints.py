@@ -212,14 +212,20 @@ def test_minute_and_signal_contract_docs_are_indexed_and_complete() -> None:
     index = (ALPHA_DOCS / "README.md").read_text(encoding="utf-8")
     minute_docs = NEW_CONTRACT_DOCS[0].read_text(encoding="utf-8")
     signal_docs = NEW_CONTRACT_DOCS[1].read_text(encoding="utf-8")
+    signal_english = (ALPHA_DOCS / "reference" / "signal-artifacts.en-US.md").read_text(
+        encoding="utf-8"
+    )
 
     assert "concepts/minute-factors.md" in index
     assert "reference/signal-artifacts.md" in index
+    assert "signal-artifacts.en-US.md" in index
+    assert "signal-artifacts.en-US.md" in signal_docs
     assert "concepts/afml-methodology.md" in index
     assert "minute_friend_factors" in minute_docs
     assert "minute_factors" in minute_docs
     for column in CANONICAL_SIGNAL_COLUMNS:
         assert f"`{column}`" in signal_docs
+        assert f"`{column}`" in signal_english
 
 
 def test_overfitting_docs_use_owner_relative_source_path() -> None:
