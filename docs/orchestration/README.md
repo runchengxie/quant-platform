@@ -23,12 +23,12 @@ The installable `strategy-pipeline` CLI is registered by the root project. Its c
 - [Run artifacts](output-artifacts.en.md), [output orchestration](output-orchestration.en.md), and [run summaries](output-summary.en.md)
 - [Owner integration](integrating-an-owner.en.md), [target export](targets.en.md), and [evidence and protocol CLI](evidence-protocol-cli.en.md)
 - [Quality gates](operations/quality-gates.en.md)
+- [Development and publication checks](development.en.md)
 - [Reference pages](reference/README.md), including [CLI helpers](reference/cli-helpers.md), [configuration](reference/configuration.md), and [runtime helpers](reference/runtime-helpers.en.md)
 
 ## Pages currently available only in Chinese
 
 - [Cashflow publication guide](cashflow-publication.md)
-- [Development guide](development.md)
 - [E2 promotion receipt](e2-promotion-receipt.md)
 - [Publication audit](publication-audit.md)
 

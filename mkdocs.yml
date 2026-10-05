@@ -198,6 +198,7 @@ nav:
   - Orchestration:
       - English:
           - Overview: orchestration/README.md
+          - Development and publication checks: orchestration/development.en.md
           - Control-plane API: orchestration/control-plane.md
           - Evaluation orchestration: orchestration/evaluation.md
           - Run artifacts: orchestration/output-artifacts.en.md
@@ -220,7 +221,8 @@ nav:
           - 接入负责人: orchestration/integrating-an-owner.md
           - 目标文件: orchestration/targets.md
           - 现金流发布: orchestration/cashflow-publication.md
-          - 开发: orchestration/development.md
+      - 简体中文:
+          - 开发与发布检查: orchestration/development.md
           - 证据协议 CLI: orchestration/evidence-protocol-cli.md
           - E2 晋升回执: orchestration/e2-promotion-receipt.md
           - 输出编排: orchestration/output-orchestration.md
