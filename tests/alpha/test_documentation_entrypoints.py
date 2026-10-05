@@ -261,6 +261,57 @@ def test_minute_factor_guide_has_an_english_canonical_page() -> None:
         assert term in english
 
 
+def test_active_alpha_research_concepts_have_english_canonical_pages() -> None:
+    concepts = {
+        "contextual-factors": (
+            "ContextTransformSpec",
+            "build_context_features",
+            "ExposureSpec",
+            "attach_context_as_of",
+            "ContextInteractionSpec",
+            "build_context_interactions",
+            "source_retrieved_at",
+        ),
+        "fundamental-state-forecasting": (
+            "build_annual_fundamental_target_panel",
+            "run_walk_forward_fundamental_forecast",
+            "evaluate_fundamental_forecast",
+            "purge_and_embargo_fundamental_rows",
+            "build_fundamental_forecast_score",
+        ),
+        "style-factor-cross-sections": (
+            "formation_universe",
+            "compute_factors",
+            "standardize_factor_panel",
+        ),
+    }
+    hook = (ROOT / "docs" / "hooks" / "locale_navigation.py").read_text(encoding="utf-8")
+    nav = (ROOT / "mkdocs.yml").read_text(encoding="utf-8")
+
+    for slug, api_names in concepts.items():
+        english_path = ALPHA_DOCS / "concepts" / f"{slug}.en-US.md"
+        chinese_path = ALPHA_DOCS / "concepts" / f"{slug}.md"
+        english = english_path.read_text(encoding="utf-8")
+        chinese = chinese_path.read_text(encoding="utf-8")
+        relative_english_path = f"alpha/concepts/{slug}.en-US.md"
+
+        assert "Language: English" in english
+        assert f"({slug}.md)" in english
+        assert f"({slug}.en-US.md)" in chinese
+        assert relative_english_path in hook
+        assert relative_english_path in nav
+        for api_name in api_names:
+            assert api_name in english
+
+    contextual_english = (ALPHA_DOCS / "concepts/contextual-factors.en-US.md").read_text(
+        encoding="utf-8"
+    )
+    contextual_chinese = (ALPHA_DOCS / "concepts/contextual-factors.md").read_text(encoding="utf-8")
+    for page in (contextual_english, contextual_chinese):
+        assert 'series_age_limits={"ctx__shibor_3m_change20": 10}' in page
+        assert "staleness_limit_days=10" not in page
+
+
 def test_overfitting_docs_use_owner_relative_source_path() -> None:
     docs = (ALPHA_DOCS / "concepts" / "overfitting-controls.md").read_text(encoding="utf-8")
     english = (ALPHA_DOCS / "concepts" / "overfitting-controls.en-US.md").read_text(

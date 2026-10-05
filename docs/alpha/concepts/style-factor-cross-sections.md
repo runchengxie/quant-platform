@@ -1,5 +1,7 @@
 # 风格因子形成日截面
 
+语言：简体中文 · [English](style-factor-cross-sections.en-US.md)
+
 `alpha_research.style_factors` 提供纯 DataFrame 的风格因子计算。调用方可以在不改变历史窗口基准的前提下，用形成日股票池重新计算截面型因子和最终标准分。
 
 ## `formation_universe`
