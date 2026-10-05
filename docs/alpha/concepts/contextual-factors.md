@@ -43,7 +43,6 @@ spec = ContextTransformSpec(
     window=20,
     minimum_history=21,
     feature_name="ctx__shibor_3m_change20",
-    staleness_limit_days=10,
 )
 
 features = build_context_features(context_pit, [spec])

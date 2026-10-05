@@ -305,6 +305,16 @@ def test_active_alpha_research_concepts_have_english_canonical_pages() -> None:
         for api_name in api_names:
             assert api_name in english
 
+    contextual_english = (ALPHA_DOCS / "concepts/contextual-factors.en-US.md").read_text(
+        encoding="utf-8"
+    )
+    contextual_chinese = (ALPHA_DOCS / "concepts/contextual-factors.md").read_text(
+        encoding="utf-8"
+    )
+    for page in (contextual_english, contextual_chinese):
+        assert 'series_age_limits={"ctx__shibor_3m_change20": 10}' in page
+        assert "staleness_limit_days=10" not in page
+
 
 def test_overfitting_docs_use_owner_relative_source_path() -> None:
     docs = (ALPHA_DOCS / "concepts" / "overfitting-controls.md").read_text(encoding="utf-8")

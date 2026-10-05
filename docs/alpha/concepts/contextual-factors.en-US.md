@@ -19,7 +19,6 @@ spec = ContextTransformSpec(
     window=20,
     minimum_history=21,
     feature_name="ctx__shibor_3m_change20",
-    staleness_limit_days=10,
 )
 features = build_context_features(context_pit, [spec])
 ```
@@ -55,7 +54,18 @@ The built-in industry priors cover rate, credit, industrial activity, energy inp
 
 ## Point-in-time joins and interactions
 
-`attach_context_as_of` uses a backward as-of join. A context observation is visible no earlier than the later of `available_at` and `source_retrieved_at`. This prevents a historical page collected later from leaking into earlier stock rows. The join adds period, availability, retrieval, and age columns. If an age limit is exceeded, it nulls that feature without dropping the stock row.
+`attach_context_as_of` uses a backward as-of join. A context observation is visible no earlier than the later of `available_at` and `source_retrieved_at`. This prevents a historical page collected later from leaking into earlier stock rows. The join adds period, availability, retrieval, and age columns. Pass a limit through `series_age_limits` to null an over-age feature without dropping the stock row; `build_context_features` itself does not apply this freshness limit.
+
+```python
+from alpha_research import attach_context_as_of
+
+stock_with_context = attach_context_as_of(
+    stock_frame,
+    context_features,
+    feature_names=["ctx__shibor_3m_change20"],
+    series_age_limits={"ctx__shibor_3m_change20": 10},
+)
+```
 
 `build_context_interactions` matches exposure by `(trade_date, symbol, exposure_name)`; it does not fill a current exposure backward. The interaction is the context value multiplied by the matched company exposure. If either input is missing, the result remains missing.
 
