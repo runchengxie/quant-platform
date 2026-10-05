@@ -250,12 +250,13 @@ nav:
           - 持仓输出约定: reference/outputs/positions.zh-CN.md
   - Development:
       - Testing and quality checks: testing.md
+      - Grid support helpers: grid-support.en.md
       - Chinese originals (translation in progress):
-          - 网格辅助工具: grid-support.md
           - 命名空间迁移: namespace-migration.md
           - 归属迁移: ownership-migration.md
           - 发布审计: orchestration/publication-audit.md
       - 简体中文:
+          - 网格回测辅助函数: grid-support.md
           - 测试和质量检查: testing.zh-CN.md
   - Governance and migration (Chinese originals; translation in progress):
       - English:

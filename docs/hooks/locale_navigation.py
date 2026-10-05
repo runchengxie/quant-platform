@@ -82,6 +82,7 @@ ENGLISH_PAGES = {
     "data/README.md",
     "reference/outputs/positions.md",
     "testing.md",
+    "grid-support.en.md",
 }
 
 CHINESE_TITLES = {

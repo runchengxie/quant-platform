@@ -82,6 +82,7 @@ PAIRS = (
         "reference/outputs/backtest-outputs.md",
     ),
     ("testing.md", "testing.zh-CN.md"),
+    ("grid-support.en.md", "grid-support.md"),
     ("alpha/concepts/model-selection.en-US.md", "alpha/concepts/model-selection.md"),
     ("alpha/README.md", "alpha/README.zh-CN.md"),
     ("alpha/concepts/model-landscape.en-US.md", "alpha/concepts/model-landscape.md"),
@@ -151,6 +152,7 @@ def test_english_documentation_index_links_to_english_guides() -> None:
     index = (root / "docs" / "README.md").read_text(encoding="utf-8")
 
     assert "guides/execution-simulation.en.md" in index
+    assert "grid-support.en.md" in index
     assert "reference/outputs/backtest-outputs.en.md" in index
     assert "guides/execution-simulation.md" not in index
     assert "microstructure/README.md" not in index
@@ -313,6 +315,7 @@ def test_rendered_sidebar_matches_the_current_page_locale(tmp_path: Path) -> Non
     _assert_retired_notice_navigation(navigation)
     _assert_execution_navigation(navigation)
     _assert_alpha_navigation(navigation)
+    _assert_grid_support_navigation(navigation)
     _assert_rendered_html_languages(html_languages)
 
 
@@ -338,6 +341,8 @@ def _read_rendered_locale_pages(site_dir: Path) -> tuple[dict[str, str], dict[st
         "Chinese feature research": site_dir
         / "alpha/concepts/feature-research-protocol/index.html",
         "Chinese alpha overview": site_dir / "alpha/README.zh-CN/index.html",
+        "English grid support": site_dir / "grid-support.en/index.html",
+        "Chinese grid support": site_dir / "grid-support/index.html",
         "Chinese dated fees": site_dir / "dated-execution-fees.zh-CN/index.html",
         "English retired notice": site_dir
         / "concepts/style-factor-portfolio-weighting.en/index.html",
@@ -402,7 +407,7 @@ def _assert_rendered_html_languages(html_languages: dict[str, str]) -> None:
         "English research protocols",
         "English feature research",
         "English alpha overview",
-        "English alpha overview",
+        "English grid support",
         "English retired notice",
         "English execution",
         "English microstructure",
@@ -420,7 +425,7 @@ def _assert_rendered_html_languages(html_languages: dict[str, str]) -> None:
         "Chinese research protocols",
         "Chinese feature research",
         "Chinese alpha overview",
-        "Chinese alpha overview",
+        "Chinese grid support",
         "Chinese dated fees",
         "Chinese retired notice",
         "Chinese execution",
@@ -478,3 +483,12 @@ def _assert_alpha_navigation(navigation: dict[str, str]) -> None:
         assert "新人入门" in navigation[locale]
         assert "研究协议" in navigation[locale]
         assert "Getting started" not in navigation[locale]
+
+
+def _assert_grid_support_navigation(navigation: dict[str, str]) -> None:
+    english = navigation["English grid support"]
+    chinese = navigation["Chinese grid support"]
+    assert "Grid support helpers" in english
+    assert not re.search(r"[\u3400-\u9fff]", english)
+    assert "网格回测辅助函数" in chinese
+    assert "Grid support helpers" not in chinese
