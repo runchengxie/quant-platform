@@ -46,6 +46,7 @@ PAIRS = (
         "concepts/afml-sizing-and-risk.md",
     ),
     ("orchestration/README.md", "orchestration/README.zh-CN.md"),
+    ("orchestration/development.en.md", "orchestration/development.md"),
     ("orchestration/control-plane.md", "orchestration/control-plane.zh-CN.md"),
     ("orchestration/evaluation.md", "orchestration/evaluation.zh-CN.md"),
     ("orchestration/output-artifacts.en.md", "orchestration/output-artifacts.md"),

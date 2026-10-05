@@ -13,12 +13,12 @@
 - [运行产物](output-artifacts.md)、[输出编排](output-orchestration.md)和[运行摘要](output-summary.md)
 - [负责人接入](integrating-an-owner.md)、[目标导出](targets.md)和[证据与协议 CLI](evidence-protocol-cli.md)
 - [质量门禁](operations/quality-gates.md)
+- [开发与发布检查](development.md)
 - [参考资料](reference/README.zh-CN.md)，包括 [CLI 辅助函数](reference/cli-helpers.zh-CN.md)、[配置解析](reference/configuration.zh-CN.md)和[运行时辅助函数](reference/runtime-helpers.md)
 
 ## 尚无英文版本
 
 - [现金流发布指南](cashflow-publication.md)
-- [开发指南](development.md)
 - [E2 晋升回执](e2-promotion-receipt.md)
 - [发布审计](publication-audit.md)
 

@@ -64,6 +64,7 @@ ENGLISH_PAGES = {
     "alpha/concepts/research-protocols.en-US.md",
     "alpha/README.md",
     "orchestration/README.md",
+    "orchestration/development.en.md",
     "orchestration/control-plane.md",
     "orchestration/evaluation.md",
     "orchestration/output-artifacts.en.md",
