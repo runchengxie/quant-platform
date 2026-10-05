@@ -85,6 +85,7 @@ PAIRS = (
     ("testing.md", "testing.zh-CN.md"),
     ("grid-support.en.md", "grid-support.md"),
     ("alpha/concepts/model-selection.en-US.md", "alpha/concepts/model-selection.md"),
+    ("alpha/concepts/matched-model-risk.en-US.md", "alpha/concepts/matched-model-risk.md"),
     ("alpha/concepts/afml-methodology.en-US.md", "alpha/concepts/afml-methodology.md"),
     (
         "alpha/concepts/framework-backends.en-US.md",
@@ -349,6 +350,9 @@ def _read_rendered_locale_pages(site_dir: Path) -> tuple[dict[str, str], dict[st
         "Chinese research protocols": site_dir / "alpha/concepts/research-protocols/index.html",
         "English feature research": site_dir
         / "alpha/concepts/feature-research-protocol.en-US/index.html",
+        "English matched model risk": site_dir
+        / "alpha/concepts/matched-model-risk.en-US/index.html",
+        "Chinese matched model risk": site_dir / "alpha/concepts/matched-model-risk/index.html",
         "English alpha overview": site_dir / "alpha/index.html",
         "Chinese feature research": site_dir
         / "alpha/concepts/feature-research-protocol/index.html",
@@ -418,6 +422,7 @@ def _assert_rendered_html_languages(html_languages: dict[str, str]) -> None:
         "English overfitting controls",
         "English research protocols",
         "English feature research",
+        "English matched model risk",
         "English alpha overview",
         "English grid support",
         "English retired notice",
@@ -436,6 +441,7 @@ def _assert_rendered_html_languages(html_languages: dict[str, str]) -> None:
         "Chinese overfitting controls",
         "Chinese research protocols",
         "Chinese feature research",
+        "Chinese matched model risk",
         "Chinese alpha overview",
         "Chinese grid support",
         "Chinese dated fees",
@@ -491,10 +497,15 @@ def _assert_alpha_navigation(navigation: dict[str, str]) -> None:
         "Chinese overfitting controls",
         "Chinese research protocols",
         "Chinese feature research",
+        "Chinese matched model risk",
     ):
         assert "新人入门" in navigation[locale]
         assert "研究协议" in navigation[locale]
         assert "Getting started" not in navigation[locale]
+    assert "Matched model and risk tools" in navigation["English matched model risk"]
+    assert not re.search(r"[\u3400-\u9fff]", navigation["English matched model risk"])
+    assert "匹配模型风险" in navigation["Chinese matched model risk"]
+    assert "Matched model and risk tools" not in navigation["Chinese matched model risk"]
 
 
 def _assert_grid_support_navigation(navigation: dict[str, str]) -> None:

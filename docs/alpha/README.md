@@ -18,6 +18,7 @@ This section documents reusable alpha-research interfaces and model-related meth
 | Overfitting controls | [English canonical](concepts/overfitting-controls.en-US.md) · [Chinese companion](concepts/overfitting-controls.md) |
 | Research protocols | [English canonical](concepts/research-protocols.en-US.md) · [Chinese companion](concepts/research-protocols.md) |
 | Feature research | [English canonical](concepts/feature-research-protocol.en-US.md) · [Chinese companion](concepts/feature-research-protocol.md) |
+| Matched model and risk tools | [English canonical](concepts/matched-model-risk.en-US.md) · [Chinese reference](concepts/matched-model-risk.md) |
 | StyleReplica | [English canonical](concepts/style-replica.en.md) · [Chinese companion](concepts/style-replica.md) |
 | Signal artifact contract | [English canonical](reference/signal-artifacts.en-US.md) · [Chinese companion](reference/signal-artifacts.md) |
 | Research output contract | [English canonical](reference/research-outputs.en-US.md) · [Chinese companion](reference/research-outputs.md) |
