@@ -61,6 +61,7 @@ ENGLISH_PAGES = {
     "alpha/concepts/factor-expression.en-US.md",
     "alpha/concepts/feature-research-protocol.en-US.md",
     "alpha/concepts/matched-model-risk.en-US.md",
+    "alpha/concepts/minute-factors.en-US.md",
     "alpha/concepts/overfitting-controls.en-US.md",
     "alpha/concepts/research-protocols.en-US.md",
     "alpha/concepts/afml-methodology.en-US.md",
