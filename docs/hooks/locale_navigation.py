@@ -62,6 +62,8 @@ ENGLISH_PAGES = {
     "alpha/concepts/feature-research-protocol.en-US.md",
     "alpha/concepts/overfitting-controls.en-US.md",
     "alpha/concepts/research-protocols.en-US.md",
+    "alpha/reference/research-outputs.en-US.md",
+    "alpha/reference/signal-artifacts.en-US.md",
     "alpha/README.md",
     "orchestration/README.md",
     "orchestration/development.en.md",
