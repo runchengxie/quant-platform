@@ -1,82 +1,44 @@
-# alpha 研究产物契约
+# Alpha 研究产物
 
-本页记录 alpha 研究层产出的报告文件与字段契约。运行编排和 `summary.json` 顶层结构见[输出摘要](../../orchestration/output-summary.md)。跨项目字段约定见[公开 API 与产物契约](../../reference/public-api.md)。
+[English canonical](research-outputs.en-US.md)
 
-## CPCV 稳健性审计报告
+本页说明本仓库 alpha 研究模块生成的报告和数据文件。它是产物参考，不代表每个模块都已注册为命令行子命令。当前公开 CLI 是 `strategy-pipeline`。运行 `strategy-pipeline --help` 可查看实际命令。旧文档中的 `strategy alpha ...` 命令并未注册到当前 CLI。
 
-`strategy alpha cpcv` 默认写入配置的 alpha 研究产物根目录下的
-`reports/cpcv_<tag>/`，也可以通过 `--out` 指定目录。
+运行编排和 `summary.json` 顶层结构见[运行摘要章节](../../orchestration/output-summary.md)。跨项目产物约定见[公开 API 参考](../../reference/public-api.md)。
 
-研究产物根目录按以下顺序确定：`ALPHA_RESEARCH_OUTPUT_ROOT`、
-`QUANT_PLATFORM_OUTPUT_ROOT`、`DATA_PLATFORM_ROOT/quant-platform/research`，最后使用
-`$XDG_STATE_HOME/quant-platform/research`（未设置时为
-`~/.local/state/quant-platform/research`）。这样从代码仓库运行命令也不会在仓库内创建
-`artifacts` 或 `outputs`。传入相对路径时仍按当前工作目录解析，便于测试和一次性分析显式指定
-临时目录。
+## 默认输出根目录
 
-输出目录结构：
+使用 alpha 共享路径解析器且未显式指定输出路径时，依次读取：
 
-```text
-<quant-market-research-root>/reports/cpcv_<tag>/
-  cpcv_splits.csv
-  cpcv_path_returns.csv
-  cpcv_path_metrics.csv
-  cpcv_summary.json
-```
+1. `ALPHA_RESEARCH_OUTPUT_ROOT`
+2. `QUANT_PLATFORM_OUTPUT_ROOT`
+3. `DATA_PLATFORM_ROOT/quant-platform/research`
+4. `$XDG_STATE_HOME/quant-platform/research`。未设置时使用 `~/.local/state/quant-platform/research`
 
-`cpcv_splits.csv` 常用列：
+显式绝对路径按原路径使用，显式相对路径相对于当前工作目录。部分工具会相对于配置文件所在目录解析输出，使用前应核对对应模块说明。
 
-```text
-split_id,test_groups,train_groups,train_start,train_end,test_start,test_end,train_dates_raw,train_dates,test_dates,purged_train_dates,embargoed_train_dates,purge_mode,status
-```
+## CPCV 报告
 
-`cpcv_path_metrics.csv` 常用列：
+`alpha_research.cpcv` 和 `alpha_research.artifact_cpcv` 可将报告写到输出目录。共享默认目录为 `reports/cpcv_<tag>/`。未提供配置时 tag 为 `default`，显式输出目录优先。
 
-```text
-path_id,split_ids,test_start,test_end,observation_count,sharpe,total_return,ann_return,ann_vol,max_drawdown,ic_mean,ic_ir,long_short,avg_turnover,avg_cost_drag,active_total_return,information_ratio,tracking_error
-```
+报告包括：
 
-`cpcv_summary.json` 顶层常用字段：
+- `cpcv_splits.csv`：切分定义、日期范围、purge／embargo 信息和状态。
+- `cpcv_path_returns.csv`：重建路径的收益。
+- `cpcv_path_metrics.csv`：路径样本数、Sharpe、收益、波动、回撤、IC、long-short、换手、成本拖累及可用的基准相对指标。
+- `cpcv_summary.json`：切分和路径数量、最终 OOS 处理方式、purge 模式及路径汇总指标。
 
-- `n_groups`、`test_groups`、`split_count`、`valid_split_count`
-- `path_count`、`valid_path_count`
-- `include_final_oos`、`excluded_final_oos_dates`
-- `purge_mode`
-- `sharpe_mean`、`sharpe_median`、`sharpe_p25`、`sharpe_p10`、`sharpe_min`、`positive_sharpe_ratio`
-- `ic_median`、`long_short_median`、`max_drawdown_p10`、`turnover_median`、`cost_drag_median`
+具体字段会因使用 pipeline 准备的上下文还是基于 artifact 的 CPCV 配置而异，应以相应运行模式的 summary 和测试为准。CPCV 是验证证据，不会自动批准候选策略。
 
-## CSCV / PBO / DSR 报告
+## CSCV、PBO 和 DSR
 
-`strategy alpha pbo` 默认写入 `<quant-market-research-root>/reports/pbo/`，也可以通过 `--out`
-指定目录。
+`alpha_research.pbo` 模块读取带日期的收益矩阵，默认在 `reports/pbo/` 下写出 `pbo_splits.csv` 和 `pbo_summary.json`。可以传入可选的 `ExperimentRegistry` JSON，提供 DSR 所用的试验总数。注册表不会通过扫描运行目录自动生成。
 
-输出目录结构：
+summary 记录分组与切分数、候选与试验数、PBO、样本外 Sharpe 汇总、全样本选中的候选、最大回撤及 DSR 字段。候选收益列应使用共享日期索引，且彼此可比。
 
-```text
-<quant-market-research-root>/reports/pbo/
-  pbo_splits.csv
-  pbo_summary.json
-```
+## 动态多信号组合
 
-`pbo_splits.csv` 常用列：
-
-```text
-split_id,train_groups,test_groups,selected_candidate,selected_train_sharpe,selected_oos_sharpe,selected_oos_relative_rank,logit_oos_rank,is_overfit
-```
-
-`pbo_summary.json` 顶层常用字段：
-
-- `n_groups`、`test_groups`、`split_count`、`candidate_count`、`n_trials`
-- `pbo`、`logit_oos_rank_mean`、`selected_oos_sharpe_mean`、`selected_oos_sharpe_p25`
-- `selected_candidate`、`selected_sharpe`、`selected_max_drawdown`
-- `dsr`、`dsr_z`、`dsr_n_trials`、`dsr_n_obs`、`dsr_expected_max_sharpe`
-
-## 动态多信号组合报告
-
-`strategy alpha dynamic-signal-ensemble` 输出到配置里的 `output_dir` 或 `--output-dir`。
-两者都未提供时写入 `<quant-market-research-root>/reports/dynamic_signal_ensemble/`。
-
-输出文件：
+`alpha_research.dynamic_signal_ensemble` 模块优先使用配置中的 `output_dir`。相对路径相对于配置文件。未配置时使用共享默认目录 `reports/dynamic_signal_ensemble/`。产物包括：
 
 ```text
 dynamic_scores.parquet
@@ -88,49 +50,33 @@ direction_calibration.csv
 dynamic_signal_ensemble_summary.json
 ```
 
-`dynamic_signal_ensemble_summary.json` 常用字段：
+summary 包含 `schema_version`、`artifact_type`、`no_level2`、`rolling_metrics_shifted`、日期和信号数量、风险惩罚与相关性参数、活跃因子数量及换手均值、最终配置和文件路径。
 
-```text
-schema_version,artifact_type,no_level2,rolling_metrics_shifted,date_count,signal_count,stock_score_dates,risk_penalty_enabled,correlation_threshold,avg_active_factor_count,avg_factor_turnover,avg_stock_turnover,files
-```
+Rank IC、ICIR、long-short、coverage 和 dispersion 的滚动诊断会在用于当期选择前滞后一周期。方向校准依据历史 Rank IC 和 inertia。反向证据不足时沿用上一期方向。该模块不读取 Level2、分钟线或执行系统的 `targets.json`。
 
-约束：
+## 特征证据
 
-1. 所有 rolling RankIC / ICIR / long-short / coverage / dispersion 诊断在用于当期选择前都会整体
-   `shift(1)`。
-2. 方向校准使用历史 RankIC 和 inertia。反向证据不足时保留上一期方向。
-3. 本命令不读取 Level2、分钟线或执行系统 `targets.json`。
+`alpha_research.feature_evidence` 辅助函数支持 `generate-ablation`、`summarize-ablation`、`permutation-importance`、`factor-ic`、`sfi`、`correlation-audit` 和 `drop-column-importance`。它们读取 YAML 配置，可输出 CSV 和／或 JSON。输出列会因模式不同而变化。
 
-## 特征证据报告
+`generate-ablation` 生成配置和 `jobs.csv` 任务计划，不会执行这些任务。其他模式用于汇总已完成的证据或计算对应诊断。研究流程见[特征研究协议](../concepts/feature-research-protocol.md)。当前 `strategy-pipeline` CLI 没有把这些辅助函数注册为 `strategy alpha feature-evidence`。
 
-`strategy alpha feature-evidence` 输出特征证据报告，包含：
+## 防过拟合诊断
 
-- `generate-ablation`：生成配置和 `jobs.csv`
-- `summarize-ablation`：汇总相对 baseline 的指标变化
-- `factor-ic`：单因子独立 IC 证据
+`alpha_research.overfitting_diagnostics` 模块提供事件唯一性、负控制、情景回测和候选冻结清单辅助函数，产物依模式而异：
 
-字段与协议细节见 [特征研究协议](../concepts/feature-research-protocol.md)。
+- 唯一性：事件明细和 summary JSON。
+- 负控制：CSV 报告。
+- 情景回测：`scenario_paths.csv` 和 `scenario_summary.json`。
+- 候选冻结：JSON 清单。
 
-## 防过拟合 sidecar 报告
-
-`strategy alpha overfitting-diagnostics` 输出防过拟合 sidecar 报告。关键字段：
-
-- `flag_zero_feature_importance`
-- `flag_constant_prediction`
-- `feature_importance_nonzero`
+当前 `strategy-pipeline` CLI 没有暴露 alpha 命令组。使用旧命令示例前，应先检查模块参数定义和测试。
 
 ## 试验台账
 
-`strategy trial-registry` 不写文件，除非传 `--output` 或 `--output-json`。来源是递归扫描
-`--runs-dir` 下的 `summary.json` 与 `config.used.yml`，提取 run、数据、特征、标签、模型、组合构造
-和主要结果字段，并计算 `config_hash`、`summary_hash`、`features_hash` 和 `model_params_hash`。
+`alpha_research.experiment_registry.ExperimentRegistry` 是由调用方维护的追加式 JSON 试验记录。文件顶层包含 `schema_version`、`trial_count` 和 `trials`。每条记录保存候选、特征集、股票池、持有期、参数、状态和由内容生成的稳定 `trial_id`。PBO 可通过可选输入读取该文件。
 
-## 模型调参与线性搜索
-
-`strategy alpha tune` 与 `strategy alpha sweep-linear` 输出模型调参搜索产物，默认写入
-`artifacts/sweeps/<tag>/`。字段契约见[输出产物说明](../../orchestration/output-artifacts.md)。
+注册表不会递归扫描 `summary.json` 或 `config.used.yml`，也不会自动找回失败试验。应在运行实验时记录完整的尝试集合。
 
 ## 信号产物
 
-`signals.parquet` 与 `signals.meta.json` 是 alpha 向回测与编排层交付的标准信号文件，契约名称
-`alpha_research.signals`，当前版本 1。字段与读写入口见 `docs/reference/signal-artifacts.md`。
+`signals.parquet` 和 `signals.meta.json` 是 alpha 向回测交付的标准信号文件。字段、校验和元数据见[信号产物契约](signal-artifacts.en-US.md)。

@@ -88,6 +88,7 @@ nav:
           - Next-close diagnostic replay: guides/diagnostic-close-replay.en.md
           - Backtest output reference: reference/outputs/backtest-outputs.en.md
       - Alpha and research:
+          - Alpha research outputs: alpha/reference/research-outputs.en-US.md
           - Signal artifact contract: alpha/reference/signal-artifacts.en-US.md
           - Portfolio sizing and strategy-risk evidence: concepts/afml-sizing-and-risk.en.md
           - Model selection: alpha/concepts/model-selection.en-US.md
