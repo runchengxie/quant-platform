@@ -68,7 +68,7 @@ Agents should start with the root README, this page, and the relevant category d
 | Position replay | `packages/portfolio-backtester/src/portfolio_backtester/position_backtest.py` |
 | Promotion-evidence execution simulation | `packages/portfolio-backtester/src/portfolio_backtester/promotion_sidecar.py` |
 | Test entry point | `scripts/dev/run_tests.sh` |
-| Grid backtest helpers | `packages/portfolio-backtester/src/portfolio_backtester/grid_support.py` |
+| [Grid backtest helpers](grid-support.en.md) | `packages/portfolio-backtester/src/portfolio_backtester/grid_support.py` |
 | Microstructure simulation API | `packages/microstructure/src/ticknet/simulator/` |
 | Rust simulation kernel | `packages/microstructure/rust/src/lib.rs` |
 

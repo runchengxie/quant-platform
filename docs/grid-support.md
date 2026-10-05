@@ -1,5 +1,7 @@
 # 网格回测辅助函数
 
+语言：简体中文 · [English](grid-support.en.md)
+
 `portfolio_backtester.grid_support` 提供网格回测命令共用的路径、运行名、日期列表和调仓日期解析
 函数。它只处理输入和调度，不负责生成具体策略组合或研究结论。
 
