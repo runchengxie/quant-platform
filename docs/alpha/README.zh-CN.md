@@ -5,7 +5,7 @@
 > status: active
 > owner: quant-market-research
 > audience: human and agent
-> last_verified: 2026-09-16
+> last_verified: 2026-10-05
 > source_of_truth: yes
 > superseded_by: n/a
 
@@ -25,6 +25,7 @@
 | 过拟合控制 | [English canonical](concepts/overfitting-controls.en-US.md) · [中文参考](concepts/overfitting-controls.md) |
 | 分级研究协议 | [English canonical](concepts/research-protocols.en-US.md) · [中文参考](concepts/research-protocols.md) |
 | 特征研究协议 | [English canonical](concepts/feature-research-protocol.en-US.md) · [中文参考](concepts/feature-research-protocol.md) |
+| 匹配模型与风险工具 | [English canonical](concepts/matched-model-risk.en-US.md) · [中文参考](concepts/matched-model-risk.md) |
 | 基本面状态预测 | [concepts/fundamental-state-forecasting.md](concepts/fundamental-state-forecasting.md) |
 | 风格因子形成日截面 | [concepts/style-factor-cross-sections.md](concepts/style-factor-cross-sections.md) |
 | Contextual Alpha 特征 | [concepts/contextual-factors.md](concepts/contextual-factors.md) |
