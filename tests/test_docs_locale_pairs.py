@@ -294,6 +294,7 @@ def test_rendered_sidebar_matches_the_current_page_locale(tmp_path: Path) -> Non
     _assert_home_and_core_navigation(navigation)
     _assert_retired_notice_navigation(navigation)
     _assert_execution_navigation(navigation)
+    _assert_alpha_navigation(navigation)
     _assert_rendered_html_languages(html_languages)
 
 
@@ -305,6 +306,16 @@ def _read_rendered_locale_pages(site_dir: Path) -> tuple[dict[str, str], dict[st
         "Chinese orchestration": site_dir / "orchestration/README.zh-CN/index.html",
         "English": site_dir / "concepts/backtest-configuration/index.html",
         "Chinese": site_dir / "concepts/backtest-configuration.zh-CN/index.html",
+        "English overfitting controls": site_dir
+        / "alpha/concepts/overfitting-controls.en-US/index.html",
+        "Chinese overfitting controls": site_dir / "alpha/concepts/overfitting-controls/index.html",
+        "English research protocols": site_dir
+        / "alpha/concepts/research-protocols.en-US/index.html",
+        "Chinese research protocols": site_dir / "alpha/concepts/research-protocols/index.html",
+        "English feature research": site_dir
+        / "alpha/concepts/feature-research-protocol.en-US/index.html",
+        "Chinese feature research": site_dir
+        / "alpha/concepts/feature-research-protocol/index.html",
         "Chinese dated fees": site_dir / "dated-execution-fees.zh-CN/index.html",
         "English retired notice": site_dir
         / "concepts/style-factor-portfolio-weighting.en/index.html",
@@ -364,6 +375,9 @@ def _assert_rendered_html_languages(html_languages: dict[str, str]) -> None:
         "English home",
         "English orchestration",
         "English",
+        "English overfitting controls",
+        "English research protocols",
+        "English feature research",
         "English retired notice",
         "English execution",
         "English microstructure",
@@ -376,6 +390,9 @@ def _assert_rendered_html_languages(html_languages: dict[str, str]) -> None:
         "Chinese home",
         "Chinese orchestration",
         "Chinese",
+        "Chinese overfitting controls",
+        "Chinese research protocols",
+        "Chinese feature research",
         "Chinese dated fees",
         "Chinese retired notice",
         "Chinese execution",
@@ -413,3 +430,23 @@ def _assert_execution_navigation(navigation: dict[str, str]) -> None:
     ):
         assert "执行概览" in navigation[locale]
         assert "Execution domain" not in navigation[locale]
+
+
+def _assert_alpha_navigation(navigation: dict[str, str]) -> None:
+    for locale in (
+        "English overfitting controls",
+        "English research protocols",
+        "English feature research",
+    ):
+        assert not re.search(r"[\u3400-\u9fff]", navigation[locale])
+        assert "Getting started" in navigation[locale]
+        assert "Research protocols" in navigation[locale]
+        assert "简体中文" not in navigation[locale]
+    for locale in (
+        "Chinese overfitting controls",
+        "Chinese research protocols",
+        "Chinese feature research",
+    ):
+        assert "新人入门" in navigation[locale]
+        assert "研究协议" in navigation[locale]
+        assert "Getting started" not in navigation[locale]

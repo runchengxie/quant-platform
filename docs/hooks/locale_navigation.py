@@ -59,6 +59,8 @@ ENGLISH_PAGES = {
     "alpha/concepts/signal-drift.en-US.md",
     "alpha/concepts/factor-expression.en-US.md",
     "alpha/concepts/feature-research-protocol.en-US.md",
+    "alpha/concepts/overfitting-controls.en-US.md",
+    "alpha/concepts/research-protocols.en-US.md",
     "orchestration/README.md",
     "orchestration/control-plane.md",
     "orchestration/evaluation.md",
