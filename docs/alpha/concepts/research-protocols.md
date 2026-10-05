@@ -1,58 +1,35 @@
 # 分级研究协议
 
-本页说明 `alpha_research.research_protocols` 如何把已有防过拟合工具组织成可检查的探索、候选和发布协议。命令行编排仍由 pipeline 负责，协议规则和证据校验由本仓库维护。
+语言：简体中文 · [English canonical](research-protocols.en-US.md)
+
+> status: active
+> owner: quant-market-research
+> audience: human and agent
+> last_verified: 2026-10-05
+> source_of_truth: yes
+> superseded_by: n/a
+
+`alpha_research.research_protocols` 为探索、候选和发布定义证据门槛。检查器验证提交的清单、引用文件、哈希和部分字段，不会独立证明研究无偏、可复现或具有经济价值。命令参数见[研究协议 CLI 参考](../../orchestration/evidence-protocol-cli.en.md)。
 
 ## 三个级别
 
-### exploratory
+| 级别 | 必需证据 | 清理策略 |
+| --- | --- | --- |
+| `exploratory` | 已发布数据契约、可复现运行记录、试验台账 | 不要求事件窗口清理，允许 fallback。 |
+| `candidate` | 探索证据，加上特征证据、弱模型基线、前推验证、最终样本外、CPCV、成本／换手／容量、暴露筛查和负控制 | 清单需声明 `event_window` 模式、覆盖率至少 95%，且未使用 fallback。 |
+| `release` | 候选证据，加上 DSR、PBO 或说明原因的 `insufficient_evidence`、场景回测、候选冻结、paper／shadow 证据、仓位回执、策略风险报告和操作员审批 | 清单需声明 `event_window` 模式、覆盖率至少 99%，且未使用 fallback。 |
 
-探索运行必须记录：
+覆盖率是检查器读取并核对的清单值，检查器不会自行计算事件窗口或覆盖率。PBO 使用 `insufficient_evidence` 时必须填写非空原因。
 
-- 已发布数据契约
-- 可复现 run 信息
-- trial registry
-
-允许使用普通日期 gap 和显式 fallback。探索结果不得直接作为实盘发布依据。
-
-### candidate
-
-候选晋升增加：
-
-- feature evidence
-- 弱模型 baseline
-- walk-forward
-- final OOS
-- CPCV
-- 成本、换手和容量证据
-- exposure screen
-- negative controls
-
-候选协议要求 event-window purge 覆盖率至少为 95%，且不允许 fallback。
-
-### release
-
-发布交接在 candidate 基础上增加：
-
-- DSR
-- PBO，或明确的 `insufficient_evidence`
-- scenario backtest
-- candidate freeze
-- paper/shadow evidence
-- sizing receipt
-- strategy risk report
-- operator approval
-
-发布协议要求 event-window purge 覆盖率至少为 99%，且不允许 fallback。
-
-## 初始化清单
+## 初始化和检查清单
 
 ```bash
-strategy research-protocol \
+strategy-pipeline research-protocol \
   --level candidate \
   --init-manifest artifacts/reports/candidate_protocol.yml
 ```
 
-清单中的每个文件证据项包含：
+每项证据可以包含以下字段：
 
 ```yaml
 status: missing
@@ -61,53 +38,36 @@ sha256: null
 notes: Evidence description
 ```
 
-`status: pass` 本身不构成证据。candidate 和 release 检查会确认文件存在，并核对 SHA-256。路径相对于 manifest 所在目录解析。人工审批必须填写：
+只填写 `status: pass` 不够。对文件类证据，检查器按清单所在目录解析 `path`，确认文件存在并核对 SHA-256。操作员审批还需填写 `approved_by` 和 `approved_at`。用 `--manifest` 检查清单，默认 strict 模式在报告不通过时返回非零退出码。报告默认写入 `research_protocol_report.json`，也可用 `--output` 指定路径。
 
-```yaml
-operator_approval:
-  status: pass
-  approved_by: operator-id
-  approved_at: 2026-07-14T12:00:00-07:00
-```
-
-PBO 在可比较试验不足时可使用 `insufficient_evidence`，但必须填写原因，避免为了让状态灯变绿而对两个毫无可比性的 run 做统计杂技。
-
-## 从真实 run 生成 AFML sidecar
-
-运行目录已经包含 `backtest_net.csv`、`backtest_gross.csv`、`backtest_turnover.csv` 和当前持仓时，可以生成机器计算的 sizing 与 strategy-risk 证据：
+如果交接门会读取报告，应将它写在对应运行目录中：
 
 ```bash
-strategy afml-evidence \
-  --run-dir artifacts/runs/<run> \
+strategy-pipeline research-protocol \
+  --level release \
+  --manifest artifacts/reports/release_protocol.yml \
+  --output artifacts/runs/example/research_protocol_report.json
+```
+
+## 生成仓位与风险证据
+
+运行目录需包含 `backtest_net.csv`（字段 `period_end`、`net_return`）、`backtest_gross.csv`（字段 `period_end`、`gross_return`）、`backtest_turnover.csv`（字段 `period_end`、`turnover`），以及 `positions_current_live.csv` 或 `positions_current.csv`（含 `symbol` 或 `ticker` 字段和 `weight`）：
+
+```bash
+strategy-pipeline afml-evidence \
+  --run-dir artifacts/runs/example \
   --target-sharpe 1.0 \
   --evaluation-years 2 \
   --bootstrap-samples 2000 \
-  --manifest artifacts/reports/release_protocol.yml
+  --manifest artifacts/reports/release_protocol.yml \
+  --manifest-output artifacts/reports/release_protocol.with_afml.yml
 ```
 
-命令生成：
+命令生成 `sizing_receipt.json`、`strategy_risk_report.json` 和 `afml_evidence_fragment.json`。配置 `--hrp-returns` 后，还会生成 `hrp_weights.csv` 和 `hrp_receipt.json`。收益矩阵第一列为日期，后面至少有两列时间同步的收益序列。命令可以将生成证据合并进协议清单。不指定 `--manifest-output` 时会覆盖输入清单。
 
-```text
-sizing_receipt.json
-strategy_risk_report.json
-afml_evidence_fragment.json
-```
+## 在 pipeline 运行后自动生成
 
-并把 `sizing_receipt`、`strategy_risk` 的路径和 SHA-256 合并到指定 protocol manifest。权重方法从 `config.used.yml` 的 `strategy.weighting` / `backtest.weighting` 读取，receipt 描述最终持仓，不重新构造组合。
-
-可选传入多模型或 sleeve 收益矩阵：
-
-```bash
-strategy afml-evidence \
-  --run-dir artifacts/runs/<run> \
-  --hrp-returns artifacts/reports/sleeve_returns.csv
-```
-
-这会额外生成 `hrp_weights.csv` 和 `hrp_receipt.json`。HRP 输入第一列为日期，后续至少两列为同步收益序列。
-
-## 在正式 run 后自动生成
-
-正式候选配置可以在回测和持仓产物写完后自动生成 sidecar：
+配置后，pipeline 可在运行产物写完后生成相同的 sidecar：
 
 ```yaml
 research_protocol:
@@ -115,26 +75,11 @@ research_protocol:
   target_sharpe: 1.0
   evaluation_years: 2.0
   bootstrap_samples: 2000
-  random_state: 20260714
+  random_state: 7
+  hrp_returns: artifacts/reports/sleeve_returns.csv
   require_release_report: true
 ```
 
-该开关默认关闭，参数 sweep 和普通探索运行不会自动执行 bootstrap。若需要 HRP，可额外配置 `hrp_returns` 指向同步的模型或 sleeve 收益矩阵。
+`generate_afml_evidence` 默认关闭，`hrp_returns` 为可选项。`require_release_report` 会让运维／导出交接门要求运行目录中存在通过检查的 `research_protocol_report.json`，不会改变持仓、权重或订单。
 
-## 执行协议
-
-```bash
-strategy research-protocol \
-  --level release \
-  --manifest artifacts/reports/release_protocol.yml \
-  --output artifacts/runs/<run>/research_protocol_report.json
-```
-
-默认 strict 模式下，缺失、哈希不匹配或失败证据会返回非零退出码。使用 `--no-strict` 只适合生成诊断报告。
-
-## 执行交接
-
-`research_protocol_report.json` 放在 run 目录后，现有 liveops/export quality gate 会在目标导出前检查。报告只决定研究候选是否允许交接，不参与标的、权重或订单计算。
-
-研究协议报告应进入 `targets.json.lineage.json`，而标准 `targets.json` 继续只包含执行目标。
-
+协议报告用于判断研究证据能否进入交接流程。通过协议不代表可以省略对研究方法和结果的人工复核。

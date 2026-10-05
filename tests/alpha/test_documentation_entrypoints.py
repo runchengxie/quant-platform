@@ -244,6 +244,37 @@ def test_overfitting_docs_use_owner_relative_source_path() -> None:
     assert "does not register" in english
 
 
+def test_research_protocol_docs_match_registered_cli_and_policy() -> None:
+    english_path = ALPHA_DOCS / "concepts" / "research-protocols.en-US.md"
+    chinese_path = ALPHA_DOCS / "concepts" / "research-protocols.md"
+    english = english_path.read_text(encoding="utf-8")
+    chinese = chinese_path.read_text(encoding="utf-8")
+    index = (ALPHA_DOCS / "README.md").read_text(encoding="utf-8")
+    nav = (ROOT / "mkdocs.yml").read_text(encoding="utf-8")
+    policy = (
+        ROOT / "packages" / "alpha" / "src" / "alpha_research" / "research_protocols.py"
+    ).read_text(encoding="utf-8")
+
+    assert "research-protocols.en-US.md" in chinese
+    assert "English canonical" in index
+    assert "Research protocols: alpha/concepts/research-protocols.en-US.md" in nav
+    assert "strategy-pipeline research-protocol" in english
+    assert "strategy-pipeline afml-evidence" in english
+    assert "strategy research-protocol" not in chinese
+    assert "strategy afml-evidence" not in chinese
+    for artifact in (
+        "backtest_net.csv",
+        "backtest_gross.csv",
+        "backtest_turnover.csv",
+        "positions_current_live.csv",
+        "research_protocol_report.json",
+    ):
+        assert artifact in english
+        assert artifact in chinese
+    assert "ProtocolPolicy(level, candidate, True, 0.95, False)" in policy
+    assert "ProtocolPolicy(level, release, True, 0.99, False)" in policy
+
+
 def test_research_output_docs_point_to_current_pipeline_owner() -> None:
     outputs = (ALPHA_DOCS / "reference" / "research-outputs.md").read_text(encoding="utf-8")
     english = (ALPHA_DOCS / "reference" / "research-outputs.en-US.md").read_text(encoding="utf-8")
