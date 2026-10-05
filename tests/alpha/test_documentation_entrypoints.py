@@ -83,9 +83,7 @@ def test_testing_docs_match_script_modes() -> None:
         encoding="utf-8"
     )
     docs = (ALPHA_DOCS / "operations" / "testing.md").read_text(encoding="utf-8")
-    english_docs = (ALPHA_DOCS / "operations" / "testing.en-US.md").read_text(
-        encoding="utf-8"
-    )
+    english_docs = (ALPHA_DOCS / "operations" / "testing.en-US.md").read_text(encoding="utf-8")
 
     for mode in (
         "all",
