@@ -83,6 +83,7 @@ PAIRS = (
     ),
     ("testing.md", "testing.zh-CN.md"),
     ("alpha/concepts/model-selection.en-US.md", "alpha/concepts/model-selection.md"),
+    ("alpha/README.md", "alpha/README.zh-CN.md"),
     ("alpha/concepts/model-landscape.en-US.md", "alpha/concepts/model-landscape.md"),
     ("alpha/concepts/factor-catalog.en-US.md", "alpha/concepts/factor-catalog.md"),
     ("alpha/concepts/factor-risk-model.en-US.md", "alpha/concepts/factor-risk-model.md"),
@@ -333,8 +334,10 @@ def _read_rendered_locale_pages(site_dir: Path) -> tuple[dict[str, str], dict[st
         "Chinese research protocols": site_dir / "alpha/concepts/research-protocols/index.html",
         "English feature research": site_dir
         / "alpha/concepts/feature-research-protocol.en-US/index.html",
+        "English alpha overview": site_dir / "alpha/index.html",
         "Chinese feature research": site_dir
         / "alpha/concepts/feature-research-protocol/index.html",
+        "Chinese alpha overview": site_dir / "alpha/README.zh-CN/index.html",
         "Chinese dated fees": site_dir / "dated-execution-fees.zh-CN/index.html",
         "English retired notice": site_dir
         / "concepts/style-factor-portfolio-weighting.en/index.html",
@@ -398,6 +401,8 @@ def _assert_rendered_html_languages(html_languages: dict[str, str]) -> None:
         "English overfitting controls",
         "English research protocols",
         "English feature research",
+        "English alpha overview",
+        "English alpha overview",
         "English retired notice",
         "English execution",
         "English microstructure",
@@ -414,6 +419,8 @@ def _assert_rendered_html_languages(html_languages: dict[str, str]) -> None:
         "Chinese overfitting controls",
         "Chinese research protocols",
         "Chinese feature research",
+        "Chinese alpha overview",
+        "Chinese alpha overview",
         "Chinese dated fees",
         "Chinese retired notice",
         "Chinese execution",
