@@ -58,7 +58,7 @@ Rolling Rank IC, ICIR, long-short, coverage, and dispersion diagnostics are shif
 
 The `alpha_research.feature_evidence` helpers accept these modes: `generate-ablation`, `summarize-ablation`, `permutation-importance`, `factor-ic`, `sfi`, `correlation-audit`, and `drop-column-importance`. They take a YAML configuration and can write CSV and/or JSON results. Output columns vary by mode.
 
-`generate-ablation` creates generated configurations and a `jobs.csv` plan; it does not run the jobs. Other modes summarize completed evidence or calculate their named diagnostic. See the [Feature Research Protocol](../concepts/feature-research-protocol.md) for the supported research workflow. The current `strategy-pipeline` CLI does not register these helpers as `strategy alpha feature-evidence`.
+`generate-ablation` creates generated configurations and a `jobs.csv` plan; it does not run the jobs. Other modes summarize completed evidence or calculate their named diagnostic. See the [Feature Research Protocol](../concepts/feature-research-protocol.en-US.md) for the supported research workflow. The current `strategy-pipeline` CLI does not register these helpers as a command.
 
 ## Overfitting diagnostics
 

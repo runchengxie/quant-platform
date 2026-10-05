@@ -41,6 +41,10 @@ PAIRS = (
     ("concepts/backend-architecture.en.md", "concepts/backend-architecture.md"),
     ("corporate-action-ledger.en.md", "corporate-action-ledger.md"),
     ("concepts/factor-attribution.en.md", "concepts/factor-attribution.md"),
+    (
+        "concepts/afml-sizing-and-risk.en.md",
+        "concepts/afml-sizing-and-risk.md",
+    ),
     ("orchestration/README.md", "orchestration/README.zh-CN.md"),
     ("orchestration/control-plane.md", "orchestration/control-plane.zh-CN.md"),
     ("orchestration/evaluation.md", "orchestration/evaluation.zh-CN.md"),
@@ -85,6 +89,10 @@ PAIRS = (
     ("alpha/concepts/signal-drift.en-US.md", "alpha/concepts/signal-drift.md"),
     ("alpha/concepts/factor-expression.en-US.md", "alpha/concepts/factor-expression.md"),
     (
+        "alpha/concepts/feature-research-protocol.en-US.md",
+        "alpha/concepts/feature-research-protocol.md",
+    ),
+    (
         "orchestration/reference/configuration.md",
         "orchestration/reference/configuration.zh-CN.md",
     ),
@@ -114,6 +122,19 @@ def test_english_is_the_default_and_locale_pages_have_distinct_routes() -> None:
         if "docs" in english.parts:
             assert "Language: English" in english_text
             assert "语言：简体中文" in chinese_text
+
+
+def test_english_language_markers_are_registered_for_locale_navigation() -> None:
+    root = Path(__file__).resolve().parents[1]
+    docs_dir = root / "docs"
+    hook = (docs_dir / "hooks" / "locale_navigation.py").read_text(encoding="utf-8")
+    registered = set(re.findall(r'^\s+"([^\"]+\.md)",$', hook, re.MULTILINE))
+    marked = {
+        path.relative_to(docs_dir).as_posix()
+        for path in docs_dir.rglob("*.md")
+        if "Language: English" in path.read_text(encoding="utf-8")
+    }
+    assert marked <= registered, sorted(marked - registered)
 
 
 def test_locale_migration_status_is_linked_from_documentation_home() -> None:
@@ -290,6 +311,7 @@ def test_rendered_sidebar_matches_the_current_page_locale(tmp_path: Path) -> Non
     _assert_home_and_core_navigation(navigation)
     _assert_retired_notice_navigation(navigation)
     _assert_execution_navigation(navigation)
+    _assert_alpha_navigation(navigation)
     _assert_rendered_html_languages(html_languages)
 
 
@@ -301,6 +323,18 @@ def _read_rendered_locale_pages(site_dir: Path) -> tuple[dict[str, str], dict[st
         "Chinese orchestration": site_dir / "orchestration/README.zh-CN/index.html",
         "English": site_dir / "concepts/backtest-configuration/index.html",
         "Chinese": site_dir / "concepts/backtest-configuration.zh-CN/index.html",
+        "English portfolio sizing": site_dir / "concepts/afml-sizing-and-risk.en/index.html",
+        "Chinese portfolio sizing": site_dir / "concepts/afml-sizing-and-risk/index.html",
+        "English overfitting controls": site_dir
+        / "alpha/concepts/overfitting-controls.en-US/index.html",
+        "Chinese overfitting controls": site_dir / "alpha/concepts/overfitting-controls/index.html",
+        "English research protocols": site_dir
+        / "alpha/concepts/research-protocols.en-US/index.html",
+        "Chinese research protocols": site_dir / "alpha/concepts/research-protocols/index.html",
+        "English feature research": site_dir
+        / "alpha/concepts/feature-research-protocol.en-US/index.html",
+        "Chinese feature research": site_dir
+        / "alpha/concepts/feature-research-protocol/index.html",
         "Chinese dated fees": site_dir / "dated-execution-fees.zh-CN/index.html",
         "English retired notice": site_dir
         / "concepts/style-factor-portfolio-weighting.en/index.html",
@@ -360,6 +394,10 @@ def _assert_rendered_html_languages(html_languages: dict[str, str]) -> None:
         "English home",
         "English orchestration",
         "English",
+        "English portfolio sizing",
+        "English overfitting controls",
+        "English research protocols",
+        "English feature research",
         "English retired notice",
         "English execution",
         "English microstructure",
@@ -372,6 +410,10 @@ def _assert_rendered_html_languages(html_languages: dict[str, str]) -> None:
         "Chinese home",
         "Chinese orchestration",
         "Chinese",
+        "Chinese portfolio sizing",
+        "Chinese overfitting controls",
+        "Chinese research protocols",
+        "Chinese feature research",
         "Chinese dated fees",
         "Chinese retired notice",
         "Chinese execution",
@@ -409,3 +451,23 @@ def _assert_execution_navigation(navigation: dict[str, str]) -> None:
     ):
         assert "执行概览" in navigation[locale]
         assert "Execution domain" not in navigation[locale]
+
+
+def _assert_alpha_navigation(navigation: dict[str, str]) -> None:
+    for locale in (
+        "English overfitting controls",
+        "English research protocols",
+        "English feature research",
+    ):
+        assert not re.search(r"[\u3400-\u9fff]", navigation[locale])
+        assert "Getting started" in navigation[locale]
+        assert "Research protocols" in navigation[locale]
+        assert "简体中文" not in navigation[locale]
+    for locale in (
+        "Chinese overfitting controls",
+        "Chinese research protocols",
+        "Chinese feature research",
+    ):
+        assert "新人入门" in navigation[locale]
+        assert "研究协议" in navigation[locale]
+        assert "Getting started" not in navigation[locale]

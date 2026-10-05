@@ -92,6 +92,7 @@ nav:
           - Signal artifact contract: alpha/reference/signal-artifacts.en-US.md
           - Overfitting controls: alpha/concepts/overfitting-controls.en-US.md
           - Research protocols: alpha/concepts/research-protocols.en-US.md
+          - Feature research protocol: alpha/concepts/feature-research-protocol.en-US.md
           - Portfolio sizing and strategy-risk evidence: concepts/afml-sizing-and-risk.en.md
           - Model selection: alpha/concepts/model-selection.en-US.md
           - Model landscape: alpha/concepts/model-landscape.en-US.md
