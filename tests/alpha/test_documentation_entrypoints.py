@@ -212,9 +212,9 @@ def test_minute_and_signal_contract_docs_are_indexed_and_complete() -> None:
     index = (ALPHA_DOCS / "README.md").read_text(encoding="utf-8")
     minute_docs = NEW_CONTRACT_DOCS[0].read_text(encoding="utf-8")
     signal_docs = NEW_CONTRACT_DOCS[1].read_text(encoding="utf-8")
-    signal_english = (
-        ALPHA_DOCS / "reference" / "signal-artifacts.en-US.md"
-    ).read_text(encoding="utf-8")
+    signal_english = (ALPHA_DOCS / "reference" / "signal-artifacts.en-US.md").read_text(
+        encoding="utf-8"
+    )
 
     assert "concepts/minute-factors.md" in index
     assert "reference/signal-artifacts.md" in index
