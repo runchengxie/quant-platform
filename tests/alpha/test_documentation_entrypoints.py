@@ -238,6 +238,29 @@ def test_minute_and_signal_contract_docs_are_indexed_and_complete() -> None:
         assert f"`{column}`" in signal_english
 
 
+def test_minute_factor_guide_has_an_english_canonical_page() -> None:
+    chinese = (ALPHA_DOCS / "concepts" / "minute-factors.md").read_text(encoding="utf-8")
+    english_path = ALPHA_DOCS / "concepts" / "minute-factors.en-US.md"
+    english = english_path.read_text(encoding="utf-8")
+    index = (ALPHA_DOCS / "README.md").read_text(encoding="utf-8")
+    nav = (ROOT / "mkdocs.yml").read_text(encoding="utf-8")
+    locale_hook = (ROOT / "docs" / "hooks" / "locale_navigation.py").read_text(encoding="utf-8")
+
+    assert "minute-factors.en-US.md" in chinese
+    assert "minute-factors.md" in english
+    assert "concepts/minute-factors.en-US.md" in index
+    assert "Minute-factor boundaries: alpha/concepts/minute-factors.en-US.md" in nav
+    assert '"alpha/concepts/minute-factors.en-US.md"' in locale_hook
+    for term in (
+        "alpha_research.minute_friend_factors",
+        "alpha_research.minute_factors",
+        "bar_index",
+        "expected_bar_count",
+        "241",
+    ):
+        assert term in english
+
+
 def test_overfitting_docs_use_owner_relative_source_path() -> None:
     docs = (ALPHA_DOCS / "concepts" / "overfitting-controls.md").read_text(encoding="utf-8")
     english = (ALPHA_DOCS / "concepts" / "overfitting-controls.en-US.md").read_text(

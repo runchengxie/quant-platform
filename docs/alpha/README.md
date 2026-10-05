@@ -27,7 +27,7 @@ This section documents reusable alpha-research interfaces and model-related meth
 | Research template | [English canonical](guides/research-template-design.en-US.md) · [Chinese reference](guides/research-template-design.md) |
 | Namespace migration | [English canonical](namespace-migration.en-US.md) · [Chinese reference](namespace-migration.md) |
 | Testing | [English canonical](operations/testing.en-US.md) · [Chinese reference](operations/testing.md) |
-| Other research concepts | [Fundamental-state forecasting](concepts/fundamental-state-forecasting.md), [formation-date cross-sections](concepts/style-factor-cross-sections.md), [contextual factors](concepts/contextual-factors.md), and [minute-factor boundaries](concepts/minute-factors.md) (Chinese originals) |
+| Other research concepts | [Fundamental-state forecasting](concepts/fundamental-state-forecasting.md), [formation-date cross-sections](concepts/style-factor-cross-sections.md), and [contextual factors](concepts/contextual-factors.md) (Chinese originals); [minute-factor boundaries](concepts/minute-factors.en-US.md) · [Chinese reference](concepts/minute-factors.md) |
 
 ## Ownership boundary
 
