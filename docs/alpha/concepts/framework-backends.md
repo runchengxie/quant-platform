@@ -1,5 +1,7 @@
 # 研究后端与 Qlib 状态
 
+语言：简体中文 · [English](framework-backends.en-US.md)
+
 `alpha_research.backends` 用稳定接口隔离数据集构建、模型训练和实验记录。调用方通过接口
 组织研究流程，产物只记录普通 Python 元数据和工作区定义的文件契约。
 

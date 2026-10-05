@@ -62,6 +62,11 @@ ENGLISH_PAGES = {
     "alpha/concepts/feature-research-protocol.en-US.md",
     "alpha/concepts/overfitting-controls.en-US.md",
     "alpha/concepts/research-protocols.en-US.md",
+    "alpha/concepts/afml-methodology.en-US.md",
+    "alpha/concepts/framework-backends.en-US.md",
+    "alpha/guides/research-template-design.en-US.md",
+    "alpha/namespace-migration.en-US.md",
+    "alpha/operations/testing.en-US.md",
     "alpha/reference/research-outputs.en-US.md",
     "alpha/reference/signal-artifacts.en-US.md",
     "alpha/README.md",
@@ -89,6 +94,7 @@ ENGLISH_PAGES = {
 }
 
 CHINESE_TITLES = {
+    "Alpha and research": "Alpha 与研究",
     "Guides (Chinese originals; translation in progress)": "指南",
     "Core concepts": "核心概念",
     "Alpha and research (Chinese originals; translation in progress)": "Alpha 与研究",
@@ -101,6 +107,7 @@ CHINESE_TITLES = {
 }
 
 ENGLISH_TITLES = {
+    "Alpha and research": "Alpha and research",
     "其他风险与研究主题": "Additional research topics",
     "Governance and migration (Chinese originals; translation in progress)": (
         "Governance and migration"

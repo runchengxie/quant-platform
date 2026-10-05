@@ -1,5 +1,7 @@
 # 测试和质量检查
 
+语言：简体中文 · [English](testing.en-US.md)
+
 本页说明 Alpha 模块自带测试脚本的入口和检查范围。它位于 `quant-platform` 仓库中，根目录统一测试入口见[全仓测试说明](../../testing.zh-CN.md)。
 
 ## 安装开发依赖

@@ -28,15 +28,15 @@
 | 基本面状态预测 | [concepts/fundamental-state-forecasting.md](concepts/fundamental-state-forecasting.md) |
 | 风格因子形成日截面 | [concepts/style-factor-cross-sections.md](concepts/style-factor-cross-sections.md) |
 | Contextual Alpha 特征 | [concepts/contextual-factors.md](concepts/contextual-factors.md) |
-| AFML 方法组件 | [concepts/afml-methodology.md](concepts/afml-methodology.md) |
-| 研究后端与 Qlib 状态 | [concepts/framework-backends.md](concepts/framework-backends.md) |
+| AFML 方法组件 | [中文参考](concepts/afml-methodology.md) · [English canonical](concepts/afml-methodology.en-US.md) |
+| 研究后端与 Qlib 状态 | [中文参考](concepts/framework-backends.md) · [English canonical](concepts/framework-backends.en-US.md) |
 | 分钟因子边界 | [concepts/minute-factors.md](concepts/minute-factors.md) |
 | StyleReplica | [English canonical](concepts/style-replica.en.md) · [中文参考](concepts/style-replica.md) |
-| 研究模板设计 | [guides/research-template-design.md](guides/research-template-design.md) |
+| 研究模板设计 | [中文参考](guides/research-template-design.md) · [English canonical](guides/research-template-design.en-US.md) |
 | 信号产物契约 | [English canonical](reference/signal-artifacts.en-US.md) · [中文参考](reference/signal-artifacts.md) |
 | 研究产物契约 | [English canonical](reference/research-outputs.en-US.md) · [中文参考](reference/research-outputs.md) |
-| 组合研究命名空间 | [namespace-migration.md](namespace-migration.md) |
-| 测试和质量检查 | [operations/testing.md](operations/testing.md) |
+| 组合研究命名空间 | [中文参考](namespace-migration.md) · [English canonical](namespace-migration.en-US.md) |
+| 测试和质量检查 | [中文参考](operations/testing.md) · [English canonical](operations/testing.en-US.md) |
 
 ## 文档边界
 
