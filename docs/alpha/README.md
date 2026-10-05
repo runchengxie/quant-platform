@@ -1,52 +1,33 @@
-# Alpha 研究文档入口
+# Alpha and research documentation
 
-> status: active
-> owner: quant-market-research
-> audience: human and agent
-> last_verified: 2026-09-16
-> source_of_truth: yes
-> superseded_by: n/a
+Language: English · [简体中文](README.zh-CN.md)
 
-本目录记录 alpha 研究层和模型专用规则。
+This section documents reusable alpha-research interfaces and model-related methods. Project-specific hypotheses, proprietary features, and promotion decisions belong in the owning research project.
 
-## 推荐阅读
+## Start here
 
-| 主题 | 文档 |
+| Topic | Documentation |
 | --- | --- |
-| 项目定位和安装 | [根目录 README](https://github.com/runchengxie/quant-platform/blob/main/README.md) |
-| 模型选择 | [English canonical](concepts/model-selection.en-US.md) · [中文参考](concepts/model-selection.md) |
-| 模型版图 | [English canonical](concepts/model-landscape.en-US.md) · [中文参考](concepts/model-landscape.md) |
-| 因子目录 | [English canonical](concepts/factor-catalog.en-US.md) · [中文参考](concepts/factor-catalog.md) |
-| 因子风险模型 | [English canonical](concepts/factor-risk-model.en-US.md) · [中文参考](concepts/factor-risk-model.md) |
-| 信号漂移 | [English canonical](concepts/signal-drift.en-US.md) · [中文参考](concepts/signal-drift.md) |
-| 因子公式 DSL | [English canonical](concepts/factor-expression.en-US.md) · [中文参考](concepts/factor-expression.md) |
-| 过拟合控制 | [English canonical](concepts/overfitting-controls.en-US.md) · [中文参考](concepts/overfitting-controls.md) |
-| 分级研究协议 | [English canonical](concepts/research-protocols.en-US.md) · [中文参考](concepts/research-protocols.md) |
-| 特征研究协议 | [English canonical](concepts/feature-research-protocol.en-US.md) · [中文参考](concepts/feature-research-protocol.md) |
-| 基本面状态预测 | [concepts/fundamental-state-forecasting.md](concepts/fundamental-state-forecasting.md) |
-| 风格因子形成日截面 | [concepts/style-factor-cross-sections.md](concepts/style-factor-cross-sections.md) |
-| Contextual Alpha 特征 | [concepts/contextual-factors.md](concepts/contextual-factors.md) |
-| AFML 方法组件 | [concepts/afml-methodology.md](concepts/afml-methodology.md) |
-| 研究后端与 Qlib 状态 | [concepts/framework-backends.md](concepts/framework-backends.md) |
-| 分钟因子边界 | [concepts/minute-factors.md](concepts/minute-factors.md) |
-| StyleReplica | [English canonical](concepts/style-replica.en.md) · [中文参考](concepts/style-replica.md) |
-| 研究模板设计 | [guides/research-template-design.md](guides/research-template-design.md) |
-| 信号产物契约 | [English canonical](reference/signal-artifacts.en-US.md) · [中文参考](reference/signal-artifacts.md) |
-| 研究产物契约 | [English canonical](reference/research-outputs.en-US.md) · [中文参考](reference/research-outputs.md) |
-| 组合研究命名空间 | [namespace-migration.md](namespace-migration.md) |
-| 测试和质量检查 | [operations/testing.md](operations/testing.md) |
+| Project scope and installation | [Repository README](https://github.com/runchengxie/quant-platform/blob/main/README.md) |
+| Model selection | [English canonical](concepts/model-selection.en-US.md) · [Chinese companion](concepts/model-selection.md) |
+| Model landscape | [English canonical](concepts/model-landscape.en-US.md) · [Chinese companion](concepts/model-landscape.md) |
+| Factor catalog | [English canonical](concepts/factor-catalog.en-US.md) · [Chinese companion](concepts/factor-catalog.md) |
+| Factor risk model | [English canonical](concepts/factor-risk-model.en-US.md) · [Chinese companion](concepts/factor-risk-model.md) |
+| Signal drift | [English canonical](concepts/signal-drift.en-US.md) · [Chinese companion](concepts/signal-drift.md) |
+| Factor-expression DSL | [English canonical](concepts/factor-expression.en-US.md) · [Chinese companion](concepts/factor-expression.md) |
+| Overfitting controls | [English canonical](concepts/overfitting-controls.en-US.md) · [Chinese companion](concepts/overfitting-controls.md) |
+| Research protocols | [English canonical](concepts/research-protocols.en-US.md) · [Chinese companion](concepts/research-protocols.md) |
+| Feature research | [English canonical](concepts/feature-research-protocol.en-US.md) · [Chinese companion](concepts/feature-research-protocol.md) |
+| StyleReplica | [English canonical](concepts/style-replica.en.md) · [Chinese companion](concepts/style-replica.md) |
+| Signal artifact contract | [English canonical](reference/signal-artifacts.en-US.md) · [Chinese companion](reference/signal-artifacts.md) |
+| Research output contract | [English canonical](reference/research-outputs.en-US.md) · [Chinese companion](reference/research-outputs.md) |
+| Other research concepts | [Fundamental-state forecasting](concepts/fundamental-state-forecasting.md), [formation-date cross-sections](concepts/style-factor-cross-sections.md), [contextual factors](concepts/contextual-factors.md), [AFML methods](concepts/afml-methodology.md), [research backends](concepts/framework-backends.md), and [minute-factor boundaries](concepts/minute-factors.md) (Chinese originals) |
+| Research template | [Design guide](guides/research-template-design.md) (Chinese original) |
+| Namespace migration | [Migration note](namespace-migration.md) (Chinese original) |
+| Testing | [Research testing and quality checks](operations/testing.md) (Chinese original) |
 
-## 文档边界
+## Ownership boundary
 
-适合放在本仓库的主题：
+This repository documents reusable mechanisms such as feature-evidence interfaces, model evaluation methods, and signal-artifact contracts. General portfolio backtesting, trading costs, capacity analysis, orchestration, CLI behavior, configuration composition, run directories, and target-file export are maintained here; the Python namespaces remain `portfolio_backtester` and `strategy_pipeline`.
 
-- 特征工程、特征窗口和特征证据
-- 单因子 IC、特征相关性和信号稳定性
-- 模型训练、滚动前向（walk-forward）、组合式带清理交叉验证（CPCV）、过拟合概率（PBO）和修正夏普比（DSR）
-- `signals.parquet`、`signals.meta.json` 和信号产物
-- 模型专用目标持仓规则
-- 候选晋升中的 alpha 证据
-
-通用组合回测、交易成本、容量分析、运行编排、CLI、配置合成、运行目录和目标文件导出都由本仓库维护。对应的 Python 包和命令仍分别使用 `portfolio_backtester` 与 `strategy_pipeline` 名称。
-
-从其他仓库迁入文档时，应同时更新旧页面的跳转说明，避免出现多个活跃版本。编码代理默认只读取本页、相关分类入口和目标页面。
+Keep strategy hypotheses, proprietary features, model-specific portfolio rules, and promotion decisions in the owning research project. When migrating a document, update the old page with a redirect or status note so readers do not encounter multiple active copies.
