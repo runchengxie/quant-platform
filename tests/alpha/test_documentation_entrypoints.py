@@ -285,9 +285,7 @@ def test_active_alpha_research_concepts_have_english_canonical_pages() -> None:
             "standardize_factor_panel",
         ),
     }
-    hook = (ROOT / "docs" / "hooks" / "locale_navigation.py").read_text(
-        encoding="utf-8"
-    )
+    hook = (ROOT / "docs" / "hooks" / "locale_navigation.py").read_text(encoding="utf-8")
     nav = (ROOT / "mkdocs.yml").read_text(encoding="utf-8")
 
     for slug, api_names in concepts.items():
@@ -308,9 +306,7 @@ def test_active_alpha_research_concepts_have_english_canonical_pages() -> None:
     contextual_english = (ALPHA_DOCS / "concepts/contextual-factors.en-US.md").read_text(
         encoding="utf-8"
     )
-    contextual_chinese = (ALPHA_DOCS / "concepts/contextual-factors.md").read_text(
-        encoding="utf-8"
-    )
+    contextual_chinese = (ALPHA_DOCS / "concepts/contextual-factors.md").read_text(encoding="utf-8")
     for page in (contextual_english, contextual_chinese):
         assert 'series_age_limits={"ctx__shibor_3m_change20": 10}' in page
         assert "staleness_limit_days=10" not in page
