@@ -99,6 +99,8 @@ PAIRS = (
         "reference/outputs/backtest-outputs.md",
     ),
     ("testing.md", "testing.zh-CN.md"),
+    ("namespace-migration.en.md", "namespace-migration.md"),
+    ("ownership-migration.en.md", "ownership-migration.md"),
     ("grid-support.en.md", "grid-support.md"),
     ("alpha/concepts/model-selection.en-US.md", "alpha/concepts/model-selection.md"),
     ("alpha/concepts/matched-model-risk.en-US.md", "alpha/concepts/matched-model-risk.md"),
@@ -167,6 +169,28 @@ def test_english_language_markers_are_registered_for_locale_navigation() -> None
         if "Language: English" in path.read_text(encoding="utf-8")
     }
     assert marked <= registered, sorted(marked - registered)
+
+
+def test_namespace_and_ownership_docs_match_current_package_boundaries() -> None:
+    root = Path(__file__).resolve().parents[1]
+    namespace_english = (root / "docs/namespace-migration.en.md").read_text(encoding="utf-8")
+    namespace_chinese = (root / "docs/namespace-migration.md").read_text(encoding="utf-8")
+    ownership_english = (root / "docs/ownership-migration.en.md").read_text(encoding="utf-8")
+    ownership_chinese = (root / "docs/ownership-migration.md").read_text(encoding="utf-8")
+    distribution = (root / "pyproject.toml").read_text(encoding="utf-8")
+    owner_module = (
+        root / "packages/portfolio-backtester/src/portfolio_backtester/daily_watch20_oos.py"
+    )
+    owner_test = (root / "tests/test_daily_watch20_oos_owner.py").read_text(encoding="utf-8")
+
+    assert '"portfolio_backtester"' in distribution
+    assert '"alpha_research"' in distribution
+    assert "只安装 `portfolio_backtester`" not in namespace_chinese
+    assert "portfolio_backtester.*" in namespace_english + namespace_chinese
+    assert "workspace 2.0" in namespace_english + namespace_chinese
+    assert "portfolio_backtester.daily_watch20_oos" in ownership_english + ownership_chinese
+    assert owner_module.is_file()
+    assert "portfolio_daily_rows" in owner_test
 
 
 def test_locale_migration_status_is_linked_from_documentation_home() -> None:
@@ -346,6 +370,7 @@ def test_rendered_sidebar_matches_the_current_page_locale(tmp_path: Path) -> Non
     _assert_execution_navigation(navigation)
     _assert_alpha_navigation(navigation)
     _assert_grid_support_navigation(navigation)
+    _assert_migration_navigation(navigation)
     _assert_rendered_html_languages(html_languages)
 
 
@@ -376,6 +401,10 @@ def _read_rendered_locale_pages(site_dir: Path) -> tuple[dict[str, str], dict[st
         "Chinese alpha overview": site_dir / "alpha/README.zh-CN/index.html",
         "English grid support": site_dir / "grid-support.en/index.html",
         "Chinese grid support": site_dir / "grid-support/index.html",
+        "English namespace migration": site_dir / "namespace-migration.en/index.html",
+        "Chinese namespace migration": site_dir / "namespace-migration/index.html",
+        "English ownership migration": site_dir / "ownership-migration.en/index.html",
+        "Chinese ownership migration": site_dir / "ownership-migration/index.html",
         "Chinese dated fees": site_dir / "dated-execution-fees.zh-CN/index.html",
         "English retired notice": site_dir
         / "concepts/style-factor-portfolio-weighting.en/index.html",
@@ -442,6 +471,8 @@ def _assert_rendered_html_languages(html_languages: dict[str, str]) -> None:
         "English matched model risk",
         "English alpha overview",
         "English grid support",
+        "English namespace migration",
+        "English ownership migration",
         "English retired notice",
         "English execution",
         "English microstructure",
@@ -461,6 +492,8 @@ def _assert_rendered_html_languages(html_languages: dict[str, str]) -> None:
         "Chinese matched model risk",
         "Chinese alpha overview",
         "Chinese grid support",
+        "Chinese namespace migration",
+        "Chinese ownership migration",
         "Chinese dated fees",
         "Chinese retired notice",
         "Chinese execution",
@@ -532,3 +565,17 @@ def _assert_grid_support_navigation(navigation: dict[str, str]) -> None:
     assert not re.search(r"[\u3400-\u9fff]", english)
     assert "网格回测辅助函数" in chinese
     assert "Grid support helpers" not in chinese
+
+
+def _assert_migration_navigation(navigation: dict[str, str]) -> None:
+    for locale in ("English namespace migration", "English ownership migration"):
+        assert not re.search(r"[\u3400-\u9fff]", navigation[locale])
+        assert "Portfolio namespace migration" in navigation[locale]
+        assert "DailyWatch20 ownership" in navigation[locale]
+        assert "命名空间迁移" not in navigation[locale]
+        assert "归属迁移" not in navigation[locale]
+    for locale in ("Chinese namespace migration", "Chinese ownership migration"):
+        assert "命名空间迁移" in navigation[locale]
+        assert "归属迁移" in navigation[locale]
+        assert "Portfolio namespace migration" not in navigation[locale]
+        assert "DailyWatch20 ownership" not in navigation[locale]

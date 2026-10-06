@@ -99,6 +99,8 @@ ENGLISH_PAGES = {
     "data/README.md",
     "reference/outputs/positions.md",
     "testing.md",
+    "namespace-migration.en.md",
+    "ownership-migration.en.md",
     "grid-support.en.md",
 }
 

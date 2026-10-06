@@ -268,6 +268,8 @@ nav:
   - Development:
       - Testing and quality checks: testing.md
       - Grid support helpers: grid-support.en.md
+      - Portfolio namespace migration: namespace-migration.en.md
+      - DailyWatch20 ownership: ownership-migration.en.md
       - Historical public publication audit: orchestration/publication-audit.en.md
       - Chinese originals (translation in progress):
           - 命名空间迁移: namespace-migration.md
