@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import re
+import runpy
 import subprocess
 import sys
 from html.parser import HTMLParser
 from pathlib import Path
+
+import yaml
 
 PAIRS = (
     ("architecture/runtime-kernel.md", "architecture/runtime-kernel.zh-CN.md"),
@@ -30,6 +33,45 @@ def test_new_english_pages_are_registered_and_linked_to_chinese_companions() -> 
         assert f"Language: English · [简体中文]({Path(chinese_path).name})" in english_text
         assert f"语言：简体中文 · [English]({Path(english_path).name})" in chinese_text
         assert f'"{english_path}"' in navigation_hook
+
+
+def test_every_chinese_navigation_page_links_to_an_english_canonical() -> None:
+    root = Path(__file__).resolve().parents[1]
+    english_paths = runpy.run_path(str(root / "docs/hooks/locale_navigation.py"))[
+        "ENGLISH_PAGES"
+    ]
+    navigation = yaml.load(
+        (root / "mkdocs.yml").read_text(encoding="utf-8"),
+        Loader=yaml.BaseLoader,
+    )["nav"]
+    page_paths: set[str] = set()
+
+    def collect_pages(item: object) -> None:
+        if isinstance(item, dict):
+            for child in item.values():
+                collect_pages(child)
+        elif isinstance(item, list):
+            for child in item:
+                collect_pages(child)
+        elif isinstance(item, str) and item.endswith(".md"):
+            page_paths.add(item)
+
+    collect_pages(navigation)
+    for chinese_path in sorted(page_paths - english_paths):
+        path = Path(chinese_path)
+        if path.name.endswith(".zh-CN.md"):
+            candidate_names = [path.name.replace(".zh-CN.md", ".md")]
+        else:
+            candidate_names = [f"{path.stem}{suffix}.md" for suffix in (".en", ".en-US", ".en-GB")]
+        canonical_paths = [
+            (path.parent / name).as_posix()
+            for name in candidate_names
+            if (path.parent / name).as_posix() in english_paths
+            and (root / "docs" / path.parent / name).is_file()
+        ]
+        assert canonical_paths, chinese_path
+        source = (root / "docs" / chinese_path).read_text(encoding="utf-8")
+        assert any(Path(canonical).name in source for canonical in canonical_paths), chinese_path
 
 
 class _PrimaryNavigation(HTMLParser):

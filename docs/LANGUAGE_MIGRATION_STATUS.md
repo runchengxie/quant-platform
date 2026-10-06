@@ -28,7 +28,9 @@ The runtime-kernel contract, risk-model kernel reference, and September 2026 por
 
 ## Remaining work
 
-Other active Alpha/research pages and Chinese-only guides remain in the reviewed translation queue. The currently navigable governance/migration pages now have English and Chinese routes; older material under `migration/legacy-materials/` remains excluded from translation. Prioritize remaining pages by reader impact:
+The 2026-10-06 audit of the active MkDocs navigation found 191 distinct page routes: 97 registered English routes and 94 Chinese routes. Every Chinese route links to a registered English canonical page. With the runtime-kernel, risk-model kernel, and execution-profiling pairs added, the active navigation has no known translation gaps. A regression test checks that every Chinese navigation route has a linked English canonical.
+
+Remaining curation is outside the active navigation. Translate or reorganize those pages only when they support a current decision, entry point, or reusable reference. Older material under `migration/legacy-materials/` remains excluded from translation. Prioritize any future additions by reader impact:
 
 1. Configuration, CLI, and data-contract references.
 2. Backtest specifications, execution and cost assumptions, output contracts, and operational runbooks.
