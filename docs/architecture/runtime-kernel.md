@@ -1,5 +1,7 @@
 # Runtime kernel contracts
 
+Language: English · [简体中文](runtime-kernel.zh-CN.md)
+
 `quant-platform` owns the deterministic runtime that turns research targets into
 orders, fills, ledger updates, and immutable evidence. Runtime-local typed events
 are an internal control-flow mechanism; repositories exchange only versioned

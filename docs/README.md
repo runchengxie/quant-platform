@@ -46,6 +46,9 @@ These guides use synthetic data and small examples. They help you run the full f
 26. [Execution domain](execution/README.en.md)
 27. [Microstructure framework](microstructure/README.en.md) · [TickNet data boundary](microstructure/data-boundary.en.md)
 28. [Microstructure development guide](microstructure/development-guide.en.md) · [Optional Rust kernel](development/microstructure-rust.en.md)
+29. [Runtime kernel contracts](architecture/runtime-kernel.md)
+30. [Barra-like risk model kernel](risk-model-kernel.md)
+31. [Portfolio execution profiling record](development/portfolio-execution-profiling-2026-09.md)
 
 ## Governance and migration
 

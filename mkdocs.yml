@@ -87,6 +87,9 @@ nav:
           - Multi-sleeve portfolio construction: guides/sleeve-portfolio.en.md
           - Next-close diagnostic replay: guides/diagnostic-close-replay.en.md
           - Backtest output reference: reference/outputs/backtest-outputs.en.md
+          - Portfolio execution profiling: development/portfolio-execution-profiling-2026-09.md
+      - Core concepts:
+          - Runtime kernel: architecture/runtime-kernel.md
       - Alpha and research:
           - Alpha and research overview: alpha/README.md
           - Alpha research outputs: alpha/reference/research-outputs.en-US.md
@@ -104,6 +107,7 @@ nav:
           - Model landscape: alpha/concepts/model-landscape.en-US.md
           - Factor catalog: alpha/concepts/factor-catalog.en-US.md
           - Factor risk model: alpha/concepts/factor-risk-model.en-US.md
+          - Risk model kernel: risk-model-kernel.md
           - Signal drift: alpha/concepts/signal-drift.en-US.md
           - Factor-expression DSL: alpha/concepts/factor-expression.en-US.md
           - AFML methods: alpha/concepts/afml-methodology.en-US.md
@@ -131,6 +135,7 @@ nav:
       - 旧仓再资格: guides/incumbent-requalification.md
       - 旧仓再资格 OOS 控制: guides/incumbent-requalification-oos-controls.md
       - 晋升旁路: guides/promotion-sidecar.md
+      - 组合执行性能基线: development/portfolio-execution-profiling-2026-09.zh-CN.md
   - Core concepts:
       - Backtest configuration: concepts/backtest-configuration.md
       - Backtest specification: concepts/backtest-spec.md
@@ -151,6 +156,7 @@ nav:
           - 成本与执行假设: concepts/execution-costs.zh-CN.md
           - 成本口径: concepts/cost-breakdown.zh-CN.md
           - 分期执行费率: dated-execution-fees.zh-CN.md
+          - 运行时内核: architecture/runtime-kernel.zh-CN.md
       - 后端架构: concepts/backend-architecture.md
       - LEAN feasibility spike: concepts/lean-differential-spike-2026-09.md
       - 回测结果解读: concepts/backtest-interpretation.md
@@ -160,11 +166,9 @@ nav:
       - 因子归因: concepts/factor-attribution.md
       - 基准阶梯: concepts/benchmark-ladder.md
       - 换手率: concepts/turnover.md
-      - 组合执行性能基线: development/portfolio-execution-profiling-2026-09.md
       - Dated execution fees: dated-execution-fees.md
       - 公司行动账本: corporate-action-ledger.md
       - 差分回测: concepts/differential-backtesting.md
-      - 运行时内核: architecture/runtime-kernel.md
       - 其他风险与研究主题:
           - Contextual 因子: alpha/concepts/contextual-factors.md
           - 基本面状态预测: alpha/concepts/fundamental-state-forecasting.md
@@ -189,10 +193,10 @@ nav:
           - 研究模板设计: alpha/guides/research-template-design.md
           - 组合研究命名空间: alpha/namespace-migration.md
           - 测试和质量检查: alpha/operations/testing.md
+          - 风险模型内核: risk-model-kernel.zh-CN.md
       - Alpha 研究文档入口: alpha/README.zh-CN.md
       - 研究输出: alpha/reference/research-outputs.md
       - 信号产物: alpha/reference/signal-artifacts.md
-      - 风险模型内核: risk-model-kernel.md
   - Execution and microstructure:
       - English:
           - Execution domain: execution/README.en.md
