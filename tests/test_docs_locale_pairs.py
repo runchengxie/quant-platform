@@ -51,6 +51,14 @@ PAIRS = (
         "orchestration/e2-promotion-receipt.md",
     ),
     (
+        "orchestration/cashflow-publication.en.md",
+        "orchestration/cashflow-publication.md",
+    ),
+    (
+        "orchestration/publication-audit.en.md",
+        "orchestration/publication-audit.md",
+    ),
+    (
         "orchestration/operations/README.en.md",
         "orchestration/operations/README.md",
     ),

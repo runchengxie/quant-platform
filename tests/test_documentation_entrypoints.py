@@ -496,6 +496,8 @@ def test_orchestration_overview_matches_package_exports_and_cli_registration() -
     assert "register_protocol_commands" in cli
     for english_page in (
         "e2-promotion-receipt.en.md",
+        "cashflow-publication.en.md",
+        "publication-audit.en.md",
         "output-artifacts.en.md",
         "output-orchestration.en.md",
         "output-summary.en.md",
@@ -505,13 +507,58 @@ def test_orchestration_overview_matches_package_exports_and_cli_registration() -
         "reference/runtime-helpers.en.md",
     ):
         assert f"]({english_page})" in docs
-    assert "## Pages currently available only in Chinese" in docs
     assert "[E2 promotion receipt](e2-promotion-receipt.en.md)" in docs
     assert "[Operations overview](operations/README.en.md)" in docs
     assert "[E2 promotion receipt](e2-promotion-receipt.md)" not in docs
+    assert "[Cashflow shadow publication](cashflow-publication.en.md)" in docs
+    assert "[Publication audit](publication-audit.en.md)" in docs
     assert "## 中文文档" in (ROOT / "docs/orchestration/README.zh-CN.md").read_text(
         encoding="utf-8"
     )
+
+
+def test_cashflow_publication_docs_match_the_shadow_adapter_contract() -> None:
+    docs = (ROOT / "docs/orchestration/cashflow-publication.en.md").read_text(
+        encoding="utf-8"
+    )
+    implementation = (
+        ROOT
+        / "packages/orchestration/src/strategy_pipeline/cashflow_publication.py"
+    ).read_text(encoding="utf-8")
+    cli = (ROOT / "packages/orchestration/src/strategy_pipeline/cli.py").read_text(
+        encoding="utf-8"
+    )
+    tests = (ROOT / "tests/orchestration/test_cashflow_publication.py").read_text(
+        encoding="utf-8"
+    )
+
+    for contract_value in (
+        "strategy_app.cashflow.selection.v1",
+        "cashflow_quality_top50_v1.quarterly_fcf_cap10.v1",
+        "source_close_to_next_open",
+        "eligible_for_gray_push",
+        "production_eligible",
+        "eligible_for_live",
+        "allow_reconstructed_pit",
+        "research_only",
+        "feishu_shadow",
+        "latest",
+    ):
+        assert contract_value in docs
+    assert "EXPECTED_POLICY" in implementation
+    assert 'cashflow.add_argument("--allow-reconstructed-pit"' in cli
+    assert "test_publish_cashflow_shadow_allows_reconstructed_research_mode" in tests
+    assert "does not send" in docs
+
+
+def test_publication_audit_translation_preserves_its_historical_scope() -> None:
+    docs = (ROOT / "docs/orchestration/publication-audit.en.md").read_text(
+        encoding="utf-8"
+    )
+    assert "5964145" in docs
+    assert "790" in docs
+    assert "Historical snapshot" in docs
+    assert "does not authorize changing repository visibility" in docs
 
 
 def test_control_plane_docs_match_contracts_runner_and_failure_tests() -> None:
