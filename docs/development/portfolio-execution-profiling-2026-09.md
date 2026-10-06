@@ -1,5 +1,7 @@
 # Portfolio execution profiling record
 
+Language: English · [简体中文](portfolio-execution-profiling-2026-09.zh-CN.md)
+
 ## Pre-registered method
 
 This profiling pass uses deterministic synthetic inputs only. It does not load

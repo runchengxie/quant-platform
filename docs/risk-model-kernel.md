@@ -1,5 +1,7 @@
 # Barra-like risk model kernel
 
+Language: English · [简体中文](risk-model-kernel.zh-CN.md)
+
 `portfolio_backtester.risk_model` provides a small, public, strategy-agnostic
 risk model for research diagnostics. It is deliberately a Barra-like kernel,
 not a claim of compatibility with any commercial vendor model.
