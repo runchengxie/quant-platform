@@ -37,9 +37,7 @@ def test_new_english_pages_are_registered_and_linked_to_chinese_companions() -> 
 
 def test_every_chinese_navigation_page_links_to_an_english_canonical() -> None:
     root = Path(__file__).resolve().parents[1]
-    english_paths = runpy.run_path(str(root / "docs/hooks/locale_navigation.py"))[
-        "ENGLISH_PAGES"
-    ]
+    english_paths = runpy.run_path(str(root / "docs/hooks/locale_navigation.py"))["ENGLISH_PAGES"]
     navigation = yaml.load(
         (root / "mkdocs.yml").read_text(encoding="utf-8"),
         Loader=yaml.BaseLoader,
