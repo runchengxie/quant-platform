@@ -518,19 +518,12 @@ def test_orchestration_overview_matches_package_exports_and_cli_registration() -
 
 
 def test_cashflow_publication_docs_match_the_shadow_adapter_contract() -> None:
-    docs = (ROOT / "docs/orchestration/cashflow-publication.en.md").read_text(
-        encoding="utf-8"
-    )
+    docs = (ROOT / "docs/orchestration/cashflow-publication.en.md").read_text(encoding="utf-8")
     implementation = (
-        ROOT
-        / "packages/orchestration/src/strategy_pipeline/cashflow_publication.py"
+        ROOT / "packages/orchestration/src/strategy_pipeline/cashflow_publication.py"
     ).read_text(encoding="utf-8")
-    cli = (ROOT / "packages/orchestration/src/strategy_pipeline/cli.py").read_text(
-        encoding="utf-8"
-    )
-    tests = (ROOT / "tests/orchestration/test_cashflow_publication.py").read_text(
-        encoding="utf-8"
-    )
+    cli = (ROOT / "packages/orchestration/src/strategy_pipeline/cli.py").read_text(encoding="utf-8")
+    tests = (ROOT / "tests/orchestration/test_cashflow_publication.py").read_text(encoding="utf-8")
 
     for contract_value in (
         "strategy_app.cashflow.selection.v1",
@@ -552,9 +545,7 @@ def test_cashflow_publication_docs_match_the_shadow_adapter_contract() -> None:
 
 
 def test_publication_audit_translation_preserves_its_historical_scope() -> None:
-    docs = (ROOT / "docs/orchestration/publication-audit.en.md").read_text(
-        encoding="utf-8"
-    )
+    docs = (ROOT / "docs/orchestration/publication-audit.en.md").read_text(encoding="utf-8")
     assert "5964145" in docs
     assert "790" in docs
     assert "Historical snapshot" in docs
