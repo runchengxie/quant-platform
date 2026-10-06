@@ -213,12 +213,15 @@ nav:
           - Control-plane API: orchestration/control-plane.md
           - Evaluation orchestration: orchestration/evaluation.md
           - Run artifacts: orchestration/output-artifacts.en.md
-          - Quality gates: orchestration/operations/quality-gates.en.md
           - Owner integration: orchestration/integrating-an-owner.en.md
           - Target export: orchestration/targets.en.md
           - Output orchestration: orchestration/output-orchestration.en.md
           - Run summary sections: orchestration/output-summary.en.md
           - Evidence and protocol CLI: orchestration/evidence-protocol-cli.en.md
+          - E2 promotion receipt: orchestration/e2-promotion-receipt.en.md
+          - Operations:
+              - Overview: orchestration/operations/README.en.md
+              - Quality gates: orchestration/operations/quality-gates.en.md
           - References:
               - Reference overview: orchestration/reference/README.md
               - CLI helpers: orchestration/reference/cli-helpers.md

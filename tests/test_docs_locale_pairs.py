@@ -46,6 +46,14 @@ PAIRS = (
         "concepts/afml-sizing-and-risk.md",
     ),
     ("orchestration/README.md", "orchestration/README.zh-CN.md"),
+    (
+        "orchestration/e2-promotion-receipt.en.md",
+        "orchestration/e2-promotion-receipt.md",
+    ),
+    (
+        "orchestration/operations/README.en.md",
+        "orchestration/operations/README.md",
+    ),
     ("orchestration/development.en.md", "orchestration/development.md"),
     ("orchestration/control-plane.md", "orchestration/control-plane.zh-CN.md"),
     ("orchestration/evaluation.md", "orchestration/evaluation.zh-CN.md"),

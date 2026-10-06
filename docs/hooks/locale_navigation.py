@@ -86,6 +86,8 @@ ENGLISH_PAGES = {
     "orchestration/output-orchestration.en.md",
     "orchestration/output-summary.en.md",
     "orchestration/evidence-protocol-cli.en.md",
+    "orchestration/e2-promotion-receipt.en.md",
+    "orchestration/operations/README.en.md",
     "orchestration/reference/README.md",
     "orchestration/reference/cli-helpers.md",
     "orchestration/reference/configuration.md",

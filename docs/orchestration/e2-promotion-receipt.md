@@ -1,12 +1,16 @@
 # 晋级回执
 
-strategy_pipeline.e2_promotion_receipt 提供一个只负责落盘的回执 writer。
-调用方必须先准备研究检查结果，writer 会校验回执结构，并为声明的配置、数据清单和
-来源 artifact 计算 SHA-256。
+语言：简体中文 · [English](e2-promotion-receipt.en.md)
 
-writer 不判断策略是否值得晋级，也不会从输入数据推导研究结论。status 和每项检查
-的状态必须由调用方明确提供。检查未完成或失败时，应保留 pending 或 failed 状态，
-并在 limitations 中记录限制。
+`strategy_pipeline.e2_promotion_receipt` 模块负责校验回执规格并生成结构化结果。
+输出采用 `strategy_promotion_evidence.v2` schema，并保留调用方提供的
+`strategy_id`、`profile_id`、`review_id`、`generated_at`、`status`、`research_window`、
+`checks` 和 `limitations`，同时包含经过校验的 `lineage` 数据。
+
+回执 `status` 必须由调用方提供，且只能是 `passed`、`failed`、`pending`、`diagnostic`
+或 `superseded`。`checks` 必须是非空对象。检查结果由调用方提供，模块会原样保留，
+不会替调用方计算或重新解释。检查未完成或失败时，应记录对应状态，并在
+`limitations` 中说明限制。模块不判断策略是否值得晋级，也不会从输入数据推导研究结论。
 
 ## 调用
 
@@ -22,12 +26,17 @@ receipt = materialize_promotion_receipt(
 )
 ~~~
 
-lineage.config 和 workspace 位置的来源 artifact 必须使用相对于 workspace_root
-的安全路径。lineage.current_contract、data_manifests 以及 data-platform 位置的
-来源 artifact 使用相对于 data_platform_root 的安全路径。
+`lineage.config` 和工作区中的来源文件必须使用相对于 `workspace_root` 的安全路径。
+`lineage.current_contract`、`data_manifests` 以及数据平台中的来源文件必须使用相对于
+`data_platform_root` 的安全路径。
 
-所有声明的文件都必须存在。返回值包含原始 lineage 信息和每个文件的 sha256。
-写入 JSON 文件由调用方决定，公共包不会替调用方发布或覆盖文件。
+`research_window` 必须包含非空的 `configured_start_date` 和 `end_date` 字符串。模块
+只检查字段非空，不解析日期语义。`lineage.repositories` 中每个 Git SHA 必须是 40 位小写
+十六进制字符，且 `producer_repository` 必须出现在该映射中。`source_artifacts` 必须是非空列表，
+`data_manifests` 可以为空。
+
+所有声明的文件都必须存在。返回值包含原始 `lineage` 信息和每个文件的 SHA-256。
+Python 函数只返回结构化数据，不写 JSON 文件。命令行会将结果写入 `--output` 指定路径并创建父目录。若目标文件已存在，当前实现会覆盖它，调用前请确认输出路径。
 
 ## 命令行
 
@@ -39,4 +48,4 @@ python -m strategy_pipeline.e2_promotion_receipt \
   --output promotion-receipt.json
 ~~~
 
-这个模块只依赖 Python 标准库，适合在 owner 仓库中作为通用证据落盘工具使用。
+这个模块只依赖 Python 标准库，适合放在策略所有者仓库中作为通用证据记录工具。回执状态由调用方提供，模块不会判断策略是否应当晋级。

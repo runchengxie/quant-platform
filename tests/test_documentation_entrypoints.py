@@ -495,6 +495,7 @@ def test_orchestration_overview_matches_package_exports_and_cli_registration() -
     assert "register_afml_evidence_commands" in cli
     assert "register_protocol_commands" in cli
     for english_page in (
+        "e2-promotion-receipt.en.md",
         "output-artifacts.en.md",
         "output-orchestration.en.md",
         "output-summary.en.md",
@@ -505,6 +506,9 @@ def test_orchestration_overview_matches_package_exports_and_cli_registration() -
     ):
         assert f"]({english_page})" in docs
     assert "## Pages currently available only in Chinese" in docs
+    assert "[E2 promotion receipt](e2-promotion-receipt.en.md)" in docs
+    assert "[Operations overview](operations/README.en.md)" in docs
+    assert "[E2 promotion receipt](e2-promotion-receipt.md)" not in docs
     assert "## 中文文档" in (ROOT / "docs/orchestration/README.zh-CN.md").read_text(
         encoding="utf-8"
     )
