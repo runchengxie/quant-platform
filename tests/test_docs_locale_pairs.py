@@ -234,9 +234,7 @@ def test_english_documentation_index_links_to_english_guides() -> None:
 def test_governance_docs_match_current_implementation_and_ownership() -> None:
     root = Path(__file__).resolve().parents[1]
     docs = root / "docs"
-    roadmap = (docs / "governance/accounting-execution-roadmap.en.md").read_text(
-        encoding="utf-8"
-    )
+    roadmap = (docs / "governance/accounting-execution-roadmap.en.md").read_text(encoding="utf-8")
     _assert_roadmap_backend_contract(root, roadmap)
     _assert_roadmap_cost_contract(root, roadmap)
     _assert_roadmap_market_rule_contract(root, roadmap)
@@ -377,9 +375,7 @@ def _assert_migration_boundary_matches_distribution(root: Path, docs: Path) -> N
         "migration/market-research-boundary.en.md",
     ):
         assert (docs / filename).is_file()
-    boundary = (docs / "migration/research-workspace-sunset.en.md").read_text(
-        encoding="utf-8"
-    )
+    boundary = (docs / "migration/research-workspace-sunset.en.md").read_text(encoding="utf-8")
     assert "market_data_platform`" in boundary
     assert "quant-market-data-platform" in boundary
     distribution = (root / "pyproject.toml").read_text(encoding="utf-8")
