@@ -102,6 +102,9 @@ ENGLISH_PAGES = {
     "namespace-migration.en.md",
     "ownership-migration.en.md",
     "grid-support.en.md",
+    "governance/accounting-execution-roadmap.en.md",
+    "migration/research-workspace-sunset.en.md",
+    "migration/market-research-boundary.en.md",
 }
 
 CHINESE_TITLES = {
@@ -114,15 +117,12 @@ CHINESE_TITLES = {
     "Chinese originals (translation in progress)": "中文原文",
     "References": "参考资料",
     "Development": "开发",
-    "Governance and migration (Chinese originals; translation in progress)": ("治理与迁移"),
+    "Governance and migration": "治理与迁移",
 }
 
 ENGLISH_TITLES = {
     "Alpha and research": "Alpha and research",
     "其他风险与研究主题": "Additional research topics",
-    "Governance and migration (Chinese originals; translation in progress)": (
-        "Governance and migration"
-    ),
 }
 
 LOCALE_SECTION_TITLES = {

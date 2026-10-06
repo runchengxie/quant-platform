@@ -1,5 +1,7 @@
 # research-workspace 历史边界
 
+语言：简体中文 · [English](research-workspace-sunset.en.md)
+
 > status: historical
 > owner: quant-platform
 > audience: human and agent

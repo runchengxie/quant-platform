@@ -1,5 +1,7 @@
 # quant-market-research 边界
 
+语言：简体中文 · [English](market-research-boundary.en.md)
+
 `quant-market-research` 负责具体研究项目的市场证据，包括长期风格因子表现和六市场 ETF 代理配置实验。
 
 `quant-platform` 负责通用回测、组合账本、风险、成本、执行模拟和研究产物契约。研究项目的时间窗口、目标市场权重、ETF 代理选择和因子晋升规则由研究仓库维护。

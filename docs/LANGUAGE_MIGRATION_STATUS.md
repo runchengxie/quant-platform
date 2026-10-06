@@ -1,6 +1,6 @@
 # Documentation localization status
 
-English is the canonical language for public documentation. Chinese companions use the `.zh-CN.md` suffix. Both pages are published at distinct URLs, and each translated page links directly to its counterpart so readers can share a locale-specific URL.
+English is the canonical language for public documentation. Chinese companions retain their established filenames, which may be unsuffixed or use `.zh-CN.md`. English and Chinese pages are published at distinct URLs, and each paired page links directly to its counterpart so readers can share a locale-specific URL.
 
 The MkDocs sidebar follows the current page language. English pages show the English navigation; Chinese companions and untranslated Chinese originals show the Chinese navigation. This changes navigation only: existing URLs are preserved, and site search can still return pages in either language. Chinese originals without a checked English counterpart remain available at their current URLs.
 
@@ -20,15 +20,17 @@ The portfolio namespace migration and DailyWatch20 ownership notes now have Engl
 
 The orchestration development guide now has an English canonical page and linked Chinese companion. It marks the clean-root export audit as unreproducible until the manifest, exporter, and tests are reconciled with the current repository layout.
 
+The governance and migration section now has locale-specific English and Chinese pages for the accounting/execution roadmap, the former research-workspace boundary, and the `quant-market-research` ownership boundary. The English roadmap was checked against the current backend, ledger, execution, capacity, metric, and reproducibility implementations and their tests. Historical migration archives remain source material, not a translation queue.
+
 The research-protocol guide now has an English canonical and linked Chinese companion. Its CLI examples use the registered `strategy-pipeline` commands, and its protocol thresholds are checked against the current policy implementation. The feature-research guide also has an English canonical and linked Chinese companion. It now documents only reusable platform behavior, removes project-specific feature examples, and records that feature-evidence helpers are not registered as a CLI command. The matched-model and downside-risk guide now has an English canonical and linked Chinese reference, checked against its estimator, risk-target, and forecast-gate implementations and tests. Its page-specific build check confirms that the rendered English and Chinese sidebars contain only their selected locale. The Alpha research index now has an English canonical page and linked Chinese companion; the locale-specific sidebar shows the matching page in each language. The grid-support reference now has an English canonical and linked Chinese companion, verified against its module and tests. The minute-factor guide now has an English canonical and linked Chinese reference, checked against both implementations and the friend-factor SQL tests. Contextual research features, fundamental-state forecasting, and formation-date style-factor cross-sections now also have English canonical pages and linked Chinese references, checked against their public implementations and tests.
 
 ## Remaining work
 
-Other active Alpha/research pages and Chinese-only guides remain in the reviewed translation queue. Historical migration pages are listed separately in `mkdocs.yml`; treat them as a reviewed queue, not an instruction to translate every archive. Prioritize pages by reader impact:
+Other active Alpha/research pages and Chinese-only guides remain in the reviewed translation queue. The currently navigable governance/migration pages now have English and Chinese routes; older material under `migration/legacy-materials/` remains excluded from translation. Prioritize remaining pages by reader impact:
 
 1. Configuration, CLI, and data-contract references.
 2. Backtest specifications, execution and cost assumptions, output contracts, and operational runbooks.
 3. Alpha and research-concept pages that are part of the public product surface.
-4. Historical migration records and archived plans, after active user-facing docs are complete.
+4. Other historical migration records only when they are still used as current reference material.
 
 Do not create an English page by translating stale prose alone. Verify each page against current code, configuration, CLI help, tests, and artifacts. Keep identifiers and machine-readable contracts unchanged. Update this tracker as paired pages are added, and ensure the Chinese companion remains consistent with the English source.
