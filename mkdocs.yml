@@ -219,6 +219,7 @@ nav:
           - Run summary sections: orchestration/output-summary.en.md
           - Evidence and protocol CLI: orchestration/evidence-protocol-cli.en.md
           - E2 promotion receipt: orchestration/e2-promotion-receipt.en.md
+          - Cashflow shadow publication: orchestration/cashflow-publication.en.md
           - Operations:
               - Overview: orchestration/operations/README.en.md
               - Quality gates: orchestration/operations/quality-gates.en.md
@@ -234,11 +235,11 @@ nav:
           - 输出产物: orchestration/output-artifacts.md
           - 接入负责人: orchestration/integrating-an-owner.md
           - 目标文件: orchestration/targets.md
-          - 现金流发布: orchestration/cashflow-publication.md
       - 简体中文:
           - 开发与发布检查: orchestration/development.md
           - 证据协议 CLI: orchestration/evidence-protocol-cli.md
           - E2 晋升回执: orchestration/e2-promotion-receipt.md
+          - 现金流发布: orchestration/cashflow-publication.md
           - 输出编排: orchestration/output-orchestration.md
           - 输出摘要: orchestration/output-summary.md
           - 运行时辅助能力: orchestration/reference/runtime-helpers.md
@@ -267,13 +268,14 @@ nav:
   - Development:
       - Testing and quality checks: testing.md
       - Grid support helpers: grid-support.en.md
+      - Historical public publication audit: orchestration/publication-audit.en.md
       - Chinese originals (translation in progress):
           - 命名空间迁移: namespace-migration.md
           - 归属迁移: ownership-migration.md
-          - 发布审计: orchestration/publication-audit.md
       - 简体中文:
           - 网格回测辅助函数: grid-support.md
           - 测试和质量检查: testing.zh-CN.md
+          - 公开发布审计: orchestration/publication-audit.md
   - Governance and migration (Chinese originals; translation in progress):
       - English:
           - Retired style-factor backtest slice: concepts/style-factor-portfolio-weighting.en.md
