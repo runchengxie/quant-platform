@@ -102,6 +102,18 @@ PAIRS = (
     ("namespace-migration.en.md", "namespace-migration.md"),
     ("ownership-migration.en.md", "ownership-migration.md"),
     ("grid-support.en.md", "grid-support.md"),
+    (
+        "governance/accounting-execution-roadmap.en.md",
+        "governance/accounting-execution-roadmap.md",
+    ),
+    (
+        "migration/research-workspace-sunset.en.md",
+        "migration/research-workspace-sunset.md",
+    ),
+    (
+        "migration/market-research-boundary.en.md",
+        "migration/market-research-boundary.md",
+    ),
     ("alpha/concepts/model-selection.en-US.md", "alpha/concepts/model-selection.md"),
     ("alpha/concepts/matched-model-risk.en-US.md", "alpha/concepts/matched-model-risk.md"),
     ("alpha/concepts/afml-methodology.en-US.md", "alpha/concepts/afml-methodology.md"),
@@ -211,6 +223,167 @@ def test_english_documentation_index_links_to_english_guides() -> None:
     assert "guides/execution-simulation.md" not in index
     assert "microstructure/README.md" not in index
     assert "governance/accounting-execution-roadmap.md" not in index
+    for page in (
+        "governance/accounting-execution-roadmap.en.md",
+        "migration/research-workspace-sunset.en.md",
+        "migration/market-research-boundary.en.md",
+    ):
+        assert page in index
+
+
+def test_governance_docs_match_current_implementation_and_ownership() -> None:
+    root = Path(__file__).resolve().parents[1]
+    docs = root / "docs"
+    roadmap = (docs / "governance/accounting-execution-roadmap.en.md").read_text(
+        encoding="utf-8"
+    )
+    _assert_roadmap_backend_contract(root, roadmap)
+    _assert_roadmap_cost_contract(root, roadmap)
+    _assert_roadmap_market_rule_contract(root, roadmap)
+    _assert_roadmap_capacity_and_metadata_contract(root, roadmap)
+    _assert_migration_boundary_matches_distribution(root, docs)
+
+
+def _assert_roadmap_backend_contract(root: Path, roadmap: str) -> None:
+    source_root = root / "packages/portfolio-backtester/src/portfolio_backtester"
+    native = (source_root / "backends/native.py").read_text(encoding="utf-8")
+    api = (source_root / "api.py").read_text(encoding="utf-8")
+    ledger = (source_root / "execution_sim/results.py").read_text(encoding="utf-8")
+    lifecycle = (source_root / "execution_contracts.py").read_text(encoding="utf-8")
+
+    assert "ledger: bool = False" in native
+    assert "ledger: bool = False" in api
+    for state in (
+        "created",
+        "submitted",
+        "accepted",
+        "partial",
+        "filled",
+        "cancelled",
+        "expired",
+        "rejected",
+    ):
+        assert f'"{state}"' in lifecycle
+        assert f"`{state}`" in roadmap
+    for field in (
+        "targets",
+        "orders",
+        "fills",
+        "daily_positions",
+        "daily_cash",
+        "daily_nav",
+        "cost_breakdown",
+        "turnover_breakdown",
+    ):
+        assert field in ledger
+        assert f"`{field}`" in roadmap
+
+
+def _assert_roadmap_cost_contract(root: Path, roadmap: str) -> None:
+    source_root = root / "packages/portfolio-backtester/src/portfolio_backtester"
+    costs = (source_root / "types.py").read_text(encoding="utf-8")
+    fees = (source_root / "_execution_models.py").read_text(encoding="utf-8")
+    for component in (
+        "commission",
+        "stamp_tax",
+        "transfer_fee",
+        "spread_cost",
+        "temporary_impact",
+        "permanent_impact",
+        "opportunity_cost",
+        "financing_cost",
+    ):
+        assert component in costs
+        assert component in roadmap
+    assert "notional_cost_breakdown" in fees
+
+
+def _assert_roadmap_market_rule_contract(root: Path, roadmap: str) -> None:
+    market_rules = (
+        root / "packages/portfolio-backtester/src/portfolio_backtester/execution_sim/config.py"
+    ).read_text(encoding="utf-8")
+    for rule in (
+        "round_lot",
+        "enforce_t1",
+        "enforce_price_limits",
+        "enforce_listing_status",
+        "limit_up_col",
+        "limit_down_col",
+        "listing_status_col",
+    ):
+        assert rule in market_rules
+        assert f"`{rule}`" in roadmap
+    for timestamp in (
+        "signal_time",
+        "decision_time",
+        "order_time",
+        "fill_time",
+        "valuation_time",
+    ):
+        assert timestamp in roadmap
+
+
+def _assert_roadmap_capacity_and_metadata_contract(root: Path, roadmap: str) -> None:
+    source_root = root / "packages/portfolio-backtester/src/portfolio_backtester"
+    capacity_report = (source_root / "_capacity_report_config.py").read_text(encoding="utf-8")
+    run_metadata = (source_root / "_run_metadata.py").read_text(encoding="utf-8")
+    metrics = (source_root / "_metrics_period.py").read_text(encoding="utf-8")
+    for key in (
+        "break_even_capacity",
+        "fill_rate_95_capacity",
+        "alpha_retention_90_capacity",
+        "sharpe_retention_90_capacity",
+        "marginal_return_per_unit_capital",
+        "marginal_sharpe_retention_per_unit_capital",
+        "by_symbol",
+        "by_liquidity",
+        "by_industry",
+    ):
+        assert key in capacity_report or key in (
+            source_root / "_capacity_concentration.py"
+        ).read_text(encoding="utf-8")
+        assert f"`{key}`" in roadmap
+    for key in (
+        "repo_commit",
+        "config_hash",
+        "input_data_hash",
+        "universe_fingerprint",
+        "calendar_window",
+        "fee_schedule_version",
+        "slippage_calibration_version",
+        "dependency_versions",
+        "random_seed",
+        "run_timestamp",
+    ):
+        assert key in run_metadata
+        assert f"`{key}`" in roadmap
+    assert "yearly_compounded_returns" in metrics
+
+    tested_contracts = (
+        "tests/test_ledger_stage2_contract.py",
+        "tests/test_cost_breakdown.py",
+        "tests/test_execution_sim_market_rules.py",
+        "tests/test_capacity_report_phase5.py",
+        "tests/test_run_metadata_phase6.py",
+    )
+    for test_path in tested_contracts:
+        assert (root / test_path).is_file()
+        assert f"{test_path}" in roadmap
+
+
+def _assert_migration_boundary_matches_distribution(root: Path, docs: Path) -> None:
+    for filename in (
+        "migration/research-workspace-sunset.en.md",
+        "migration/market-research-boundary.en.md",
+    ):
+        assert (docs / filename).is_file()
+    boundary = (docs / "migration/research-workspace-sunset.en.md").read_text(
+        encoding="utf-8"
+    )
+    assert "market_data_platform`" in boundary
+    assert "quant-market-data-platform" in boundary
+    distribution = (root / "pyproject.toml").read_text(encoding="utf-8")
+    assert "market_data_platform" not in distribution
 
 
 def test_microstructure_guides_link_to_the_rust_page_in_the_same_locale() -> None:
@@ -371,6 +544,7 @@ def test_rendered_sidebar_matches_the_current_page_locale(tmp_path: Path) -> Non
     _assert_alpha_navigation(navigation)
     _assert_grid_support_navigation(navigation)
     _assert_migration_navigation(navigation)
+    _assert_governance_navigation(navigation)
     _assert_rendered_html_languages(html_languages)
 
 
@@ -405,6 +579,17 @@ def _read_rendered_locale_pages(site_dir: Path) -> tuple[dict[str, str], dict[st
         "Chinese namespace migration": site_dir / "namespace-migration/index.html",
         "English ownership migration": site_dir / "ownership-migration.en/index.html",
         "Chinese ownership migration": site_dir / "ownership-migration/index.html",
+        "English accounting roadmap": site_dir
+        / "governance/accounting-execution-roadmap.en/index.html",
+        "Chinese accounting roadmap": site_dir
+        / "governance/accounting-execution-roadmap/index.html",
+        "English workspace boundary": site_dir
+        / "migration/research-workspace-sunset.en/index.html",
+        "Chinese workspace boundary": site_dir / "migration/research-workspace-sunset/index.html",
+        "English market research boundary": site_dir
+        / "migration/market-research-boundary.en/index.html",
+        "Chinese market research boundary": site_dir
+        / "migration/market-research-boundary/index.html",
         "Chinese dated fees": site_dir / "dated-execution-fees.zh-CN/index.html",
         "English retired notice": site_dir
         / "concepts/style-factor-portfolio-weighting.en/index.html",
@@ -473,6 +658,9 @@ def _assert_rendered_html_languages(html_languages: dict[str, str]) -> None:
         "English grid support",
         "English namespace migration",
         "English ownership migration",
+        "English accounting roadmap",
+        "English workspace boundary",
+        "English market research boundary",
         "English retired notice",
         "English execution",
         "English microstructure",
@@ -494,6 +682,9 @@ def _assert_rendered_html_languages(html_languages: dict[str, str]) -> None:
         "Chinese grid support",
         "Chinese namespace migration",
         "Chinese ownership migration",
+        "Chinese accounting roadmap",
+        "Chinese workspace boundary",
+        "Chinese market research boundary",
         "Chinese dated fees",
         "Chinese retired notice",
         "Chinese execution",
@@ -579,3 +770,25 @@ def _assert_migration_navigation(navigation: dict[str, str]) -> None:
         assert "归属迁移" in navigation[locale]
         assert "Portfolio namespace migration" not in navigation[locale]
         assert "DailyWatch20 ownership" not in navigation[locale]
+
+
+def _assert_governance_navigation(navigation: dict[str, str]) -> None:
+    for locale in (
+        "English accounting roadmap",
+        "English workspace boundary",
+        "English market research boundary",
+    ):
+        assert "Accounting and execution roadmap" in navigation[locale]
+        assert "Research workspace migration boundary" in navigation[locale]
+        assert "quant-market-research boundary" in navigation[locale]
+        assert not re.search(r"[\u3400-\u9fff]", navigation[locale])
+    for locale in (
+        "Chinese accounting roadmap",
+        "Chinese workspace boundary",
+        "Chinese market research boundary",
+    ):
+        assert "治理与迁移" in navigation[locale]
+        assert "会计与执行路线图" in navigation[locale]
+        assert "历史迁移边界" in navigation[locale]
+        assert "quant-market-research 边界" in navigation[locale]
+        assert "Accounting and execution roadmap" not in navigation[locale]

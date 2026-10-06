@@ -278,11 +278,12 @@ nav:
           - 网格回测辅助函数: grid-support.md
           - 测试和质量检查: testing.zh-CN.md
           - 公开发布审计: orchestration/publication-audit.md
-  - Governance and migration (Chinese originals; translation in progress):
-      - English:
-          - Retired style-factor backtest slice: concepts/style-factor-portfolio-weighting.en.md
-      - Chinese originals (translation in progress):
-          - 已退出公开发布的风格因子回测片段: concepts/style-factor-portfolio-weighting.md
-          - 历史迁移边界: migration/research-workspace-sunset.md
-          - quant-market-research 边界: migration/market-research-boundary.md
-          - 会计与执行路线图: governance/accounting-execution-roadmap.md
+  - Governance and migration:
+      - Retired style-factor backtest slice: concepts/style-factor-portfolio-weighting.en.md
+      - Research workspace migration boundary: migration/research-workspace-sunset.en.md
+      - quant-market-research boundary: migration/market-research-boundary.en.md
+      - Accounting and execution roadmap: governance/accounting-execution-roadmap.en.md
+      - 已退出公开发布的风格因子回测片段: concepts/style-factor-portfolio-weighting.md
+      - 历史迁移边界: migration/research-workspace-sunset.md
+      - quant-market-research 边界: migration/market-research-boundary.md
+      - 会计与执行路线图: governance/accounting-execution-roadmap.md

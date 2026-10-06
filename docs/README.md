@@ -47,6 +47,12 @@ These guides use synthetic data and small examples. They help you run the full f
 27. [Microstructure framework](microstructure/README.en.md) · [TickNet data boundary](microstructure/data-boundary.en.md)
 28. [Microstructure development guide](microstructure/development-guide.en.md) · [Optional Rust kernel](development/microstructure-rust.en.md)
 
+## Governance and migration
+
+- [Accounting and execution roadmap](governance/accounting-execution-roadmap.en.md)
+- [Research workspace migration boundary](migration/research-workspace-sunset.en.md)
+- [`quant-market-research` boundary](migration/market-research-boundary.en.md)
+
 The [localization status](LANGUAGE_MIGRATION_STATUS.md) identifies pages that are still Chinese originals. They remain available in Chinese and are not linked here as English guides until their English versions are checked against the implementation.
 
 Agents should start with the root README, this page, and the relevant category directory. They do not need to recursively read every Markdown file.
@@ -82,10 +88,10 @@ Historical migration records remain in pull requests, release notes, or maintena
 
 ## Historical ownership
 
-- [Backtesting namespace](namespace-migration.md)
-- [DailyWatch20 portfolio ownership](ownership-migration.md)
-- [Incumbent requalification out-of-sample comparison bridge](guides/incumbent-requalification-oos-controls.md)
+- [Backtesting namespace](namespace-migration.en.md)
+- [DailyWatch20 portfolio ownership](ownership-migration.en.md)
+- [Incumbent requalification out-of-sample comparison bridge](guides/incumbent-requalification-oos-controls.en.md)
 
 ## Historical migration material
 
-The read-only source copies under [`migration/legacy-materials/`](migration/legacy-materials/) preserve former repository layouts for comparison. They are not current APIs or supported development entry points. Start with the current ownership and migration pages above; consult a legacy copy only when reproducing a historical implementation or checking migration parity. The cross-repository historical index and file-level inventory are maintained in the private [`quant-research` migration index](https://github.com/runchengxie/quant-research/blob/main/docs/migration/HISTORICAL-RESEARCH-INDEX.md).
+The read-only source copies under [`migration/legacy-materials/`](migration/legacy-materials/) preserve former repository layouts for comparison. They are not current APIs or supported development entry points. Consult a legacy copy only when reproducing a historical implementation or checking migration parity. The cross-repository historical index and file-level inventory are maintained in the private [`quant-research` migration index](https://github.com/runchengxie/quant-research/blob/main/docs/migration/HISTORICAL-RESEARCH-INDEX.md).
