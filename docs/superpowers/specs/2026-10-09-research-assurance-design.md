@@ -1,6 +1,7 @@
 # Research and execution assurance
 
-Status: proposed; written design awaiting user review. No implementation has started.
+Status: written design approved by the user on 2026-10-10; implementation plans
+await review and execution-method selection. No implementation has started.
 
 ## Outcome and scope
 
