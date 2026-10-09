@@ -108,6 +108,15 @@ def test_public_ordering_backend_matches_python():
     assert sort_simulator_events(events, backend="rust") == sort_simulator_events(events)
 
 
+def test_exported_gap_scenario_preserves_native_reference_parity(tmp_path):
+    _native()
+    from quant_platform.scenarios import build_scenario, read_scenario, write_scenario
+
+    bundle = read_scenario(write_scenario(build_scenario("sequence_gap"), tmp_path / "scenario"))
+    events = [SimulatorEvent(**row) for row in bundle.frames["events"].to_dict("records")]
+    assert sort_simulator_events(events, backend="rust") == sort_simulator_events(events)
+
+
 def test_seed_and_anonymous_reduction_match_python():
     native = _native()
     python_book = LimitOrderBook()

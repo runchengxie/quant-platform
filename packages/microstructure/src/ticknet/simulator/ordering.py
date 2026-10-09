@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Iterable
+from itertools import pairwise
 from typing import Any
 
 CHANNEL_COLUMNS = ("ChannelNo", "Channel", "channel_no", "channel")
@@ -104,4 +105,29 @@ def ordering_provenance(
         "ordering_mode": mode,
         "cross_channel_total_order": False,
         "cross_channel_fallback": "source_order",
+        **_sequence_integrity(rows),
     }
+
+
+def _sequence_integrity(events: list[Any]) -> dict[str, Any]:
+    """Observed channel gaps are evidence, not proof of a complete exchange feed."""
+    sequences: dict[str, set[int]] = defaultdict(set)
+    unknown = False
+    for event in events:
+        if event.kind == "snapshot":
+            continue
+        channel, sequence = getattr(event, "channel", None), getattr(event, "sequence", None)
+        if not channel or sequence is None:
+            unknown = True
+            continue
+        sequences[str(channel)].add(int(sequence))
+    gap_count = 0
+    for values in sequences.values():
+        ordered = sorted(values)
+        gap_count += sum(right - left - 1 for left, right in pairwise(ordered))
+    status = (
+        "gaps_observed"
+        if gap_count
+        else ("unknown" if unknown or not sequences else "observed_contiguous")
+    )
+    return {"sequence_gap_count": gap_count, "sequence_completeness": status}

@@ -80,6 +80,8 @@ nav:
           - Common entry points: guides/entry-points.md
           - Execution simulation: guides/execution-simulation.en.md
           - Point-in-time research data: guides/point-in-time-data.en.md
+          - Synthetic assurance scenarios: guides/assurance-scenarios.md
+          - Cost evidence and capacity: guides/cost-evidence.md
           - Sequenced execution: guides/sequenced-execution.en.md
           - Incumbent requalification: guides/incumbent-requalification.en.md
           - Incumbent requalification OOS bridge: guides/incumbent-requalification-oos-controls.en.md

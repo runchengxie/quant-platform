@@ -26,6 +26,7 @@ from .capacity_report_support import (
     resolve_positions_path,
     resolve_pricing_path,
 )
+from .tca_evidence import read_tca_evidence
 
 
 def add_capacity_report_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -83,6 +84,10 @@ def add_capacity_report_args(parser: argparse.ArgumentParser) -> argparse.Argume
     parser.add_argument("--output-csv", default=None, help="Capacity grid CSV path.")
     parser.add_argument("--output-json", default=None, help="Capacity report JSON path.")
     parser.add_argument("--market", default=None, help="Override market label in the report.")
+    parser.add_argument("--cost-evidence", default=None, help="Versioned TCA evidence JSON.")
+    parser.add_argument(
+        "--cost-evidence-sha256", default=None, help="Expected evidence artifact hash."
+    )
     parser.add_argument(
         "--log-level",
         default="INFO",
@@ -135,6 +140,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     output_json = resolve_path(args.output_json or cfg.get("output_json"), base_dir=output_dir)
     output_csv = output_csv or output_dir / "capacity_grid.csv"
     output_json = output_json or output_dir / "capacity_report.json"
+    evidence_path = resolve_path(getattr(args, "cost_evidence", None), base_dir=run_dir)
+    expected_hash = getattr(args, "cost_evidence_sha256", None)
+    if expected_hash and evidence_path is None:
+        raise ValueError("cost evidence path required with expected hash")
+    evidence = (
+        read_tca_evidence(evidence_path, expected_sha256=expected_hash) if evidence_path else None
+    )
     payload = build_capacity_report(
         run_dir=run_dir,
         config_path=config_path,
@@ -149,6 +161,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         else cfg.get("primary_participation_rate"),
         output_csv=output_csv,
         market_override=args.market,
+        cost_evidence=evidence,
     )
     output_json.parent.mkdir(parents=True, exist_ok=True)
     output_json.write_text(
