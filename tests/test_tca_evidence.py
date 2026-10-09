@@ -110,3 +110,17 @@ def test_date_block_bootstrap_keeps_same_date_orders_together():
         api.summarize_tca(repeated, **kwargs)["groups"][0]["mean_ci_bps"]
         == (api.summarize_tca(frame, **kwargs)["groups"][0]["mean_ci_bps"])
     )
+
+
+def test_zero_execution_across_dates_never_recommends_cost_evidence():
+    frame = _observations()
+    frame["filled_notional"] = 0.0
+    frame["execution_cash"] = 0.0
+    frame["opportunity_cash"] = frame["total_cash"]
+    row = _api().summarize_tca(frame, group_cols=[], min_observations=2, min_coverage=0.0)[
+        "groups"
+    ][0]
+    assert row["mean_shortfall_bps"] == pytest.approx(12.5)
+    assert row["status"] == "insufficient_evidence"
+    assert "no_execution_evidence" in row["reasons"]
+    assert row["recommended_shortfall_bps"] is None
