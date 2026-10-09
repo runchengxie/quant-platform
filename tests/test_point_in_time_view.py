@@ -119,3 +119,20 @@ def test_latest_revision_uses_ordered_revision_for_equal_availability():
     assert hasattr(bound, "read_latest"), "latest visible revision API is missing"
     selected = bound.read_latest("data", identity_cols=["symbol"], revision_col="revision")
     assert selected.value.tolist() == [20]
+
+
+@pytest.mark.parametrize("revisions", [[2, "1"], ["1", 2]])
+def test_latest_revision_rejects_mixed_revision_domains(revisions):
+    frame = pd.DataFrame(
+        {
+            "symbol": ["A", "A"],
+            "revision": revisions,
+            "value": [20, 10],
+            "available_at": ["2024-01-02T12:00:00Z"] * 2,
+        }
+    )
+    bound = PointInTimeDataView({"data": PointInTimeTable(frame, "available_at")}).at(
+        _clock("2024-01-03T12:00:00Z")
+    )
+    with pytest.raises(ValueError, match=r"revision.*comparable"):
+        bound.read_latest("data", identity_cols=["symbol"], revision_col="revision")

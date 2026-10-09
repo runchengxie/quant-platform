@@ -64,6 +64,8 @@ def _summarize_group(
         reasons.append("insufficient_observations")
     if len(dates) < 2:
         reasons.append("insufficient_dates")
+    if filled <= 0:
+        reasons.append("no_execution_evidence")
     if coverage < coverage_minimum:
         reasons.append("insufficient_fill_coverage")
     return {

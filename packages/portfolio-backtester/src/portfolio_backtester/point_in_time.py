@@ -9,6 +9,8 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
+from math import isfinite
+from numbers import Real
 
 import pandas as pd
 from research_contracts import ResearchClock, validate_research_clock
@@ -119,6 +121,14 @@ class _BoundDataView:
             raise ValueError("missing identity or revision columns")
         if frame[required].isna().any().any():
             raise ValueError("unknown identity or revision values")
+        revisions = frame[revision_col].tolist()
+        numeric = all(
+            isinstance(value, Real) and not isinstance(value, bool) and isfinite(value)
+            for value in revisions
+        )
+        textual = all(isinstance(value, str) and bool(value.strip()) for value in revisions)
+        if not (numeric or textual):
+            raise ValueError("revision values must have an unambiguous comparable order")
         helper = "__pit_visible_at"
         while helper in frame.columns:
             helper += "_"
