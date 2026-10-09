@@ -23,6 +23,8 @@ ENGLISH_PAGES = {
     "getting-started/understanding-results.md",
     "reference/glossary.md",
     "guides/entry-points.md",
+    "guides/assurance-scenarios.md",
+    "guides/cost-evidence.md",
     "guides/execution-simulation.en.md",
     "guides/point-in-time-data.en.md",
     "guides/sequenced-execution.en.md",

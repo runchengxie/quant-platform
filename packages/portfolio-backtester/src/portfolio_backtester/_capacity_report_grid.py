@@ -38,6 +38,7 @@ from .execution_sim import (
     simulate_ideal_daily_nav,
 )
 from .liquidity_proxy import _derive_execution_liquidity_proxy_columns
+from .tca_evidence import validate_tca_evidence
 
 
 def _build_grid_row(
@@ -148,7 +149,9 @@ def build_capacity_report(
     output_csv: Path | None,
     market_override: str | None = None,
     industry_col: str | None = None,
+    cost_evidence: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
+    checked_cost = validate_tca_evidence(dict(cost_evidence)) if cost_evidence is not None else None
     config = read_yaml_mapping(config_path)
     thresholds = THRESHOLD_PROFILES[threshold_profile]
     positions = normalize_positions_frame(read_frame(positions_path))
@@ -205,7 +208,7 @@ def build_capacity_report(
     if output_csv is not None:
         write_csv(rows, output_csv)
     market = market_override or str(config.get("market", "unknown")).strip() or "unknown"
-    return _build_report_payload(
+    payload = _build_report_payload(
         rows=rows,
         binding_examples=binding_examples,
         thresholds=thresholds,
@@ -222,3 +225,9 @@ def build_capacity_report(
         concentration=concentration,
         config=config,
     )
+    payload["cost_evidence_status"] = (
+        "missing" if checked_cost is None else "available_not_promoted"
+    )
+    if checked_cost is not None:
+        payload["cost_evidence"] = checked_cost
+    return payload

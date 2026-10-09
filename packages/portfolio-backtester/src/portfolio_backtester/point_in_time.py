@@ -6,7 +6,7 @@ evidence that the value was available when a signal was formed.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -99,6 +99,42 @@ class _BoundDataView:
         if table._event_at is not None:
             visible &= table._event_at.le(self._cutoff)
         return table.frame.loc[visible].copy(deep=True)
+
+    def read_latest(
+        self, name: str, *, identity_cols: Sequence[str], revision_col: str
+    ) -> pd.DataFrame:
+        """Select the newest visible vintage, using explicit comparable revision values.
+
+        Availability is primary, revision order breaks availability ties. Source
+        order is never used to resolve ambiguous vintages. The ordinary read
+        operation continues to return every visible vintage.
+        """
+        keys = list(identity_cols)
+        table = self._tables[name]
+        if not keys or len(set(keys)) != len(keys) or revision_col in keys:
+            raise ValueError("distinct identity columns and a separate revision column required")
+        frame = self.read(name)
+        required = [*keys, revision_col]
+        if any(key not in frame.columns for key in required):
+            raise ValueError("missing identity or revision columns")
+        if frame[required].isna().any().any():
+            raise ValueError("unknown identity or revision values")
+        helper = "__pit_visible_at"
+        while helper in frame.columns:
+            helper += "_"
+        frame[helper] = [
+            _aware_timestamp(value, table.available_at_col)
+            for value in frame[table.available_at_col]
+        ]
+        if frame.duplicated([*keys, helper, revision_col]).any():
+            raise ValueError(
+                "ambiguous visible revisions share identity, availability and revision"
+            )
+        try:
+            ordered = frame.sort_values([helper, revision_col], kind="stable")
+        except TypeError as error:
+            raise ValueError("revision values must have an unambiguous comparable order") from error
+        return ordered.drop_duplicates(keys, keep="last").drop(columns=helper).copy(deep=True)
 
 
 __all__ = ["PointInTimeDataView", "PointInTimeTable"]

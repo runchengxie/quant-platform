@@ -11,6 +11,53 @@ import yaml
 from portfolio_backtester import capacity_report
 
 
+def test_capacity_report_accepts_integrity_checked_cost_evidence(tmp_path):
+    from portfolio_backtester.shortfall import Fill, OrderCost, order_shortfall
+    from portfolio_backtester.tca_evidence import summarize_tca
+
+    run_dir, pricing_path = _write_capacity_run(tmp_path)
+    rows = [
+        order_shortfall(
+            OrderCost(
+                str(i),
+                f"2020-01-0{i + 2}",
+                "buy",
+                10.0,
+                100.0,
+                (Fill(60.0, 11.0),),
+                5.0,
+                12.0,
+                f"2020-01-0{i + 2}T15:00:00Z",
+            )
+        )
+        for i in range(2)
+    ]
+    evidence = summarize_tca(
+        pd.DataFrame(rows), group_cols=[], min_observations=2, min_coverage=0.5
+    )
+    evidence_file = tmp_path / "evidence.json"
+    evidence_file.write_text(json.dumps(evidence))
+    parser = capacity_report.add_capacity_report_args(argparse.ArgumentParser())
+    assert any(action.dest == "cost_evidence" for action in parser._actions), "cost CLI missing"
+    args = parser.parse_args(
+        [
+            "--run-dir",
+            str(run_dir),
+            "--pricing-file",
+            str(pricing_path),
+            "--cost-evidence",
+            str(evidence_file),
+        ]
+    )
+    result = capacity_report.run(args)
+    assert result["cost_evidence"]["groups"][0]["p95_shortfall_bps"] == 1450.0
+    assert result["cost_evidence_status"] == "available_not_promoted"
+    evidence["groups"][0]["p95_shortfall_bps"] = 0.0
+    evidence_file.write_text(json.dumps(evidence))
+    with pytest.raises(ValueError, match="checksum"):
+        capacity_report.run(args)
+
+
 def _write_capacity_run(tmp_path: Path) -> tuple[Path, Path]:
     run_dir = tmp_path / "run"
     run_dir.mkdir()

@@ -34,6 +34,8 @@ These guides use synthetic data and small examples. They help you run the full f
 14. [Execution capacity and daily NAV simulation](guides/execution-simulation.en.md)
 15. [Turnover definitions](concepts/turnover.en-US.md)
 16. [Cost breakdown](concepts/cost-breakdown.md)
+    · [Cost evidence and capacity](guides/cost-evidence.md)
+    · [Synthetic assurance scenarios](guides/assurance-scenarios.md)
 17. [Factor return and risk attribution](concepts/factor-attribution.en.md)
 18. [Raw-share corporate-action ledger](corporate-action-ledger.en.md)
 19. [Interpreting backtest results](concepts/backtest-interpretation.en.md)
