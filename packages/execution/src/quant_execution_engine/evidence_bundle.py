@@ -60,84 +60,109 @@ def _build_order_trace_artifact(
     matching_records: list[dict[str, Any]],
 ) -> GeneratedArtifactCapture:
     if not broker_name or not account_label:
-        artifact = EvidenceArtifact(
-            name="order_traces",
-            artifact_type="trace",
+        return _skipped_order_trace_capture(
             status="skipped_not_applicable",
             reason="broker_name/account_label were unavailable for trace capture",
-        )
-        return GeneratedArtifactCapture(
-            artifact=artifact,
-            manifest_summary={
-                "artifact_status": artifact.status,
-                "artifact_bundle_path": artifact.bundle_path,
-                "artifact_reason": artifact.reason,
-                "trace_order_ref_count": 0,
-                "trace_count": 0,
-                "warning_count": 0,
-                "entries": [],
-            },
         )
 
     order_refs = _collect_trace_order_refs(matching_records)
     if not order_refs:
-        artifact = EvidenceArtifact(
-            name="order_traces",
-            artifact_type="trace",
+        return _skipped_order_trace_capture(
             status="skipped_not_applicable",
             reason="audit log contained no traceable order references",
         )
-        return GeneratedArtifactCapture(
-            artifact=artifact,
-            manifest_summary={
-                "artifact_status": artifact.status,
-                "artifact_bundle_path": artifact.bundle_path,
-                "artifact_reason": artifact.reason,
-                "trace_order_ref_count": 0,
-                "trace_count": 0,
-                "warning_count": 0,
-                "entries": [],
-            },
-        )
 
     adapter = None
-    warnings: list[str] = []
-    traces: list[Any] = []
     try:
         try:
             adapter = get_broker_adapter(broker_name=broker_name)
         except Exception as exc:
-            artifact = EvidenceArtifact(
-                name="order_traces",
-                artifact_type="trace",
+            return _skipped_order_trace_capture(
                 status="skipped_unavailable",
                 reason=f"failed to initialize broker adapter for trace capture: {exc}",
-            )
-            return GeneratedArtifactCapture(
-                artifact=artifact,
-                manifest_summary={
-                    "artifact_status": artifact.status,
-                    "artifact_bundle_path": artifact.bundle_path,
-                    "artifact_reason": artifact.reason,
-                    "trace_order_ref_count": len(order_refs),
-                    "trace_count": 0,
-                    "warning_count": 0,
-                    "entries": [],
-                },
+                order_ref_count=len(order_refs),
             )
 
         service = OrderLifecycleService(
             adapter,
             state_store=ExecutionStateStore(root_dir=_outputs_dir(project_root) / "state"),
         )
-        for order_ref in order_refs:
-            try:
-                traces.append(
-                    service.get_order_trace(account_label=account_label, order_ref=order_ref)
-                )
-            except Exception as exc:
-                warnings.append(f"{order_ref}: {exc}")
-        payload = {
+        traces, warnings = _resolve_order_traces(service, account_label, order_refs)
+        return _write_order_trace_capture(
+            bundle_path=bundle_path,
+            run_id=run_id,
+            broker_name=broker_name,
+            account_label=account_label,
+            dry_run=dry_run,
+            order_refs=order_refs,
+            traces=traces,
+            warnings=warnings,
+        )
+    finally:
+        close_fn = getattr(adapter, "close", None)
+        if callable(close_fn):
+            close_fn()
+
+
+def _skipped_order_trace_capture(
+    *,
+    status: str,
+    reason: str,
+    order_ref_count: int = 0,
+) -> GeneratedArtifactCapture:
+    artifact = EvidenceArtifact(
+        name="order_traces",
+        artifact_type="trace",
+        status=status,
+        reason=reason,
+    )
+    return GeneratedArtifactCapture(
+        artifact=artifact,
+        manifest_summary={
+            "artifact_status": artifact.status,
+            "artifact_bundle_path": artifact.bundle_path,
+            "artifact_reason": artifact.reason,
+            "trace_order_ref_count": order_ref_count,
+            "trace_count": 0,
+            "warning_count": 0,
+            "entries": [],
+        },
+    )
+
+
+def _resolve_order_traces(
+    service: OrderLifecycleService,
+    account_label: str,
+    order_refs: list[str],
+) -> tuple[list[Any], list[str]]:
+    traces: list[Any] = []
+    warnings: list[str] = []
+    for order_ref in order_refs:
+        try:
+            traces.append(service.get_order_trace(account_label=account_label, order_ref=order_ref))
+        except Exception as exc:
+            warnings.append(f"{order_ref}: {exc}")
+    return traces, warnings
+
+
+def _write_order_trace_capture(
+    *,
+    bundle_path: Path,
+    run_id: str,
+    broker_name: str,
+    account_label: str,
+    dry_run: bool | None,
+    order_refs: list[str],
+    traces: list[Any],
+    warnings: list[str],
+) -> GeneratedArtifactCapture:
+    reason = f"{len(warnings)} trace(s) could not be resolved" if warnings else None
+    artifact = _write_generated_artifact(
+        bundle_path=bundle_path,
+        artifact_type="trace",
+        name="order_traces",
+        filename="order_traces.json",
+        payload={
             "captured_at": datetime.now(UTC).isoformat(),
             "run_id": run_id,
             "broker_name": broker_name,
@@ -148,33 +173,22 @@ def _build_order_trace_artifact(
             "warning_count": len(warnings),
             "warnings": warnings,
             "traces": traces,
-        }
-        reason = f"{len(warnings)} trace(s) could not be resolved" if warnings else None
-        artifact = _write_generated_artifact(
-            bundle_path=bundle_path,
-            artifact_type="trace",
-            name="order_traces",
-            filename="order_traces.json",
-            payload=payload,
-            reason=reason,
-        )
-        return GeneratedArtifactCapture(
-            artifact=artifact,
-            manifest_summary={
-                "artifact_status": artifact.status,
-                "artifact_bundle_path": artifact.bundle_path,
-                "artifact_reason": artifact.reason,
-                "trace_order_ref_count": len(order_refs),
-                "trace_count": len(traces),
-                "warning_count": len(warnings),
-                "entries": [_summarize_order_trace(trace) for trace in traces],
-                "warnings": warnings,
-            },
-        )
-    finally:
-        close_fn = getattr(adapter, "close", None)
-        if callable(close_fn):
-            close_fn()
+        },
+        reason=reason,
+    )
+    return GeneratedArtifactCapture(
+        artifact=artifact,
+        manifest_summary={
+            "artifact_status": artifact.status,
+            "artifact_bundle_path": artifact.bundle_path,
+            "artifact_reason": artifact.reason,
+            "trace_order_ref_count": len(order_refs),
+            "trace_count": len(traces),
+            "warning_count": len(warnings),
+            "entries": [_summarize_order_trace(trace) for trace in traces],
+            "warnings": warnings,
+        },
+    )
 
 
 def create_evidence_bundle(
@@ -232,7 +246,41 @@ def create_evidence_bundle(
         matching_records=matching_records,
     )
 
-    artifacts = [
+    artifacts = _bundle_artifacts(
+        root,
+        bundle_path,
+        audit_log_path,
+        target_input_path,
+        state_path,
+        smoke_path,
+        trace_capture.artifact,
+    )
+    artifacts.append(_operator_notes_artifact(bundle_path, operator_notes, smoke_path))
+
+    result = EvidenceBundleResult(
+        run_id=normalized_run_id,
+        broker_name=broker_name,
+        account_label=account_label,
+        dry_run=dry_run,
+        bundle_path=bundle_path,
+        manifest_path=bundle_path / "manifest.json",
+        trace_summary=trace_capture.manifest_summary,
+        artifacts=artifacts,
+    )
+    _write_bundle_manifest(result, generated_at, len(matching_records))
+    return result
+
+
+def _bundle_artifacts(
+    root: Path,
+    bundle_path: Path,
+    audit_log_path: Path,
+    target_input_path: str | None,
+    state_path: Path | None,
+    smoke_path: Path | None,
+    trace_artifact: EvidenceArtifact,
+) -> list[EvidenceArtifact]:
+    return [
         _copy_artifact(
             project_root=root,
             source_path=audit_log_path,
@@ -262,9 +310,15 @@ def create_evidence_bundle(
             artifact_type="smoke",
             name="smoke_evidence",
         ),
-        trace_capture.artifact,
+        trace_artifact,
     ]
 
+
+def _operator_notes_artifact(
+    bundle_path: Path,
+    operator_notes: list[str] | None,
+    smoke_path: Path | None,
+) -> EvidenceArtifact:
     note_values = list(operator_notes or [])
     if smoke_path is not None:
         try:
@@ -280,43 +334,35 @@ def create_evidence_bundle(
             json.dumps(notes_payload, ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
-        artifacts.append(
-            EvidenceArtifact(
-                name="operator_notes",
-                artifact_type="notes",
-                status="included",
-                source_path=None,
-                bundle_path=str(notes_path.relative_to(bundle_path)),
-            )
+        return EvidenceArtifact(
+            name="operator_notes",
+            artifact_type="notes",
+            status="included",
+            source_path=None,
+            bundle_path=str(notes_path.relative_to(bundle_path)),
         )
-    else:
-        artifacts.append(
-            EvidenceArtifact(
-                name="operator_notes",
-                artifact_type="notes",
-                status="missing",
-                reason="operator notes were not provided",
-            )
-        )
-
-    result = EvidenceBundleResult(
-        run_id=normalized_run_id,
-        broker_name=broker_name,
-        account_label=account_label,
-        dry_run=dry_run,
-        bundle_path=bundle_path,
-        manifest_path=bundle_path / "manifest.json",
-        trace_summary=trace_capture.manifest_summary,
-        artifacts=artifacts,
+    return EvidenceArtifact(
+        name="operator_notes",
+        artifact_type="notes",
+        status="missing",
+        reason="operator notes were not provided",
     )
+
+
+def _write_bundle_manifest(
+    result: EvidenceBundleResult,
+    generated_at: str,
+    audit_record_count: int,
+) -> None:
+    artifacts = result.artifacts
     manifest = {
         "created_at": generated_at,
-        "run_id": normalized_run_id,
-        "broker_name": broker_name,
-        "account_label": account_label,
+        "run_id": result.run_id,
+        "broker_name": result.broker_name,
+        "account_label": result.account_label,
         "dry_run": result.dry_run,
-        "bundle_path": str(bundle_path),
-        "audit_record_count": len(matching_records),
+        "bundle_path": str(result.bundle_path),
+        "audit_record_count": audit_record_count,
         "included_artifact_count": result.included_count,
         "missing_artifact_count": result.missing_count,
         "skipped_artifact_count": result.skipped_count,
@@ -327,7 +373,6 @@ def create_evidence_bundle(
         json.dumps(manifest, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
-    return result
 
 
 def render_evidence_bundle_result(result: EvidenceBundleResult) -> str:

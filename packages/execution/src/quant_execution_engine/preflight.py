@@ -145,16 +145,40 @@ def run_preflight_checks(
     symbols: list[str] | None = None,
 ) -> PreflightResult:
     """Run broker/account readiness checks without mutating broker state."""
-
     selected_broker = resolve_broker_name(broker_name)
     env_name = "paper" if is_paper_broker(selected_broker) else "real"
     requested_symbols = [
         str(symbol).strip() for symbol in (symbols or ["AAPL"]) if str(symbol).strip()
     ]
-    checks: list[PreflightCheck] = []
+    checks = _initial_preflight_checks(selected_broker, env_name)
+    adapter = get_broker_adapter(broker_name=selected_broker)
+    try:
+        resolved_account = _resolve_preflight_account(adapter, account_label, checks)
+        if resolved_account is None:
+            return _preflight_result(
+                selected_broker, account_label, env_name, requested_symbols, checks
+            )
+        resolved_account_label = resolved_account.label
+        if not _check_account_readiness(adapter, resolved_account, selected_broker, checks):
+            return _preflight_result(
+                selected_broker, resolved_account_label, env_name, requested_symbols, checks
+            )
+        _check_requested_market_data(adapter, requested_symbols, checks)
+    finally:
+        close_fn = getattr(adapter, "close", None)
+        if callable(close_fn):
+            close_fn()
 
-    capabilities = get_broker_capabilities(selected_broker)
-    checks.append(
+    return _preflight_result(
+        selected_broker, resolved_account_label, env_name, requested_symbols, checks
+    )
+
+
+def _initial_preflight_checks(broker_name: str, env_name: str) -> list[PreflightCheck]:
+    capabilities = get_broker_capabilities(broker_name)
+    guard_error = validate_live_execution_guard(env_name=env_name, dry_run=False)
+    manual_kill_active, manual_kill_reason = is_manual_kill_switch_active()
+    return [
         PreflightCheck(
             name="capabilities",
             outcome="PASS",
@@ -172,11 +196,7 @@ def run_preflight_checks(
                 "supports_reconcile": capabilities.supports_reconcile,
                 "supports_account_selection": capabilities.supports_account_selection,
             },
-        )
-    )
-
-    guard_error = validate_live_execution_guard(env_name=env_name, dry_run=False)
-    checks.append(
+        ),
         PreflightCheck(
             name="live_guard",
             outcome="FAIL" if guard_error else "PASS",
@@ -189,138 +209,120 @@ def run_preflight_checks(
                     "and no repo-local live secrets)"
                 )
             ),
-        )
-    )
-
-    manual_kill_active, manual_kill_reason = is_manual_kill_switch_active()
-    checks.append(
+        ),
         PreflightCheck(
             name="manual_kill_switch",
             outcome="FAIL" if manual_kill_active else "PASS",
             message=manual_kill_reason or "manual kill switch not active",
-            details={"env_var": (get_kill_switch_config().get("env_var") or "QEXEC_KILL_SWITCH")},
+            details={"env_var": get_kill_switch_config().get("env_var") or "QEXEC_KILL_SWITCH"},
+        ),
+    ]
+
+
+def _resolve_preflight_account(
+    adapter: Any, account_label: str, checks: list[PreflightCheck]
+) -> Any:
+    try:
+        account = adapter.resolve_account(account_label)
+    except Exception as exc:
+        checks.append(PreflightCheck(name="account_resolution", outcome="FAIL", message=str(exc)))
+        return None
+    checks.append(
+        PreflightCheck(
+            name="account_resolution",
+            outcome="PASS",
+            message=f"resolved account label '{account.label}'",
         )
     )
+    return account
 
-    adapter = get_broker_adapter(broker_name=selected_broker)
-    resolved_account_label = account_label
+
+def _check_account_readiness(
+    adapter: Any,
+    account: Any,
+    broker_name: str,
+    checks: list[PreflightCheck],
+) -> bool:
+    state = ExecutionStateStore().load(broker_name, account.label)
+    state_message = state.kill_switch_reason or (
+        "local execution state kill switch active with "
+        f"{state.consecutive_failures} consecutive failures"
+    )
+    checks.append(
+        PreflightCheck(
+            name="state_kill_switch",
+            outcome="FAIL" if state.kill_switch_active else "PASS",
+            message=state_message
+            if state.kill_switch_active
+            else "local state kill switch not active",
+            details={"consecutive_failures": state.consecutive_failures},
+        )
+    )
     try:
-        try:
-            resolved_account = adapter.resolve_account(account_label)
-            resolved_account_label = resolved_account.label
-            checks.append(
-                PreflightCheck(
-                    name="account_resolution",
-                    outcome="PASS",
-                    message=f"resolved account label '{resolved_account.label}'",
-                )
-            )
-        except Exception as exc:
-            checks.append(
-                PreflightCheck(
-                    name="account_resolution",
-                    outcome="FAIL",
-                    message=str(exc),
-                )
-            )
-            return PreflightResult(
-                broker_name=selected_broker,
-                account_label=resolved_account_label,
-                env_name=env_name,
-                symbols=requested_symbols,
-                checks=checks,
-            )
+        snapshot = adapter.get_account_snapshot(account, include_quotes=False)
+    except Exception as exc:
+        checks.append(PreflightCheck(name="account_snapshot", outcome="FAIL", message=str(exc)))
+        return False
+    checks.append(
+        PreflightCheck(
+            name="account_snapshot",
+            outcome="PASS",
+            message=(
+                f"cash={float(snapshot.cash_usd or 0.0):.2f}, "
+                f"positions={len(snapshot.positions)}, "
+                f"portfolio_value={float(snapshot.total_portfolio_value or 0.0):.2f}"
+            ),
+        )
+    )
+    return True
 
-        state = ExecutionStateStore().load(selected_broker, resolved_account.label)
-        state_kill_message = state.kill_switch_reason or (
-            "local execution state kill switch active with "
-            f"{state.consecutive_failures} consecutive failures"
+
+def _check_requested_market_data(
+    adapter: Any,
+    symbols: list[str],
+    checks: list[PreflightCheck],
+) -> None:
+    risk_chain = RiskGateChain()
+    require_depth = risk_chain.needs_market_data()
+    try:
+        quotes = adapter.get_quotes(symbols, include_depth=require_depth)
+        outcome, message = _quote_market_data_health(
+            quotes,
+            require_depth=require_depth,
         )
         checks.append(
             PreflightCheck(
-                name="state_kill_switch",
-                outcome="FAIL" if state.kill_switch_active else "PASS",
-                message=(
-                    state_kill_message
-                    if state.kill_switch_active
-                    else "local state kill switch not active"
-                ),
-                details={"consecutive_failures": state.consecutive_failures},
+                name="quotes",
+                outcome=outcome,
+                message=message,
+                details={"requested_symbols": symbols, "returned_symbols": sorted(quotes)},
+            )
+        )
+        risk_check = _risk_market_data_check(risk_chain, quotes)
+        if risk_check is not None:
+            checks.append(risk_check)
+    except Exception as exc:
+        checks.append(
+            PreflightCheck(
+                name="quotes",
+                outcome="FAIL",
+                message=str(exc),
+                details={"requested_symbols": symbols},
             )
         )
 
-        try:
-            snapshot = adapter.get_account_snapshot(
-                resolved_account,
-                include_quotes=False,
-            )
-            checks.append(
-                PreflightCheck(
-                    name="account_snapshot",
-                    outcome="PASS",
-                    message=(
-                        f"cash={float(snapshot.cash_usd or 0.0):.2f}, "
-                        f"positions={len(snapshot.positions)}, "
-                        "portfolio_value="
-                        f"{float(snapshot.total_portfolio_value or 0.0):.2f}"
-                    ),
-                )
-            )
-        except Exception as exc:
-            checks.append(
-                PreflightCheck(
-                    name="account_snapshot",
-                    outcome="FAIL",
-                    message=str(exc),
-                )
-            )
-            return PreflightResult(
-                broker_name=selected_broker,
-                account_label=resolved_account_label,
-                env_name=env_name,
-                symbols=requested_symbols,
-                checks=checks,
-            )
 
-        risk_chain = RiskGateChain()
-        require_depth = risk_chain.needs_market_data()
-        try:
-            quotes = adapter.get_quotes(requested_symbols, include_depth=require_depth)
-            quote_outcome, quote_message = _quote_market_data_health(
-                quotes, require_depth=require_depth
-            )
-            checks.append(
-                PreflightCheck(
-                    name="quotes",
-                    outcome=quote_outcome,
-                    message=quote_message,
-                    details={
-                        "requested_symbols": requested_symbols,
-                        "returned_symbols": sorted(quotes),
-                    },
-                )
-            )
-            risk_market_data_check = _risk_market_data_check(risk_chain, quotes)
-            if risk_market_data_check is not None:
-                checks.append(risk_market_data_check)
-        except Exception as exc:
-            checks.append(
-                PreflightCheck(
-                    name="quotes",
-                    outcome="FAIL",
-                    message=str(exc),
-                    details={"requested_symbols": requested_symbols},
-                )
-            )
-    finally:
-        close_fn = getattr(adapter, "close", None)
-        if callable(close_fn):
-            close_fn()
-
+def _preflight_result(
+    broker_name: str,
+    account_label: str,
+    env_name: str,
+    symbols: list[str],
+    checks: list[PreflightCheck],
+) -> PreflightResult:
     return PreflightResult(
-        broker_name=selected_broker,
-        account_label=resolved_account_label,
+        broker_name=broker_name,
+        account_label=account_label,
         env_name=env_name,
-        symbols=requested_symbols,
+        symbols=symbols,
         checks=checks,
     )

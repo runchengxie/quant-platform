@@ -135,37 +135,17 @@ def _ticker_groups(frame: pl.DataFrame) -> dict[str, tuple[int, int]]:
     return {t: (int(o), int(c)) for t, o, c in zip(names, offs, lens, strict=True)}
 
 
-def pack_day(
+def _load_day_frames(
     day: int,
-    *,
-    raw_root: Path = RAW_L2_ROOT,
-    pack_root: Path = PACK_ROOT,
-    universe: list[str] | None = None,
-    overwrite: bool = False,
-) -> None:
-    if day_is_packed(day, pack_root) and not overwrite:
-        print(f"[{day}] already packed, skip", flush=True)
-        return
-    t0 = time.time()
-    paths = day_input_files(day, raw_root)
-    for _name, path in paths.items():
-        if not path.exists():
-            print(f"[{day}] missing {path}, skip day", flush=True)
-            return
-
+    paths: Mapping[str, Path],
+    universe: list[str] | None,
+) -> tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame]:
     time_ok = (pl.col("time_ms") >= SESSION_START_MS) & (pl.col("time_ms") < MARKET_END_MS)
-    if universe is not None and not universe:
-        raise ValueError(f"{day} 的 universe 不能为空")
     uni_filter = pl.col("ticker").is_in(universe) if universe is not None else pl.lit(True)
-
-    # ---------------- orders ----------------
     orders = (
         pl.scan_parquet(paths["order"])
         .filter(time_ok & uni_filter)
-        .with_columns(
-            pl.col("ticker").cast(pl.Categorical),
-            pl.col("OrderType").cast(pl.Int16),
-        )
+        .with_columns(pl.col("ticker").cast(pl.Categorical), pl.col("OrderType").cast(pl.Int16))
         .collect()
     )
     is_cancel = pl.col("OrderType").is_in(CANCEL_TYPES)
@@ -194,7 +174,6 @@ def pack_day(
         .sort(["ticker", "time_ms", "OrderID"])
     )
 
-    # ---------------- trades ----------------
     trades = (
         pl.scan_parquet(paths["trades"])
         .filter(time_ok & uni_filter)
@@ -228,7 +207,6 @@ def pack_day(
     del adds, arrivals
     gc.collect()
 
-    # ---------------- snapshots（月度文件按 TradingDay 过滤） ----------------
     snaps = (
         pl.scan_parquet(paths["snap"])
         .filter((pl.col("TradingDay") == int(day)) & time_ok & uni_filter)
@@ -245,60 +223,108 @@ def pack_day(
         )
         .collect()
     )
+    return orders, trades, snaps
 
-    # ---------------- 转结构化数组 ----------------
-    def col(frame: pl.DataFrame, name: str, np_dtype) -> NDArray[Any]:
-        return frame[name].cast(pl.Float64).fill_null(0.0).to_numpy().astype(np_dtype)
 
-    def cents(frame: pl.DataFrame, name: str) -> NDArray[Any]:
-        """原始价格单位为元，打包统一转分为 int32，保留最小报价精度。"""
-        return np.round(frame[name].cast(pl.Float64).fill_null(0.0) * 100.0).astype(np.int32)
+def _float_column(frame: pl.DataFrame, name: str, dtype: Any) -> NDArray[Any]:
+    return frame[name].cast(pl.Float64).fill_null(0.0).to_numpy().astype(dtype)
 
-    order_arr = cast(NDArray[np.void], np.empty(len(orders), dtype=ORDER_DTYPE))
-    order_arr["time_ms"] = col(orders, "time_ms", np.int32)
-    order_arr["price"] = cents(orders, "Price")
-    order_arr["volume"] = col(orders, "Volume", np.int32)
-    order_arr["order_type"] = col(orders, "OrderType", np.int16)
-    order_arr["last_price"] = cents(orders, "LastPrice")
-    order_arr["cancel_age_ms"] = col(orders, "cancel_age_ms", np.int32)
-    order_arr["cancel_orig_vol"] = col(orders, "cancel_orig_vol", np.int32)
+
+def _cent_column(frame: pl.DataFrame, name: str) -> NDArray[np.int32]:
+    """Convert source prices in yuan to integer fen, preserving quote precision."""
+    return np.round(frame[name].cast(pl.Float64).fill_null(0.0) * 100.0).astype(np.int32)
+
+
+def _order_array(frame: pl.DataFrame) -> NDArray[np.void]:
+    result = cast(NDArray[np.void], np.empty(len(frame), dtype=ORDER_DTYPE))
+    for target, source, dtype in (
+        ("time_ms", "time_ms", np.int32),
+        ("volume", "Volume", np.int32),
+        ("order_type", "OrderType", np.int16),
+        ("cancel_age_ms", "cancel_age_ms", np.int32),
+        ("cancel_orig_vol", "cancel_orig_vol", np.int32),
+    ):
+        result[target] = _float_column(frame, source, dtype)
+    result["price"] = _cent_column(frame, "Price")
+    result["last_price"] = _cent_column(frame, "LastPrice")
+    return result
+
+
+def _trade_array(frame: pl.DataFrame) -> NDArray[np.void]:
+    result = cast(NDArray[np.void], np.empty(len(frame), dtype=TRADE_DTYPE))
+    for target, source, dtype in (
+        ("time_ms", "time_ms", np.int32),
+        ("volume", "Volume", np.int32),
+        ("side", "Side", np.int8),
+        ("bsflag", "bsflag", np.int8),
+        ("buy_age_ms", "buy_age_ms", np.int32),
+        ("sell_age_ms", "sell_age_ms", np.int32),
+    ):
+        result[target] = _float_column(frame, source, dtype)
+    result["price"] = _cent_column(frame, "Price")
+    return result
+
+
+def _snapshot_array(frame: pl.DataFrame) -> NDArray[np.void]:
+    result = cast(NDArray[np.void], np.empty(len(frame), dtype=SNAP_DTYPE))
+    for target, source, dtype in (
+        ("time_ms", "time_ms", np.int32),
+        ("d_volume", "d_volume", np.int32),
+        ("d_turnover", "d_turnover", np.int64),
+        ("d_dealnum", "d_dealnum", np.int32),
+        ("total_bidvol", "TotalBidVolume", np.float32),
+        ("total_askvol", "TotalAskVolume", np.float32),
+    ):
+        result[target] = _float_column(frame, source, dtype)
+    result["last"] = _cent_column(frame, "Price")
+    result["wbid"] = _cent_column(frame, "WeightBidPrice")
+    result["wask"] = _cent_column(frame, "WeightAskPrice")
+    for level in range(N_LEVELS):
+        result["bid_px"][:, level] = _cent_column(frame, f"BidPrice{level + 1}")
+        result["ask_px"][:, level] = _cent_column(frame, f"AskPrice{level + 1}")
+        result["bid_vol"][:, level] = _float_column(frame, f"BidVolume{level + 1}", np.int32)
+        result["ask_vol"][:, level] = _float_column(frame, f"AskVolume{level + 1}", np.int32)
+        result["bid_cnt"][:, level] = np.clip(
+            _float_column(frame, f"BidOrder{level + 1}", np.int64), 0, 65535
+        ).astype(np.uint16)
+        result["ask_cnt"][:, level] = np.clip(
+            _float_column(frame, f"AskOrder{level + 1}", np.int64), 0, 65535
+        ).astype(np.uint16)
+    return result
+
+
+def pack_day(
+    day: int,
+    *,
+    raw_root: Path = RAW_L2_ROOT,
+    pack_root: Path = PACK_ROOT,
+    universe: list[str] | None = None,
+    overwrite: bool = False,
+) -> None:
+    if day_is_packed(day, pack_root) and not overwrite:
+        print(f"[{day}] already packed, skip", flush=True)
+        return
+    t0 = time.time()
+    paths = day_input_files(day, raw_root)
+    for _name, path in paths.items():
+        if not path.exists():
+            print(f"[{day}] missing {path}, skip day", flush=True)
+            return
+
+    if universe is not None and not universe:
+        raise ValueError(f"{day} 的 universe 不能为空")
+    orders, trades, snaps = _load_day_frames(day, paths, universe)
+    order_arr = _order_array(orders)
     order_groups = _ticker_groups(orders)
     del orders
     gc.collect()
 
-    trade_arr = cast(NDArray[np.void], np.empty(len(trades), dtype=TRADE_DTYPE))
-    trade_arr["time_ms"] = col(trades, "time_ms", np.int32)
-    trade_arr["price"] = cents(trades, "Price")
-    trade_arr["volume"] = col(trades, "Volume", np.int32)
-    trade_arr["side"] = col(trades, "Side", np.int8)
-    trade_arr["bsflag"] = col(trades, "bsflag", np.int8)
-    trade_arr["buy_age_ms"] = col(trades, "buy_age_ms", np.int32)
-    trade_arr["sell_age_ms"] = col(trades, "sell_age_ms", np.int32)
+    trade_arr = _trade_array(trades)
     trade_groups = _ticker_groups(trades)
     del trades
     gc.collect()
 
-    snap_arr = cast(NDArray[np.void], np.empty(len(snaps), dtype=SNAP_DTYPE))
-    snap_arr["time_ms"] = col(snaps, "time_ms", np.int32)
-    snap_arr["last"] = cents(snaps, "Price")
-    snap_arr["d_volume"] = col(snaps, "d_volume", np.int32)
-    snap_arr["d_turnover"] = col(snaps, "d_turnover", np.int64)
-    snap_arr["d_dealnum"] = col(snaps, "d_dealnum", np.int32)
-    snap_arr["total_bidvol"] = col(snaps, "TotalBidVolume", np.float32)
-    snap_arr["total_askvol"] = col(snaps, "TotalAskVolume", np.float32)
-    snap_arr["wbid"] = cents(snaps, "WeightBidPrice")
-    snap_arr["wask"] = cents(snaps, "WeightAskPrice")
-    for i in range(N_LEVELS):
-        snap_arr["bid_px"][:, i] = cents(snaps, f"BidPrice{i + 1}")
-        snap_arr["ask_px"][:, i] = cents(snaps, f"AskPrice{i + 1}")
-        snap_arr["bid_vol"][:, i] = col(snaps, f"BidVolume{i + 1}", np.int32)
-        snap_arr["ask_vol"][:, i] = col(snaps, f"AskVolume{i + 1}", np.int32)
-        snap_arr["bid_cnt"][:, i] = np.clip(
-            col(snaps, f"BidOrder{i + 1}", np.int64), 0, 65535
-        ).astype(np.uint16)
-        snap_arr["ask_cnt"][:, i] = np.clip(
-            col(snaps, f"AskOrder{i + 1}", np.int64), 0, 65535
-        ).astype(np.uint16)
+    snap_arr = _snapshot_array(snaps)
     snap_groups = _ticker_groups(snaps)
     del snaps
     gc.collect()

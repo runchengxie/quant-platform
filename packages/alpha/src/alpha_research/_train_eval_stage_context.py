@@ -138,15 +138,22 @@ def _build_walk_forward_context(
     *,
     updated_signal_direction: float,
 ) -> dict[str, Any]:
+    return {
+        **_build_modeling_context(request, updated_signal_direction),
+        **_build_backtest_context(request),
+    }
+
+
+def _build_modeling_context(
+    request: TrainEvalRequest,
+    updated_signal_direction: float,
+) -> dict[str, Any]:
     data = request.data
     feature_target = request.feature_target
     model_settings = request.model
     signal_settings = request.signal
-    backtest_settings = request.backtest
     period_settings = request.period
     walk_forward_settings = request.walk_forward
-    services = request.services
-
     return {
         "df_model_sorted": data.df_model_sorted,
         "all_dates": data.all_dates,
@@ -187,6 +194,17 @@ def _build_walk_forward_context(
         "eval_buffer_exit": period_settings.eval_buffer_exit,
         "eval_buffer_entry": period_settings.eval_buffer_entry,
         "wf_backtest_enabled": walk_forward_settings.wf_backtest_enabled,
+    }
+
+
+def _build_backtest_context(request: TrainEvalRequest) -> dict[str, Any]:
+    data = request.data
+    feature_target = request.feature_target
+    backtest_settings = request.backtest
+    period_settings = request.period
+    walk_forward_settings = request.walk_forward
+    services = request.services
+    return {
         "backtest_signal_direction_raw": backtest_settings.backtest_signal_direction_raw,
         "df_full": data.df_full,
         "price_col": feature_target.price_col,

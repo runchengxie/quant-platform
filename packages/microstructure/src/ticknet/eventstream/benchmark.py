@@ -123,10 +123,62 @@ def run_benchmark(
     )
     use_amp = config.amp
     scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
+    elapsed, samples, loss_total, optimizer_steps = _benchmark_steps(
+        model,
+        loader,
+        optimizer,
+        scaler,
+        config,
+        device,
+        warmup_batches,
+        batches,
+        use_amp,
+    )
+
+    properties = torch.cuda.get_device_properties(device)
+    throughput = samples / elapsed
+    epoch_minutes = len(dataset) / throughput / 60
+    fingerprint = dataset_fingerprint(days, root=root, label_path=label_path)
+    result = _benchmark_payload(
+        config=config,
+        source_revision=source_revision,
+        requested_gpu=requested_gpu,
+        expected_parameter_count=expected_parameter_count,
+        root=root,
+        label_path=label_path,
+        fingerprint=fingerprint,
+        days=days,
+        dataset=dataset,
+        warmup_batches=warmup_batches,
+        batches=batches,
+        parameter_count=parameter_count,
+        properties=properties,
+        elapsed=elapsed,
+        samples=samples,
+        loss_total=loss_total,
+        optimizer_steps=optimizer_steps,
+        throughput=throughput,
+        epoch_minutes=epoch_minutes,
+    )
+    _atomic_json(output, result)
+    print(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False))
+    return result
+
+
+def _benchmark_steps(
+    model,
+    loader,
+    optimizer,
+    scaler,
+    config: EventstreamConfig,
+    device: torch.device,
+    warmup_batches: int,
+    batches: int,
+    use_amp: bool,
+) -> tuple[float, int, float, int]:
     iterator = iter(loader)
     model.train()
     optimizer.zero_grad(set_to_none=True)
-
     for index in range(warmup_batches):
         _step_batch(
             next(iterator),
@@ -162,22 +214,39 @@ def run_benchmark(
         )
         samples += batch_samples
         loss_total += loss * batch_samples
-        should_step = (index + 1) % config.gradient_accumulation_steps == 0 or (
-            index + 1 == batches
-        )
+        should_step = (index + 1) % config.gradient_accumulation_steps == 0 or index + 1 == batches
         if should_step:
             scaler.step(optimizer)
             scaler.update()
             optimizer.zero_grad(set_to_none=True)
             optimizer_steps += 1
     torch.cuda.synchronize()
-    elapsed = time.perf_counter() - started
+    return time.perf_counter() - started, samples, loss_total, optimizer_steps
 
-    properties = torch.cuda.get_device_properties(device)
-    throughput = samples / elapsed
-    epoch_minutes = len(dataset) / throughput / 60
-    fingerprint = dataset_fingerprint(days, root=root, label_path=label_path)
-    result: dict[str, Any] = {
+
+def _benchmark_payload(
+    *,
+    config: EventstreamConfig,
+    source_revision: str,
+    requested_gpu: str,
+    expected_parameter_count: int | None,
+    root: Path,
+    label_path: Path | None,
+    fingerprint: str,
+    days: list[int],
+    dataset: L2WindowDataset,
+    warmup_batches: int,
+    batches: int,
+    parameter_count: int,
+    properties: Any,
+    elapsed: float,
+    samples: int,
+    loss_total: float,
+    optimizer_steps: int,
+    throughput: float,
+    epoch_minutes: float,
+) -> dict[str, Any]:
+    return {
         "schema_version": 1,
         "status": "complete",
         "workflow": "eventstream_capacity_benchmark",
@@ -228,9 +297,6 @@ def run_benchmark(
         },
         "config": config.to_dict(),
     }
-    _atomic_json(output, result)
-    print(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False))
-    return result
 
 
 def main(argv: list[str] | None = None) -> None:

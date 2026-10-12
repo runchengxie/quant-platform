@@ -108,7 +108,8 @@ def _heat_class(value: Any) -> str:
 
 def _stylesheet() -> str:
     return """
-body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;margin:30px;background:#fff;color:#111}
+body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+margin:30px;background:#fff;color:#111}
 body,p,table,td,th{font:13px/1.4 Arial,sans-serif}
 .container{max-width:980px;margin:auto}
 h1,h2,h3,h4{font-weight:400;margin:0}

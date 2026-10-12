@@ -51,47 +51,67 @@ def make_dataloaders(
     DataLoader[EventstreamSample] | None,
 ]:
     if config.materialized_root:
-        root = Path(config.materialized_root)
-        manifest = load_materialized_manifest(root)
-        assert_materialized_compatible(manifest, config)
-        train_ds = MaterializedWindowDataset(
-            root,
-            "train",
-            target_overlay_root=(
-                Path(config.target_overlay_root) if config.target_overlay_root else None
-            ),
-        )
-        val_ds = MaterializedWindowDataset(root, "validation")
-        test_ds = MaterializedWindowDataset(root, "oos") if config.evaluate_test else None
-        train_loader = DataLoader[EventstreamSample](
-            train_ds,
-            batch_size=config.batch_size,
-            shuffle=True,
-            drop_last=True,
-            num_workers=config.num_workers,
-            pin_memory=device.type == "cuda",
-            persistent_workers=config.num_workers > 0,
-        )
-        val_loader = DataLoader[EventstreamSample](
-            val_ds,
-            batch_size=config.batch_size,
-            shuffle=False,
-            num_workers=config.num_workers,
-            pin_memory=device.type == "cuda",
-        )
-        test_loader = (
-            DataLoader[EventstreamSample](
-                test_ds,
-                batch_size=config.batch_size,
-                shuffle=False,
-                num_workers=config.num_workers,
-                pin_memory=device.type == "cuda",
-            )
-            if test_ds is not None
-            else None
-        )
-        return train_loader, val_loader, test_loader
+        return _materialized_dataloaders(config, device)
 
+    return _packed_dataloaders(config, device)
+
+
+def _materialized_dataloaders(
+    config: EventstreamConfig,
+    device: torch.device,
+) -> tuple[
+    DataLoader[EventstreamSample],
+    DataLoader[EventstreamSample] | None,
+    DataLoader[EventstreamSample] | None,
+]:
+    root = Path(config.materialized_root)
+    manifest = load_materialized_manifest(root)
+    assert_materialized_compatible(manifest, config)
+    train_ds = MaterializedWindowDataset(
+        root,
+        "train",
+        target_overlay_root=(
+            Path(config.target_overlay_root) if config.target_overlay_root else None
+        ),
+    )
+    val_ds = MaterializedWindowDataset(root, "validation")
+    test_ds = MaterializedWindowDataset(root, "oos") if config.evaluate_test else None
+    train_loader = DataLoader[EventstreamSample](
+        train_ds,
+        batch_size=config.batch_size,
+        shuffle=True,
+        drop_last=True,
+        num_workers=config.num_workers,
+        pin_memory=device.type == "cuda",
+        persistent_workers=config.num_workers > 0,
+    )
+    val_loader = _evaluation_loader(val_ds, config, device)
+    test_loader = _evaluation_loader(test_ds, config, device) if test_ds is not None else None
+    return train_loader, val_loader, test_loader
+
+
+def _evaluation_loader(
+    dataset: MaterializedWindowDataset,
+    config: EventstreamConfig,
+    device: torch.device,
+) -> DataLoader[EventstreamSample]:
+    return DataLoader[EventstreamSample](
+        dataset,
+        batch_size=config.batch_size,
+        shuffle=False,
+        num_workers=config.num_workers,
+        pin_memory=device.type == "cuda",
+    )
+
+
+def _packed_dataloaders(
+    config: EventstreamConfig,
+    device: torch.device,
+) -> tuple[
+    DataLoader[EventstreamSample],
+    DataLoader[EventstreamSample] | None,
+    DataLoader[EventstreamSample] | None,
+]:
     root = Path(config.pack_root)
     label_path = Path(config.label_path) if config.label_path else None
     train_ds = L2WindowDataset(

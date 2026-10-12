@@ -498,7 +498,10 @@ class QpMinVarianceOptimizerBackend:
     def __init__(self, config: PortfolioQpConfig | None = None) -> None:
         self.config = config or PortfolioQpConfig()
 
-    def run(self, request: PortfolioOptimizationRequest) -> PortfolioOptimizationResult:  # noqa: C901
+    def run(
+        self,
+        request: PortfolioOptimizationRequest,
+    ) -> PortfolioOptimizationResult:
         try:
             from scipy.optimize import minimize
         except ImportError as exc:  # pragma: no cover - depends on environment packaging
@@ -529,38 +532,11 @@ class QpMinVarianceOptimizerBackend:
         if previous is not None and self.config.previous_penalty:
             linear_term -= 2.0 * self.config.previous_penalty * previous
 
-        def objective(weights: np.ndarray) -> float:
-            return float(
-                0.5 * weights @ q @ weights
-                + linear_term @ weights
-                + self.config.anchor_penalty * anchor @ anchor
-                + (
-                    self.config.previous_penalty * previous @ previous
-                    if previous is not None
-                    else 0.0
-                )
-            )
-
-        def gradient(weights: np.ndarray) -> np.ndarray:
-            return q @ weights + linear_term
-
-        constraints: list[dict[str, Any]] = [{"type": "eq", "fun": lambda w: float(w.sum() - 1.0)}]
-        for constraint in request.linear_constraints:
-            values = constraint.values.to_numpy(dtype=float)
-            if constraint.lower is not None:
-                constraints.append(
-                    {
-                        "type": "ineq",
-                        "fun": lambda w, v=values, lower=constraint.lower: float(w @ v - lower),
-                    }
-                )
-            if constraint.upper is not None:
-                constraints.append(
-                    {
-                        "type": "ineq",
-                        "fun": lambda w, v=values, upper=constraint.upper: float(upper - w @ v),
-                    }
-                )
+        objective = lambda weights: _qp_objective(  # noqa: E731
+            weights, q, linear_term, anchor, previous, self.config
+        )
+        gradient = lambda weights: q @ weights + linear_term  # noqa: E731
+        constraints = _qp_constraints(request)
         bounds = [(request.min_weight, request.max_weight or 1.0)] * count
         solution = minimize(
             objective,
@@ -575,39 +551,7 @@ class QpMinVarianceOptimizerBackend:
                 "disp": False,
             },
         )
-        feasible = bool(
-            solution.success
-            and np.isfinite(solution.x).all()
-            and abs(float(solution.x.sum()) - 1.0) <= 1e-7
-            and min(
-                _qp_constraint_residuals(solution.x, request.linear_constraints).values(),
-                default=0.0,
-            )
-            >= -1e-7
-        )
-        fallback = None
-        weights = solution.x if feasible else equal
-        if not feasible:
-            residuals = _qp_constraint_residuals(equal, request.linear_constraints)
-            fallback_violations = {
-                name: residual for name, residual in residuals.items() if residual < -1e-7
-            }
-            if equal.min() < request.min_weight - 1e-12:
-                fallback_violations["min_weight"] = float(equal.min() - request.min_weight)
-            upper_bound = request.max_weight or 1.0
-            if equal.max() > upper_bound + 1e-12:
-                fallback_violations["max_weight"] = float(upper_bound - equal.max())
-            equal_feasible = (
-                min(residuals.values(), default=0.0) >= -1e-7
-                and equal.min() >= request.min_weight - 1e-12
-                and equal.max() <= upper_bound + 1e-12
-            )
-            if not equal_feasible:
-                raise ValueError(
-                    "QP solver failed and equal-weight fallback is infeasible: "
-                    f"{solution.message}; violated constraints: {fallback_violations}"
-                )
-            fallback = "equal_weight"
+        weights, feasible, fallback = _qp_solution_weights(solution, request, equal)
 
         result = PortfolioOptimizationResult(
             backend_name=self.name,
@@ -631,6 +575,79 @@ class QpMinVarianceOptimizerBackend:
         )
         result.validate(request)
         return result
+
+
+def _qp_objective(weights, q, linear_term, anchor, previous, config: PortfolioQpConfig) -> float:
+    return float(
+        0.5 * weights @ q @ weights
+        + linear_term @ weights
+        + config.anchor_penalty * anchor @ anchor
+        + (config.previous_penalty * previous @ previous if previous is not None else 0.0)
+    )
+
+
+def _qp_constraints(request: PortfolioOptimizationRequest) -> list[dict[str, Any]]:
+    constraints: list[dict[str, Any]] = [
+        {"type": "eq", "fun": lambda weights: float(weights.sum() - 1.0)}
+    ]
+    for constraint in request.linear_constraints:
+        values = constraint.values.to_numpy(dtype=float)
+        if constraint.lower is not None:
+            constraints.append(
+                {
+                    "type": "ineq",
+                    "fun": lambda weights, v=values, lower=constraint.lower: float(
+                        weights @ v - lower
+                    ),
+                }
+            )
+        if constraint.upper is not None:
+            constraints.append(
+                {
+                    "type": "ineq",
+                    "fun": lambda weights, v=values, upper=constraint.upper: float(
+                        upper - weights @ v
+                    ),
+                }
+            )
+    return constraints
+
+
+def _qp_solution_weights(
+    solution: Any,
+    request: PortfolioOptimizationRequest,
+    equal: np.ndarray,
+) -> tuple[np.ndarray, bool, str | None]:
+    feasible = bool(
+        solution.success
+        and np.isfinite(solution.x).all()
+        and abs(float(solution.x.sum()) - 1.0) <= 1e-7
+        and min(
+            _qp_constraint_residuals(solution.x, request.linear_constraints).values(),
+            default=0.0,
+        )
+        >= -1e-7
+    )
+    if feasible:
+        return solution.x, True, None
+    residuals = _qp_constraint_residuals(equal, request.linear_constraints)
+    violations = {name: residual for name, residual in residuals.items() if residual < -1e-7}
+    if equal.min() < request.min_weight - 1e-12:
+        violations["min_weight"] = float(equal.min() - request.min_weight)
+    upper_bound = request.max_weight or 1.0
+    if equal.max() > upper_bound + 1e-12:
+        violations["max_weight"] = float(upper_bound - equal.max())
+    equal_feasible = (
+        min(residuals.values(), default=0.0) >= -1e-7
+        and equal.min() >= request.min_weight - 1e-12
+        and equal.max() <= upper_bound + 1e-12
+    )
+    if not equal_feasible:
+        raise ValueError(
+            "QP solver failed and equal-weight fallback is infeasible: "
+            f"{solution.message}; violated constraints: {violations}"
+        )
+    return equal, False, "equal_weight"
 
 
 def _validate_json_scalars(value: Any) -> None:

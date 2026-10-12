@@ -27,6 +27,38 @@ def settle_execution_fills(
     available before the current trading date.
     """
 
+    _validate_settlement_inputs(
+        fills,
+        marks,
+        initial_capital=initial_capital,
+        round_lot=round_lot,
+        buy_fee_bps=buy_fee_bps,
+        sell_fee_bps=sell_fee_bps,
+        stamp_tax_bps=stamp_tax_bps,
+    )
+    fill_frame, mark_frame = _normalize_settlement_inputs(fills, marks)
+    rows = _settle_all_dates(
+        fill_frame,
+        mark_frame,
+        initial_capital=initial_capital,
+        round_lot=round_lot,
+        buy_fee_bps=buy_fee_bps,
+        sell_fee_bps=sell_fee_bps,
+        stamp_tax_bps=stamp_tax_bps,
+    )
+    return pd.DataFrame(rows)
+
+
+def _validate_settlement_inputs(
+    fills: pd.DataFrame,
+    marks: pd.DataFrame,
+    *,
+    initial_capital: float,
+    round_lot: int,
+    buy_fee_bps: float,
+    sell_fee_bps: float,
+    stamp_tax_bps: float,
+) -> None:
     if not np.isfinite(initial_capital) or initial_capital <= 0:
         raise ValueError("initial_capital must be positive")
     if round_lot <= 0:
@@ -54,6 +86,11 @@ def settle_execution_fills(
     if missing_marks:
         raise ValueError(f"marks missing columns: {missing_marks}")
 
+
+def _normalize_settlement_inputs(
+    fills: pd.DataFrame,
+    marks: pd.DataFrame,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     fill_frame = fills.copy()
     fill_frame["trade_date"] = pd.to_datetime(fill_frame["trade_date"]).dt.normalize()
     fill_frame["instrument_id"] = fill_frame["instrument_id"].astype(str)
@@ -69,51 +106,86 @@ def settle_execution_fills(
     mark_frame["trade_date"] = pd.to_datetime(mark_frame["trade_date"]).dt.normalize()
     mark_frame["instrument_id"] = mark_frame["instrument_id"].astype(str)
     mark_frame["price"] = pd.to_numeric(mark_frame["price"], errors="raise")
+    return fill_frame, mark_frame
 
+
+def _settle_date(
+    trade_date: pd.Timestamp,
+    fill_frame: pd.DataFrame,
+    mark_frame: pd.DataFrame,
+    *,
+    holdings: dict[str, int],
+    cash: float,
+    round_lot: int,
+    buy_fee_bps: float,
+    sell_fee_bps: float,
+    stamp_tax_bps: float,
+) -> dict[str, float | int | pd.Timestamp]:
+    day_fills = fill_frame.loc[fill_frame["trade_date"].eq(trade_date)]
+    # Sell proceeds can fund same-day buys. Same-day buys remain unavailable
+    # for sale under A-share T+1, so process sells first deterministically.
+    day_fills = pd.concat(
+        [
+            day_fills.loc[day_fills["side"].eq("sell")],
+            day_fills.loc[day_fills["side"].eq("buy")],
+        ],
+        ignore_index=True,
+    )
+    cash, fill_totals = _settle_day_fills(
+        day_fills,
+        holdings=holdings,
+        available_at_open=holdings.copy(),
+        cash=cash,
+        round_lot=round_lot,
+        buy_fee_bps=buy_fee_bps,
+        sell_fee_bps=sell_fee_bps,
+        stamp_tax_bps=stamp_tax_bps,
+    )
+    mark_day = mark_frame.loc[mark_frame["trade_date"].eq(trade_date)]
+    mark_prices = dict(zip(mark_day["instrument_id"], mark_day["price"], strict=True))
+    holdings_value = sum(
+        shares * float(mark_prices.get(symbol, 0.0)) for symbol, shares in holdings.items()
+    )
+    nav = cash + holdings_value
+    return {
+        "trade_date": trade_date,
+        "cash_end": cash,
+        "holdings_value": holdings_value,
+        "nav": nav,
+        "cash_weight": cash / nav if nav else np.nan,
+        **fill_totals,
+    }
+
+
+def _settle_all_dates(
+    fill_frame: pd.DataFrame,
+    mark_frame: pd.DataFrame,
+    *,
+    initial_capital: float,
+    round_lot: int,
+    buy_fee_bps: float,
+    sell_fee_bps: float,
+    stamp_tax_bps: float,
+) -> list[dict[str, float | int | pd.Timestamp]]:
     holdings: dict[str, int] = {}
     cash = float(initial_capital)
     rows: list[dict[str, float | int | pd.Timestamp]] = []
-
-    for trade_date in sorted(set(fill_frame["trade_date"]) | set(mark_frame["trade_date"])):
-        day_fills = fill_frame.loc[fill_frame["trade_date"].eq(trade_date)]
-        # Sell proceeds can fund same-day buys. Same-day buys remain unavailable
-        # for sale under A-share T+1, so process sells first deterministically.
-        day_fills = pd.concat(
-            [
-                day_fills.loc[day_fills["side"].eq("sell")],
-                day_fills.loc[day_fills["side"].eq("buy")],
-            ],
-            ignore_index=True,
-        )
-        available_at_open = holdings.copy()
-        cash, fill_totals = _settle_day_fills(
-            day_fills,
+    dates = sorted(set(fill_frame["trade_date"]) | set(mark_frame["trade_date"]))
+    for trade_date in dates:
+        row = _settle_date(
+            trade_date,
+            fill_frame,
+            mark_frame,
             holdings=holdings,
-            available_at_open=available_at_open,
             cash=cash,
             round_lot=round_lot,
             buy_fee_bps=buy_fee_bps,
             sell_fee_bps=sell_fee_bps,
             stamp_tax_bps=stamp_tax_bps,
         )
-
-        mark_day = mark_frame.loc[mark_frame["trade_date"].eq(trade_date)]
-        mark_prices = dict(zip(mark_day["instrument_id"], mark_day["price"], strict=True))
-        holdings_value = sum(
-            shares * float(mark_prices.get(symbol, 0.0)) for symbol, shares in holdings.items()
-        )
-        nav = cash + holdings_value
-        rows.append(
-            {
-                "trade_date": trade_date,
-                "cash_end": cash,
-                "holdings_value": holdings_value,
-                "nav": nav,
-                "cash_weight": cash / nav if nav else np.nan,
-                **fill_totals,
-            }
-        )
-    return pd.DataFrame(rows)
+        cash = cast(float, row["cash_end"])
+        rows.append(row)
+    return rows
 
 
 def _settle_day_fills(

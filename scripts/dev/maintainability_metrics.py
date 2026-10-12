@@ -33,10 +33,10 @@ from research_code_quality.scanner import (
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_ROOTS = ("src", "scripts", "tests")
+DEFAULT_ROOTS = ("packages", "scripts", "tests")
 DEFAULT_LIMIT = 10
 PYPROJECT_PATH = Path("pyproject.toml")
-COMMAND_PATH_PREFIX = "src/portfolio_backtester/commands/"
+COMMAND_PATH_PREFIX = "packages/portfolio-backtester/src/portfolio_backtester/commands/"
 DEFAULT_RATCHET_BUDGETS = {
     "long_lines_over_100": 0,
     "functions_over_100": 0,
@@ -180,7 +180,7 @@ def format_text(metrics: Metrics) -> str:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Collect static maintainability metrics for src, scripts, and tests.",
+        description="Collect static maintainability metrics for packages, scripts, and tests.",
     )
     parser.add_argument(
         "--json",
@@ -207,8 +207,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--scope",
         action="append",
-        choices=DEFAULT_ROOTS,
-        help="Root to include. May be repeated. Defaults to src, scripts, tests.",
+        choices=(*DEFAULT_ROOTS, "src"),
+        help="Root to include. May be repeated. Defaults to packages, scripts, tests.",
     )
     parser.add_argument(
         "--ratchet",
