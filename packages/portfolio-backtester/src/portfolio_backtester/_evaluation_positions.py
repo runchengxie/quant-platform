@@ -91,24 +91,20 @@ def _record_period_execution_sim(
                 int(aligned_periods),
             )
 
+    _run_period_execution_simulations(result, sim_positions, context, label_prefix)
+
+
+def _run_period_execution_simulations(
+    result: dict[str, Any],
+    sim_positions: pd.DataFrame,
+    context: Mapping[str, Any],
+    label_prefix: str,
+) -> None:
+    execution_sim_config = context["execution_sim_config"]
     backtest_pricing_df = context["backtest_pricing_df"]
     execution_model = context["execution_model"]
+    market_rules = _execution_market_rule_columns(backtest_pricing_df, execution_sim_config)
     tradable_col = context["backtest_tradable_col"]
-    limit_up_col = _optional_market_rule_col(
-        backtest_pricing_df,
-        execution_sim_config.limit_up_col,
-        "limit_up",
-    )
-    limit_down_col = _optional_market_rule_col(
-        backtest_pricing_df,
-        execution_sim_config.limit_down_col,
-        "limit_down",
-    )
-    listing_status_col = _optional_market_rule_col(
-        backtest_pricing_df,
-        execution_sim_config.listing_status_col,
-        "listing_status",
-    )
     sim_result = simulate_capacity_execution(
         sim_positions,
         backtest_pricing_df,
@@ -121,9 +117,9 @@ def _record_period_execution_sim(
         sell_tradable_col=(
             "is_sell_tradable" if "is_sell_tradable" in backtest_pricing_df.columns else None
         ),
-        limit_up_col=limit_up_col,
-        limit_down_col=limit_down_col,
-        listing_status_col=listing_status_col,
+        limit_up_col=market_rules[0],
+        limit_down_col=market_rules[1],
+        listing_status_col=market_rules[2],
     )
     result["execution_sim_summary"] = sim_result.summary
     result["execution_sim_orders"] = sim_result.orders
@@ -140,9 +136,9 @@ def _record_period_execution_sim(
         sell_tradable_col=(
             "is_sell_tradable" if "is_sell_tradable" in backtest_pricing_df.columns else None
         ),
-        limit_up_col=limit_up_col,
-        limit_down_col=limit_down_col,
-        listing_status_col=listing_status_col,
+        limit_up_col=market_rules[0],
+        limit_down_col=market_rules[1],
+        listing_status_col=market_rules[2],
         transaction_cost_bps=context["backtest_cost_bps_effective"],
         trading_days_per_year=context["backtest_trading_days_per_year"],
         trade_fee_model=_execution_trade_fee_model(context),
@@ -164,6 +160,17 @@ def _record_period_execution_sim(
             float(executed_stats.get("total_return", np.nan)) * 100,
             float(executed_stats.get("sharpe", np.nan)),
         )
+
+
+def _execution_market_rule_columns(
+    pricing: pd.DataFrame,
+    config: Any,
+) -> tuple[str | None, str | None, str | None]:
+    return (
+        _optional_market_rule_col(pricing, config.limit_up_col, "limit_up"),
+        _optional_market_rule_col(pricing, config.limit_down_col, "limit_down"),
+        _optional_market_rule_col(pricing, config.listing_status_col, "listing_status"),
+    )
 
 
 def _record_period_ideal_daily_nav(

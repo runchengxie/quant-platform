@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 
@@ -111,11 +112,20 @@ def main() -> None:
     run_dir = Path(args.run_dir)
     out_dir = Path(args.out_dir) if args.out_dir else run_dir / "live_executable_500k_oos_topk"
     out_dir.mkdir(parents=True, exist_ok=True)
+    _write_executable_outputs(mod, simulate, run_dir, out_dir)
+
+
+def _write_executable_outputs(
+    module: Any,
+    simulate: Any,
+    run_dir: Path,
+    out_dir: Path,
+) -> None:
     pos = load_positions(run_dir)
     px = load_prices(sorted(pos["symbol"].unique()), run_dir)
     summaries = []
     all_diag = []
-    for top_k in mod.TOP_KS:
+    for top_k in module.TOP_KS:
         stats, daily, diag, trades = simulate(pos, px, top_k)
         summaries.append(stats)
         all_diag.append(diag)
@@ -138,23 +148,23 @@ def main() -> None:
     meta = {
         "source_run": str(run_dir),
         "positions_source": "positions_by_rebalance_oos.csv",
-        "capital": mod.CAPITAL,
-        "round_lot": mod.ROUND_LOT,
-        "cost_bps": mod.COST_BPS,
-        "rebalance_stride": mod.REBALANCE_STRIDE,
-        "max_turnover_per_rebalance": mod.MAX_TURNOVER_PER_REBALANCE,
-        "hold_buffer_rank": mod.HOLD_BUFFER_RANK,
-        "realistic_daily_execution": mod.REALISTIC_DAILY_EXECUTION,
-        "adv_participation_limit": mod.ADV_PARTICIPATION_LIMIT,
-        "impact_bps_per_adv": mod.IMPACT_BPS_PER_ADV,
-        "use_detailed_fees": mod.USE_DETAILED_FEES,
-        "buy_commission_bps": mod.BUY_COMMISSION_BPS,
-        "sell_commission_bps": mod.SELL_COMMISSION_BPS,
-        "stamp_tax_sell_bps": mod.STAMP_TAX_SELL_BPS,
-        "transfer_fee_bps": mod.TRANSFER_FEE_BPS,
-        "min_commission_cny": mod.MIN_COMMISSION_CNY,
-        "buy_slippage_bps": mod.BUY_SLIPPAGE_BPS,
-        "sell_slippage_bps": mod.SELL_SLIPPAGE_BPS,
+        "capital": module.CAPITAL,
+        "round_lot": module.ROUND_LOT,
+        "cost_bps": module.COST_BPS,
+        "rebalance_stride": module.REBALANCE_STRIDE,
+        "max_turnover_per_rebalance": module.MAX_TURNOVER_PER_REBALANCE,
+        "hold_buffer_rank": module.HOLD_BUFFER_RANK,
+        "realistic_daily_execution": module.REALISTIC_DAILY_EXECUTION,
+        "adv_participation_limit": module.ADV_PARTICIPATION_LIMIT,
+        "impact_bps_per_adv": module.IMPACT_BPS_PER_ADV,
+        "use_detailed_fees": module.USE_DETAILED_FEES,
+        "buy_commission_bps": module.BUY_COMMISSION_BPS,
+        "sell_commission_bps": module.SELL_COMMISSION_BPS,
+        "stamp_tax_sell_bps": module.STAMP_TAX_SELL_BPS,
+        "transfer_fee_bps": module.TRANSFER_FEE_BPS,
+        "min_commission_cny": module.MIN_COMMISSION_CNY,
+        "buy_slippage_bps": module.BUY_SLIPPAGE_BPS,
+        "sell_slippage_bps": module.SELL_SLIPPAGE_BPS,
         "affordability_filter": (
             "drop candidate if one 100-share lot exceeds equal target slot at "
             "current equity; backfill from ranks available in source top15"

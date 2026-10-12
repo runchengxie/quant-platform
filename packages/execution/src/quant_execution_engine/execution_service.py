@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
-from typing import override
+from typing import Any, override
 
 from ._execution_service_trace import (
     _load_broker_history_trace,
@@ -91,101 +91,123 @@ class OrderLifecycleService(OrderLifecycleRecoveryMixin):
         else:
             market_data = {}
 
-        executed_orders: list[Order] = []
-        for order in orders:
-            intent = self._build_intent(
+        executed_orders = [
+            self._execute_one_order(
                 order,
                 account=account,
+                state=state,
+                market_data=market_data,
+                dry_run=dry_run,
                 target_source=target_source,
                 target_asof=target_asof,
                 target_input_path=target_input_path,
             )
-            parent = self._ensure_parent(state, intent)
-            child = self._ensure_child(state, parent, intent, order)
-            order.intent_id = intent.intent_id
-            order.parent_order_id = parent.parent_order_id
-            order.child_order_id = child.child_order_id
-            order.broker_name = self.adapter.backend_name
-            order.account_label = account.label
-
-            if dry_run:
-                order.status = "DRY_RUN"
-                order.order_id = f"dry_run_{intent.intent_id[:12]}"
-                order.remaining_quantity = float(order.quantity)
-                executed_orders.append(order)
-                continue
-
-            if state.kill_switch_active:
-                self._mark_tracked_order_blocked(
-                    parent,
-                    child,
-                    reason=state.kill_switch_reason or "kill switch active",
-                )
-                self._mark_order_blocked(
-                    order, reason=state.kill_switch_reason or "kill switch active"
-                )
-                executed_orders.append(order)
-                continue
-
-            decisions = self.risk_chain.evaluate(order, quote=market_data.get(order.symbol))
-            order.risk_decisions = [decision.to_payload() for decision in decisions]
-            blocked = next(
-                (decision for decision in decisions if decision.outcome == "BLOCK"),
-                None,
-            )
-            if blocked is not None:
-                self._mark_tracked_order_blocked(parent, child, reason=blocked.reason)
-                self._mark_order_blocked(order, reason=blocked.reason)
-                executed_orders.append(order)
-                continue
-
-            existing = self._get_existing_open_broker_order(state, intent.intent_id)
-            if existing is not None:
-                self._apply_broker_record(order, existing, child=child)
-                executed_orders.append(order)
-                continue
-
-            request = BrokerOrderRequest(
-                symbol=order.symbol,
-                quantity=float(order.quantity),
-                side=order.side,
-                order_type=order.order_type,
-                limit_price=order.price if order.order_type.upper() == "LIMIT" else None,
-                client_order_id=child.child_order_id,
-                account=account,
-            )
-            try:
-                broker_order = self.adapter.submit_order(request)
-                child.broker_order_id = broker_order.broker_order_id
-                child.client_order_id = broker_order.client_order_id or child.child_order_id
-                child.status = broker_order.status
-                child.updated_at = utc_now_iso()
-                self._upsert_broker_order(state, broker_order)
-                try:
-                    self._record_fill_events(state, intent, parent, broker_order, account)
-                except Exception as exc:
-                    logger.warning(
-                        "Fill lookup failed after submit for %s (%s): %s",
-                        order.symbol,
-                        broker_order.broker_order_id,
-                        exc,
-                    )
-                self._apply_broker_record(order, broker_order, child=child)
-                state.consecutive_failures = 0
-                state.kill_switch_active = False
-                state.kill_switch_reason = None
-            except Exception as exc:
-                state.consecutive_failures += 1
-                self._apply_auto_kill_switch(state)
-                self._mark_tracked_order_failed(parent, child, message=str(exc))
-                order.status = "FAILED"
-                order.error_message = str(exc)
-                order.remaining_quantity = float(order.quantity)
-                logger.error("Broker submit failed for %s: %s", order.symbol, exc)
-            executed_orders.append(order)
+            for order in orders
+        ]
 
         self.state_store.save(state)
         return executed_orders
+
+    def _execute_one_order(
+        self,
+        order: Order,
+        *,
+        account: Any,
+        state: Any,
+        market_data: dict[str, Any],
+        dry_run: bool,
+        target_source: str | None,
+        target_asof: str | None,
+        target_input_path: str | None,
+    ) -> Order:
+        intent = self._build_intent(
+            order,
+            account=account,
+            target_source=target_source,
+            target_asof=target_asof,
+            target_input_path=target_input_path,
+        )
+        parent = self._ensure_parent(state, intent)
+        child = self._ensure_child(state, parent, intent, order)
+        order.intent_id = intent.intent_id
+        order.parent_order_id = parent.parent_order_id
+        order.child_order_id = child.child_order_id
+        order.broker_name = self.adapter.backend_name
+        order.account_label = account.label
+
+        if dry_run:
+            order.status = "DRY_RUN"
+            order.order_id = f"dry_run_{intent.intent_id[:12]}"
+            order.remaining_quantity = float(order.quantity)
+            return order
+        if state.kill_switch_active:
+            reason = state.kill_switch_reason or "kill switch active"
+            self._mark_tracked_order_blocked(parent, child, reason=reason)
+            self._mark_order_blocked(order, reason=reason)
+            return order
+
+        decisions = self.risk_chain.evaluate(order, quote=market_data.get(order.symbol))
+        order.risk_decisions = [decision.to_payload() for decision in decisions]
+        blocked = next((decision for decision in decisions if decision.outcome == "BLOCK"), None)
+        if blocked is not None:
+            self._mark_tracked_order_blocked(parent, child, reason=blocked.reason)
+            self._mark_order_blocked(order, reason=blocked.reason)
+            return order
+        existing = self._get_existing_open_broker_order(state, intent.intent_id)
+        if existing is not None:
+            self._apply_broker_record(order, existing, child=child)
+            return order
+
+        request = BrokerOrderRequest(
+            symbol=order.symbol,
+            quantity=float(order.quantity),
+            side=order.side,
+            order_type=order.order_type,
+            limit_price=order.price if order.order_type.upper() == "LIMIT" else None,
+            client_order_id=child.child_order_id,
+            account=account,
+        )
+        self._submit_order_request(order, request, intent, parent, child, state, account)
+        return order
+
+    def _submit_order_request(
+        self,
+        order: Order,
+        request: BrokerOrderRequest,
+        intent: Any,
+        parent: Any,
+        child: Any,
+        state: Any,
+        account: Any,
+    ) -> None:
+        try:
+            broker_order = self.adapter.submit_order(request)
+            child.broker_order_id = broker_order.broker_order_id
+            child.client_order_id = broker_order.client_order_id or child.child_order_id
+            child.status = broker_order.status
+            child.updated_at = utc_now_iso()
+            self._upsert_broker_order(state, broker_order)
+            try:
+                self._record_fill_events(state, intent, parent, broker_order, account)
+            except Exception as exc:
+                logger.warning(
+                    "Fill lookup failed after submit for %s (%s): %s",
+                    order.symbol,
+                    broker_order.broker_order_id,
+                    exc,
+                )
+            self._apply_broker_record(order, broker_order, child=child)
+            state.consecutive_failures = 0
+            state.kill_switch_active = False
+            state.kill_switch_reason = None
+        except Exception as exc:
+            state.consecutive_failures += 1
+            self._apply_auto_kill_switch(state)
+            self._mark_tracked_order_failed(parent, child, message=str(exc))
+            order.status = "FAILED"
+            order.error_message = str(exc)
+            order.remaining_quantity = float(order.quantity)
+            logger.error("Broker submit failed for %s: %s", order.symbol, exc)
 
     def reconcile(
         self,

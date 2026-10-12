@@ -49,7 +49,7 @@
 24. [可选 Rust 模拟内核](development/microstructure-rust.md)
 25. [会计与执行路线图](governance/accounting-execution-roadmap.md)
 26. [网格回测辅助函数](grid-support.md)
-27. [历史迁移材料](migration/legacy-materials/README.md)
+27. [历史迁移材料](https://github.com/runchengxie/quant-platform/blob/main/docs/migration/legacy-materials/README.md)
 28. [运行时内核契约](architecture/runtime-kernel.zh-CN.md)
 29. [Barra-like 风险模型内核](risk-model-kernel.zh-CN.md)
 30. [组合执行性能分析记录](development/portfolio-execution-profiling-2026-09.zh-CN.md)

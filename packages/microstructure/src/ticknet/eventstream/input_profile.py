@@ -244,6 +244,58 @@ def run_input_profile(
     )
     _atomic_json(output_dir / "gpu-only.json", gpu_only)
 
+    trials, reference = _run_worker_trials(
+        config=config,
+        workers=workers,
+        effective_batch_size=effective_batch_size,
+        batches=batches,
+        warmup_batches=warmup_batches,
+        output_dir=output_dir,
+        source_revision=source_revision,
+        requested_gpu=requested_gpu,
+        expected_parameter_count=expected_parameter_count,
+        projected_train_samples=projected_train_samples,
+    )
+    best = select_best_workers(trials)
+    bottleneck = classify_bottleneck(
+        float(best["data_only_samples_per_second"]),
+        float(gpu_only["samples_per_second"]),
+    )
+    summary = _input_profile_summary(
+        config=config,
+        source_revision=source_revision,
+        requested_gpu=requested_gpu,
+        workers=workers,
+        effective_batch_size=effective_batch_size,
+        batches=batches,
+        warmup_batches=warmup_batches,
+        projected_train_samples=projected_train_samples,
+        gpu_only=gpu_only,
+        best=best,
+        bottleneck=bottleneck,
+        trials=trials,
+        reference=reference,
+    )
+    if not math.isfinite(float(best["end_to_end_samples_per_second"])):
+        raise ValueError("最佳吞吐不是有限数值")
+    _atomic_json(output_dir / "input-profile.json", summary)
+    print(json.dumps(summary, ensure_ascii=False, indent=2, allow_nan=False))
+    return summary
+
+
+def _run_worker_trials(
+    *,
+    config: EventstreamConfig,
+    workers: list[int],
+    effective_batch_size: int,
+    batches: int,
+    warmup_batches: int,
+    output_dir: Path,
+    source_revision: str,
+    requested_gpu: str,
+    expected_parameter_count: int | None,
+    projected_train_samples: int,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     trials: list[dict[str, Any]] = []
     reference: dict[str, Any] | None = None
     for count in workers:
@@ -285,15 +337,28 @@ def run_input_profile(
         )
         gc.collect()
         torch.cuda.empty_cache()
-
     if reference is None:
         raise RuntimeError("worker sweep 没有生成结果")
-    best = select_best_workers(trials)
-    bottleneck = classify_bottleneck(
-        float(best["data_only_samples_per_second"]),
-        float(gpu_only["samples_per_second"]),
-    )
-    summary: dict[str, Any] = {
+    return trials, reference
+
+
+def _input_profile_summary(
+    *,
+    config: EventstreamConfig,
+    source_revision: str,
+    requested_gpu: str,
+    workers: list[int],
+    effective_batch_size: int,
+    batches: int,
+    warmup_batches: int,
+    projected_train_samples: int,
+    gpu_only: dict[str, Any],
+    best: dict[str, Any],
+    bottleneck: str,
+    trials: list[dict[str, Any]],
+    reference: dict[str, Any],
+) -> dict[str, Any]:
+    return {
         "schema_version": 1,
         "status": "complete",
         "workflow": "eventstream_input_profile",
@@ -333,11 +398,6 @@ def run_input_profile(
         },
         "config": config.to_dict(),
     }
-    if not math.isfinite(float(best["end_to_end_samples_per_second"])):
-        raise ValueError("最佳吞吐不是有限数值")
-    _atomic_json(output_dir / "input-profile.json", summary)
-    print(json.dumps(summary, ensure_ascii=False, indent=2, allow_nan=False))
-    return summary
 
 
 def _parser() -> argparse.ArgumentParser:

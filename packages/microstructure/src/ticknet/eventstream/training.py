@@ -39,6 +39,8 @@ from ticknet.eventstream.model import build_eventstream_model, compute_loss
 from ticknet.eventstream.training_config import EventstreamConfig
 from ticknet.train import resolve_device, set_seed
 
+type EventstreamSample = tuple[torch.Tensor, ...]
+
 
 def train(
     config: EventstreamConfig,
@@ -97,69 +99,66 @@ def train(
         )
         print(f"从第 {start_epoch} 个 epoch 后继续训练：{last_path}")
 
-    can_continue = epochs_without_improvement < config.patience
-    if not can_continue:
-        print("checkpoint 已达到 early stopping 条件，跳过后续训练。")
-    epoch_range = range(start_epoch, config.epochs) if can_continue else range(0)
+    _train_epochs(
+        model=model,
+        train_loader=train_loader,
+        val_loader=val_loader,
+        monitor_val_loader=monitor_val_loader,
+        optimizer=optimizer,
+        scaler=scaler,
+        device=device,
+        config=config,
+        use_amp=use_amp,
+        signature=signature,
+        best_path=best_path,
+        last_path=last_path,
+        history_path=history_path,
+        start_epoch=start_epoch,
+        best_selection_value=best_selection_value,
+        epochs_without_improvement=epochs_without_improvement,
+        history=history,
+    )
 
-    for epoch in epoch_range:
-        epoch_started_at = time.perf_counter()
-        epoch_loss = _train_epoch(model, train_loader, optimizer, scaler, device, config, use_amp)
+    safe_result = _finalize_training(
+        model=model,
+        train_loader=train_loader,
+        val_loader=val_loader,
+        test_loader=test_loader,
+        monitor_val_loader=monitor_val_loader,
+        monitor_test_loader=monitor_test_loader,
+        config=config,
+        device=device,
+        started_at=started_at,
+        parameter_count=parameter_count,
+        fingerprint=fingerprint,
+        target_overlay_fingerprint=target_overlay_fingerprint,
+        monitor_label_fingerprint=monitor_label_fingerprint,
+        best_path=best_path,
+        result_path=result_path,
+    )
+    _atomic_json(result_path, safe_result)
+    print(json.dumps(safe_result, ensure_ascii=False, indent=2))
+    return safe_result
 
-        validation = evaluate_rank_ic(
-            model, val_loader, device, min_symbols_per_day=config.min_symbols_per_day
-        )
-        monitor_validation = evaluate_rank_ic(
-            model,
-            monitor_val_loader,
-            device,
-            min_symbols_per_day=config.min_symbols_per_day,
-        )
-        raw_selection = validation[config.selection_metric]
-        selection_value = float(raw_selection) if raw_selection is not None else math.nan
-        comparable = selection_value if math.isfinite(selection_value) else -math.inf
-        improved = epoch == 0 or comparable > best_selection_value
-        if improved:
-            best_selection_value = comparable
-            epochs_without_improvement = 0
-        else:
-            epochs_without_improvement += 1
-        record = {
-            "epoch": epoch + 1,
-            "train_loss": epoch_loss,
-            "epoch_seconds": time.perf_counter() - epoch_started_at,
-            **{f"val_{key}": value for key, value in validation.items()},
-        }
-        if monitor_val_loader is not None:
-            record.update(
-                {
-                    f"val_{config.monitor_name}_{key}": value
-                    for key, value in monitor_validation.items()
-                }
-            )
-        history.append(record)
-        state = {
-            "model": model.state_dict(),
-            "optimizer": optimizer.state_dict(),
-            "scaler": scaler.state_dict(),
-            "epoch": epoch + 1,
-            "best_selection_value": best_selection_value,
-            "epochs_without_improvement": epochs_without_improvement,
-            "experiment": signature,
-            "history": history,
-        }
-        if improved:
-            _atomic_torch_save(best_path, state)
-        _atomic_torch_save(last_path, state)
-        _atomic_json(history_path, _json_safe(history))
-        print(
-            f"epoch {epoch + 1:03d}｜训练损失 {record['train_loss']:.4f}｜"
-            f"验证 Rank IC {float(validation['daily_rank_ic_mean']):.4f}"
-        )
-        if epochs_without_improvement >= config.patience:
-            print(f"验证指标连续 {config.patience} 个 epoch 未提升，停止训练。")
-            break
 
+def _finalize_training(
+    *,
+    model: torch.nn.Module,
+    train_loader: DataLoader[EventstreamSample],
+    val_loader: DataLoader[EventstreamSample] | None,
+    test_loader: DataLoader[EventstreamSample] | None,
+    monitor_val_loader: DataLoader[EventstreamSample] | None,
+    monitor_test_loader: DataLoader[EventstreamSample] | None,
+    config: EventstreamConfig,
+    device: torch.device,
+    started_at: float,
+    parameter_count: int,
+    fingerprint: str,
+    target_overlay_fingerprint: str | None,
+    monitor_label_fingerprint: str | None,
+    best_path: Path,
+    result_path: Path,
+) -> dict[str, Any]:
     best = _load_checkpoint(best_path, device)
     model.load_state_dict(best["model"])
     val_metrics = evaluate_rank_ic(
@@ -211,10 +210,118 @@ def train(
         ),
         "result_file": str(result_path),
     }
-    safe_result = _json_safe(result)
-    _atomic_json(result_path, safe_result)
-    print(json.dumps(safe_result, ensure_ascii=False, indent=2))
-    return safe_result
+    return _json_safe(result)
+
+
+def _train_epochs(
+    *,
+    model: torch.nn.Module,
+    train_loader: DataLoader[EventstreamSample],
+    val_loader: DataLoader[EventstreamSample] | None,
+    monitor_val_loader: DataLoader[EventstreamSample] | None,
+    optimizer: torch.optim.Optimizer,
+    scaler: torch.amp.GradScaler,
+    device: torch.device,
+    config: EventstreamConfig,
+    use_amp: bool,
+    signature: dict[str, Any],
+    best_path: Path,
+    last_path: Path,
+    history_path: Path,
+    start_epoch: int,
+    best_selection_value: float,
+    epochs_without_improvement: int,
+    history: list[dict[str, Any]],
+) -> None:
+    if epochs_without_improvement >= config.patience:
+        print("checkpoint 已达到 early stopping 条件，跳过后续训练。")
+        return
+    for epoch in range(start_epoch, config.epochs):
+        epoch_started_at = time.perf_counter()
+        epoch_loss = _train_epoch(model, train_loader, optimizer, scaler, device, config, use_amp)
+        validation = evaluate_rank_ic(
+            model, val_loader, device, min_symbols_per_day=config.min_symbols_per_day
+        )
+        monitor_validation = evaluate_rank_ic(
+            model,
+            monitor_val_loader,
+            device,
+            min_symbols_per_day=config.min_symbols_per_day,
+        )
+        raw_selection = validation[config.selection_metric]
+        selection_value = float(raw_selection) if raw_selection is not None else math.nan
+        comparable = selection_value if math.isfinite(selection_value) else -math.inf
+        improved = epoch == 0 or comparable > best_selection_value
+        if improved:
+            best_selection_value = comparable
+            epochs_without_improvement = 0
+        else:
+            epochs_without_improvement += 1
+        record = _epoch_record(
+            epoch, epoch_loss, epoch_started_at, validation, monitor_validation, config
+        )
+        history.append(record)
+        state = _training_checkpoint_state(
+            model,
+            optimizer,
+            scaler,
+            epoch,
+            best_selection_value,
+            epochs_without_improvement,
+            signature,
+            history,
+        )
+        if improved:
+            _atomic_torch_save(best_path, state)
+        _atomic_torch_save(last_path, state)
+        _atomic_json(history_path, _json_safe(history))
+        _report_epoch(epoch, record, validation)
+        if epochs_without_improvement >= config.patience:
+            print(f"验证指标连续 {config.patience} 个 epoch 未提升，停止训练。")
+            break
+
+
+def _epoch_record(epoch, epoch_loss, started_at, validation, monitor_validation, config):
+    record = {
+        "epoch": epoch + 1,
+        "train_loss": epoch_loss,
+        "epoch_seconds": time.perf_counter() - started_at,
+        **{f"val_{key}": value for key, value in validation.items()},
+    }
+    if monitor_validation is not None:
+        record.update(
+            {f"val_{config.monitor_name}_{key}": value for key, value in monitor_validation.items()}
+        )
+    return record
+
+
+def _training_checkpoint_state(
+    model,
+    optimizer,
+    scaler,
+    epoch,
+    best_selection_value,
+    epochs_without_improvement,
+    signature,
+    history,
+):
+    return {
+        "model": model.state_dict(),
+        "optimizer": optimizer.state_dict(),
+        "scaler": scaler.state_dict(),
+        "epoch": epoch + 1,
+        "best_selection_value": best_selection_value,
+        "epochs_without_improvement": epochs_without_improvement,
+        "experiment": signature,
+        "history": history,
+    }
+
+
+def _report_epoch(epoch, record, validation) -> None:
+    print(
+        f"epoch {epoch + 1:03d}｜训练损失 {record['train_loss']:.4f}｜"
+        f"验证 Rank IC {float(validation['daily_rank_ic_mean']):.4f}"
+    )
 
 
 def _target_overlay_fingerprint(dataset: Any) -> str | None:

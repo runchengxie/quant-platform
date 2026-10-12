@@ -101,6 +101,33 @@ def _processor_records(
     min_symbols_per_date: int,
 ) -> tuple[ProcessorProvenance, ...]:
     records: list[ProcessorProvenance] = []
+    _append_membership_record(records, universe_by_date_applied)
+    _append_feature_records(
+        records,
+        features=features,
+        missing_fill_features=missing_fill_features,
+        feature_missing_method=feature_missing_method,
+        feature_missing_add_indicators=feature_missing_add_indicators,
+        winsorize_pct=winsorize_pct,
+        target=target,
+        cs_method=cs_method,
+        cs_winsorize_pct=cs_winsorize_pct,
+    )
+    _append_target_records(
+        records,
+        train_target=train_target,
+        target=target,
+        train_target_transform=train_target_transform,
+        train_target_group_cols=train_target_group_cols,
+    )
+    _append_sampling_records(records, sample_on_rebalance_dates, min_symbols_per_date)
+    return tuple(records)
+
+
+def _append_membership_record(
+    records: list[ProcessorProvenance],
+    universe_by_date_applied: bool,
+) -> None:
     if universe_by_date_applied:
         records.append(
             ProcessorProvenance(
@@ -111,6 +138,20 @@ def _processor_records(
                 leakage_safety="pit_filter",
             )
         )
+
+
+def _append_feature_records(
+    records: list[ProcessorProvenance],
+    *,
+    features: list[str],
+    missing_fill_features: list[str],
+    feature_missing_method: str,
+    feature_missing_add_indicators: bool,
+    winsorize_pct: float | None,
+    target: str,
+    cs_method: str,
+    cs_winsorize_pct: float | None,
+) -> None:
     if missing_fill_features:
         records.append(
             ProcessorProvenance(
@@ -152,6 +193,16 @@ def _processor_records(
                 leakage_safety="per_date",
             )
         )
+
+
+def _append_target_records(
+    records: list[ProcessorProvenance],
+    *,
+    train_target: str,
+    target: str,
+    train_target_transform: str,
+    train_target_group_cols: list[str] | None,
+) -> None:
     if train_target != target:
         group_cols = list(train_target_group_cols or ["trade_date"])
         records.append(
@@ -165,6 +216,13 @@ def _processor_records(
                 leakage_safety="label_only",
             )
         )
+
+
+def _append_sampling_records(
+    records: list[ProcessorProvenance],
+    sample_on_rebalance_dates: bool,
+    min_symbols_per_date: int,
+) -> None:
     if sample_on_rebalance_dates:
         records.append(
             ProcessorProvenance(
@@ -184,7 +242,6 @@ def _processor_records(
             leakage_safety="cross_sectional_count",
         )
     )
-    return tuple(records)
 
 
 def build_research_dataset_from_modeling_state(

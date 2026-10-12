@@ -343,9 +343,7 @@ def run_gradient_audit(
 ) -> dict[str, Any]:
     """在同一组固定 batch 上比较初始化和最佳 checkpoint 的任务梯度。"""
     _validate_gradient_audit_request(partition, expected_checkpoint_sha256, source_revision)
-    config.validate()
-    device = resolve_device(config.device)
-    use_amp = config.amp and device.type == "cuda"
+    device, use_amp = _gradient_audit_runtime(config)
     root = Path(config.materialized_root)
     manifest = load_materialized_manifest(root)
     assert_materialized_compatible(manifest, config)
@@ -357,31 +355,19 @@ def run_gradient_audit(
         batches=batches,
     )
 
-    actual_checkpoint_sha256 = file_sha256(checkpoint_path)
-    if actual_checkpoint_sha256 != expected_checkpoint_sha256:
-        raise ValueError(
-            "事件流 checkpoint SHA-256 不匹配："
-            f"{actual_checkpoint_sha256} != {expected_checkpoint_sha256}"
-        )
+    actual_checkpoint_sha256 = _verify_checkpoint_hash(
+        checkpoint_path,
+        expected_checkpoint_sha256,
+    )
 
     set_seed(config.seed)
-    initial_model = _build_model(config).to(device)
-    parameter_count = sum(parameter.numel() for parameter in initial_model.parameters())
-    backbone_parameter_count = sum(
-        parameter.numel() for parameter in _backbone_parameters(initial_model)
-    )
-    if expected_parameter_count is not None and parameter_count != expected_parameter_count:
-        raise ValueError(f"事件流参数量不匹配：{parameter_count} != {expected_parameter_count}")
-    initial = _audit_state(
-        initial_model,
+    parameter_count, backbone_parameter_count, initial = _initial_gradient_state(
+        config,
         fixed_batches,
         device=device,
         amp=use_amp,
-        day_loss_weight=config.day_loss_weight,
+        expected_parameter_count=expected_parameter_count,
     )
-    del initial_model
-    if device.type == "cuda":
-        torch.cuda.empty_cache()
 
     checkpoint = _load_checkpoint(checkpoint_path)
     checkpoint_experiment = checkpoint.get("experiment")
@@ -418,6 +404,100 @@ def run_gradient_audit(
     if device.type == "cuda":
         torch.cuda.empty_cache()
 
+    return _gradient_audit_result(
+        config=config,
+        checkpoint_path=checkpoint_path,
+        source_revision=source_revision,
+        partition=partition,
+        batches=batches,
+        batch_size=batch_size,
+        use_amp=use_amp,
+        device=device,
+        root=root,
+        manifest=manifest,
+        preflight=preflight,
+        indices=indices,
+        batch_fingerprint=batch_fingerprint,
+        actual_checkpoint_sha256=actual_checkpoint_sha256,
+        checkpoint=checkpoint,
+        checkpoint_experiment=checkpoint_experiment,
+        expected_identity=expected_identity,
+        actual_identity=actual_identity,
+        expected_representation=expected_representation,
+        actual_representation=actual_representation,
+        parameter_count=parameter_count,
+        backbone_parameter_count=backbone_parameter_count,
+        initial=initial,
+        trained=trained,
+    )
+
+
+def _gradient_audit_runtime(config: EventstreamConfig) -> tuple[torch.device, bool]:
+    config.validate()
+    device = resolve_device(config.device)
+    return device, config.amp and device.type == "cuda"
+
+
+def _initial_gradient_state(
+    config: EventstreamConfig,
+    fixed_batches: list[tuple[torch.Tensor, ...]],
+    *,
+    device: torch.device,
+    amp: bool,
+    expected_parameter_count: int | None,
+) -> tuple[int, int, dict[str, Any]]:
+    model = _build_model(config).to(device)
+    parameter_count = sum(parameter.numel() for parameter in model.parameters())
+    backbone_count = sum(parameter.numel() for parameter in _backbone_parameters(model))
+    if expected_parameter_count is not None and parameter_count != expected_parameter_count:
+        raise ValueError(f"事件流参数量不匹配：{parameter_count} != {expected_parameter_count}")
+    state = _audit_state(
+        model,
+        fixed_batches,
+        device=device,
+        amp=amp,
+        day_loss_weight=config.day_loss_weight,
+    )
+    del model
+    if device.type == "cuda":
+        torch.cuda.empty_cache()
+    return parameter_count, backbone_count, state
+
+
+def _verify_checkpoint_hash(path: Path, expected_sha256: str) -> str:
+    actual_sha256 = file_sha256(path)
+    if actual_sha256 != expected_sha256:
+        raise ValueError(f"事件流 checkpoint SHA-256 不匹配：{actual_sha256} != {expected_sha256}")
+    return actual_sha256
+
+
+def _gradient_audit_result(
+    *,
+    config: EventstreamConfig,
+    checkpoint_path: Path,
+    source_revision: str,
+    partition: str,
+    batches: int,
+    batch_size: int,
+    use_amp: bool,
+    device: torch.device,
+    root: Path,
+    manifest: dict[str, Any],
+    preflight: dict[str, Any],
+    indices: list[int],
+    batch_fingerprint: str,
+    actual_checkpoint_sha256: str,
+    checkpoint: dict[str, Any],
+    checkpoint_experiment: dict[str, Any],
+    expected_identity: dict[str, Any],
+    actual_identity: dict[str, Any],
+    expected_representation: dict[str, Any],
+    actual_representation: dict[str, Any],
+    parameter_count: int,
+    backbone_parameter_count: int,
+    initial: dict[str, Any],
+    trained: dict[str, Any],
+) -> dict[str, Any]:
     result: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "mode": MODE,

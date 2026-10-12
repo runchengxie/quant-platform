@@ -512,8 +512,7 @@ def _merge_window_and_featurize(
     )
 
 
-def _merge_and_featurize(order, trade, snap, prev_close_cent: float):
-    """三流按时间归并并计算模型特征。"""
+def _event_stream_layout(order, trade, snap):
     n_o, n_t, n_s = len(order), len(trade), len(snap)
     n = n_o + n_t + n_s
     times = np.concatenate(
@@ -533,10 +532,17 @@ def _merge_and_featurize(order, trade, snap, prev_close_cent: float):
     sorted_idx = np.argsort(times, kind="stable")
     times = times[sorted_idx]
     stream = stream[sorted_idx]
+    inverse = np.empty(n, dtype=np.int64)
+    inverse[sorted_idx] = np.arange(n)
+    positions = (inverse[:n_o], inverse[n_o : n_o + n_t], inverse[n_o + n_t :])
+    return times, stream, positions, sorted_idx
 
+
+def _reference_prices(order, trade, snap, sorted_idx, prev_close_cent: float):
+    n = len(order) + len(trade) + len(snap)
     # 滚动中间价：来自快照（首个快照之前回退 prev_close）
     mid_src = np.zeros(n, dtype=np.float64)
-    if n_s:
+    if len(snap):
         bid1 = snap["bid_px"][:, 0].astype(np.float64)
         ask1 = snap["ask_px"][:, 0].astype(np.float64)
         mid_s = np.where(
@@ -545,7 +551,7 @@ def _merge_and_featurize(order, trade, snap, prev_close_cent: float):
             np.maximum(bid1, ask1),
         )
         mid_s = np.where(mid_s > 0, mid_s, np.nan)
-        mid_src[n_o + n_t :] = mid_s
+        mid_src[len(order) + len(trade) :] = mid_s
     mid_sorted = mid_src[sorted_idx]
     filled = mid_sorted.copy()
     has = ~np.isnan(filled) & (filled > 0)
@@ -556,15 +562,107 @@ def _merge_and_featurize(order, trade, snap, prev_close_cent: float):
         filled[np.maximum(idx_last, 0)],
         prev_close_cent if prev_close_cent > 0 else np.nan,
     )
-    ref = np.where(
+    return np.where(
         np.isfinite(ref) & (ref > 0),
         ref,
         np.nanmax(ref[np.isfinite(ref)]) if np.isfinite(ref).any() else 1.0,
     )
 
-    def bps(px: NDArray[Any], r: NDArray[Any]) -> NDArray[Any]:
-        out = (px.astype(np.float64) / r - 1.0) * 1e4 / BPS_SCALE
-        return np.clip(np.nan_to_num(out, nan=0.0), -50.0, 50.0).astype(np.float32)
+
+def _bps(px: NDArray[Any], reference: NDArray[Any]) -> NDArray[Any]:
+    out = (px.astype(np.float64) / reference - 1.0) * 1e4 / BPS_SCALE
+    return np.clip(np.nan_to_num(out, nan=0.0), -50.0, 50.0).astype(np.float32)
+
+
+def _order_features(features, order_types, order, positions, reference) -> None:
+    pos_o = positions
+    if not len(order):
+        return
+    refs = reference[pos_o]
+    raw_types = order["order_type"].astype(np.int64)
+    features[pos_o, 1] = _bps(order["price"], refs)
+    features[pos_o, 2] = _log1p(order["volume"])
+    is_cancel = np.isin(raw_types, (-1, -11))
+    side = np.where(
+        is_cancel,
+        np.where(raw_types == -1, 1, -1),
+        np.where(raw_types >= 10, -1, 1),
+    )
+    features[pos_o, 3] = side.astype(np.float32)
+    features[pos_o, 4] = is_cancel.astype(np.float32)
+    age = np.where(order["cancel_age_ms"] > 0, order["cancel_age_ms"] / 1000.0, 0.0)
+    features[pos_o, 5] = _log1p(age)
+    features[pos_o, 7] = _log1p(order["cancel_orig_vol"])
+    for raw, order_id in ORDER_TYPE_VOCAB.items():
+        order_types[pos_o[raw_types == raw]] = order_id
+
+
+def _trade_features(features, trade, positions, reference) -> None:
+    pos_t = positions
+    if not len(trade):
+        return
+    refs = reference[pos_t]
+    features[pos_t, 1] = _bps(trade["price"], refs)
+    features[pos_t, 2] = _log1p(trade["volume"])
+    features[pos_t, 3] = np.where(trade["bsflag"] == 1, 1.0, -1.0).astype(np.float32)
+    features[pos_t, 5] = _log1p(np.maximum(trade["buy_age_ms"], 0) / 1000.0)
+    features[pos_t, 6] = _log1p(np.maximum(trade["sell_age_ms"], 0) / 1000.0)
+    features[pos_t, 8] = _log1p(trade["price"].astype(np.float64) * trade["volume"])
+
+
+def _snapshot_features(features, snap, positions, reference) -> None:
+    pos_s = positions
+    if not len(snap):
+        return
+    refs = reference[pos_s]
+    features[pos_s, 1] = _bps(snap["last"], refs)
+    features[pos_s, 2] = np.sign(snap["d_volume"]) * _log1p(np.abs(snap["d_volume"]))
+    features[pos_s, 8] = _log1p(np.abs(snap["d_turnover"]))
+    bid1 = snap["bid_px"][:, 0].astype(np.float64)
+    ask1 = snap["ask_px"][:, 0].astype(np.float64)
+    bid_volume = snap["bid_vol"][:, 0].astype(np.float64)
+    ask_volume = snap["ask_vol"][:, 0].astype(np.float64)
+    valid_quote = (bid1 > 0) & (ask1 > 0)
+    features[pos_s, 9] = np.where(
+        valid_quote,
+        (ask1 - bid1) / refs * 1e4 / BPS_SCALE,
+        0.0,
+    ).astype(np.float32)
+    depth = bid_volume + ask_volume
+    features[pos_s, 10] = np.where(
+        depth > 0,
+        (bid_volume - ask_volume) / np.maximum(depth, 1),
+        0.0,
+    ).astype(np.float32)
+    micro = np.where(
+        depth > 0,
+        (ask1 * bid_volume + bid1 * ask_volume) / np.maximum(depth, 1),
+        0.0,
+    )
+    features[pos_s, 11] = np.where(
+        valid_quote,
+        (micro / refs - 1.0) * 1e4 / BPS_SCALE,
+        0.0,
+    ).astype(np.float32)
+    for level in range(10):
+        features[pos_s, 12 + level] = _bps(snap["bid_px"][:, level], refs)
+        features[pos_s, 22 + level] = _bps(snap["ask_px"][:, level], refs)
+        features[pos_s, 32 + level] = _log1p(snap["bid_vol"][:, level])
+        features[pos_s, 42 + level] = _log1p(snap["ask_vol"][:, level])
+        features[pos_s, 52 + level] = _log1p(snap["bid_cnt"][:, level])
+        features[pos_s, 62 + level] = _log1p(snap["ask_cnt"][:, level])
+    features[pos_s, 72] = _log1p(snap["total_bidvol"])
+    features[pos_s, 73] = _log1p(snap["total_askvol"])
+    features[pos_s, 74] = _bps(snap["wbid"], refs)
+    features[pos_s, 75] = _bps(snap["wask"], refs)
+    features[pos_s, 76] = _log1p(snap["d_dealnum"])
+
+
+def _merge_and_featurize(order, trade, snap, prev_close_cent: float):
+    """Merge the three event streams and compute model features."""
+    times, stream, positions, sorted_idx = _event_stream_layout(order, trade, snap)
+    n = len(times)
+    reference = _reference_prices(order, trade, snap, sorted_idx, prev_close_cent)
 
     feats = np.zeros((n, N_FEATURES), dtype=np.float32)
     otype = np.zeros(n, dtype=np.int64)
@@ -576,77 +674,9 @@ def _merge_and_featurize(order, trade, snap, prev_close_cent: float):
     feats[:, 78] = np.cos(2 * np.pi * tod).astype(np.float32)
     feats[:, 79] = (times < 0).astype(np.float32)
 
-    inv = np.empty(n, dtype=np.int64)
-    inv[sorted_idx] = np.arange(n)
-    pos_o, pos_t, pos_s = inv[:n_o], inv[n_o : n_o + n_t], inv[n_o + n_t :]
-
-    if n_o:
-        r = ref[pos_o]
-        ot = order["order_type"].astype(np.int64)
-        feats[pos_o, 1] = bps(order["price"], r)
-        feats[pos_o, 2] = _log1p(order["volume"])
-        is_cancel = np.isin(ot, (-1, -11))
-        side = np.where(is_cancel, np.where(ot == -1, 1, -1), np.where(ot >= 10, -1, 1))
-        feats[pos_o, 3] = side.astype(np.float32)
-        feats[pos_o, 4] = is_cancel.astype(np.float32)
-        age = np.where(order["cancel_age_ms"] > 0, order["cancel_age_ms"] / 1000.0, 0.0)
-        feats[pos_o, 5] = _log1p(age)
-        feats[pos_o, 7] = _log1p(order["cancel_orig_vol"])
-        for raw, oid_ in ORDER_TYPE_VOCAB.items():
-            otype[pos_o[ot == raw]] = oid_
-
-    if n_t:
-        r = ref[pos_t]
-        feats[pos_t, 1] = bps(trade["price"], r)
-        feats[pos_t, 2] = _log1p(trade["volume"])
-        feats[pos_t, 3] = np.where(trade["bsflag"] == 1, 1.0, -1.0).astype(np.float32)
-        feats[pos_t, 5] = _log1p(np.maximum(trade["buy_age_ms"], 0) / 1000.0)
-        feats[pos_t, 6] = _log1p(np.maximum(trade["sell_age_ms"], 0) / 1000.0)
-        feats[pos_t, 8] = _log1p(trade["price"].astype(np.float64) * trade["volume"])
-
-    if n_s:
-        r = ref[pos_s]
-        feats[pos_s, 1] = bps(snap["last"], r)
-        feats[pos_s, 2] = np.sign(snap["d_volume"]) * _log1p(np.abs(snap["d_volume"]))
-        feats[pos_s, 8] = _log1p(np.abs(snap["d_turnover"]))
-        bid1 = snap["bid_px"][:, 0].astype(np.float64)
-        ask1 = snap["ask_px"][:, 0].astype(np.float64)
-        bv1 = snap["bid_vol"][:, 0].astype(np.float64)
-        av1 = snap["ask_vol"][:, 0].astype(np.float64)
-        ok = (bid1 > 0) & (ask1 > 0)
-        feats[pos_s, 9] = np.where(
-            ok,
-            (ask1 - bid1) / r * 1e4 / BPS_SCALE,
-            0.0,
-        ).astype(np.float32)
-        depth = bv1 + av1
-        feats[pos_s, 10] = np.where(
-            depth > 0,
-            (bv1 - av1) / np.maximum(depth, 1),
-            0.0,
-        ).astype(np.float32)
-        micro = np.where(
-            depth > 0,
-            (ask1 * bv1 + bid1 * av1) / np.maximum(depth, 1),
-            0.0,
-        )
-        feats[pos_s, 11] = np.where(
-            ok,
-            (micro / r - 1.0) * 1e4 / BPS_SCALE,
-            0.0,
-        ).astype(np.float32)
-        for level in range(10):
-            feats[pos_s, 12 + level] = bps(snap["bid_px"][:, level], r)
-            feats[pos_s, 22 + level] = bps(snap["ask_px"][:, level], r)
-            feats[pos_s, 32 + level] = _log1p(snap["bid_vol"][:, level])
-            feats[pos_s, 42 + level] = _log1p(snap["ask_vol"][:, level])
-            feats[pos_s, 52 + level] = _log1p(snap["bid_cnt"][:, level])
-            feats[pos_s, 62 + level] = _log1p(snap["ask_cnt"][:, level])
-        feats[pos_s, 72] = _log1p(snap["total_bidvol"])
-        feats[pos_s, 73] = _log1p(snap["total_askvol"])
-        feats[pos_s, 74] = bps(snap["wbid"], r)
-        feats[pos_s, 75] = bps(snap["wask"], r)
-        feats[pos_s, 76] = _log1p(snap["d_dealnum"])
+    _order_features(feats, otype, order, positions[0], reference)
+    _trade_features(feats, trade, positions[1], reference)
+    _snapshot_features(feats, snap, positions[2], reference)
 
     feats = np.nan_to_num(feats, nan=0.0, posinf=0.0, neginf=0.0)
     return feats, stream, otype

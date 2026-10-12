@@ -14,29 +14,21 @@ from typing import Any, override
 
 import numpy as np
 import torch
-import yaml
 from torch.utils.data import DataLoader, Dataset, Subset
 
-from ticknet.eventstream.dataset import N_FEATURES, L2WindowDataset
-from ticknet.eventstream.fingerprint import file_sha256, git_sha
+from ticknet.eventstream.dataset import L2WindowDataset
+from ticknet.eventstream.fingerprint import file_sha256
+from ticknet.eventstream.materialized_schema import (
+    ARRAY_DTYPES,
+    _array_contract,
+    _array_tail_shapes,
+)
 from ticknet.eventstream.storage_readiness import validate_storage_manifest
 
 SCHEMA_VERSION = 1
 MODE = "eventstream_materialized_windows"
 MANIFEST_NAME = "manifest.json"
 PARTITIONS = ("train", "validation", "oos", "monitor_validation", "monitor_oos")
-ARRAY_DTYPES: dict[str, np.dtype[Any]] = {
-    "x": np.dtype(np.float32),
-    "sid": np.dtype(np.int16),
-    "oid": np.dtype(np.int16),
-    "tgt_sid": np.dtype(np.int16),
-    "tgt_oid": np.dtype(np.int16),
-    "tgt_reg": np.dtype(np.float32),
-    "tgt_day": np.dtype(np.float32),
-    "day_valid": np.dtype(np.float32),
-    "valid": np.dtype(np.float32),
-    "day": np.dtype(np.int64),
-}
 
 
 def _canonical_sha256(value: object) -> str:
@@ -57,29 +49,6 @@ def _safe_relative_path(value: str) -> str:
     if path.is_absolute() or not path.parts or ".." in path.parts:
         raise ValueError(f"物化路径必须是安全的相对路径：{value}")
     return path.as_posix()
-
-
-def _array_tail_shapes(seq_len: int) -> dict[str, tuple[int, ...]]:
-    return {
-        "x": (seq_len, N_FEATURES),
-        "sid": (seq_len,),
-        "oid": (seq_len,),
-        "tgt_sid": (seq_len,),
-        "tgt_oid": (seq_len,),
-        "tgt_reg": (seq_len, 3),
-        "tgt_day": (),
-        "day_valid": (),
-        "valid": (seq_len,),
-        "day": (),
-    }
-
-
-def _array_contract(seq_len: int) -> dict[str, dict[str, Any]]:
-    tails = _array_tail_shapes(seq_len)
-    return {
-        name: {"dtype": dtype.name, "tail_shape": list(tails[name])}
-        for name, dtype in ARRAY_DTYPES.items()
-    }
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -791,55 +760,15 @@ class MaterializedWindowDataset(Dataset[tuple[torch.Tensor, ...]]):
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="物化并核对事件流固定训练窗口")
-    commands = parser.add_subparsers(dest="command", required=True)
+    from ticknet.eventstream.materialized_cli import _parser as parser
 
-    build = commands.add_parser("build", help="从正式 pack 生成按月物化训练集")
-    build.add_argument("--config", type=Path, required=True)
-    build.add_argument("--storage-manifest", type=Path, required=True)
-    build.add_argument("--output", type=Path, required=True)
-    build.add_argument("--source-revision", default="")
-
-    verify = commands.add_parser("verify", help="逐文件核对物化训练集")
-    verify.add_argument("--root", type=Path, required=True)
-    verify.add_argument("--output", type=Path)
-    verify.add_argument(
-        "--partition",
-        action="append",
-        choices=PARTITIONS,
-        dest="partitions",
-        help="只核对指定分区，可重复使用。默认核对全部分区",
-    )
-    return parser
+    return parser()
 
 
 def main(argv: list[str] | None = None) -> None:
-    arguments = _parser().parse_args(argv)
-    if arguments.command == "build":
-        from ticknet.eventstream.train import EventstreamConfig
+    from ticknet.eventstream.materialized_cli import main as cli_main
 
-        with arguments.config.expanduser().resolve().open(encoding="utf-8") as file:
-            raw = yaml.safe_load(file)
-        if not isinstance(raw, dict):
-            raise ValueError("事件流配置应为 YAML 对象")
-        config = EventstreamConfig.from_mapping(raw)
-        report = build_materialized_dataset(
-            config,
-            storage_manifest_path=arguments.storage_manifest.expanduser().resolve(),
-            output_root=arguments.output.expanduser().resolve(),
-            source_revision=arguments.source_revision or git_sha(Path.cwd()),
-        )
-        print(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False))
-    elif arguments.command == "verify":
-        report = verify_materialized_dataset(
-            arguments.root.expanduser().resolve(),
-            partitions=tuple(arguments.partitions or PARTITIONS),
-        )
-        if arguments.output is not None:
-            _atomic_json(arguments.output.expanduser().resolve(), report)
-        print(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False))
-    else:
-        raise ValueError(f"未知命令：{arguments.command}")
+    cli_main(argv)
 
 
 if __name__ == "__main__":
