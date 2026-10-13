@@ -13,6 +13,8 @@ from typing import cast
 import pandas as pd
 
 from .corporate_actions import CorporateAction, normalize_corporate_actions
+from .valuation_events import VALUATION_LEDGER_COLUMNS, normalize_valuation_events
+from .valuation_events import ValuationEvent as ValuationEvent
 
 
 @dataclass(frozen=True)
@@ -71,6 +73,9 @@ class MinuteExecutionResult:
     summary: dict
     holdings: pd.DataFrame = field(
         default_factory=lambda: pd.DataFrame(columns=["date", "symbol", "quantity"])
+    )
+    valuation_ledger: pd.DataFrame = field(
+        default_factory=lambda: pd.DataFrame(columns=VALUATION_LEDGER_COLUMNS)
     )
 
 
@@ -148,7 +153,7 @@ def _validate_target_weights(targets):
         raise ValueError("one decision time required per rebalance")
 
 
-def simulate_minute_execution(targets, bars, config, *, corporate_actions=()):
+def simulate_minute_execution(targets, bars, config, *, corporate_actions=(), valuation_events=()):
     """Complete target snapshots; quantities fixed from marks known at entry.
 
     ``targets`` has aware decision_time/entry_time, symbol and weight; each entry
@@ -175,12 +180,21 @@ def simulate_minute_execution(targets, bars, config, *, corporate_actions=()):
     Stock rights retain exact quantities. Full exits allow integer odd lots;
     fractional shares remain unsellable and are disclosed in summary.
     A superseding snapshot cancels all unfilled pending orders explicitly.
+
+    Optional ValuationEvent declarations establish permanent nontrading states.
+    Apply at effective time before sizing, preserving cash and legal inventory.
+    Declared marks persist and only later events replace them; nontradable bars
+    are ignored for affected marks, while conflicting tradable bars are rejected.
+    A pre-window declaration applies at the first base instant with original
+    provenance. Future events are ignored without extending the simulation.
+    Opt-in valuation_marks and valuation_ledger expose source/effective times and
+    age; declared persistence never claims observed daily quote freshness.
     """
-    return _MinuteSimulation(targets, bars, config, corporate_actions).run()
+    return _MinuteSimulation(targets, bars, config, corporate_actions, valuation_events).run()
 
 
 class _MinuteSimulation:
-    def __init__(self, targets, bars, config, corporate_actions):
+    def __init__(self, targets, bars, config, corporate_actions, valuation_events):
         self.targets = targets
         self.bars = bars.copy()
         if "interval_start" not in self.bars and "time" in self.bars:
@@ -188,6 +202,12 @@ class _MinuteSimulation:
         self.config = config
         self.corporate_actions = corporate_actions
         _validate(self.targets, self.bars)
+        self.valuation_events = normalize_valuation_events(
+            valuation_events, self.bars, self.targets
+        )
+        self.valuation_state = {}
+        self.valuation_ledger = []
+        self.ignored_future_event_ids = []
         self.actions: tuple[CorporateAction, ...] = tuple(self.corporate_actions)
         if any(not isinstance(a, CorporateAction) for a in self.actions):
             raise ValueError("corporate actions must be CorporateAction events")
@@ -217,6 +237,8 @@ class _MinuteSimulation:
         self.snapshots = dict(list(self.targets.groupby("entry_time", sort=True)))
         self.grouped = dict(list(self.bars.groupby("time", sort=True)))
         self.times = sorted(set(self.snapshots) | set(self.grouped))
+        self.scheduled_valuations = self.schedule_valuations()
+        self.times = sorted(set(self.times) | set(self.scheduled_valuations))
         self.current_day = None
         self.pending = []
 
@@ -249,13 +271,11 @@ class _MinuteSimulation:
                     "stock": q * action.stock_per_share,
                     "ex": False,
                 }
-        stale_holdings = {
-            s for s, q in self.holdings.items() if q and self.mark_days.get(s) != self.current_day
-        }
+        stale_holdings = {s for s, q in self.holdings.items() if q and self.stale_mark(s)}
         stale_rights = {
             r["symbol"]
             for r in self.rights.values()
-            if r["ex"] and r["stock"] and self.mark_days.get(r["symbol"]) != self.current_day
+            if r["ex"] and r["stock"] and self.stale_mark(r["symbol"])
         }
         stale = sorted(stale_holdings | stale_rights)
         pv = float("nan") if stale_holdings else self.value()
@@ -274,6 +294,81 @@ class _MinuteSimulation:
                 "transaction_cost": self.costs,
             }
         )
+        if self.valuation_events:
+            self.daily[-1]["valuation_marks"] = self.valuation_provenance()
+
+    def stale_mark(self, symbol):
+        return symbol not in self.valuation_state and self.mark_days.get(symbol) != self.current_day
+
+    def schedule_valuations(self):
+        if not self.times:
+            self.ignored_future_event_ids = [e.event_id for e in self.valuation_events]
+            return {}
+        scheduled = {}
+        first, last = self.times[0], self.times[-1]
+        for event in self.valuation_events:
+            effective = cast(pd.Timestamp, event.effective_time)
+            if effective > last:
+                self.ignored_future_event_ids.append(event.event_id)
+                continue
+            scheduled.setdefault(max(first, effective), []).append(event)
+        return scheduled
+
+    def apply_valuations(self, time):
+        for event in self.scheduled_valuations.get(time, ()):
+            symbol = event.symbol
+            previous = self.marks.get(symbol, float("nan"))
+            quantity = self.holdings.get(symbol, 0)
+            rights = self.stock_exposure(symbol) - quantity
+            self.valuation_ledger.append(
+                {
+                    "time": time,
+                    "event_id": event.event_id,
+                    "symbol": symbol,
+                    "effective_time": event.effective_time,
+                    "available_time": event.available_time,
+                    "value_per_share": event.value_per_share,
+                    "previous_value_per_share": previous,
+                    "basis": event.basis,
+                    "source": event.source,
+                    "quantity": quantity,
+                    "stock_receivable_quantity": rights,
+                    "delta_value": (quantity + rights) * (event.value_per_share - previous)
+                    if quantity + rights
+                    else 0.0,
+                    "cash_before": self.cash,
+                    "cash_after": self.cash,
+                }
+            )
+            self.valuation_state[symbol] = event
+            self.marks[symbol] = event.value_per_share
+            self.mark_basis[symbol] = "nontrading_valuation:" + event.basis
+            self.mark_times[symbol] = event.effective_time
+            self.mark_source_times[symbol] = event.available_time
+            for order in self.pending:
+                if order["symbol"] == symbol and order["status"] == "pending":
+                    order.update(status="cancelled", reason="nontrading_valuation")
+
+    def valuation_provenance(self):
+        return tuple(
+            {
+                "symbol": symbol,
+                "event_id": event.event_id,
+                "value_per_share": event.value_per_share,
+                "basis": event.basis,
+                "source": event.source,
+                "effective_time": event.effective_time,
+                "available_time": event.available_time,
+                "event_age_seconds": (
+                    self.current_time - cast(pd.Timestamp, event.effective_time)
+                ).total_seconds(),
+                "source_age_seconds": (
+                    self.current_time - cast(pd.Timestamp, event.available_time)
+                ).total_seconds(),
+                "observed_quote": False,
+            }
+            for symbol, event in sorted(self.valuation_state.items())
+        )
 
     def adjust_ex_references(self, day):
         groups = {}
@@ -287,7 +382,11 @@ class _MinuteSimulation:
             groups.items(), key=lambda item: (item[0][1], item[0][0])
         ):
             self.adjusted_ex_dates.add((symbol, ex_date))
-            if symbol not in self.marks or self.mark_days[symbol] >= ex_date:
+            if (
+                symbol in self.valuation_state
+                or symbol not in self.marks
+                or self.mark_days[symbol] >= ex_date
+            ):
                 continue
             reference = (self.marks[symbol] - cash) / (1 + stock)
             if reference <= 0:
@@ -338,7 +437,8 @@ class _MinuteSimulation:
         for symbol in sorted(set(weights) | set(self.holdings)):
             weight = weights.get(symbol, 0)
             mark = self.marks.get(symbol)
-            if weight and mark is None:
+            blocked = symbol in self.valuation_state
+            if blocked or (weight and mark is None):
                 self.orders.append(
                     {
                         "order_id": len(self.orders),
@@ -356,7 +456,7 @@ class _MinuteSimulation:
                         "commission_paid": 0.0,
                         "tax_paid": 0.0,
                         "status": "expired",
-                        "reason": "missing_mark",
+                        "reason": "nontrading_valuation" if blocked else "missing_mark",
                         "deadline": time,
                     }
                 )
@@ -534,6 +634,8 @@ class _MinuteSimulation:
                 continue
             capacities[symbol] = self.fill_order(order, observed[symbol], time, capacities[symbol])
         for symbol, bar in observed.items():
+            if symbol in self.valuation_state:
+                continue
             self.marks[symbol] = bar.close
             self.mark_days[symbol] = time.date()
             self.mark_times[symbol] = time
@@ -554,6 +656,8 @@ class _MinuteSimulation:
                 self.current_day = day
                 self.bought = {}
                 self.open_day(day)
+            self.current_time = time
+            self.apply_valuations(time)
             if time in self.snapshots:
                 self.rebalance(time)
             self.expire_orders(time)
@@ -586,6 +690,10 @@ class _MinuteSimulation:
             ),
             {
                 "initial_cash": self.config.initial_cash,
+                "valuation_event_count": len(self.valuation_ledger),
+                "ignored_future_event_ids": self.ignored_future_event_ids,
+                "valuation_event_window": "prewindow_at_first_instant_future_ignored",
+                "nontrading_valuation_symbols": sorted(self.valuation_state),
                 "commission_minimum_cny": self.config.commission_minimum_cny,
                 "sell_tax_bp": self.config.sell_tax_bp,
                 "commission_minimum_basis": "once_per_parent_order_across_partial_fills",
@@ -603,4 +711,5 @@ class _MinuteSimulation:
                 },
             },
             pd.DataFrame(self.holdings_ledger, columns=["date", "symbol", "quantity"]),
+            pd.DataFrame(self.valuation_ledger, columns=VALUATION_LEDGER_COLUMNS),
         )
