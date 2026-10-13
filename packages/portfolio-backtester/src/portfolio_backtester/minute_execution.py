@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
+from typing import cast
 
 import pandas as pd
 
@@ -187,14 +188,19 @@ class _MinuteSimulation:
         self.config = config
         self.corporate_actions = corporate_actions
         _validate(self.targets, self.bars)
-        self.actions = tuple(self.corporate_actions)
+        self.actions: tuple[CorporateAction, ...] = tuple(self.corporate_actions)
         if any(not isinstance(a, CorporateAction) for a in self.actions):
             raise ValueError("corporate actions must be CorporateAction events")
-        self.actions = normalize_corporate_actions(self.actions, "raw")
+        self.actions = cast(
+            tuple[CorporateAction, ...], normalize_corporate_actions(self.actions, "raw")
+        )
         self.rights = {}
         if self.actions and (
             self.bars.empty
-            or any(a.record_date.date() < self.bars.time.min().date() for a in self.actions)
+            or any(
+                cast(pd.Timestamp, a.record_date).date() < self.bars.time.min().date()
+                for a in self.actions
+            )
         ):
             raise ValueError("corporate action record dates require history coverage")
         self.cash = float(self.config.initial_cash)
@@ -235,7 +241,7 @@ class _MinuteSimulation:
             if q > 0
         )
         for action in self.actions:
-            if action.record_date.date() == self.current_day:
+            if cast(pd.Timestamp, action.record_date).date() == self.current_day:
                 q = self.holdings.get(action.symbol, 0)
                 self.rights[action.event_id] = {
                     "symbol": action.symbol,
@@ -272,8 +278,8 @@ class _MinuteSimulation:
     def adjust_ex_references(self, day):
         groups = {}
         for action in self.actions:
-            key = (action.symbol, action.ex_date.date())
-            if key in self.adjusted_ex_dates or action.ex_date.date() > day:
+            key = (action.symbol, cast(pd.Timestamp, action.ex_date).date())
+            if key in self.adjusted_ex_dates or cast(pd.Timestamp, action.ex_date).date() > day:
                 continue
             cash, stock = groups.get(key, (0, 0))
             groups[key] = (cash + action.cash_per_share, stock + action.stock_per_share)
@@ -301,17 +307,23 @@ class _MinuteSimulation:
             right = self.rights.get(action.event_id)
             if right is None:
                 if (
-                    action.record_date.date() < day
-                    and action.record_date.date() >= self.times[0].date()
+                    cast(pd.Timestamp, action.record_date).date() < day
+                    and cast(pd.Timestamp, action.record_date).date() >= self.times[0].date()
                 ):
                     raise ValueError("corporate action record-date closing coverage missing")
                 continue
-            if action.ex_date.date() <= day:
+            if cast(pd.Timestamp, action.ex_date).date() <= day:
                 right["ex"] = True
-            if action.cash_pay_date is not None and action.cash_pay_date.date() <= day:
+            if (
+                action.cash_pay_date is not None
+                and cast(pd.Timestamp, action.cash_pay_date).date() <= day
+            ):
                 self.cash += right["cash"]
                 right["cash"] = 0
-            if action.stock_tradable_date is not None and action.stock_tradable_date.date() <= day:
+            if (
+                action.stock_tradable_date is not None
+                and cast(pd.Timestamp, action.stock_tradable_date).date() <= day
+            ):
                 self.holdings[action.symbol] = self.holdings.get(action.symbol, 0) + right["stock"]
                 right["stock"] = 0
 
