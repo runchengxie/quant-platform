@@ -96,7 +96,7 @@ def _loader(
         shuffle=True,
         drop_last=True,
         num_workers=config.num_workers,
-        pin_memory=True,
+        pin_memory=config.device == "cuda",
         persistent_workers=config.num_workers > 0,
     )
 

@@ -17,6 +17,13 @@ from ticknet.eventstream.dataset import (
     _merge_window_and_featurize,
     _merged_window_rows,
 )
+from ticknet.eventstream.input_profile import run_dataloader_only
+from ticknet.eventstream.materialized import (
+    ARRAY_DTYPES,
+    _array_contract,
+    _verify_shard,
+    _write_shard,
+)
 from ticknet.eventstream.pack import (
     _isolated_day_command,
     _load_prev_close,
@@ -433,3 +440,60 @@ def test_training_dataloader_order_repeats_for_fixed_seed(tmp_path):
     for first_batch, second_batch in zip(first_batches, second_batches, strict=True):
         for first_tensor, second_tensor in zip(first_batch, second_batch, strict=True):
             assert torch.equal(first_tensor, second_tensor)
+
+
+def test_dataloader_profile_runs_on_synthetic_pack_without_cuda(tmp_path, recwarn):
+    raw, pack_root = _make_lake(tmp_path)
+    pack_day(DAY, raw_root=raw, pack_root=pack_root)
+    config = EventstreamConfig(
+        pack_root=str(pack_root),
+        days=(DAY,),
+        seq_len=2,
+        min_events=2,
+        samples_per_day=4,
+        batch_size=2,
+        seed=17,
+        num_workers=0,
+        device="cpu",
+    )
+
+    result = run_dataloader_only(config, batches=1, warmup_batches=0)
+
+    assert result["status"] == "complete"
+    assert result["measured_batches"] == 1
+    assert result["measured_samples"] == config.batch_size
+    assert result["duration_seconds"] >= 0
+    assert result["samples_per_second"] > 0
+    assert not [warning for warning in recwarn if "pin_memory" in str(warning.message)]
+
+
+def test_materialized_shard_write_is_verifiable_and_recoverable(tmp_path):
+    raw_root, pack_root = _make_lake(tmp_path)
+    pack_day(DAY, raw_root=raw_root, pack_root=pack_root)
+    dataset = L2WindowDataset(
+        [DAY],
+        seq_len=2,
+        min_events=2,
+        samples_per_day=4,
+        root=pack_root,
+        seed=17,
+    )
+    output_root = tmp_path / "materialized"
+    contract = {"arrays": _array_contract(2)}
+    shard_args = {
+        "root": output_root,
+        "partition": "train",
+        "month": "202101",
+        "seq_len": 2,
+        "batch_size": 2,
+        "num_workers": 0,
+    }
+
+    record = _write_shard(dataset, [0, 1], **shard_args)
+    verified_bytes = _verify_shard(output_root, record, contract)
+    resumed_record = _write_shard(dataset, [0, 1], **shard_args)
+
+    assert record == resumed_record
+    assert record["samples"] == 2
+    assert {Path(file["path"]).stem for file in record["files"]} == set(ARRAY_DTYPES)
+    assert verified_bytes == sum(file["bytes"] for file in record["files"])
