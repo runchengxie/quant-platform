@@ -103,7 +103,9 @@ def build_periodic_fundamental_target_panel(
     one PIT-audited row per symbol/report period, and the future observation's
     availability date is retained as the label end date. It deliberately
     matches exact period boundaries instead of selecting the latest available
-    observation, which would silently change the target definition.
+    observation, which would silently change the target definition. Calendar
+    month-end source dates map to the destination month-end. Other source dates
+    retain their day when possible, clamped to the destination month length.
     """
 
     from alpha_research.fundamental_state import FundamentalTargetPanel
@@ -118,7 +120,10 @@ def build_periodic_fundamental_target_panel(
 
     out["feature_as_of_date"] = out[available_date_col]
     offset = pd.DateOffset(months=int(horizon_periods) * int(period_months))
-    out["target_report_period"] = out[report_period_col] + offset
+    target_periods = out[report_period_col] + offset
+    month_end = out[report_period_col].dt.is_month_end
+    target_periods.loc[month_end] = target_periods.loc[month_end] + pd.offsets.MonthEnd(0)
+    out["target_report_period"] = target_periods
     future_columns = [symbol_col, report_period_col, available_date_col]
     future_columns.extend(sorted({spec.source_col for spec in specs}))
     future = out[future_columns].copy()
@@ -157,6 +162,7 @@ def build_periodic_fundamental_target_panel(
         "input_contract": "one canonical PIT-audited row per symbol/report_period",
         "horizon_periods": int(horizon_periods),
         "period_months": int(period_months),
+        "target_period_semantics": "exact_month_offset_preserving_calendar_month_end",
         "rows": len(merged),
         "complete_label_rows": int(complete.sum()),
         "target_names": [spec.name for spec in specs],
