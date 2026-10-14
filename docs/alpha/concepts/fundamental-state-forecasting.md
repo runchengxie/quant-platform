@@ -199,3 +199,10 @@ forecast fundamentals + valuation
 - Richardson and Stock (1989), Drawing inferences from statistics based on multiyear asset returns, Journal of Financial Economics, DOI `10.1016/0304-405X(89)90086-X`
 
 这些文献提供的是问题拆分和统计动机。当前实现不声称复现任何论文结果。
+
+`build_periodic_fundamental_target_panel` 精确匹配
+`horizon_periods * period_months` 个日历月后的报告期。原日期为月末时，
+目标日期保持为目标月份的月末，包括季度末和闰年二月。其他日期尽量保留原日号，
+目标月份天数不足时取该月最后一天。例如，9 月 30 日加三个月为 12 月 31 日，
+9 月 29 日加三个月仍为 12 月 29 日。缺少精确对应的未来观测时不生成标签。
+标签结束日期仍取未来观测的可得日期。审计字段 `target_period_semantics` 记录此规则。

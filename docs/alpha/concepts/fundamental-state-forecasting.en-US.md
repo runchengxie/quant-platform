@@ -70,3 +70,12 @@ forecast fundamentals + valuation
 ```
 
 This tests whether forecasts add information beyond current financial data. The score is a transparent cross-sectional ranking bridge, not a discounted-cash-flow valuation model. First test whether the financial state can be predicted; stock returns, Sharpe ratios, and portfolio costs are later questions. The implementation does not claim to reproduce the cited academic studies or their results.
+
+`build_periodic_fundamental_target_panel` matches exactly
+`horizon_periods * period_months` calendar months ahead. A source date at calendar
+month-end maps to the destination month-end, including quarter ends and February
+in leap years. Other dates retain their day when possible and clamp to the last
+day of a shorter destination month. For example, September 30 plus three months
+maps to December 31, while September 29 maps to December 29. Missing exact future
+observations remain unlabeled. Label end dates still use the future observation
+availability date. The audit records this rule in `target_period_semantics`.
