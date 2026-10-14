@@ -16,13 +16,13 @@ def _drawdown_timing(nav: pd.Series) -> dict[str, float]:
         return _empty_drawdown_timing()
 
     values = nav.to_numpy(dtype=float)
-    running_max = np.maximum.accumulate(values)
+    running_max = np.maximum.accumulate(np.maximum(values, 1.0))
     drawdown = values / running_max - 1.0
     trough_pos = int(np.nanargmin(drawdown))
     peak_value = float(running_max[trough_pos])
     pre_peak = values[: trough_pos + 1]
-    peak_candidates = np.flatnonzero(np.isclose(pre_peak, peak_value))
-    peak_pos = 0 if peak_candidates.size == 0 else int(peak_candidates[-1])
+    peak_candidates = np.flatnonzero(pre_peak == peak_value)
+    peak_pos = -1 if peak_candidates.size == 0 else int(peak_candidates[-1])
     drawdown_duration = float(trough_pos - peak_pos)
     recovery_time, recovery_days = _recovery_timing(nav, values, trough_pos, peak_value)
     drawdown_days = _index_day_distance(nav, trough_pos, peak_pos)
@@ -60,7 +60,7 @@ def _recovery_timing(
 
 
 def _index_day_distance(nav: pd.Series, end_pos: int, start_pos: int) -> float:
-    if isinstance(nav.index, pd.DatetimeIndex):
+    if start_pos >= 0 and isinstance(nav.index, pd.DatetimeIndex):
         dt_index = nav.index
         return float((dt_index[end_pos] - dt_index[start_pos]).days)
     return np.nan
@@ -204,7 +204,7 @@ def summarize_period_returns(
 
     nav = (1 + returns).cumprod()
     total_return = nav.iloc[-1] - 1.0
-    max_drawdown = (nav / nav.cummax() - 1.0).min()
+    max_drawdown = (nav / nav.cummax().clip(lower=1.0) - 1.0).min()
     ann_return = _annualized_return(total_return, period_info, trading_days_per_year)
     avg_holding, periods_per_year = _holding_period_stats(period_info, trading_days_per_year)
     ann_vol, sharpe, sortino, calmar = _risk_adjusted_stats(

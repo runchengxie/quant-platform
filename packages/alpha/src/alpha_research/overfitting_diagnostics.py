@@ -265,7 +265,7 @@ def _max_drawdown(series: pd.Series) -> float:
     if values.empty:
         return np.nan
     equity = (1.0 + values).cumprod()
-    return float((equity / equity.cummax() - 1.0).min())
+    return float((equity / equity.cummax().clip(lower=1.0) - 1.0).min())
 
 
 def scenario_backtest_report(

@@ -46,7 +46,7 @@ def _summarize_series(returns: pd.Series, *, periods_per_year: float) -> dict[st
         return {}
     nav = (1.0 + returns).cumprod()
     total_return = float(nav.iloc[-1] - 1.0)
-    max_drawdown = float((nav / nav.cummax() - 1.0).min())
+    max_drawdown = float((nav / nav.cummax().clip(lower=1.0) - 1.0).min())
     periods = int(returns.shape[0])
     if _is_finite(periods_per_year) and periods > 0:
         ann_return = float((1.0 + total_return) ** (float(periods_per_year) / periods) - 1.0)

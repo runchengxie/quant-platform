@@ -325,7 +325,7 @@ def compute_round_lot_simulation_stats(daily: pd.DataFrame) -> dict[str, float]:
         if len(r) > 1 and r.std(ddof=1) > 0
         else np.nan
     )
-    drawdown = nav / nav.cummax() - 1.0
+    drawdown = nav / nav.cummax().clip(lower=1.0) - 1.0
     return {
         "daily_rows": len(daily),
         "total_return": total,

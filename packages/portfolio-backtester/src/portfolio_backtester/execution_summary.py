@@ -40,7 +40,7 @@ def summarize_staggered_execution(
         if len(net) > 1 and net.std(ddof=1) > 0
         else np.nan
     )
-    drawdown = wealth / wealth.cummax() - 1.0
+    drawdown = wealth / wealth.cummax().clip(lower=1.0) - 1.0
     gross_nav = _numeric(daily, "gross_nav_before_cost")
     traded_ratio = _numeric(daily, "traded_notional") / gross_nav.replace(0.0, np.nan)
     summary = result.summary
