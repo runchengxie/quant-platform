@@ -226,7 +226,7 @@ def _drawdown_periods(returns: pd.Series, *, limit: int) -> list[dict[str, Any]]
     if returns.empty:
         return []
     nav = (1.0 + returns).cumprod()
-    running_max = nav.cummax()
+    running_max = nav.cummax().clip(lower=1.0)
     drawdown = nav / running_max - 1.0
     periods: list[dict[str, Any]] = []
     in_drawdown = False

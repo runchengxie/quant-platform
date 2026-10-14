@@ -65,3 +65,13 @@ If the run has holdings and the input panel contains usable exposure columns, it
 - Bucket IC, exposure analysis, and capacity stress tests answer different questions. Do not combine them into one conclusion.
 - `hit_rate` is a supporting measure. It does not replace return, risk, cost, and benchmark analysis.
 - A metric does not validate the data, point-in-time availability, or execution assumptions used to produce it. Check those inputs separately.
+
+Drawdown includes the initial wealth of 1 before the first return. A first-period
+loss therefore counts toward maximum drawdown and Calmar. When the largest
+drawdown starts at initial capital, `drawdown_duration` counts from the position
+before the first return. Its calendar-day duration is unavailable (`NaN`) because
+the return index does not specify an initial-capital timestamp. Recovery is
+measured from the trough until wealth reaches that original peak; unrecovered
+troughs have unavailable recovery fields. Tearsheet episodes start on the first
+observed underwater date, so their displayed days measure observed underwater
+time rather than peak-to-trough duration.

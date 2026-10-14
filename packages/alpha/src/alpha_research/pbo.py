@@ -55,7 +55,7 @@ def _max_drawdown(values: pd.Series) -> float:
     if series.empty:
         return np.nan
     equity = (1.0 + series).cumprod()
-    peak = equity.cummax()
+    peak = equity.cummax().clip(lower=1.0)
     drawdown = equity / peak - 1.0
     return float(drawdown.min())
 

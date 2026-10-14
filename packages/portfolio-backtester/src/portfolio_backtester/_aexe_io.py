@@ -184,7 +184,7 @@ def compute_stats(daily: pd.DataFrame) -> dict[str, Any]:
         if len(r) > 1 and r.std(ddof=1) > 0
         else np.nan
     )
-    dd = nav / nav.cummax() - 1.0
+    dd = nav / nav.cummax().clip(lower=1.0) - 1.0
     roll63 = r.rolling(63).mean() / r.rolling(63).std(ddof=1) * np.sqrt(252)
     roll126 = r.rolling(126).mean() / r.rolling(126).std(ddof=1) * np.sqrt(252)
     return {

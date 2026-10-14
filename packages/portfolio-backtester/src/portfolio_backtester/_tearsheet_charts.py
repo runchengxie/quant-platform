@@ -102,7 +102,7 @@ def _drawdown_chart_svg(returns: pd.Series, *, title: str) -> str:
     if returns.empty:
         return f"<h3>{_escape(title)}</h3><p>No data.</p>"
     nav = (1.0 + returns).cumprod()
-    drawdown = nav / nav.cummax() - 1.0
+    drawdown = nav / nav.cummax().clip(lower=1.0) - 1.0
     frame = pd.DataFrame({"Drawdown": drawdown})
     width = 576
     height = 240
