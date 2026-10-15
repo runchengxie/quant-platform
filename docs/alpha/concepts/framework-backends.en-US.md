@@ -29,7 +29,7 @@ Do not describe Qlib as a fully supported backend until these conditions are met
 ## Current validation command
 
 ```bash
-uv run --locked --extra dev python -m pytest tests/test_research_backends.py -q
+uv run --locked --extra dev python -m pytest tests/alpha/test_research_backends.py -q
 ```
 
 This test covers the current interfaces and native implementation. The standard `dev` gate does not validate the Qlib runtime.
