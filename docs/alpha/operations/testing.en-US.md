@@ -52,15 +52,15 @@ The public root CI runs `pip-audit` against locked dependencies. See the [reposi
 Examples of targeted tests:
 
 ```bash
-uv run --extra dev python -m pytest tests/test_signal_artifact.py -q
-uv run --extra dev python -m pytest tests/test_cpcv.py -q
+uv run --extra dev python -m pytest tests/alpha/test_signal_artifact.py -q
+uv run --extra dev python -m pytest tests/alpha/test_cpcv.py -q
 ```
 
 ## Research-backend test scope
 
-`tests/test_research_backends.py` covers framework-neutral interfaces, `NativeDatasetBackend`, `NativeTrainerBackend`, `NullExperimentRecorder`, and the constraint that artifact metadata does not carry runtime model objects.
+`tests/alpha/test_research_backends.py` covers framework-neutral interfaces, `NativeDatasetBackend`, `NativeTrainerBackend`, `NullExperimentRecorder`, and the constraint that artifact metadata does not carry runtime model objects.
 
-Qlib is not installed by the standard `dev` dependencies. After installing the `qlib` extra, run the deterministic training and prediction tests for `QlibTrainerBackend` in `tests/test_backends_qlib.py`. See [Research backends and Qlib status](../concepts/framework-backends.en-US.md) for its support conditions and validation requirements.
+Qlib is not installed by the standard `dev` dependencies. After installing the `qlib` extra, run the deterministic training and prediction tests for `QlibTrainerBackend` in `tests/alpha/test_backends_qlib.py`. See [Research backends and Qlib status](../concepts/framework-backends.en-US.md) for its support conditions and validation requirements.
 
 ## Checks before pushing
 

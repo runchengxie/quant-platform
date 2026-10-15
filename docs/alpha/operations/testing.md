@@ -52,18 +52,18 @@ scripts/alpha-research/dev/run_tests.sh maintainability
 定点测试示例：
 
 ```bash
-uv run --extra dev python -m pytest tests/test_signal_artifact.py -q
-uv run --extra dev python -m pytest tests/test_cpcv.py -q
+uv run --extra dev python -m pytest tests/alpha/test_signal_artifact.py -q
+uv run --extra dev python -m pytest tests/alpha/test_cpcv.py -q
 ```
 
 ## 研究后端测试范围
 
-`tests/test_research_backends.py` 当前覆盖框架中立接口、`NativeDatasetBackend`、
+`tests/alpha/test_research_backends.py` 当前覆盖框架中立接口、`NativeDatasetBackend`、
 `NativeTrainerBackend`、`NullExperimentRecorder`，以及产物元数据不携带运行时模型对象的
 约束。
 
 标准 `dev` 依赖没有安装 Qlib。Qlib 后端通过 `qlib` extra 安装后可运行
-`QlibTrainerBackend` 的确定性训练与预测测试（见 `tests/test_backends_qlib.py`）。
+`QlibTrainerBackend` 的确定性训练与预测测试（见 `tests/alpha/test_backends_qlib.py`）。
 接入条件和验证要求见
 [研究后端与 Qlib 状态](../concepts/framework-backends.md)。
 

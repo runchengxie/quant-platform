@@ -32,7 +32,7 @@ PIT 股票池、处理器拟合窗口、与原生基线可复验差异报告）�
 ## 当前验证入口
 
 ```bash
-uv run --locked --extra dev python -m pytest tests/test_research_backends.py -q
+uv run --locked --extra dev python -m pytest tests/alpha/test_research_backends.py -q
 ```
 
 该测试验证当前接口和原生实现。标准 `dev` 门禁不包含 Qlib 运行时验证。
