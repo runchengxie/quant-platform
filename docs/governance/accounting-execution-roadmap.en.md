@@ -2,7 +2,7 @@
 
 Language: English · [简体中文](accounting-execution-roadmap.md)
 
-This roadmap tracks the shared accounting ledger used by signal backtests, position replays, and capacity diagnostics. The main contracts through phases 0–6 are implemented. Several features remain opt-in to preserve existing return and result contracts. Corporate-action values and calibrated market-impact models are still open work; the roadmap does not claim that every cost component is measured.
+Status reviewed 2026-10-16: the generic order-level corporate-action ledger and date-effective fee schedule are implemented with synthetic regression coverage. They do not supply verified historical event or market-fee inputs. Remaining work includes source-checked historical coverage, calibrated impact and opportunity-cost models, execution-versus-valuation timing checks, and validation of minimum commissions under cash scaling.
 
 ## Accounting contract
 
@@ -78,6 +78,8 @@ Period metrics are derived from daily NAV. Calendar-year returns compound within
 There is no external backend adapter in the current supported path. LEAN remains an architecture reference, and Qlib/LEAN migration candidates are not part of `main`. Backtrader is a future evaluation candidate; vn.py is outside this repository's scope. `native.position_replay` remains the registered backend until an adapter passes the repository's integration gates and fixed-scenario comparisons.
 
 ## Regression coverage
+
+The optional corporate-action contract accepts caller-supplied events and records receivables and share entitlements; see the [corporate-action ledger](../corporate-action-ledger.en.md). The optional `DatedFeeSchedule` / `DatedTradeFeeModel` is wired into the execution NAV ledger; see [dated execution fees](../dated-execution-fees.md). Neither mechanism establishes completeness or historical accuracy of caller-provided inputs.
 
 Relevant implementation and tests include:
 
