@@ -41,6 +41,7 @@ def test_distribution_declares_only_public_registry_dependencies() -> None:
     assert project["project"]["optional-dependencies"]["ml"] == [
         "pandas-ta>=0.3.14b0",
         "scikit-learn>=1.9.0",
+        "ta>=0.11,<0.12",
         "xgboost>=1.7",
     ]
     assert dev_dependencies == [
@@ -56,6 +57,7 @@ def test_distribution_declares_only_public_registry_dependencies() -> None:
         "research-code-quality",
         "ruff>=0.8",
         "ty==0.0.77",
+        "ta>=0.11,<0.12",
     ]
     assert project["tool"]["uv"]["sources"]["research-contracts"] == {
         "path": "packages/research-contracts"
