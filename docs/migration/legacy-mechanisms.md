@@ -2,8 +2,10 @@
 
 The technical panel and portfolio helpers migrated from the owner's public
 `a-share-factor-core` commit `f68b602ecded17a3f18482d198e88f088d3c7529`.
-The new modules are `alpha_research.technical.legacy_features` and
+The new modules are `quant_platform.legacy_features` and
 `portfolio_backtester.legacy_rotation`; they require no adjacent source checkout.
+An alpha-namespace compatibility export remains available; private research
+consumers use the unambiguous `quant_platform` entry to avoid namespace masking.
 Install `quant-platform[ml]` for the optional `ta` technical-indicator dependency.
 
 Technical computation preserves historical forward-fill/zero-fill, column order,

@@ -1,6 +1,8 @@
 """Frozen feature contract remains causal and preserves historical warm-up filling."""
 
 import importlib
+import subprocess
+import sys
 
 import numpy as np
 import pandas as pd
@@ -39,3 +41,24 @@ def test_future_prices_do_not_change_past_features():
     data.iloc[140:, data.columns.get_loc("close")] *= 10
     after = api().calculate_technical_features(data)
     pd.testing.assert_frame_equal(before.iloc[:140], after.iloc[:140])
+
+
+def test_public_entry_remains_importable_when_private_alpha_namespace_shadows():
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            """
+import sys, types
+sys.modules['alpha_research'] = types.ModuleType('alpha_research')
+from quant_platform.legacy_features import calculate_technical_features
+import pandas as pd
+frame = pd.DataFrame({'open':[10.]*30,'high':[11.]*30,'low':[9.]*30,
+                      'close':[10.]*30,'volume':[1000.]*30})
+assert len(calculate_technical_features(frame)) == 30
+""",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
