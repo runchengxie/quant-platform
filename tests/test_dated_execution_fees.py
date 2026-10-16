@@ -376,20 +376,34 @@ def test_no_actual_fill_accrues_no_fee():
     assert result.daily["cash"].tolist() == [1_000.0, 1_000.0]
 
 
-def test_minimum_commission_is_included_in_cash_budget_without_breaking_round_lot():
+@pytest.mark.parametrize(
+    ("portfolio_value", "expected_notional", "expected_commission", "expected_transfer"),
+    [
+        (1_005.01, 1_000.0, 5.0, 0.01),
+        (500_000.0, 499_000.0, 99.8, 4.99),
+    ],
+)
+def test_minimum_commission_scales_with_cash_budget_and_round_lots(
+    portfolio_value: float,
+    expected_notional: float,
+    expected_commission: float,
+    expected_transfer: float,
+):
     result = _run_continuous(
-        amounts={"2020-01-02": 10_000.0},
+        amounts={"2020-01-02": 1_000_000_000.0},
         model=_ledger_model(),
-        portfolio_value=1_005.01,
+        portfolio_value=portfolio_value,
         round_lot=100,
     )
 
     fill = result.fills.iloc[0]
-    assert fill["filled_notional"] == pytest.approx(1_000.0)
-    assert fill["cost_commission"] == pytest.approx(5.0)
-    assert result.daily.loc[0, "cash"] == pytest.approx(0.0)
+    assert fill["filled_notional"] == pytest.approx(expected_notional)
+    assert fill["cost_commission"] == pytest.approx(expected_commission)
+    assert fill["cost_transfer_fee"] == pytest.approx(expected_transfer)
     assert result.daily.loc[0, "cash"] >= 0.0
-    assert result.daily.loc[0, "portfolio_value"] == pytest.approx(1_000.0)
+    assert result.daily.loc[0, "portfolio_value"] == pytest.approx(
+        portfolio_value - fill["transaction_cost"]
+    )
 
 
 def test_fill_components_reconcile_to_transaction_cost_and_nav_cash_change():
