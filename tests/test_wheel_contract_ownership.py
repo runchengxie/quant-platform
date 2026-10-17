@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import filecmp
 import io
 import json
 import os
@@ -79,6 +80,13 @@ def _seed_runtime_dependencies(python: Path, requirements: list[str]) -> None:
             origin = Path(installed.locate_file(record))
             destination = target / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
+            if destination.exists() or destination.is_symlink():
+                assert filecmp.cmp(origin, destination, shallow=False), (
+                    "Runtime dependency file collision",
+                    name,
+                    str(relative),
+                )
+                continue
             try:
                 os.link(origin, destination)
             except OSError:
