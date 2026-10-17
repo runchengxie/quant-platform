@@ -21,12 +21,12 @@
 
 ## 并行开发流程
 
-多个 agent 同时工作时，每项改动都必须使用独立 worktree 和功能分支。推荐流程如下：
+多个 agent 同时工作时，每项改动都必须使用独立 worktree 和功能分支。先从工作区明确指定的机器配置或环境变量解析 `CODE_ROOT`。以下 Bash 示例假定已导出该变量，任务目录使用仓库名前缀以避免跨仓重名。推荐流程如下：
 
 ```bash
 git fetch origin
-git worktree add /home/richard/code/.worktrees/<任务名> -b feat/<任务名> origin/main
-cd /home/richard/code/.worktrees/<任务名>
+git worktree add "${CODE_ROOT}/.worktrees/quant-platform-<任务名>" -b feat/<任务名> origin/main
+cd "${CODE_ROOT}/.worktrees/quant-platform-<任务名>"
 uv run pytest
 git push -u origin feat/<任务名>
 gh pr create --base main --head feat/<任务名>
@@ -35,7 +35,7 @@ gh pr create --base main --head feat/<任务名>
 PR 合并到 `main` 后，删除远端和本地旧分支以及对应 worktree：
 
 ```bash
-git worktree remove /home/richard/code/.worktrees/<任务名>
+git worktree remove "${CODE_ROOT}/.worktrees/quant-platform-<任务名>"
 git branch -d feat/<任务名>
 git push origin --delete feat/<任务名>
 ```
