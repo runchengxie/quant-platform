@@ -73,7 +73,6 @@ packages = [
   "alpha_research.style_factors",
   "alpha_research.style_replica",
   "alpha_research.technical",
-  "research_contracts",
   "strategy_pipeline",
   "strategy_pipeline.control_plane",
   "quant_execution_engine",
@@ -87,7 +86,6 @@ packages = [
 portfolio_backtester = "packages/portfolio-backtester/src/portfolio_backtester"
 quant_platform = "packages/portfolio-backtester/src/quant_platform"
 alpha_research = "packages/alpha/src/alpha_research"
-research_contracts = "packages/research-contracts"
 strategy_pipeline = "packages/orchestration/src/strategy_pipeline"
 quant_execution_engine = "packages/execution/src/quant_execution_engine"
 ticknet = "packages/microstructure/src/ticknet"
