@@ -79,6 +79,7 @@ nav:
       - Guides:
           - Common entry points: guides/entry-points.md
           - Execution simulation: guides/execution-simulation.en.md
+          - Minute execution scenarios: guides/minute-execution.en.md
           - Point-in-time research data: guides/point-in-time-data.en.md
           - Synthetic assurance scenarios: guides/assurance-scenarios.md
           - Cost evidence and capacity: guides/cost-evidence.md
@@ -128,6 +129,7 @@ nav:
           - 术语表: reference/glossary.zh-CN.md
       - 常用指南:
           - 常用入口: guides/entry-points.zh-CN.md
+          - 分钟执行情景: guides/minute-execution.md
   - Guides (Chinese originals; translation in progress):
       - 袖套组合: guides/sleeve-portfolio.md
       - 执行模拟: guides/execution-simulation.md
