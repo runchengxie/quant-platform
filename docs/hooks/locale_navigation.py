@@ -30,6 +30,7 @@ ENGLISH_PAGES = {
     "guides/sequenced-execution.en.md",
     "guides/incumbent-requalification.en.md",
     "guides/incumbent-requalification-oos-controls.en.md",
+    "guides/minute-execution.en.md",
     "guides/promotion-sidecar.en.md",
     "guides/sleeve-portfolio.en.md",
     "guides/diagnostic-close-replay.en.md",
