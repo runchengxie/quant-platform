@@ -71,6 +71,7 @@ packages = [
   "alpha_research.backends",
   "alpha_research.contextual",
   "alpha_research.style_factors",
+  "alpha_research.style_factors.helpers",
   "alpha_research.style_replica",
   "alpha_research.technical",
   "strategy_pipeline",
