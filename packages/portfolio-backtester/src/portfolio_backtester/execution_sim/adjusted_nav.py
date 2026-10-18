@@ -391,6 +391,8 @@ def simulate_execution_adjusted_nav(
     corporate_actions: Iterable[CorporateAction] | None = None,
     price_basis: str | None = None,
 ) -> ExecutionAdjustedNavResult:
+    if config.sell_round_lot is not None and price_basis not in (None, "raw"):
+        raise ValueError("execution_sim.sell_round_lot requires raw share prices.")
     events = normalize_corporate_actions(corporate_actions, price_basis)
     if not config.enabled:
         return _empty_adjusted_nav_result(config, status="disabled")

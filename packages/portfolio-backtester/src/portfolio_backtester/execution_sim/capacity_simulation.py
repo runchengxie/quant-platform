@@ -29,6 +29,11 @@ def simulate_capacity_execution(
     limit_down_col: str | None = None,
     listing_status_col: str | None = None,
 ) -> ExecutionSimResult:
+    if config.sell_round_lot is not None:
+        raise ValueError(
+            "execution_sim.sell_round_lot requires a share ledger; "
+            "use simulate_execution_adjusted_nav."
+        )
     if not config.enabled:
         return _empty_result(config, status="disabled")
     if positions is None or positions.empty:

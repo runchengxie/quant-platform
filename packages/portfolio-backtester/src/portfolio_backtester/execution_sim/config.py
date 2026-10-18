@@ -41,6 +41,15 @@ class ExecutionSimConfig:
     limit_down_col: str | None = None
     listing_status_col: str | None = None
     lot_tolerance: float = 1e-6
+    # Independent opt-in raw-share sell policy; round_lot applies to buys only.
+    sell_round_lot: int | None = None
+
+    def __post_init__(self) -> None:
+        value = self.sell_round_lot
+        if value is not None and (type(value) is not int or value <= 0):
+            raise ValueError("execution_sim.sell_round_lot must be a positive integer or None.")
+        if value is not None and (not np.isfinite(self.lot_tolerance) or self.lot_tolerance < 0):
+            raise ValueError("execution_sim.lot_tolerance must be finite and >= 0.")
 
 
 @dataclass(frozen=True)
@@ -124,6 +133,7 @@ def build_execution_sim_config(
         zero_fill_abort_days_buy=zero_fill_abort_days_buy,
         unfilled_buy_action=unfilled_buy_action,
         unfilled_sell_action=unfilled_sell_action,
+        sell_round_lot=sim_cfg.get("sell_round_lot"),
         round_lot=market_rules.round_lot,
         enforce_t1=market_rules.enforce_t1,
         enforce_price_limits=market_rules.enforce_price_limits,
@@ -187,6 +197,7 @@ def describe_execution_sim_config(config: ExecutionSimConfig) -> dict[str, Any]:
         "unfilled_buy_action": config.unfilled_buy_action,
         "unfilled_sell_action": config.unfilled_sell_action,
         "round_lot": config.round_lot,
+        "sell_round_lot": config.sell_round_lot,
         "enforce_t1": bool(config.enforce_t1),
         "enforce_price_limits": bool(config.enforce_price_limits),
         "enforce_listing_status": bool(config.enforce_listing_status),

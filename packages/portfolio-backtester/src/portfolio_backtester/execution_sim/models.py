@@ -233,9 +233,12 @@ class _MarketRules:
     listing_status_table: pd.DataFrame | None
     lot_tolerance: float
 
+    sell_round_lot: int | None = None
+
     def any_active(self) -> bool:
         return (
-            self.round_lot is not None
+            self.sell_round_lot is not None
+            or self.round_lot is not None
             or self.enforce_t1
             or self.enforce_price_limits
             or self.enforce_listing_status
@@ -262,6 +265,7 @@ class _MarketRules:
             )
         return cls(
             round_lot=config.round_lot,
+            sell_round_lot=config.sell_round_lot,
             enforce_t1=bool(config.enforce_t1),
             enforce_price_limits=bool(config.enforce_price_limits),
             enforce_listing_status=bool(config.enforce_listing_status),
