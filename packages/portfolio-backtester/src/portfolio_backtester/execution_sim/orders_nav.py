@@ -37,6 +37,7 @@ from .orders_nav_fees import (
     _nav_trade_fee,
     _slippage_pricing_row,  # noqa: F401  re-exported for compatibility
 )
+from .orders_nav_quantities import _quantize_nav_sell_quantity
 from .orders_nav_states import (
     _append_nav_order_row,  # noqa: F401  re-exported for core/ideal
     _append_order_rows,
@@ -593,7 +594,9 @@ def _execute_nav_sell_orders_for_day(
             sellable_quantity,
             max(float(capacity) / float(price), 0.0),
         )
-        # 卖出允许零股 (A 股整手约束仅限买入).
+        fill_quantity = _quantize_nav_sell_quantity(
+            fill_quantity, held_quantity=held_quantity, config=config
+        )
         fill = fill_quantity * float(price)
         if fill <= 1e-8:
             continue

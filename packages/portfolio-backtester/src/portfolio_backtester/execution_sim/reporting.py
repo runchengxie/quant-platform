@@ -285,7 +285,8 @@ def _market_rule_warnings(config: ExecutionSimConfig) -> list[str]:
     if not config.enabled:
         return []
     any_rule = (
-        config.round_lot is not None
+        config.sell_round_lot is not None
+        or config.round_lot is not None
         or config.enforce_t1
         or config.enforce_price_limits
         or config.enforce_listing_status
