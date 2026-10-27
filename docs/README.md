@@ -18,40 +18,43 @@ These guides use synthetic data and small examples. They help you run the full f
 
 ## Further reading
 
-1. [Repository README](https://github.com/runchengxie/quant-platform/blob/main/README.md)
-2. [Common entry points](guides/entry-points.md)
-3. [Multi-sleeve portfolio construction](guides/sleeve-portfolio.en.md)
-4. [Incumbent requalification](guides/incumbent-requalification.en.md)
-5. [Incumbent requalification OOS bridge](guides/incumbent-requalification-oos-controls.en.md)
-6. [Promotion-evidence execution sidecar](guides/promotion-sidecar.en.md)
-7. [Next-close diagnostic replay](guides/diagnostic-close-replay.en.md)
-8. [Differential backtesting](concepts/differential-backtesting.en.md)
-9. [Portfolio optimization backends](concepts/portfolio-optimization-backends.en.md)
-10. [Composable backtest specification](concepts/backtest-spec.md)
-11. [Backtest configuration parsing](concepts/backtest-configuration.md)
-12. [Backtest backend boundary](concepts/backend-architecture.en.md)
-13. [Costs and execution assumptions](concepts/execution-costs.md) · [Dated execution fees](dated-execution-fees.md)
-14. [Execution capacity and daily NAV simulation](guides/execution-simulation.en.md)
-15. [Minute execution scenarios](guides/minute-execution.en.md)
-16. [Turnover definitions](concepts/turnover.en-US.md)
-17. [Cost breakdown](concepts/cost-breakdown.md)
-    · [Cost evidence and capacity](guides/cost-evidence.md)
-    · [Synthetic assurance scenarios](guides/assurance-scenarios.md)
-18. [Factor return and risk attribution](concepts/factor-attribution.en.md)
-19. [Raw-share corporate-action ledger](corporate-action-ledger.en.md)
-20. [Interpreting backtest results](concepts/backtest-interpretation.en.md)
-21. [Market benchmark comparisons](concepts/benchmark-ladder.en-US.md)
-22. [Position output contract](reference/outputs/positions.md)
-23. [Backtest output contract](reference/outputs/backtest-outputs.en.md)
-24. [Execution allocation reference assets](reference/allocation-reference.md)
-25. [Public API](reference/public-api.md)
-26. [Testing and quality checks](testing.md) · [简体中文](testing.zh-CN.md)
-27. [Execution domain](execution/README.en.md)
-28. [Microstructure framework](microstructure/README.en.md) · [TickNet data boundary](microstructure/data-boundary.en.md)
-29. [Microstructure development guide](microstructure/development-guide.en.md) · [Optional Rust kernel](development/microstructure-rust.en.md)
-30. [Runtime kernel contracts](architecture/runtime-kernel.md)
-31. [Barra-like risk model kernel](risk-model-kernel.md)
-32. [Portfolio execution profiling record](development/portfolio-execution-profiling-2026-09.md)
+??? note "Expand complete reference"
+
+    1. [Repository README](https://github.com/runchengxie/quant-platform/blob/main/README.md)
+    2. [Common entry points](guides/entry-points.md)
+    3. [Multi-sleeve portfolio construction](guides/sleeve-portfolio.en.md)
+    4. [Incumbent requalification](guides/incumbent-requalification.en.md)
+    5. [Incumbent requalification OOS bridge](guides/incumbent-requalification-oos-controls.en.md)
+    6. [Promotion-evidence execution sidecar](guides/promotion-sidecar.en.md)
+    7. [Next-close diagnostic replay](guides/diagnostic-close-replay.en.md)
+    8. [Differential backtesting](concepts/differential-backtesting.en.md)
+    9. [Portfolio optimization backends](concepts/portfolio-optimization-backends.en.md)
+    10. [Composable backtest specification](concepts/backtest-spec.md)
+    11. [Backtest configuration parsing](concepts/backtest-configuration.md)
+    12. [Backtest backend boundary](concepts/backend-architecture.en.md)
+    13. [Costs and execution assumptions](concepts/execution-costs.md) · [Dated execution fees](dated-execution-fees.md)
+    14. [Execution capacity and daily NAV simulation](guides/execution-simulation.en.md)
+    15. [Minute execution scenarios](guides/minute-execution.en.md)
+    16. [Turnover definitions](concepts/turnover.en-US.md)
+    17. [Cost breakdown](concepts/cost-breakdown.md)
+        · [Cost evidence and capacity](guides/cost-evidence.md)
+        · [Synthetic assurance scenarios](guides/assurance-scenarios.md)
+    18. [Factor return and risk attribution](concepts/factor-attribution.en.md)
+    19. [Raw-share corporate-action ledger](corporate-action-ledger.en.md)
+    20. [Interpreting backtest results](concepts/backtest-interpretation.en.md)
+    21. [Market benchmark comparisons](concepts/benchmark-ladder.en-US.md)
+    22. [Position output contract](reference/outputs/positions.md)
+    23. [Backtest output contract](reference/outputs/backtest-outputs.en.md)
+    24. [Execution allocation reference assets](reference/allocation-reference.md)
+    25. [Public API](reference/public-api.md)
+    26. [Testing and quality checks](testing.md) · [简体中文](testing.zh-CN.md)
+    27. [Execution domain](execution/README.en.md)
+    28. [Microstructure framework](microstructure/README.en.md) · [TickNet data boundary](microstructure/data-boundary.en.md)
+    29. [Microstructure development guide](microstructure/development-guide.en.md) · [Optional Rust kernel](development/microstructure-rust.en.md)
+    30. [Runtime kernel contracts](architecture/runtime-kernel.md)
+    31. [Barra-like risk model kernel](risk-model-kernel.md)
+    32. [Portfolio execution profiling record](development/portfolio-execution-profiling-2026-09.md)
+
 
 ## Governance and migration
 
@@ -65,26 +68,29 @@ Agents should start with the root README, this page, and the relevant category d
 
 ## Sources of truth
 
-| Area | Implementation |
-| --- | --- |
-| Public package entry points | `packages/portfolio-backtester/src/portfolio_backtester/__init__.py` |
-| Multi-sleeve portfolio construction | `packages/portfolio-backtester/src/portfolio_backtester/sleeve_portfolio.py` |
-| Backtest specification | `packages/portfolio-backtester/src/portfolio_backtester/backtest_spec.py` |
-| Backtest configuration parsing | `packages/portfolio-backtester/src/portfolio_backtester/backtest_config.py` |
-| High-level API | `packages/portfolio-backtester/src/portfolio_backtester/api.py` |
-| Input and output contracts | `packages/portfolio-backtester/src/portfolio_backtester/contracts.py` |
-| Execution-domain contracts | `packages/portfolio-backtester/src/portfolio_backtester/execution_contracts.py` |
-| Execution allocation reference | `packages/portfolio-backtester/src/portfolio_backtester/allocation_reference.py` |
-| Backend protocols and normalized results | `packages/portfolio-backtester/src/portfolio_backtester/backends/` |
-| Costs and slippage | `packages/portfolio-backtester/src/portfolio_backtester/execution.py` |
-| Position replay | `packages/portfolio-backtester/src/portfolio_backtester/position_backtest.py` |
-| Promotion-evidence execution simulation | `packages/portfolio-backtester/src/portfolio_backtester/promotion_sidecar.py` |
-| Test entry point | `scripts/dev/run_tests.sh` |
-| [Grid backtest helpers](grid-support.en.md) | `packages/portfolio-backtester/src/portfolio_backtester/grid_support.py` |
-| Microstructure simulation API | `packages/microstructure/src/ticknet/simulator/` |
-| Rust simulation kernel | `packages/microstructure/rust/src/lib.rs` |
+??? note "Expand implementation source map"
 
-When code, tests, and documentation disagree, verify the current implementation and correct the documentation in the same change.
+    | Area | Implementation |
+    | --- | --- |
+    | Public package entry points | `packages/portfolio-backtester/src/portfolio_backtester/__init__.py` |
+    | Multi-sleeve portfolio construction | `packages/portfolio-backtester/src/portfolio_backtester/sleeve_portfolio.py` |
+    | Backtest specification | `packages/portfolio-backtester/src/portfolio_backtester/backtest_spec.py` |
+    | Backtest configuration parsing | `packages/portfolio-backtester/src/portfolio_backtester/backtest_config.py` |
+    | High-level API | `packages/portfolio-backtester/src/portfolio_backtester/api.py` |
+    | Input and output contracts | `packages/portfolio-backtester/src/portfolio_backtester/contracts.py` |
+    | Execution-domain contracts | `packages/portfolio-backtester/src/portfolio_backtester/execution_contracts.py` |
+    | Execution allocation reference | `packages/portfolio-backtester/src/portfolio_backtester/allocation_reference.py` |
+    | Backend protocols and normalized results | `packages/portfolio-backtester/src/portfolio_backtester/backends/` |
+    | Costs and slippage | `packages/portfolio-backtester/src/portfolio_backtester/execution.py` |
+    | Position replay | `packages/portfolio-backtester/src/portfolio_backtester/position_backtest.py` |
+    | Promotion-evidence execution simulation | `packages/portfolio-backtester/src/portfolio_backtester/promotion_sidecar.py` |
+    | Test entry point | `scripts/dev/run_tests.sh` |
+    | [Grid backtest helpers](grid-support.en.md) | `packages/portfolio-backtester/src/portfolio_backtester/grid_support.py` |
+    | Microstructure simulation API | `packages/microstructure/src/ticknet/simulator/` |
+    | Rust simulation kernel | `packages/microstructure/rust/src/lib.rs` |
+
+    When code, tests, and documentation disagree, verify the current implementation and correct the documentation in the same change.
+
 
 ## Project boundary
 
