@@ -21,9 +21,13 @@ uv run python -c "import portfolio_backtester; print('portfolio_backtester is re
 ## 运行检查
 
 ```bash
-uv run ruff check .
-uv run pytest -q
+uv run --locked ruff check .
+uv run --locked ruff format --check .
+uv run --locked ty check --error-on-warning
+uv run --locked pytest -q
 ```
+
+以上是 Python 源码检查。CI 还验证精简依赖与 ML 依赖模式、构建可选 Rust wheel，并审计导出的锁定依赖。Rust 测试需要单独安装 wheel，默认 Python 测试不能证明该后端通过验证。根项目没有配置覆盖率门槛。完整 CI 命令见 `.github/workflows/ci.yml`。
 
 完整测试会覆盖回测、组合构造、成本、执行模拟、产物契约和迁移兼容行为。第一次使用时，可以先阅读[第一个回测](first-backtest.zh-CN.md)，不需要先理解整个测试套件。
 
