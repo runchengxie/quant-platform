@@ -2,12 +2,16 @@
 
 语言：简体中文 · [English](README.md)
 
+维护中，由 `quant-platform` 维护。原文核对日期为 2026 年 9 月 25 日。
+
+<!--
 > status: active
 > owner: quant-platform
 > audience: human and agent
 > last_verified: 2026-09-25
 > source_of_truth: yes
 > superseded_by: n/a
+-->
 
 这里集中记录 `quant-platform` 的输入约定、执行假设、输出契约和开发检查。
 
@@ -23,62 +27,68 @@
 
 ## 深入阅读顺序
 
-1. [根目录 README](https://github.com/runchengxie/quant-platform/blob/main/README.md)
-2. [常用入口](guides/entry-points.zh-CN.md)
-3. [通用多策略袖套组合构造](guides/sleeve-portfolio.md)
-4. [组合式回测规范](concepts/backtest-spec.md)
-5. [回测配置解析](concepts/backtest-configuration.md)
-6. [回测后端边界](concepts/backend-architecture.md)
-7. [机器可读框架状态账本](https://github.com/runchengxie/quant-platform/blob/main/docs/framework-integration-ledger.yml)
-8. [成本与执行假设](concepts/execution-costs.md)
-9. [执行容量与每日净值模拟](guides/execution-simulation.md)
-10. [分钟执行情景](guides/minute-execution.md) · [English](guides/minute-execution.en.md)
-11. [已退出公开发布的风格因子回测片段](concepts/style-factor-portfolio-weighting.md)
-12. [AFML 仓位与策略风险](concepts/afml-sizing-and-risk.md)
-13. [换手率口径](concepts/turnover.md)
-14. [成本口径](concepts/cost-breakdown.zh-CN.md)
-15. [因子收益和风险归因](concepts/factor-attribution.md) · [English](concepts/factor-attribution.en.md)
-16. [公司行动账本](corporate-action-ledger.md) · [English](corporate-action-ledger.en.md)
-17. [回测结果解读](concepts/backtest-interpretation.md)
-18. [市场基准阶梯](concepts/benchmark-ladder.md)
-19. [持仓输出约定](reference/outputs/positions.zh-CN.md)
-20. [回测输出契约](reference/outputs/backtest-outputs.md)
-21. [执行分配参考资产](reference/allocation-reference.zh-CN.md)
-22. [公开 API](reference/public-api.zh-CN.md)
-23. [测试和质量检查](testing.zh-CN.md) · [English](testing.md)
-24. [微观结构开发说明](microstructure/README.md)
-25. [可选 Rust 模拟内核](development/microstructure-rust.md)
-26. [会计与执行路线图](governance/accounting-execution-roadmap.md)
-27. [网格回测辅助函数](grid-support.md)
-28. [历史迁移材料](https://github.com/runchengxie/quant-platform/blob/main/docs/migration/legacy-materials/README.md)
-29. [运行时内核契约](architecture/runtime-kernel.zh-CN.md)
-30. [Barra-like 风险模型内核](risk-model-kernel.zh-CN.md)
-31. [组合执行性能分析记录](development/portfolio-execution-profiling-2026-09.zh-CN.md)
+??? note "展开完整参考"
 
-编码代理默认读取根 README、本页和一个与任务相关的分类目录，不递归读取全部 Markdown 文件。
+    1. [根目录 README](https://github.com/runchengxie/quant-platform/blob/main/README.md)
+    2. [常用入口](guides/entry-points.zh-CN.md)
+    3. [通用多策略袖套组合构造](guides/sleeve-portfolio.md)
+    4. [组合式回测规范](concepts/backtest-spec.md)
+    5. [回测配置解析](concepts/backtest-configuration.md)
+    6. [回测后端边界](concepts/backend-architecture.md)
+    7. [机器可读框架状态账本](https://github.com/runchengxie/quant-platform/blob/main/docs/framework-integration-ledger.yml)
+    8. [成本与执行假设](concepts/execution-costs.md)
+    9. [执行容量与每日净值模拟](guides/execution-simulation.md)
+    10. [分钟执行情景](guides/minute-execution.md) · [English](guides/minute-execution.en.md)
+    11. [已退出公开发布的风格因子回测片段](concepts/style-factor-portfolio-weighting.md)
+    12. [AFML 仓位与策略风险](concepts/afml-sizing-and-risk.md)
+    13. [换手率口径](concepts/turnover.md)
+    14. [成本口径](concepts/cost-breakdown.zh-CN.md)
+    15. [因子收益和风险归因](concepts/factor-attribution.md) · [English](concepts/factor-attribution.en.md)
+    16. [公司行动账本](corporate-action-ledger.md) · [English](corporate-action-ledger.en.md)
+    17. [回测结果解读](concepts/backtest-interpretation.md)
+    18. [市场基准阶梯](concepts/benchmark-ladder.md)
+    19. [持仓输出约定](reference/outputs/positions.zh-CN.md)
+    20. [回测输出契约](reference/outputs/backtest-outputs.md)
+    21. [执行分配参考资产](reference/allocation-reference.zh-CN.md)
+    22. [公开 API](reference/public-api.zh-CN.md)
+    23. [测试和质量检查](testing.zh-CN.md) · [English](testing.md)
+    24. [微观结构开发说明](microstructure/README.md)
+    25. [可选 Rust 模拟内核](development/microstructure-rust.md)
+    26. [会计与执行路线图](governance/accounting-execution-roadmap.md)
+    27. [网格回测辅助函数](grid-support.md)
+    28. [历史迁移材料](https://github.com/runchengxie/quant-platform/blob/main/docs/migration/legacy-materials/README.md)
+    29. [运行时内核契约](architecture/runtime-kernel.zh-CN.md)
+    30. [Barra-like 风险模型内核](risk-model-kernel.zh-CN.md)
+    31. [组合执行性能分析记录](development/portfolio-execution-profiling-2026-09.zh-CN.md)
+
+    编码代理默认读取根 README、本页和一个与任务相关的分类目录，不递归读取全部 Markdown 文件。
+
 
 ## 事实来源
 
-| 内容 | 代码位置 |
-| --- | --- |
-| 顶层公开入口 | `packages/portfolio-backtester/src/portfolio_backtester/__init__.py` |
-| 通用多袖组合构造 | `packages/portfolio-backtester/src/portfolio_backtester/sleeve_portfolio.py` |
-| 回测规范 | `packages/portfolio-backtester/src/portfolio_backtester/backtest_spec.py` |
-| 回测配置解析 | `packages/portfolio-backtester/src/portfolio_backtester/backtest_config.py` |
-| 高层 API | `packages/portfolio-backtester/src/portfolio_backtester/api.py` |
-| 输入和输出契约 | `packages/portfolio-backtester/src/portfolio_backtester/contracts.py` |
-| 执行领域契约 | `packages/portfolio-backtester/src/portfolio_backtester/execution_contracts.py` |
-| 执行分配参考资产 | `packages/portfolio-backtester/src/portfolio_backtester/allocation_reference.py` |
-| 后端协议与规范化结果 | `packages/portfolio-backtester/src/portfolio_backtester/backends/` |
-| 成本与滑点 | `packages/portfolio-backtester/src/portfolio_backtester/execution.py` |
-| 持仓回放 | `packages/portfolio-backtester/src/portfolio_backtester/position_backtest.py` |
-| 晋级证据成交模拟 | `packages/portfolio-backtester/src/portfolio_backtester/promotion_sidecar.py` |
-| 测试入口 | `scripts/dev/run_tests.sh` |
-| 网格回测辅助函数 | `packages/portfolio-backtester/src/portfolio_backtester/grid_support.py` |
-| 微观结构模拟接口 | `packages/microstructure/src/ticknet/simulator/` |
-| Rust 模拟内核 | `packages/microstructure/rust/src/lib.rs` |
+??? note "展开完整参考"
 
-代码、测试和文档发生冲突时，应先核对当前实现，再在同一次改动中修正文档。
+    | 内容 | 代码位置 |
+    | --- | --- |
+    | 顶层公开入口 | `packages/portfolio-backtester/src/portfolio_backtester/__init__.py` |
+    | 通用多袖组合构造 | `packages/portfolio-backtester/src/portfolio_backtester/sleeve_portfolio.py` |
+    | 回测规范 | `packages/portfolio-backtester/src/portfolio_backtester/backtest_spec.py` |
+    | 回测配置解析 | `packages/portfolio-backtester/src/portfolio_backtester/backtest_config.py` |
+    | 高层 API | `packages/portfolio-backtester/src/portfolio_backtester/api.py` |
+    | 输入和输出契约 | `packages/portfolio-backtester/src/portfolio_backtester/contracts.py` |
+    | 执行领域契约 | `packages/portfolio-backtester/src/portfolio_backtester/execution_contracts.py` |
+    | 执行分配参考资产 | `packages/portfolio-backtester/src/portfolio_backtester/allocation_reference.py` |
+    | 后端协议与规范化结果 | `packages/portfolio-backtester/src/portfolio_backtester/backends/` |
+    | 成本与滑点 | `packages/portfolio-backtester/src/portfolio_backtester/execution.py` |
+    | 持仓回放 | `packages/portfolio-backtester/src/portfolio_backtester/position_backtest.py` |
+    | 晋级证据成交模拟 | `packages/portfolio-backtester/src/portfolio_backtester/promotion_sidecar.py` |
+    | 测试入口 | `scripts/dev/run_tests.sh` |
+    | 网格回测辅助函数 | `packages/portfolio-backtester/src/portfolio_backtester/grid_support.py` |
+    | 微观结构模拟接口 | `packages/microstructure/src/ticknet/simulator/` |
+    | Rust 模拟内核 | `packages/microstructure/rust/src/lib.rs` |
+
+    代码、测试和文档发生冲突时，应先核对当前实现，再在同一次改动中修正文档。
+
 
 ## 文档边界
 

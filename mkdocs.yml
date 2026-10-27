@@ -136,9 +136,9 @@ nav:
       - 按决策时点读取研究输入: guides/point-in-time-data.md
       - 多次决策的统一执行回放: guides/sequenced-execution.md
       - 收盘诊断回放: guides/diagnostic-close-replay.md
-      - 旧仓再资格: guides/incumbent-requalification.md
-      - 旧仓再资格 OOS 控制: guides/incumbent-requalification-oos-controls.md
-      - 晋升旁路: guides/promotion-sidecar.md
+      - 重新评估现有持仓: guides/incumbent-requalification.md
+      - 现有持仓的样本外检验: guides/incumbent-requalification-oos-controls.md
+      - 研究证据的独立成交模拟: guides/promotion-sidecar.md
       - 组合执行性能基线: development/portfolio-execution-profiling-2026-09.zh-CN.md
   - Core concepts:
       - Backtest configuration: concepts/backtest-configuration.md
