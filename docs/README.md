@@ -68,7 +68,7 @@ Agents should start with the root README, this page, and the relevant category d
 
 ## Sources of truth
 
-??? note "Expand complete reference"
+??? note "Expand implementation source map"
 
     | Area | Implementation |
     | --- | --- |
