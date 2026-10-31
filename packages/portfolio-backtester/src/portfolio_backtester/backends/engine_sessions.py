@@ -239,6 +239,10 @@ def _ledger_evidence(
         )
         positions[key] = position
         quantity = _number(position["quantity"], integer=True)
+        _require(
+            _number(position["mark_price"]) == _valuation_mark(sessions[key[0]], key[1]),
+            "valuation mark mismatch",
+        )
         _equal(_number(position["market_value"]), quantity * _number(position["mark_price"]))
     daily_rows, position_rows = [], []
     for day, balance in daily.items():
@@ -305,6 +309,17 @@ def _ledger_evidence(
     _equal(_number(result["final_nav"]), _number(result["daily_ledger"][-1]["nav"]))
     _equal(_number(result["total_commission"]), commission)
     return daily_rows, position_rows
+
+
+def _valuation_mark(session: dict, symbol: str) -> Decimal:
+    quotes = [
+        quote
+        for quote in session["quotes"]
+        if quote["symbol"] == symbol and quote["ts_ns"] == session["valuation_ts_ns"]
+    ]
+    _require(len(quotes) == 1, "missing or duplicate valuation mark quote")
+    quote = quotes[0]
+    return (_number(quote["bid"]) + _number(quote["ask"])) / Decimal(2)
 
 
 def _order_evidence(request: dict, result: dict, sessions: dict, zone: str):

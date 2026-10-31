@@ -233,3 +233,18 @@ def test_verified_snapshot_survives_path_replacement(tmp_path, monkeypatch):
 
     monkeypatch.setattr(subprocess, "run", replace_then_run)
     client.run_sessions(request()).validate()
+
+
+def test_balanced_nav_with_unrequested_mark_rejected(tmp_path):
+    result = json.loads((FIXTURES / "result.json").read_text())
+    result["daily_positions"][0].update(mark_price="999", market_value="99900")
+    result["daily_ledger"][0].update(positions_value="99900", nav="108899")
+    with pytest.raises(EngineProtocolError, match="valuation mark"):
+        executable(tmp_path, result).run_sessions(request())
+
+
+def test_valuation_mark_uses_exact_midpoint(tmp_path):
+    payload = request()
+    payload["sessions"][0]["quotes"][-1].update(bid="10.005", ask="11.995")
+    result = json.loads((FIXTURES / "result.json").read_text())
+    executable(tmp_path, result).run_sessions(payload).validate()
