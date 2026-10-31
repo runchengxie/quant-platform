@@ -78,8 +78,10 @@ The `coverage` mode requires `pytest-cov`. It generates a report without imposin
 Public CI uses `pip-audit` to check locked dependencies for known vulnerabilities. Run the same check locally with:
 
 ```bash
-uvx --from pip-audit pip-audit --strict -r <(uv export --locked --all-groups --extra dev --extra microstructure --format requirements-txt --no-hashes --no-emit-project --no-emit-local --no-emit-package quant-platform --no-emit-package research-contracts --no-emit-package research-code-quality)
+uvx --from pip-audit pip-audit --strict -r <(uv export --locked --all-groups --extra dev --extra microstructure --format requirements-txt --no-hashes --no-emit-project --no-emit-local --no-emit-package quant-platform --no-emit-package research-contracts --no-emit-package research-code-quality --no-emit-package quant-backtest-engine-client)
 ```
+
+The source-only engine SDK has no runtime dependencies and is pinned to a reviewed Git revision. It is excluded from registry lookup alongside the other local/source packages because PyPI cannot identify it. Its own isolated wheel tests and real-engine checks run separately. The remaining registry dependencies retain strict vulnerability auditing.
 
 Current CI does not run Bandit or unused-dependency scanning. Before adding either gate, define the source and dependency scope it will scan.
 

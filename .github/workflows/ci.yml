@@ -15,14 +15,14 @@ jobs:
       - uses: dtolnay/rust-toolchain@1.99.0
       - name: Build pinned provider
         run: cargo +1.99.0 build --locked --release --manifest-path session-engine-provider/Cargo.toml
-      - run: uv sync --locked --no-default-groups --group test --python 3.12
+      - run: uv sync --locked --no-default-groups --group test --extra engine --python 3.12
       - name: Exercise sizing and session replay against the real engine
         shell: bash
         run: |
           export SESSION_ENGINE_BINARY="$GITHUB_WORKSPACE/session-engine-provider/target/release/quant-backtest-engine"
           export SESSION_ENGINE_SHA256="$(sha256sum "$SESSION_ENGINE_BINARY" | cut -d ' ' -f 1)"
           test -x "$SESSION_ENGINE_BINARY"
-          uv run --locked --no-default-groups --group test pytest -q tests/test_engine_session_client.py
+          uv run --locked --no-default-groups --group test --extra engine pytest -q tests/test_engine_session_client.py
   dependency-modes:
     runs-on: ubuntu-latest
     strategy:
@@ -115,4 +115,5 @@ jobs:
           --no-emit-project --no-emit-local
           --no-emit-package quant-platform
           --no-emit-package research-contracts
-          --no-emit-package research-code-quality)
+          --no-emit-package research-code-quality
+          --no-emit-package quant-backtest-engine-client)
