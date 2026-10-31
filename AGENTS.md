@@ -8,6 +8,8 @@
 
 公共框架迁移已经完成。现有 Python 通用回测、组合构造、风险、执行模拟和公共契约继续维护在本仓库。独立 Rust 引擎入口、版本化订单意图契约和 NautilusTrader 薄适配维护在 `quant-backtest-engine`。移除旧回测接口前必须完成调用方迁移和语义对照。`quant-market-data-platform` 独立负责数据接入、标准化、质量治理、版本和已发布数据资产，本仓库只消费其发布资产。`research-workspace`、旧 `portfolio-backtester` 和旧 `quant-execution-engine` 仅用于历史复现和兼容核对。
 
+独立引擎的显式客户端位于 `portfolio_backtester.backends.engine_sessions`，只负责内容摘要固定的子进程调用、结果勾稽与规范化，不复制数量规划或撮合，不自动注册，也不代表完整统一执行结果包。
+
 `portfolio_backtester` Python 命名空间暂时保持不变。本仓库只接收公开机制、合成数据、测试、契约和迁移证据，不接收数据供应商、凭证、真实数据、策略参数、任务编排、执行运行时或研究产物。
 
 策略研究假设、专有特征和晋升规则属于私有研究层。本仓库只保留可复用的公开机制。

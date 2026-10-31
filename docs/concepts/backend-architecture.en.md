@@ -66,3 +66,54 @@ bundle. Migration requires matched timing, fees, account balances and per-trade
 comparisons, then an explicitly versioned adapter; old APIs remain until consumers
 have migrated and those comparisons pass. The new engine's published supported
 capabilities are the authority for its own request version.
+
+### Explicit session engine client
+
+`portfolio_backtester.backends.engine_sessions.EngineClient` is an opt-in consumer
+of the independent engine's `size` and `run` commands. Existing registry entries,
+Python defaults, and package namespaces are unchanged. Select an absolute executable
+path and its SHA256 content digest explicitly; the client verifies the digest before
+every subprocess call, executes a private snapshot of those verified bytes,
+uses an argument list and a temporary JSON request file,
+and applies a finite timeout (30 seconds by default).
+
+```python
+from pathlib import Path
+from portfolio_backtester.backends.engine_sessions import EngineClient
+
+client = EngineClient(Path('/absolute/release/quant-backtest-engine'), sha256=release_digest,
+                      source_revision=release_commit)
+plan = client.size(sizing_request)  # sizing_request.v1 -> sizing_result.v1
+result = client.run_sessions(session_request)  # engine_request.v2 -> canonical result
+```
+
+Requests follow the provider's versioned contracts; decimal amounts remain strings.
+The client delegates validation of trading inputs, sizing, admission and execution to
+the engine. A sizing plan's projected sale proceeds and cash are estimates. Actual
+execution rechecks available cash; a plan does not guarantee fills. Synthetic examples
+live in `tests/fixtures/engine_sessions/`.
+
+Session results map daily balances, positions, orders and fills into
+`CanonicalBacktestResult`. Dates use Asia/Shanghai for CNY and UTC for USD.
+Reconciliation checks identity, quantities, daily cash, positions, fees and NAV;
+wire accounting uses exact Decimal equality, with fill notionals rounded to two
+currency decimals using ROUND_HALF_EVEN, matching upstream Money conversion. Decimal wire values and
+all denial reasons, active-rule metadata and backend metadata remain available in
+`result.metadata['engine_result']`. Canonical daily money columns and weights use
+floats for compatibility. Fill IDs are stable indices within the provider output.
+The executable digest and optional caller-supplied source revision record provenance;
+the caller is responsible for trusting the selected binary and its release source.
+
+This adapter does not create a unified execution ledger or claim the platform's
+full `execution_aware` bundle. It has no corporate-action, adjusted-price, shorting,
+strategy-generation, data-loading, or runtime orchestration support. It never
+registers itself automatically. The provider owns engine contracts and financial
+semantics; this repository owns only transport, reconciliation and normalization.
+
+To run the optional real binary integration test, set `SESSION_ENGINE_BINARY` to
+the explicitly selected absolute path and `SESSION_ENGINE_SHA256` to its digest.
+The test skips when no binary is selected; the synthetic malformed-response tests
+always run.
+
+The synthetic wire fixtures were verified against merged provider revision
+`3ee74bfa21d743e595ce61d0ac06b97dd588ebd6` (NautilusTrader 0.66.0).
