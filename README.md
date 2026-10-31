@@ -33,3 +33,10 @@ This repository maintains strategy-agnostic quantitative mechanisms. Strategy as
 The Alpha module boundary is documented in [framework backends](docs/alpha/concepts/framework-backends.md).
 
 The existing `portfolio_backtester` Python import namespace remains for compatibility.
+
+## Independent Rust engine
+
+[quant-backtest-engine](https://github.com/runchengxie/quant-backtest-engine) provides
+an independent Rust library and CLI backed by NautilusTrader. Existing Python backends
+remain supported; see [engine ownership and migration limits](docs/concepts/backend-architecture.en.md#independent-rust-engine)
+for the new boundary and verified capabilities.

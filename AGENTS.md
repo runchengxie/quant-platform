@@ -6,7 +6,7 @@
 
 这是公开的可复用量化研究平台仓库。保留 `portfolio_backtester` Python 命名空间，直到完成兼容迁移。
 
-公共框架迁移已经完成。新的通用回测、组合构造、风险、执行模拟和公共契约都维护在本仓库。`quant-market-data-platform` 独立负责数据接入、标准化、质量治理、版本和已发布数据资产，本仓库只消费其发布资产。`research-workspace`、旧 `portfolio-backtester` 和旧 `quant-execution-engine` 仅用于历史复现和兼容核对。
+公共框架迁移已经完成。现有 Python 通用回测、组合构造、风险、执行模拟和公共契约继续维护在本仓库。独立 Rust 引擎入口、版本化订单意图契约和 NautilusTrader 薄适配维护在 `quant-backtest-engine`。移除旧回测接口前必须完成调用方迁移和语义对照。`quant-market-data-platform` 独立负责数据接入、标准化、质量治理、版本和已发布数据资产，本仓库只消费其发布资产。`research-workspace`、旧 `portfolio-backtester` 和旧 `quant-execution-engine` 仅用于历史复现和兼容核对。
 
 `portfolio_backtester` Python 命名空间暂时保持不变。本仓库只接收公开机制、合成数据、测试、契约和迁移证据，不接收数据供应商、凭证、真实数据、策略参数、任务编排、执行运行时或研究产物。
 

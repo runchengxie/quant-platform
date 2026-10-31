@@ -44,3 +44,25 @@ Before adding an adapter, compare it against the fixed scenarios in the [integra
 ## Project boundary
 
 This repository maintains reusable portfolio, accounting, and execution mechanisms. It does not add a generic event engine, gateway, order-management system, strategy lifecycle, parameter optimizer, data feed, or market-agnostic broker simulator. Strategy assumptions, proprietary features, data access, and orchestration belong to callers or other projects.
+
+## Independent Rust engine
+
+[quant-backtest-engine](https://github.com/runchengxie/quant-backtest-engine) is the
+independent Rust library and CLI for new direct NautilusTrader integration. Its first
+release uses a versioned order-intent/quote request and final-snapshot result contract.
+The engine depends on neither this platform nor the runtime; the runtime supervises
+its executable through an opt-in job version and retains state/publication ownership.
+
+This platform continues to own portfolio construction, analytics and its existing
+Python backends as compatibility references. No existing imports, default backends or
+financial results change. Do not copy the whole portfolio-backtester package into the
+new repository: it also contains portfolio and research utilities. Target weights need
+an explicit sizing contract before they become engine orders.
+
+The new engine currently covers synthetic USD cash equities and market orders. It
+has no verified A-share T+1, price-limit, corporate-action, capacity or daily-ledger
+parity. Its final snapshot cannot be presented as this platform's execution-aware
+bundle. Migration requires matched timing, fees, account balances and per-trade
+comparisons, then an explicitly versioned adapter; old APIs remain until consumers
+have migrated and those comparisons pass. The new engine's published supported
+capabilities are the authority for its own request version.
