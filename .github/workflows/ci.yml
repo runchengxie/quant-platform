@@ -14,7 +14,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - uses: dtolnay/rust-toolchain@1.99.0
       - name: Build pinned provider
-        run: cargo build --locked --release --manifest-path session-engine-provider/Cargo.toml
+        run: cargo +1.99.0 build --locked --release --manifest-path session-engine-provider/Cargo.toml
       - run: uv sync --locked --no-default-groups --group test --python 3.12
       - name: Exercise sizing and session replay against the real engine
         shell: bash
