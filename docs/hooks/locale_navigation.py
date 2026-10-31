@@ -12,6 +12,7 @@ from mkdocs.structure.nav import Navigation
 
 ENGLISH_PAGES = {
     "migration/portfolio-boundaries.md",
+    "migration/matched-ledger-comparison.md",
     "README.md",
     "LANGUAGE_MIGRATION_STATUS.md",
     "LANGUAGE_POLICY.md",

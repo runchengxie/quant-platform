@@ -22,7 +22,7 @@ jobs:
           export SESSION_ENGINE_BINARY="$GITHUB_WORKSPACE/session-engine-provider/target/release/quant-backtest-engine"
           export SESSION_ENGINE_SHA256="$(sha256sum "$SESSION_ENGINE_BINARY" | cut -d ' ' -f 1)"
           test -x "$SESSION_ENGINE_BINARY"
-          uv run --locked --no-default-groups --group test --extra engine pytest -q tests/test_engine_session_client.py
+          uv run --locked --no-default-groups --group test --extra engine pytest -q tests/test_engine_session_client.py tests/test_engine_ledger_comparison.py
   dependency-modes:
     runs-on: ubuntu-latest
     strategy:

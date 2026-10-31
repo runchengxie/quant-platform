@@ -289,6 +289,8 @@ nav:
   - Governance and migration:
       - Portfolio ownership and compatibility: migration/portfolio-boundaries.md
       - 组合模块归属与兼容迁移: migration/portfolio-boundaries.zh-CN.md
+      - Matched synthetic ledger comparison: migration/matched-ledger-comparison.md
+      - 合成账本对照: migration/matched-ledger-comparison.zh-CN.md
       - Retired style-factor backtest slice: concepts/style-factor-portfolio-weighting.en.md
       - Research workspace migration boundary: migration/research-workspace-sunset.en.md
       - quant-market-research boundary: migration/market-research-boundary.en.md
