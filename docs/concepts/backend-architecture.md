@@ -168,8 +168,11 @@ A 股 T+1、涨跌停、公司行为、容量限制和每日完整账本尚未�
 from pathlib import Path
 from portfolio_backtester.backends.engine_sessions import EngineClient
 
-client = EngineClient(Path('/absolute/release/quant-backtest-engine'), sha256=release_digest,
-                      source_revision=release_commit)
+client = EngineClient(
+    Path("/absolute/release/quant-backtest-engine"),
+    sha256=release_digest,
+    source_revision=release_commit,
+)
 plan = client.size(sizing_request)  # sizing_request.v1 -> sizing_result.v1
 result = client.run_sessions(session_request)  # engine_request.v2 -> 规范结果
 ```
