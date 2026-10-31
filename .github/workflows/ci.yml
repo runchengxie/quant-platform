@@ -1,6 +1,28 @@
 name: public-ci
 on: [push, pull_request]
 jobs:
+  engine-sessions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check out the released session protocol provider
+        uses: actions/checkout@v4
+        with:
+          repository: runchengxie/quant-backtest-engine
+          ref: 3ee74bfa21d743e595ce61d0ac06b97dd588ebd6
+          path: session-engine-provider
+      - uses: astral-sh/setup-uv@v6
+      - uses: dtolnay/rust-toolchain@1.99.0
+      - name: Build pinned provider
+        run: cargo +1.99.0 build --locked --release --manifest-path session-engine-provider/Cargo.toml
+      - run: uv sync --locked --no-default-groups --group test --python 3.12
+      - name: Exercise sizing and session replay against the real engine
+        shell: bash
+        run: |
+          export SESSION_ENGINE_BINARY="$GITHUB_WORKSPACE/session-engine-provider/target/release/quant-backtest-engine"
+          export SESSION_ENGINE_SHA256="$(sha256sum "$SESSION_ENGINE_BINARY" | cut -d ' ' -f 1)"
+          test -x "$SESSION_ENGINE_BINARY"
+          uv run --locked --no-default-groups --group test pytest -q tests/test_engine_session_client.py
   dependency-modes:
     runs-on: ubuntu-latest
     strategy:

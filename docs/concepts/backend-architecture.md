@@ -156,3 +156,45 @@ A 股 T+1、涨跌停、公司行为、容量限制和每日完整账本尚未�
 最终估值快照不能标为本平台的 execution_aware bundle。
 迁移前需要逐笔核对时间、费用、现金和持仓，再增加显式版本适配。
 只有调用方完成迁移且语义对照通过后，才考虑移除旧接口。
+
+### 显式选择的交易时段引擎客户端
+
+`portfolio_backtester.backends.engine_sessions.EngineClient` 是独立引擎 `size`
+和 `run` 命令的可选客户端，不改变现有注册项、Python 默认行为或包命名空间。
+调用方必须指定可执行文件的绝对路径和 SHA256 内容摘要。客户端每次调用前检查摘要，
+执行已校验字节的私有副本，通过参数列表及临时 JSON 文件传参，并使用有限超时（默认 30 秒）。
+
+```python
+from pathlib import Path
+from portfolio_backtester.backends.engine_sessions import EngineClient
+
+client = EngineClient(
+    Path("/absolute/release/quant-backtest-engine"),
+    sha256=release_digest,
+    source_revision=release_commit,
+)
+plan = client.size(sizing_request)  # sizing_request.v1 -> sizing_result.v1
+result = client.run_sessions(session_request)  # engine_request.v2 -> 规范结果
+```
+
+请求遵循引擎的版本化契约，十进制金额保留为字符串。交易输入校验、数量规划、订单准入
+和执行均由引擎负责。规划中的卖出所得和现金只是估计。实际执行会重新检查可用现金，
+规划并不保证成交。公开合成样例位于 `tests/fixtures/engine_sessions/`。
+
+客户端将逐日余额、持仓、订单和成交转换为 `CanonicalBacktestResult`。CNY 使用
+Asia/Shanghai 交易日期，USD 使用 UTC。校验覆盖标识、数量、每日现金、持仓、费用和
+净值的勾稽关系。原始账务使用 Decimal 精确比较，逐笔名义金额按两位货币小数及
+ROUND_HALF_EVEN 舍入，与上游 Money 转换一致。`result.metadata['engine_result']` 保留十进制原文、全部拒绝原因、
+生效规则和后端元信息。规范日账金额和权重为兼容现有接口使用浮点数。成交 ID 按引擎
+输出顺序生成。摘要与调用方可选提供的源码版本记录来源。调用方负责确认所选二进制及
+发布源码可信。
+
+此适配器不构造统一执行账本，也不声称支持平台完整的 `execution_aware` 结果包。
+不支持公司行动、复权价格、做空、策略生成、数据加载和运行时编排，不会自动注册。
+引擎仓库负责契约及财务语义，本仓库仅负责传输、勾稽校验和格式转换。
+
+运行真实二进制集成测试时，设置绝对路径 `SESSION_ENGINE_BINARY` 和摘要
+`SESSION_ENGINE_SHA256`。未显式选择二进制时跳过该测试。畸形响应的合成测试始终运行。
+
+合成契约样例已对照引擎合并版本 `3ee74bfa21d743e595ce61d0ac06b97dd588ebd6`
+验证，底层为 NautilusTrader 0.66.0。
