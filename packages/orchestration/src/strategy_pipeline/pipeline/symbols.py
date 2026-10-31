@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from portfolio_backtester._symbol_utils import _ensure_symbol_columns
+from quant_platform.symbols import _ensure_symbol_columns
 
 PROVIDER_SYMBOL_PRIORITY = ("ts_code", "stock_ticker", "order_book_id", "symbol")
 

@@ -107,7 +107,7 @@ Pull requests and main-branch pushes run repository-wide Ruff lint and formattin
 
 ## Type-check scope
 
-`scripts/dev/run_tests.sh typecheck` and `typecheck-release` use the configured `[tool.ty.src]` scope in `pyproject.toml` and enable `--error-on-warning`. The current scope includes `portfolio-backtester`, orchestration, execution, alpha, microstructure, and `scripts/`. CI runs the same strict check without passing a narrower path list.
+`scripts/dev/run_tests.sh typecheck` and `typecheck-release` use the configured `[tool.ty.src]` scope in `pyproject.toml` and enable `--error-on-warning`. The current scope includes `platform`, orchestration, execution, alpha, microstructure, and `scripts/`. CI runs the same strict check without passing a narrower path list.
 
 Only two optional-dependency imports retain file-level exceptions: the Qlib backend requires the `qlib` extra, and the Rich renderer falls back to plain text when Rich is absent. Other diagnostics in configured source files fail the check.
 

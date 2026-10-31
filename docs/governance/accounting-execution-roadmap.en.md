@@ -83,10 +83,10 @@ The optional corporate-action contract accepts caller-supplied events and record
 
 Relevant implementation and tests include:
 
-- Backend capabilities and canonical results are implemented in `packages/portfolio-backtester/src/portfolio_backtester/backends/base.py`; the optional native ledger is in `packages/portfolio-backtester/src/portfolio_backtester/backends/native.py`. Regression tests: `tests/test_ledger_stage2_contract.py`.
-- The unified ledger adapter is in `packages/portfolio-backtester/src/portfolio_backtester/execution_sim/results.py`. Regression tests: `tests/test_execution_ledger.py` and `tests/test_ledger_stage2_contract.py`.
-- Cost breakdown and detailed fee calculation are in `packages/portfolio-backtester/src/portfolio_backtester/types.py` and `packages/portfolio-backtester/src/portfolio_backtester/_execution_models.py`. Regression tests: `tests/test_cost_breakdown.py`.
-- Market-rule configuration is in `packages/portfolio-backtester/src/portfolio_backtester/execution_sim/config.py`. Regression tests: `tests/test_execution_sim_market_rules.py` and `tests/test_execution_corporate_actions.py`.
+- Backend capabilities and canonical results are implemented in `packages/platform/src/portfolio_backtester/backends/base.py`; the optional native ledger is in `packages/platform/src/portfolio_backtester/backends/native.py`. Regression tests: `tests/test_ledger_stage2_contract.py`.
+- The unified ledger adapter is in `packages/platform/src/portfolio_backtester/execution_sim/results.py`. Regression tests: `tests/test_execution_ledger.py` and `tests/test_ledger_stage2_contract.py`.
+- Cost breakdown and detailed fee calculation are in `packages/platform/src/portfolio_backtester/types.py` and `packages/platform/src/portfolio_backtester/_execution_models.py`. Regression tests: `tests/test_cost_breakdown.py`.
+- Market-rule configuration is in `packages/platform/src/portfolio_backtester/execution_sim/config.py`. Regression tests: `tests/test_execution_sim_market_rules.py` and `tests/test_execution_corporate_actions.py`.
 - Capacity reports: `tests/test_capacity_report_phase5.py`.
 - Yearly metrics and run metadata: `tests/test_run_metadata_phase6.py`.
 

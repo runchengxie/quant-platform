@@ -47,3 +47,5 @@ git push origin --delete feat/<任务名>
 不要让多个 agent 直接修改同一个工作树，也不要在 `main` 上直接提交。
 
 Run `uv sync --locked --all-groups`, `uv run ruff check .`, and `uv run pytest` from this directory.
+
+平台通用入口使用 `quant_platform.portfolio`、`quant_platform.analytics`、`quant_platform.backtest`。源码位于 `packages/platform/src`。`portfolio_backtester` 仅作兼容别名，生产代码不得新增直接导入。`quant_platform._portfolio` 是暂存的内部实现，不是公开 API。中立契约不得依赖执行模拟器。独立引擎原始字典 SDK 由 engine 仓库维护，平台仅保留标准分析结果转换。

@@ -20,10 +20,10 @@ def test_optional_qlib_unresolved_import_ignore_is_scoped_to_adapter() -> None:
         override
         for override in overrides
         if override.get("include")
-        == ["packages/portfolio-backtester/src/portfolio_backtester/backends/qlib.py"]
+        == ["packages/platform/src/portfolio_backtester/backends/qlib.py"]
     ] == [
         {
-            "include": ["packages/portfolio-backtester/src/portfolio_backtester/backends/qlib.py"],
+            "include": ["packages/platform/src/portfolio_backtester/backends/qlib.py"],
             "rules": {"unresolved-import": "ignore"},
         }
     ]

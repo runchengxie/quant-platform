@@ -5,8 +5,8 @@ import ast
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-SRC = ROOT / "packages" / "portfolio-backtester" / "src"
-PACKAGE = SRC / "portfolio_backtester"
+SRC = ROOT / "packages" / "platform" / "src"
+PACKAGE = SRC / "quant_platform" / "_portfolio"
 FORBIDDEN_OWNERS = ("strategy_pipeline", "alpha_research")
 LEGACY_BRAND_MARKERS = (
     "".join(("cs", "tree")),
@@ -20,7 +20,7 @@ TEXT_SURFACES = (
     ROOT / "pyproject.toml",
     ROOT / "docs",
     ROOT / "scripts",
-    ROOT / "packages" / "portfolio-backtester" / "src" / "portfolio_backtester",
+    ROOT / "packages" / "platform" / "src",
     ROOT / "tests",
 )
 

@@ -5,11 +5,7 @@ from pathlib import Path
 
 def test_control_plane_imports_without_owner_packages(monkeypatch):
     bundled_provider_package = (
-        Path(__file__).parents[3]
-        / "packages"
-        / "portfolio-backtester"
-        / "src"
-        / "quant_market_data_platform"
+        Path(__file__).parents[3] / "packages" / "platform" / "src" / "quant_market_data_platform"
     )
     assert not bundled_provider_package.exists()
 

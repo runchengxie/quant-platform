@@ -190,9 +190,7 @@ def test_namespace_and_ownership_docs_match_current_package_boundaries() -> None
     ownership_english = (root / "docs/ownership-migration.en.md").read_text(encoding="utf-8")
     ownership_chinese = (root / "docs/ownership-migration.md").read_text(encoding="utf-8")
     distribution = (root / "pyproject.toml").read_text(encoding="utf-8")
-    owner_module = (
-        root / "packages/portfolio-backtester/src/portfolio_backtester/daily_watch20_oos.py"
-    )
+    owner_module = root / "packages/platform/src/quant_platform/_portfolio/daily_watch20_oos.py"
     owner_test = (root / "tests/test_daily_watch20_oos_owner.py").read_text(encoding="utf-8")
 
     assert '"portfolio_backtester"' in distribution
@@ -243,10 +241,12 @@ def test_governance_docs_match_current_implementation_and_ownership() -> None:
 
 
 def _assert_roadmap_backend_contract(root: Path, roadmap: str) -> None:
-    source_root = root / "packages/portfolio-backtester/src/portfolio_backtester"
+    source_root = root / "packages/platform/src/quant_platform/_portfolio"
     native = (source_root / "backends/native.py").read_text(encoding="utf-8")
     api = (source_root / "api.py").read_text(encoding="utf-8")
-    ledger = (source_root / "execution_sim/results.py").read_text(encoding="utf-8")
+    ledger = (root / "packages/platform/src/quant_platform/backtest/ledger.py").read_text(
+        encoding="utf-8"
+    )
     lifecycle = (source_root / "execution_contracts.py").read_text(encoding="utf-8")
 
     assert "ledger: bool = False" in native
@@ -278,7 +278,7 @@ def _assert_roadmap_backend_contract(root: Path, roadmap: str) -> None:
 
 
 def _assert_roadmap_cost_contract(root: Path, roadmap: str) -> None:
-    source_root = root / "packages/portfolio-backtester/src/portfolio_backtester"
+    source_root = root / "packages/platform/src/quant_platform/_portfolio"
     costs = (source_root / "types.py").read_text(encoding="utf-8")
     fees = (source_root / "_execution_models.py").read_text(encoding="utf-8")
     for component in (
@@ -298,7 +298,7 @@ def _assert_roadmap_cost_contract(root: Path, roadmap: str) -> None:
 
 def _assert_roadmap_market_rule_contract(root: Path, roadmap: str) -> None:
     market_rules = (
-        root / "packages/portfolio-backtester/src/portfolio_backtester/execution_sim/config.py"
+        root / "packages/platform/src/quant_platform/_portfolio/execution_sim/config.py"
     ).read_text(encoding="utf-8")
     for rule in (
         "round_lot",
@@ -322,7 +322,7 @@ def _assert_roadmap_market_rule_contract(root: Path, roadmap: str) -> None:
 
 
 def _assert_roadmap_capacity_and_metadata_contract(root: Path, roadmap: str) -> None:
-    source_root = root / "packages/portfolio-backtester/src/portfolio_backtester"
+    source_root = root / "packages/platform/src/quant_platform/_portfolio"
     capacity_report = (source_root / "_capacity_report_config.py").read_text(encoding="utf-8")
     run_metadata = (source_root / "_run_metadata.py").read_text(encoding="utf-8")
     metrics = (source_root / "_metrics_period.py").read_text(encoding="utf-8")
@@ -404,7 +404,7 @@ def test_factor_attribution_docs_keep_schema_ids_and_scope_aligned() -> None:
     english = (root / "docs/concepts/factor-attribution.en.md").read_text(encoding="utf-8")
     chinese = (root / "docs/concepts/factor-attribution.md").read_text(encoding="utf-8")
     source = (
-        root / "packages/portfolio-backtester/src/portfolio_backtester/factor_attribution.py"
+        root / "packages/platform/src/quant_platform/_portfolio/factor_attribution.py"
     ).read_text(encoding="utf-8")
 
     for schema in ("factor_return_attribution.v1", "factor_risk_attribution.v1"):
@@ -427,7 +427,7 @@ def test_dated_execution_fee_translation_matches_public_contract() -> None:
     english = (root / "docs/dated-execution-fees.md").read_text(encoding="utf-8")
     chinese = (root / "docs/dated-execution-fees.zh-CN.md").read_text(encoding="utf-8")
     implementation = (
-        root / "packages/portfolio-backtester/src/portfolio_backtester/dated_fees.py"
+        root / "packages/platform/src/quant_platform/_portfolio/dated_fees.py"
     ).read_text(encoding="utf-8")
 
     for contract in (
@@ -459,9 +459,9 @@ def test_retired_style_factor_slice_is_not_described_as_a_current_api() -> None:
     )
     english_api = (root / "docs/reference/public-api.md").read_text(encoding="utf-8")
     chinese_api = (root / "docs/reference/public-api.zh-CN.md").read_text(encoding="utf-8")
-    package = (
-        root / "packages/portfolio-backtester/src/portfolio_backtester/__init__.py"
-    ).read_text(encoding="utf-8")
+    package = (root / "packages/platform/src/quant_platform/_portfolio/__init__.py").read_text(
+        encoding="utf-8"
+    )
 
     for retired in (
         "available_factor_names",

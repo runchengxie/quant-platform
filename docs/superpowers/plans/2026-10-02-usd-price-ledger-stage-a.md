@@ -34,7 +34,7 @@
 
 ## File map — quant-platform
 
-All new source files are modules under `packages/portfolio-backtester/src/portfolio_backtester/`; no new package namespace or packaging-list change is required.
+All new source files are modules under `packages/platform/src/portfolio_backtester/`; no new package namespace or packaging-list change is required.
 
 - `usd_ledger_models.py`: request, observation, configuration and result records.
 - `usd_ledger_inputs.py`: request validation, causal price/FX selection and unit conversion.
@@ -59,7 +59,7 @@ Define frozen records in `usd_ledger_models.py`; validate every request in the p
 
 ### Task 1: Typed inputs and causal marks
 
-**Files:** Create `packages/portfolio-backtester/src/portfolio_backtester/usd_ledger_models.py`, `usd_ledger_inputs.py`; test `tests/test_usd_ledger_inputs.py`.
+**Files:** Create `packages/platform/src/portfolio_backtester/usd_ledger_models.py`, `usd_ledger_inputs.py`; test `tests/test_usd_ledger_inputs.py`.
 
 **Interfaces produced:** `validate_usd_request(request: USDReplayRequest) -> None`; `select_usd_price(request: USDReplayRequest, instrument_id: str, at: datetime, *, execution: bool = False) -> USDPriceObservation`; `select_usd_fx(request: USDReplayRequest, currency: str, at: datetime) -> tuple[Decimal, USDFXObservation | None]`.
 
@@ -72,7 +72,7 @@ Define frozen records in `usd_ledger_models.py`; validate every request in the p
 
 ### Task 2: Pure valuation and affordable settlement
 
-**Files:** Create `packages/portfolio-backtester/src/portfolio_backtester/usd_ledger_accounting.py`; test `tests/test_usd_ledger_accounting.py`.
+**Files:** Create `packages/platform/src/portfolio_backtester/usd_ledger_accounting.py`; test `tests/test_usd_ledger_accounting.py`.
 
 **Interfaces consumed:** Task 1 records and selectors.
 **Interfaces produced:** `value_usd_book(quantities: Mapping[str, Decimal], cash: Decimal, local_prices: Mapping[str, Decimal], usd_per_local: Mapping[str, Decimal]) -> tuple[Decimal, Decimal]` returning positions/NAV; `settle_usd_rebalance(quantities: Mapping[str, Decimal], cash: Decimal, desired_quantities: Mapping[str, Decimal], local_prices: Mapping[str, Decimal], usd_per_local: Mapping[str, Decimal], instruments: Mapping[str, USDInstrument], config: USDReplayConfig, *, execution_ids: frozenset[str]) -> tuple[dict[str, Decimal], Decimal, pd.DataFrame]`.
@@ -87,7 +87,7 @@ Define frozen records in `usd_ledger_models.py`; validate every request in the p
 
 ### Task 3: Chronological quantity replay and attribution
 
-**Files:** Create `packages/portfolio-backtester/src/portfolio_backtester/usd_ledger.py`; test `tests/test_usd_ledger_replay.py`.
+**Files:** Create `packages/platform/src/portfolio_backtester/usd_ledger.py`; test `tests/test_usd_ledger_replay.py`.
 
 **Interfaces produced:** `run_usd_price_replay(request: USDReplayRequest) -> USDReplayResult` in `usd_ledger.py`.
 
@@ -104,7 +104,7 @@ Define frozen records in `usd_ledger_models.py`; validate every request in the p
 
 ### Task 4: Official diagnostic publication and public guide
 
-**Files:** Create `packages/portfolio-backtester/src/portfolio_backtester/usd_ledger_bundle.py`; test `tests/test_usd_ledger_bundle.py`. Also create `docs/reference/usd-price-ledger.md`.
+**Files:** Create `packages/platform/src/portfolio_backtester/usd_ledger_bundle.py`; test `tests/test_usd_ledger_bundle.py`. Also create `docs/reference/usd-price-ledger.md`.
 
 **Interfaces produced:** `write_usd_price_replay_bundle(output_dir: Path, *, result: USDReplayResult, run_id: str, research_clock: ResearchClock, producer: Mapping[str, Any], configuration_sha256: str, input_refs: Sequence[Mapping[str, Any]]) -> BacktestBundleManifest` in `usd_ledger_bundle.py`.
 

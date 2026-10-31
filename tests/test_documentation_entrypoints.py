@@ -51,15 +51,10 @@ def test_turnover_reference_covers_bilingual_contract_fields() -> None:
     english = (ROOT / "docs" / "concepts" / "turnover.en-US.md").read_text(encoding="utf-8")
     chinese = (ROOT / "docs" / "concepts" / "turnover.md").read_text(encoding="utf-8")
     turnover_source = (
-        ROOT / "packages" / "portfolio-backtester" / "src" / "portfolio_backtester" / "turnover.py"
+        ROOT / "packages" / "platform" / "src" / "quant_platform" / "_portfolio" / "turnover.py"
     ).read_text(encoding="utf-8")
     period_source = (
-        ROOT
-        / "packages"
-        / "portfolio-backtester"
-        / "src"
-        / "portfolio_backtester"
-        / "topk_context.py"
+        ROOT / "packages" / "platform" / "src" / "quant_platform" / "_portfolio" / "topk_context.py"
     ).read_text(encoding="utf-8")
 
     for field in (
@@ -91,17 +86,19 @@ def test_benchmark_comparison_docs_match_registered_interfaces() -> None:
     ladder = (
         ROOT
         / "packages"
-        / "portfolio-backtester"
+        / "platform"
         / "src"
-        / "portfolio_backtester"
+        / "quant_platform"
+        / "_portfolio"
         / "benchmark_ladder.py"
     ).read_text(encoding="utf-8")
     backtest_config = (
         ROOT
         / "packages"
-        / "portfolio-backtester"
+        / "platform"
         / "src"
-        / "portfolio_backtester"
+        / "quant_platform"
+        / "_portfolio"
         / "backtest_config.py"
     ).read_text(encoding="utf-8")
     artifacts = (
@@ -178,25 +175,28 @@ def test_incumbent_requalification_and_promotion_guides_match_public_contracts()
     selector = (
         root
         / "packages"
-        / "portfolio-backtester"
+        / "platform"
         / "src"
-        / "portfolio_backtester"
+        / "quant_platform"
+        / "_portfolio"
         / "incumbent_requalification.py"
     ).read_text(encoding="utf-8")
     bridge = (
         root
         / "packages"
-        / "portfolio-backtester"
+        / "platform"
         / "src"
-        / "portfolio_backtester"
+        / "quant_platform"
+        / "_portfolio"
         / "incumbent_requalification_oos.py"
     ).read_text(encoding="utf-8")
     sidecar_impl = (
         root
         / "packages"
-        / "portfolio-backtester"
+        / "platform"
         / "src"
-        / "portfolio_backtester"
+        / "quant_platform"
+        / "_portfolio"
         / "promotion_sidecar.py"
     ).read_text(encoding="utf-8")
 
@@ -231,17 +231,19 @@ def test_multi_sleeve_and_close_replay_guides_match_implementation() -> None:
     sleeve_impl = (
         root
         / "packages"
-        / "portfolio-backtester"
+        / "platform"
         / "src"
-        / "portfolio_backtester"
+        / "quant_platform"
+        / "_portfolio"
         / "sleeve_portfolio.py"
     ).read_text(encoding="utf-8")
     close_impl = (
         root
         / "packages"
-        / "portfolio-backtester"
+        / "platform"
         / "src"
-        / "portfolio_backtester"
+        / "quant_platform"
+        / "_portfolio"
         / "target_close_replay.py"
     ).read_text(encoding="utf-8")
 
@@ -280,21 +282,17 @@ def test_differential_and_optimizer_guides_match_current_contracts() -> None:
     differential_impl = (
         root
         / "packages"
-        / "portfolio-backtester"
+        / "platform"
         / "src"
-        / "portfolio_backtester"
+        / "quant_platform"
+        / "_portfolio"
         / "differential_backtest.py"
     ).read_text(encoding="utf-8")
     optimization_impl = (
-        root
-        / "packages"
-        / "portfolio-backtester"
-        / "src"
-        / "portfolio_backtester"
-        / "optimization.py"
+        root / "packages" / "platform" / "src" / "quant_platform" / "_portfolio" / "optimization.py"
     ).read_text(encoding="utf-8")
     exports = (
-        root / "packages" / "portfolio-backtester" / "src" / "portfolio_backtester" / "__init__.py"
+        root / "packages" / "platform" / "src" / "quant_platform" / "_portfolio" / "__init__.py"
     ).read_text(encoding="utf-8")
 
     assert "CanonicalBacktestResult" in differential_impl
@@ -327,14 +325,14 @@ def test_afml_sizing_and_risk_guide_matches_public_helpers() -> None:
     english = (root / "docs/concepts/afml-sizing-and-risk.en.md").read_text(encoding="utf-8")
     chinese = (root / "docs/concepts/afml-sizing-and-risk.md").read_text(encoding="utf-8")
     nav = (root / "mkdocs.yml").read_text(encoding="utf-8")
-    sizing = (
-        root / "packages/portfolio-backtester/src/portfolio_backtester/bet_sizing.py"
-    ).read_text(encoding="utf-8")
-    hrp = (root / "packages/portfolio-backtester/src/portfolio_backtester/hrp.py").read_text(
+    sizing = (root / "packages/platform/src/quant_platform/_portfolio/bet_sizing.py").read_text(
+        encoding="utf-8"
+    )
+    hrp = (root / "packages/platform/src/quant_platform/_portfolio/hrp.py").read_text(
         encoding="utf-8"
     )
     evidence = (
-        root / "packages/portfolio-backtester/src/portfolio_backtester/afml_evidence.py"
+        root / "packages/platform/src/quant_platform/_portfolio/afml_evidence.py"
     ).read_text(encoding="utf-8")
 
     for method in (
@@ -357,7 +355,7 @@ def test_typecheck_script_registers_all_source_roots() -> None:
     script = (ROOT / "scripts" / "dev" / "run_tests.sh").read_text(encoding="utf-8")
 
     for source_root in (
-        "packages/portfolio-backtester/src",
+        "packages/platform/src",
         "packages/orchestration/src",
         "packages/execution/src",
         "packages/alpha/src",

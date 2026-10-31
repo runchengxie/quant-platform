@@ -1,10 +1,10 @@
 import numpy as np
 from alpha_research.transform import neutralize_cross_sectional_series
-from quant_platform.scenarios import build_scenario, read_scenario, write_scenario
 from ticknet.simulator.ordering import ordering_provenance
 from ticknet.simulator.pack import SimulatorEvent
 
 from portfolio_backtester import settle_execution_fills
+from quant_platform.scenarios import build_scenario, read_scenario, write_scenario
 
 
 def _fixture(tmp_path, name):

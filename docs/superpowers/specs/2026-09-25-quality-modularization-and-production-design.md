@@ -28,7 +28,7 @@
 
 | 当前文件 | 行数 | 主要职责 |
 | --- | ---: | --- |
-| `packages/portfolio-backtester/src/portfolio_backtester/execution_sim/core.py` | 1,065 | 容量模拟、调整后 NAV、理想 NAV、执行表准备 |
+| `packages/platform/src/portfolio_backtester/execution_sim/core.py` | 1,065 | 容量模拟、调整后 NAV、理想 NAV、执行表准备 |
 | `packages/microstructure/src/ticknet/eventstream/train.py` | 972 | 配置、数据加载、评估、检查点、训练循环和 CLI |
 | `packages/orchestration/src/strategy_pipeline/pipeline/output_summary_sections.py` | 805 | 回测、评估、持仓、执行和诊断摘要构造 |
 

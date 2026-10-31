@@ -1,0 +1,76 @@
+"""Module alias preserving implementation identity during compatibility migration."""
+
+import sys
+from importlib import import_module
+from typing import TYPE_CHECKING
+
+__all__ = [
+    "_BETA_COLUMNS",
+    "_LOW_VOL_COLUMNS",
+    "_MOMENTUM_COLUMNS",
+    "_QUALITY_COLUMNS",
+    "Any",
+    "Mapping",
+    "Sequence",
+    "_aligned_style_day",
+    "_as_numeric",
+    "_cap_weighted_style_universe",
+    "_compose_from_columns",
+    "_empty_style_exposure_row",
+    "_empty_style_summary",
+    "_finalize_style_exposure",
+    "_portfolio_net_style_exposure",
+    "_portfolio_style_stats",
+    "_resolve_beta_factor",
+    "_resolve_low_vol_factor",
+    "_resolve_momentum_factor",
+    "_resolve_quality_factor",
+    "_resolve_size_factor",
+    "_resolve_value_factor",
+    "_safe_log",
+    "_style_active_delta",
+    "_style_exposure_base_fields",
+    "_style_exposure_row",
+    "_style_rows_for_rebalance",
+    "_update_factor_meta",
+    "_weighted_average",
+    "_zscore",
+    "annotations",
+]
+
+if TYPE_CHECKING:
+    from quant_platform._portfolio._exposure_style import (
+        _BETA_COLUMNS,
+        _LOW_VOL_COLUMNS,
+        _MOMENTUM_COLUMNS,
+        _QUALITY_COLUMNS,
+        Any,
+        Mapping,
+        Sequence,
+        _aligned_style_day,
+        _as_numeric,
+        _cap_weighted_style_universe,
+        _compose_from_columns,
+        _empty_style_exposure_row,
+        _empty_style_summary,
+        _finalize_style_exposure,
+        _portfolio_net_style_exposure,
+        _portfolio_style_stats,
+        _resolve_beta_factor,
+        _resolve_low_vol_factor,
+        _resolve_momentum_factor,
+        _resolve_quality_factor,
+        _resolve_size_factor,
+        _resolve_value_factor,
+        _safe_log,
+        _style_active_delta,
+        _style_exposure_base_fields,
+        _style_exposure_row,
+        _style_rows_for_rebalance,
+        _update_factor_meta,
+        _weighted_average,
+        _zscore,
+        annotations,
+    )
+
+sys.modules[__name__] = import_module("quant_platform._portfolio._exposure_style")

@@ -2,7 +2,7 @@
 
 Language: English · [简体中文](cost-breakdown.zh-CN.md)
 
-`CostBreakdown` provides a consistent view of portfolio-backtest costs. See the [`CostBreakdown` implementation](https://github.com/runchengxie/quant-platform/blob/main/packages/portfolio-backtester/src/portfolio_backtester/types.py) and its [tests](https://github.com/runchengxie/quant-platform/blob/main/tests/test_cost_breakdown.py).
+`CostBreakdown` provides a consistent view of portfolio-backtest costs. See the [`CostBreakdown` implementation](https://github.com/runchengxie/quant-platform/blob/main/packages/platform/src/portfolio_backtester/types.py) and its [tests](https://github.com/runchengxie/quant-platform/blob/main/tests/test_cost_breakdown.py).
 
 | Field | Meaning |
 | --- | --- |

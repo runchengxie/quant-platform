@@ -213,11 +213,7 @@ CORE_ENTRYPOINTS = frozenset(
 def test_portfolio_backtester_package_uses_owner_native_root() -> None:
     package_root = Path(portfolio_backtester.__file__).resolve().parent
     expected_package_root = (
-        Path(__file__).parents[1]
-        / "packages"
-        / "portfolio-backtester"
-        / "src"
-        / "portfolio_backtester"
+        Path(__file__).parents[1] / "packages" / "platform" / "src" / "portfolio_backtester"
     ).resolve()
 
     assert package_root == expected_package_root
@@ -227,7 +223,17 @@ def test_portfolio_backtester_package_uses_owner_native_root() -> None:
 def test_owned_modules_import(module_name: str) -> None:
     module = importlib.import_module(module_name)
 
-    assert module.__name__ == module_name
+    mapping = __import__("json").loads(
+        (Path(__file__).parents[1] / "docs/migration/portfolio-module-map.json").read_text()
+    )
+    implementation = importlib.import_module(mapping[module_name]["implementation_module"])
+    if hasattr(module, "__path__"):
+        # Package proxies keep their compatibility search path for child aliases.
+        assert module.__name__ == module_name
+        for name in getattr(module, "__all__", ()):
+            assert getattr(module, name) is getattr(implementation, name)
+    else:
+        assert module is implementation
 
 
 def test_portfolio_backtester_package_exports_core_entrypoints() -> None:

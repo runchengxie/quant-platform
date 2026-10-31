@@ -36,7 +36,7 @@
 
 **Files:**
 - Modify: `packages/research-contracts/research_run_manifest.py`
-- Modify: `packages/portfolio-backtester/src/portfolio_backtester/backtest_bundle.py`
+- Modify: `packages/platform/src/portfolio_backtester/backtest_bundle.py`
 - Test: `tests/test_run_provenance.py`
 
 **Interfaces:**
@@ -51,8 +51,8 @@
 ### Task 3: Point-in-time market data port
 
 **Files:**
-- Create: `packages/portfolio-backtester/src/market_data_platform/ports.py`
-- Modify: `packages/portfolio-backtester/src/market_data_platform/published_assets.py`
+- Create: `packages/platform/src/market_data_platform/ports.py`
+- Modify: `packages/platform/src/market_data_platform/published_assets.py`
 - Test: `tests/test_market_data_pit_port.py`
 
 **Interfaces:**

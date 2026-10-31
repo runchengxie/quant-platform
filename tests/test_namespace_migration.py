@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "packages" / "portfolio-backtester" / "src"
+SRC = ROOT / "packages" / "platform" / "src"
 
 
 def test_metric_correlation_helpers_remain_importable() -> None:

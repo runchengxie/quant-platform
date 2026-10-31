@@ -1,0 +1,1154 @@
+{
+  "portfolio_backtester._portfolio_positions_select": {
+    "public_module": "quant_platform.backtest.legacy._portfolio_positions_select",
+    "implementation_module": "quant_platform._portfolio._portfolio_positions_select",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution": {
+    "public_module": "quant_platform.backtest.legacy.execution",
+    "implementation_module": "quant_platform._portfolio.execution",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.period_turnover": {
+    "public_module": "quant_platform.analytics.period_turnover",
+    "implementation_module": "quant_platform._portfolio.period_turnover",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._metrics_active": {
+    "public_module": "quant_platform.backtest.legacy._metrics_active",
+    "implementation_module": "quant_platform._portfolio._metrics_active",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._exposure_style": {
+    "public_module": "quant_platform.backtest.legacy._exposure_style",
+    "implementation_module": "quant_platform._portfolio._exposure_style",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.backtest_spec": {
+    "public_module": "quant_platform.backtest.legacy.backtest_spec",
+    "implementation_module": "quant_platform._portfolio.backtest_spec",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.backtest_contracts": {
+    "public_module": "quant_platform.backtest.legacy.backtest_contracts",
+    "implementation_module": "quant_platform._portfolio.backtest_contracts",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._exposure_assemble": {
+    "public_module": "quant_platform.backtest.legacy._exposure_assemble",
+    "implementation_module": "quant_platform._portfolio._exposure_assemble",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._position_backtest_cli": {
+    "public_module": "quant_platform.backtest.legacy._position_backtest_cli",
+    "implementation_module": "quant_platform._portfolio._position_backtest_cli",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._round_lot_allocate": {
+    "public_module": "quant_platform.backtest.legacy._round_lot_allocate",
+    "implementation_module": "quant_platform._portfolio._round_lot_allocate",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.promotion_sidecar": {
+    "public_module": "quant_platform.backtest.legacy.promotion_sidecar",
+    "implementation_module": "quant_platform._portfolio.promotion_sidecar",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.allocation_reference": {
+    "public_module": "quant_platform.portfolio.allocation_reference",
+    "implementation_module": "quant_platform._portfolio.allocation_reference",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.tca_calibration": {
+    "public_module": "quant_platform.analytics.tca_calibration",
+    "implementation_module": "quant_platform._portfolio.tca_calibration",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.evidence_receipts": {
+    "public_module": "quant_platform.backtest.legacy.evidence_receipts",
+    "implementation_module": "quant_platform._portfolio.evidence_receipts",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester": {
+    "public_module": "quant_platform.backtest.legacy",
+    "implementation_module": "quant_platform._portfolio",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.strategy": {
+    "public_module": "quant_platform.portfolio.strategy",
+    "implementation_module": "quant_platform._portfolio.strategy",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.staggered_cohort_execution_reporting": {
+    "public_module": "quant_platform.backtest.legacy.staggered_cohort_execution_reporting",
+    "implementation_module": "quant_platform._portfolio.staggered_cohort_execution_reporting",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.turnover_attribution": {
+    "public_module": "quant_platform.analytics.turnover_attribution",
+    "implementation_module": "quant_platform._portfolio.turnover_attribution",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.shortfall": {
+    "public_module": "quant_platform.analytics.shortfall",
+    "implementation_module": "quant_platform._portfolio.shortfall",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.staggered_cohort_execution_state": {
+    "public_module": "quant_platform.backtest.legacy.staggered_cohort_execution_state",
+    "implementation_module": "quant_platform._portfolio.staggered_cohort_execution_state",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.daily_watch20_oos": {
+    "public_module": "quant_platform.backtest.legacy.daily_watch20_oos",
+    "implementation_module": "quant_platform._portfolio.daily_watch20_oos",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.robust_uncertainty": {
+    "public_module": "quant_platform.backtest.legacy.robust_uncertainty",
+    "implementation_module": "quant_platform._portfolio.robust_uncertainty",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.position_outputs": {
+    "public_module": "quant_platform.backtest.legacy.position_outputs",
+    "implementation_module": "quant_platform._portfolio.position_outputs",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.valuation_events": {
+    "public_module": "quant_platform.backtest.legacy.valuation_events",
+    "implementation_module": "quant_platform._portfolio.valuation_events",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.volatility_exposure": {
+    "public_module": "quant_platform.portfolio.volatility_exposure",
+    "implementation_module": "quant_platform._portfolio.volatility_exposure",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_contracts": {
+    "public_module": "quant_platform.backtest.legacy.execution_contracts",
+    "implementation_module": "quant_platform._portfolio.execution_contracts",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.selection_controls": {
+    "public_module": "quant_platform.portfolio.selection_controls",
+    "implementation_module": "quant_platform._portfolio.selection_controls",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._engine_periods": {
+    "public_module": "quant_platform.backtest.legacy._engine_periods",
+    "implementation_module": "quant_platform._portfolio._engine_periods",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.portfolio_positions": {
+    "public_module": "quant_platform.portfolio.portfolio_positions",
+    "implementation_module": "quant_platform._portfolio.portfolio_positions",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.post_buffer_exposure_repair": {
+    "public_module": "quant_platform.portfolio.post_buffer_exposure_repair",
+    "implementation_module": "quant_platform._portfolio.post_buffer_exposure_repair",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._tearsheet_render": {
+    "public_module": "quant_platform.backtest.legacy._tearsheet_render",
+    "implementation_module": "quant_platform._portfolio._tearsheet_render",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.dated_fees": {
+    "public_module": "quant_platform.backtest.legacy.dated_fees",
+    "implementation_module": "quant_platform._portfolio.dated_fees",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.construction_grid_reports": {
+    "public_module": "quant_platform.backtest.legacy.construction_grid_reports",
+    "implementation_module": "quant_platform._portfolio.construction_grid_reports",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.tca_evidence": {
+    "public_module": "quant_platform.backtest.legacy.tca_evidence",
+    "implementation_module": "quant_platform._portfolio.tca_evidence",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.allocation_selection": {
+    "public_module": "quant_platform.backtest.legacy.allocation_selection",
+    "implementation_module": "quant_platform._portfolio.allocation_selection",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._aexe_cli": {
+    "public_module": "quant_platform.backtest.legacy._aexe_cli",
+    "implementation_module": "quant_platform._portfolio._aexe_cli",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.types": {
+    "public_module": "quant_platform.portfolio.types",
+    "implementation_module": "quant_platform._portfolio.types",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.usd_ledger": {
+    "public_module": "quant_platform.backtest.legacy.usd_ledger",
+    "implementation_module": "quant_platform._portfolio.usd_ledger",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.position_postprocess_outputs": {
+    "public_module": "quant_platform.portfolio.position_postprocess_outputs",
+    "implementation_module": "quant_platform._portfolio.position_postprocess_outputs",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._post_buffer_config": {
+    "public_module": "quant_platform.backtest.legacy._post_buffer_config",
+    "implementation_module": "quant_platform._portfolio._post_buffer_config",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.tearsheet": {
+    "public_module": "quant_platform.analytics.tearsheet",
+    "implementation_module": "quant_platform._portfolio.tearsheet",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._execution_build": {
+    "public_module": "quant_platform.backtest.legacy._execution_build",
+    "implementation_module": "quant_platform._portfolio._execution_build",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.afml_evidence": {
+    "public_module": "quant_platform.analytics.afml_evidence",
+    "implementation_module": "quant_platform._portfolio.afml_evidence",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._tearsheet_stats": {
+    "public_module": "quant_platform.backtest.legacy._tearsheet_stats",
+    "implementation_module": "quant_platform._portfolio._tearsheet_stats",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.reports": {
+    "public_module": "quant_platform.backtest.legacy.reports",
+    "implementation_module": "quant_platform._portfolio.reports",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.portfolio_position_frames": {
+    "public_module": "quant_platform.portfolio.portfolio_position_frames",
+    "implementation_module": "quant_platform._portfolio.portfolio_position_frames",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.sharpe_inference": {
+    "public_module": "quant_platform.analytics.sharpe_inference",
+    "implementation_module": "quant_platform._portfolio.sharpe_inference",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._evaluation_positions": {
+    "public_module": "quant_platform.backtest.legacy._evaluation_positions",
+    "implementation_module": "quant_platform._portfolio._evaluation_positions",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.positions_artifact": {
+    "public_module": "quant_platform.backtest.legacy.positions_artifact",
+    "implementation_module": "quant_platform._portfolio.positions_artifact",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._position_postprocess_overlay": {
+    "public_module": "quant_platform.backtest.legacy._position_postprocess_overlay",
+    "implementation_module": "quant_platform._portfolio._position_postprocess_overlay",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.staggered_cohort_execution": {
+    "public_module": "quant_platform.backtest.legacy.staggered_cohort_execution",
+    "implementation_module": "quant_platform._portfolio.staggered_cohort_execution",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.capacity": {
+    "public_module": "quant_platform.backtest.legacy.capacity",
+    "implementation_module": "quant_platform._portfolio.capacity",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.benchmark_comparison": {
+    "public_module": "quant_platform.analytics.benchmark_comparison",
+    "implementation_module": "quant_platform._portfolio.benchmark_comparison",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.hrp": {
+    "public_module": "quant_platform.portfolio.hrp",
+    "implementation_module": "quant_platform._portfolio.hrp",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.position_backtest": {
+    "public_module": "quant_platform.backtest.legacy.position_backtest",
+    "implementation_module": "quant_platform._portfolio.position_backtest",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.a_share_executable_oos_topk": {
+    "public_module": "quant_platform.backtest.legacy.a_share_executable_oos_topk",
+    "implementation_module": "quant_platform._portfolio.a_share_executable_oos_topk",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._position_backtest_engine": {
+    "public_module": "quant_platform.backtest.legacy._position_backtest_engine",
+    "implementation_module": "quant_platform._portfolio._position_backtest_engine",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.target_close_replay": {
+    "public_module": "quant_platform.backtest.legacy.target_close_replay",
+    "implementation_module": "quant_platform._portfolio.target_close_replay",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.bet_sizing": {
+    "public_module": "quant_platform.portfolio.bet_sizing",
+    "implementation_module": "quant_platform._portfolio.bet_sizing",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.incumbent_requalification": {
+    "public_module": "quant_platform.backtest.legacy.incumbent_requalification",
+    "implementation_module": "quant_platform._portfolio.incumbent_requalification",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.drawdown_episodes": {
+    "public_module": "quant_platform.backtest.legacy.drawdown_episodes",
+    "implementation_module": "quant_platform._portfolio.drawdown_episodes",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.legacy_rotation": {
+    "public_module": "quant_platform.backtest.legacy.legacy_rotation",
+    "implementation_module": "quant_platform._portfolio.legacy_rotation",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._tearsheet_tables": {
+    "public_module": "quant_platform.backtest.legacy._tearsheet_tables",
+    "implementation_module": "quant_platform._portfolio._tearsheet_tables",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.backtest_config": {
+    "public_module": "quant_platform.backtest.legacy.backtest_config",
+    "implementation_module": "quant_platform._portfolio.backtest_config",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.portfolio_position_options": {
+    "public_module": "quant_platform.portfolio.portfolio_position_options",
+    "implementation_module": "quant_platform._portfolio.portfolio_position_options",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._exposure_industry": {
+    "public_module": "quant_platform.backtest.legacy._exposure_industry",
+    "implementation_module": "quant_platform._portfolio._exposure_industry",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._capacity_report_config": {
+    "public_module": "quant_platform.backtest.legacy._capacity_report_config",
+    "implementation_module": "quant_platform._portfolio._capacity_report_config",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.contracts": {
+    "public_module": "quant_platform.portfolio.contracts",
+    "implementation_module": "quant_platform._portfolio.contracts",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._capacity_report_cli": {
+    "public_module": "quant_platform.backtest.legacy._capacity_report_cli",
+    "implementation_module": "quant_platform._portfolio._capacity_report_cli",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.allocation_rendering": {
+    "public_module": "quant_platform.backtest.legacy.allocation_rendering",
+    "implementation_module": "quant_platform._portfolio.allocation_rendering",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._metrics_turnover": {
+    "public_module": "quant_platform.backtest.legacy._metrics_turnover",
+    "implementation_module": "quant_platform._portfolio._metrics_turnover",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._post_buffer_repair": {
+    "public_module": "quant_platform.backtest.legacy._post_buffer_repair",
+    "implementation_module": "quant_platform._portfolio._post_buffer_repair",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.differential_backtest": {
+    "public_module": "quant_platform.backtest.legacy.differential_backtest",
+    "implementation_module": "quant_platform._portfolio.differential_backtest",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_diagnostics": {
+    "public_module": "quant_platform.analytics.execution_diagnostics",
+    "implementation_module": "quant_platform._portfolio.execution_diagnostics",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.fixed_slot_overlay": {
+    "public_module": "quant_platform.portfolio.fixed_slot_overlay",
+    "implementation_module": "quant_platform._portfolio.fixed_slot_overlay",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.reporting": {
+    "public_module": "quant_platform.analytics.reporting",
+    "implementation_module": "quant_platform._portfolio.reporting",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.position_backtest_cli": {
+    "public_module": "quant_platform.backtest.legacy.position_backtest_cli",
+    "implementation_module": "quant_platform._portfolio.position_backtest_cli",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.rebalance": {
+    "public_module": "quant_platform.portfolio.rebalance",
+    "implementation_module": "quant_platform._portfolio.rebalance",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.daily_watch20": {
+    "public_module": "quant_platform.backtest.legacy.daily_watch20",
+    "implementation_module": "quant_platform._portfolio.daily_watch20",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.capacity_report_support": {
+    "public_module": "quant_platform.backtest.legacy.capacity_report_support",
+    "implementation_module": "quant_platform._portfolio.capacity_report_support",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.point_in_time": {
+    "public_module": "quant_platform.backtest.legacy.point_in_time",
+    "implementation_module": "quant_platform._portfolio.point_in_time",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.strategy_risk": {
+    "public_module": "quant_platform.analytics.strategy_risk",
+    "implementation_module": "quant_platform._portfolio.strategy_risk",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.exposure_screen": {
+    "public_module": "quant_platform.analytics.exposure_screen",
+    "implementation_module": "quant_platform._portfolio.exposure_screen",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_calendar": {
+    "public_module": "quant_platform.backtest.legacy.execution_calendar",
+    "implementation_module": "quant_platform._portfolio.execution_calendar",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._round_lot_targets": {
+    "public_module": "quant_platform.backtest.legacy._round_lot_targets",
+    "implementation_module": "quant_platform._portfolio._round_lot_targets",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._position_backtest_config": {
+    "public_module": "quant_platform.backtest.legacy._position_backtest_config",
+    "implementation_module": "quant_platform._portfolio._position_backtest_config",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.sleeve_portfolio": {
+    "public_module": "quant_platform.portfolio.sleeve_portfolio",
+    "implementation_module": "quant_platform._portfolio.sleeve_portfolio",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_summary": {
+    "public_module": "quant_platform.analytics.execution_summary",
+    "implementation_module": "quant_platform._portfolio.execution_summary",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.risk_model": {
+    "public_module": "quant_platform.analytics.risk_model",
+    "implementation_module": "quant_platform._portfolio.risk_model",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.outcome_metrics": {
+    "public_module": "quant_platform.backtest.legacy.outcome_metrics",
+    "implementation_module": "quant_platform._portfolio.outcome_metrics",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._construction_grid_io": {
+    "public_module": "quant_platform.backtest.legacy._construction_grid_io",
+    "implementation_module": "quant_platform._portfolio._construction_grid_io",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._position_postprocess_repair": {
+    "public_module": "quant_platform.backtest.legacy._position_postprocess_repair",
+    "implementation_module": "quant_platform._portfolio._position_postprocess_repair",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._execution_models": {
+    "public_module": "quant_platform.backtest.legacy._execution_models",
+    "implementation_module": "quant_platform._portfolio._execution_models",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.staggered_cohort_execution_records": {
+    "public_module": "quant_platform.backtest.legacy.staggered_cohort_execution_records",
+    "implementation_module": "quant_platform._portfolio.staggered_cohort_execution_records",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.construction_grid": {
+    "public_module": "quant_platform.backtest.legacy.construction_grid",
+    "implementation_module": "quant_platform._portfolio.construction_grid",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.liquidity_proxy": {
+    "public_module": "quant_platform.backtest.legacy.liquidity_proxy",
+    "implementation_module": "quant_platform._portfolio.liquidity_proxy",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.benchmark_ladder": {
+    "public_module": "quant_platform.analytics.benchmark_ladder",
+    "implementation_module": "quant_platform._portfolio.benchmark_ladder",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.backtest_bundle": {
+    "public_module": "quant_platform.backtest.legacy.backtest_bundle",
+    "implementation_module": "quant_platform._portfolio.backtest_bundle",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.holdings_pnl": {
+    "public_module": "quant_platform.backtest.legacy.holdings_pnl",
+    "implementation_module": "quant_platform._portfolio.holdings_pnl",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.benchmark_enhancement": {
+    "public_module": "quant_platform.backtest.legacy.benchmark_enhancement",
+    "implementation_module": "quant_platform._portfolio.benchmark_enhancement",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.corporate_actions": {
+    "public_module": "quant_platform.backtest.legacy.corporate_actions",
+    "implementation_module": "quant_platform._portfolio.corporate_actions",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.metrics": {
+    "public_module": "quant_platform.analytics.metrics",
+    "implementation_module": "quant_platform._portfolio.metrics",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._construction_grid_eval": {
+    "public_module": "quant_platform.backtest.legacy._construction_grid_eval",
+    "implementation_module": "quant_platform._portfolio._construction_grid_eval",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.factor_attribution": {
+    "public_module": "quant_platform.analytics.factor_attribution",
+    "implementation_module": "quant_platform._portfolio.factor_attribution",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.benchmarking": {
+    "public_module": "quant_platform.backtest.legacy.benchmarking",
+    "implementation_module": "quant_platform._portfolio.benchmarking",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.industry_sleeves": {
+    "public_module": "quant_platform.backtest.legacy.industry_sleeves",
+    "implementation_module": "quant_platform._portfolio.industry_sleeves",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._construction_grid_signal": {
+    "public_module": "quant_platform.backtest.legacy._construction_grid_signal",
+    "implementation_module": "quant_platform._portfolio._construction_grid_signal",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._evaluation_backtest": {
+    "public_module": "quant_platform.backtest.legacy._evaluation_backtest",
+    "implementation_module": "quant_platform._portfolio._evaluation_backtest",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._symbol_utils": {
+    "public_module": "quant_platform.symbols",
+    "implementation_module": "quant_platform._portfolio._symbol_utils",
+    "owner": "symbols",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.grid_support": {
+    "public_module": "quant_platform.backtest.legacy.grid_support",
+    "implementation_module": "quant_platform._portfolio.grid_support",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.portfolio_weights": {
+    "public_module": "quant_platform.portfolio.portfolio_weights",
+    "implementation_module": "quant_platform._portfolio.portfolio_weights",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._round_lot_weights": {
+    "public_module": "quant_platform.backtest.legacy._round_lot_weights",
+    "implementation_module": "quant_platform._portfolio._round_lot_weights",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_ledger": {
+    "public_module": "quant_platform.backtest.legacy.execution_ledger",
+    "implementation_module": "quant_platform._portfolio.execution_ledger",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.signal_postprocess": {
+    "public_module": "quant_platform.backtest.legacy.signal_postprocess",
+    "implementation_module": "quant_platform._portfolio.signal_postprocess",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._run_metadata": {
+    "public_module": "quant_platform.backtest.legacy._run_metadata",
+    "implementation_module": "quant_platform._portfolio._run_metadata",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.matched_volatility": {
+    "public_module": "quant_platform.backtest.legacy.matched_volatility",
+    "implementation_module": "quant_platform._portfolio.matched_volatility",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._metrics_ic": {
+    "public_module": "quant_platform.backtest.legacy._metrics_ic",
+    "implementation_module": "quant_platform._portfolio._metrics_ic",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._capacity_concentration": {
+    "public_module": "quant_platform.backtest.legacy._capacity_concentration",
+    "implementation_module": "quant_platform._portfolio._capacity_concentration",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._tearsheet_charts": {
+    "public_module": "quant_platform.backtest.legacy._tearsheet_charts",
+    "implementation_module": "quant_platform._portfolio._tearsheet_charts",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.exposure": {
+    "public_module": "quant_platform.analytics.exposure",
+    "implementation_module": "quant_platform._portfolio.exposure",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.usd_ledger_models": {
+    "public_module": "quant_platform.backtest.legacy.usd_ledger_models",
+    "implementation_module": "quant_platform._portfolio.usd_ledger_models",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.pricing": {
+    "public_module": "quant_platform.backtest.legacy.pricing",
+    "implementation_module": "quant_platform._portfolio.pricing",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_config": {
+    "public_module": "quant_platform.backtest.legacy.execution_config",
+    "implementation_module": "quant_platform._portfolio.execution_config",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.position_inputs": {
+    "public_module": "quant_platform.backtest.legacy.position_inputs",
+    "implementation_module": "quant_platform._portfolio.position_inputs",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.share_allocation": {
+    "public_module": "quant_platform.portfolio.share_allocation",
+    "implementation_module": "quant_platform._portfolio.share_allocation",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.capacity_report": {
+    "public_module": "quant_platform.analytics.capacity_report",
+    "implementation_module": "quant_platform._portfolio.capacity_report",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.turnover": {
+    "public_module": "quant_platform.analytics.turnover",
+    "implementation_module": "quant_platform._portfolio.turnover",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.leg_helpers": {
+    "public_module": "quant_platform.backtest.legacy.leg_helpers",
+    "implementation_module": "quant_platform._portfolio.leg_helpers",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.optimization": {
+    "public_module": "quant_platform.portfolio.optimization",
+    "implementation_module": "quant_platform._portfolio.optimization",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._exposure_columns": {
+    "public_module": "quant_platform.backtest.legacy._exposure_columns",
+    "implementation_module": "quant_platform._portfolio._exposure_columns",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.portfolio_selection": {
+    "public_module": "quant_platform.portfolio.portfolio_selection",
+    "implementation_module": "quant_platform._portfolio.portfolio_selection",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._aexe_io": {
+    "public_module": "quant_platform.backtest.legacy._aexe_io",
+    "implementation_module": "quant_platform._portfolio._aexe_io",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._construction_grid_cli": {
+    "public_module": "quant_platform.backtest.legacy._construction_grid_cli",
+    "implementation_module": "quant_platform._portfolio._construction_grid_cli",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.position_replay": {
+    "public_module": "quant_platform.backtest.legacy.position_replay",
+    "implementation_module": "quant_platform._portfolio.position_replay",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.minute_execution": {
+    "public_module": "quant_platform.backtest.legacy.minute_execution",
+    "implementation_module": "quant_platform._portfolio.minute_execution",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.period_outputs": {
+    "public_module": "quant_platform.backtest.legacy.period_outputs",
+    "implementation_module": "quant_platform._portfolio.period_outputs",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.a_share_round_lot": {
+    "public_module": "quant_platform.portfolio.a_share_round_lot",
+    "implementation_module": "quant_platform._portfolio.a_share_round_lot",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.usd_ledger_inputs": {
+    "public_module": "quant_platform.backtest.legacy.usd_ledger_inputs",
+    "implementation_module": "quant_platform._portfolio.usd_ledger_inputs",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.topk_context": {
+    "public_module": "quant_platform.backtest.legacy.topk_context",
+    "implementation_module": "quant_platform._portfolio.topk_context",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._engine_leg": {
+    "public_module": "quant_platform.backtest.legacy._engine_leg",
+    "implementation_module": "quant_platform._portfolio._engine_leg",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.portfolio": {
+    "public_module": "quant_platform.portfolio.portfolio",
+    "implementation_module": "quant_platform._portfolio.portfolio",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.evaluation": {
+    "public_module": "quant_platform.analytics.evaluation",
+    "implementation_module": "quant_platform._portfolio.evaluation",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.economic_rebalance": {
+    "public_module": "quant_platform.portfolio.economic_rebalance",
+    "implementation_module": "quant_platform._portfolio.economic_rebalance",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.position_evaluation": {
+    "public_module": "quant_platform.analytics.position_evaluation",
+    "implementation_module": "quant_platform._portfolio.position_evaluation",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.api": {
+    "public_module": "quant_platform.backtest.legacy.api",
+    "implementation_module": "quant_platform._portfolio.api",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._daily_watch20_select": {
+    "public_module": "quant_platform.backtest.legacy._daily_watch20_select",
+    "implementation_module": "quant_platform._portfolio._daily_watch20_select",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._portfolio_positions_context": {
+    "public_module": "quant_platform.backtest.legacy._portfolio_positions_context",
+    "implementation_module": "quant_platform._portfolio._portfolio_positions_context",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._capacity_report_grid": {
+    "public_module": "quant_platform.backtest.legacy._capacity_report_grid",
+    "implementation_module": "quant_platform._portfolio._capacity_report_grid",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.allocation_service": {
+    "public_module": "quant_platform.portfolio.allocation_service",
+    "implementation_module": "quant_platform._portfolio.allocation_service",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_comparison": {
+    "public_module": "quant_platform.analytics.execution_comparison",
+    "implementation_module": "quant_platform._portfolio.execution_comparison",
+    "owner": "analytics",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.staggered_cohort_inputs": {
+    "public_module": "quant_platform.backtest.legacy.staggered_cohort_inputs",
+    "implementation_module": "quant_platform._portfolio.staggered_cohort_inputs",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.backtest_bundle_io": {
+    "public_module": "quant_platform.backtest.legacy.backtest_bundle_io",
+    "implementation_module": "quant_platform._portfolio.backtest_bundle_io",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.a_share_round_lot_diagnostics": {
+    "public_module": "quant_platform.portfolio.a_share_round_lot_diagnostics",
+    "implementation_module": "quant_platform._portfolio.a_share_round_lot_diagnostics",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.holding_selection": {
+    "public_module": "quant_platform.portfolio.holding_selection",
+    "implementation_module": "quant_platform._portfolio.holding_selection",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.engine": {
+    "public_module": "quant_platform.backtest.legacy.engine",
+    "implementation_module": "quant_platform._portfolio.engine",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.position_postprocess": {
+    "public_module": "quant_platform.portfolio.position_postprocess",
+    "implementation_module": "quant_platform._portfolio.position_postprocess",
+    "owner": "portfolio",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.trade_accounting": {
+    "public_module": "quant_platform.backtest.legacy.trade_accounting",
+    "implementation_module": "quant_platform._portfolio.trade_accounting",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.incumbent_requalification_oos": {
+    "public_module": "quant_platform.backtest.legacy.incumbent_requalification_oos",
+    "implementation_module": "quant_platform._portfolio.incumbent_requalification_oos",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.usd_ledger_accounting": {
+    "public_module": "quant_platform.backtest.legacy.usd_ledger_accounting",
+    "implementation_module": "quant_platform._portfolio.usd_ledger_accounting",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._daily_watch20_config": {
+    "public_module": "quant_platform.backtest.legacy._daily_watch20_config",
+    "implementation_module": "quant_platform._portfolio._daily_watch20_config",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.usd_ledger_bundle": {
+    "public_module": "quant_platform.backtest.legacy.usd_ledger_bundle",
+    "implementation_module": "quant_platform._portfolio.usd_ledger_bundle",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.periods": {
+    "public_module": "quant_platform.backtest.legacy.periods",
+    "implementation_module": "quant_platform._portfolio.periods",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._postprocess_shared": {
+    "public_module": "quant_platform.backtest.legacy._postprocess_shared",
+    "implementation_module": "quant_platform._portfolio._postprocess_shared",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.daily_watch20_policy": {
+    "public_module": "quant_platform.backtest.legacy.daily_watch20_policy",
+    "implementation_module": "quant_platform._portfolio.daily_watch20_policy",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester._metrics_period": {
+    "public_module": "quant_platform.backtest.legacy._metrics_period",
+    "implementation_module": "quant_platform._portfolio._metrics_period",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_sim.core": {
+    "public_module": "quant_platform.backtest.legacy.execution_sim.core",
+    "implementation_module": "quant_platform._portfolio.execution_sim.core",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_sim.config": {
+    "public_module": "quant_platform.backtest.legacy.execution_sim.config",
+    "implementation_module": "quant_platform._portfolio.execution_sim.config",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_sim.orders_ideal": {
+    "public_module": "quant_platform.backtest.legacy.execution_sim.orders_ideal",
+    "implementation_module": "quant_platform._portfolio.execution_sim.orders_ideal",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_sim.orders_nav_quantities": {
+    "public_module": "quant_platform.backtest.legacy.execution_sim.orders_nav_quantities",
+    "implementation_module": "quant_platform._portfolio.execution_sim.orders_nav_quantities",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_sim": {
+    "public_module": "quant_platform.backtest.legacy.execution_sim",
+    "implementation_module": "quant_platform._portfolio.execution_sim",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_sim.models": {
+    "public_module": "quant_platform.backtest.legacy.execution_sim.models",
+    "implementation_module": "quant_platform._portfolio.execution_sim.models",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_sim.capacity_simulation": {
+    "public_module": "quant_platform.backtest.legacy.execution_sim.capacity_simulation",
+    "implementation_module": "quant_platform._portfolio.execution_sim.capacity_simulation",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_sim.adjusted_nav": {
+    "public_module": "quant_platform.backtest.legacy.execution_sim.adjusted_nav",
+    "implementation_module": "quant_platform._portfolio.execution_sim.adjusted_nav",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_sim.table_preparation": {
+    "public_module": "quant_platform.backtest.legacy.execution_sim.table_preparation",
+    "implementation_module": "quant_platform._portfolio.execution_sim.table_preparation",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_sim.capacity": {
+    "public_module": "quant_platform.backtest.legacy.execution_sim.capacity",
+    "implementation_module": "quant_platform._portfolio.execution_sim.capacity",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_sim.orders_nav": {
+    "public_module": "quant_platform.backtest.legacy.execution_sim.orders_nav",
+    "implementation_module": "quant_platform._portfolio.execution_sim.orders_nav",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_sim.orders_targets": {
+    "public_module": "quant_platform.backtest.legacy.execution_sim.orders_targets",
+    "implementation_module": "quant_platform._portfolio.execution_sim.orders_targets",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_sim.reporting": {
+    "public_module": "quant_platform.backtest.legacy.execution_sim.reporting",
+    "implementation_module": "quant_platform._portfolio.execution_sim.reporting",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_sim.delisting": {
+    "public_module": "quant_platform.backtest.legacy.execution_sim.delisting",
+    "implementation_module": "quant_platform._portfolio.execution_sim.delisting",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_sim.results": {
+    "public_module": "quant_platform.backtest.legacy.execution_sim.results",
+    "implementation_module": "quant_platform._portfolio.execution_sim.results",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_sim.corporate_actions": {
+    "public_module": "quant_platform.backtest.legacy.execution_sim.corporate_actions",
+    "implementation_module": "quant_platform._portfolio.execution_sim.corporate_actions",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_sim.orders_nav_fees": {
+    "public_module": "quant_platform.backtest.legacy.execution_sim.orders_nav_fees",
+    "implementation_module": "quant_platform._portfolio.execution_sim.orders_nav_fees",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_sim.orders": {
+    "public_module": "quant_platform.backtest.legacy.execution_sim.orders",
+    "implementation_module": "quant_platform._portfolio.execution_sim.orders",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_sim.orders_nav_states": {
+    "public_module": "quant_platform.backtest.legacy.execution_sim.orders_nav_states",
+    "implementation_module": "quant_platform._portfolio.execution_sim.orders_nav_states",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.execution_sim.ideal_nav": {
+    "public_module": "quant_platform.backtest.legacy.execution_sim.ideal_nav",
+    "implementation_module": "quant_platform._portfolio.execution_sim.ideal_nav",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.backends.base": {
+    "public_module": "quant_platform.backtest.contracts",
+    "implementation_module": "quant_platform.backtest.contracts",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.backends.engine_sessions": {
+    "public_module": "quant_platform.backtest.engine_sessions",
+    "implementation_module": "quant_platform.backtest.engine_sessions",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.backends": {
+    "public_module": "quant_platform.backtest.legacy.backends",
+    "implementation_module": "quant_platform._portfolio.backends",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.backends.sequenced": {
+    "public_module": "quant_platform.backtest.legacy.backends.sequenced",
+    "implementation_module": "quant_platform._portfolio.backends.sequenced",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.backends.native": {
+    "public_module": "quant_platform.backtest.legacy.backends.native",
+    "implementation_module": "quant_platform._portfolio.backends.native",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.backends.bundle": {
+    "public_module": "quant_platform.backtest.legacy.backends.bundle",
+    "implementation_module": "quant_platform._portfolio.backends.bundle",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  },
+  "portfolio_backtester.backends.trade_accounting": {
+    "public_module": "quant_platform.backtest.legacy.backends.trade_accounting",
+    "implementation_module": "quant_platform._portfolio.backends.trade_accounting",
+    "owner": "backtest",
+    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+  }
+}

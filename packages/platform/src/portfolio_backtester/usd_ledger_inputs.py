@@ -1,0 +1,78 @@
+"""Module alias preserving implementation identity during compatibility migration."""
+
+import sys
+from importlib import import_module
+from typing import TYPE_CHECKING
+
+__all__ = [
+    "Any",
+    "ArtifactRef",
+    "Decimal",
+    "Mapping",
+    "ResearchClock",
+    "USDFXObservation",
+    "USDModeledExecutionPrice",
+    "USDPriceObservation",
+    "USDReplayConfig",
+    "USDReplayRequest",
+    "USDValidationError",
+    "_asof",
+    "_currency",
+    "_text",
+    "_validate_decisions",
+    "_validate_instruments",
+    "_validate_modeled_execution_prices",
+    "_validate_observation",
+    "_validate_series",
+    "cast",
+    "date",
+    "datetime",
+    "decimal_value",
+    "localcontext",
+    "require",
+    "select_usd_fx",
+    "select_usd_modeled_execution_price",
+    "select_usd_price",
+    "timedelta",
+    "utc_time",
+    "validate_usd_config",
+    "validate_usd_request",
+]
+
+if TYPE_CHECKING:
+    from quant_platform._portfolio.usd_ledger_inputs import (
+        Any,
+        ArtifactRef,
+        Decimal,
+        Mapping,
+        ResearchClock,
+        USDFXObservation,
+        USDModeledExecutionPrice,
+        USDPriceObservation,
+        USDReplayConfig,
+        USDReplayRequest,
+        USDValidationError,
+        _asof,
+        _currency,
+        _text,
+        _validate_decisions,
+        _validate_instruments,
+        _validate_modeled_execution_prices,
+        _validate_observation,
+        _validate_series,
+        cast,
+        date,
+        datetime,
+        decimal_value,
+        localcontext,
+        require,
+        select_usd_fx,
+        select_usd_modeled_execution_price,
+        select_usd_price,
+        timedelta,
+        utc_time,
+        validate_usd_config,
+        validate_usd_request,
+    )
+
+sys.modules[__name__] = import_module("quant_platform._portfolio.usd_ledger_inputs")

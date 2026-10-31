@@ -68,4 +68,4 @@ The unified execution replay for multiple rebalances imports `SequencedExecution
 
 Modules not listed among the top-level exports may still be used internally, but their interfaces have lower stability guarantees than the public exports above.
 
-The complete export list is maintained in `packages/portfolio-backtester/src/portfolio_backtester/__init__.py`.
+The complete export list is maintained in `packages/platform/src/portfolio_backtester/__init__.py`.

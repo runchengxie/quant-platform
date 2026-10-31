@@ -1,0 +1,78 @@
+"""Module alias preserving implementation identity during compatibility migration."""
+
+import sys
+from importlib import import_module
+from typing import TYPE_CHECKING
+
+__all__ = [
+    "THRESHOLD_PROFILES",
+    "Any",
+    "CapacityThresholds",
+    "ExecutionAdjustedNavResult",
+    "Mapping",
+    "Path",
+    "_build_grid_row",
+    "_build_report_payload",
+    "_capacity_limits",
+    "_derive_execution_liquidity_proxy_columns",
+    "_evaluate_row",
+    "_grid_row_from_results",
+    "_optional_rule_col",
+    "_prepare_grid_config",
+    "_primary_participation_rate",
+    "_ratio",
+    "_top_unfilled_orders",
+    "annotations",
+    "build_capacity_report",
+    "build_execution_context",
+    "build_execution_sim_config",
+    "concentration_by_group",
+    "execution_sim_raw",
+    "normalize_positions_frame",
+    "normalize_pricing_frame",
+    "read_frame",
+    "read_yaml_mapping",
+    "required_execution_sim_columns",
+    "simulate_execution_adjusted_nav",
+    "simulate_ideal_daily_nav",
+    "validate_tca_evidence",
+    "write_csv",
+]
+
+if TYPE_CHECKING:
+    from quant_platform._portfolio._capacity_report_grid import (
+        THRESHOLD_PROFILES,
+        Any,
+        CapacityThresholds,
+        ExecutionAdjustedNavResult,
+        Mapping,
+        Path,
+        _build_grid_row,
+        _build_report_payload,
+        _capacity_limits,
+        _derive_execution_liquidity_proxy_columns,
+        _evaluate_row,
+        _grid_row_from_results,
+        _optional_rule_col,
+        _prepare_grid_config,
+        _primary_participation_rate,
+        _ratio,
+        _top_unfilled_orders,
+        annotations,
+        build_capacity_report,
+        build_execution_context,
+        build_execution_sim_config,
+        concentration_by_group,
+        execution_sim_raw,
+        normalize_positions_frame,
+        normalize_pricing_frame,
+        read_frame,
+        read_yaml_mapping,
+        required_execution_sim_columns,
+        simulate_execution_adjusted_nav,
+        simulate_ideal_daily_nav,
+        validate_tca_evidence,
+        write_csv,
+    )
+
+sys.modules[__name__] = import_module("quant_platform._portfolio._capacity_report_grid")

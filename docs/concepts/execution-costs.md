@@ -2,7 +2,7 @@
 
 Language: English · [简体中文](execution-costs.zh-CN.md)
 
-This page describes the cost and slippage models, price columns, liquidity constraints, and exit-price policies currently supported by the repository. The contracts are implemented in [`_execution_models.py`](https://github.com/runchengxie/quant-platform/blob/main/packages/portfolio-backtester/src/portfolio_backtester/_execution_models.py) and [`_execution_build.py`](https://github.com/runchengxie/quant-platform/blob/main/packages/portfolio-backtester/src/portfolio_backtester/_execution_build.py), with behavior covered by [`test_execution.py`](https://github.com/runchengxie/quant-platform/blob/main/tests/test_execution.py) and [`test_backtest.py`](https://github.com/runchengxie/quant-platform/blob/main/tests/test_backtest.py).
+This page describes the cost and slippage models, price columns, liquidity constraints, and exit-price policies currently supported by the repository. The contracts are implemented in [`_execution_models.py`](https://github.com/runchengxie/quant-platform/blob/main/packages/platform/src/portfolio_backtester/_execution_models.py) and [`_execution_build.py`](https://github.com/runchengxie/quant-platform/blob/main/packages/platform/src/portfolio_backtester/_execution_build.py), with behavior covered by [`test_execution.py`](https://github.com/runchengxie/quant-platform/blob/main/tests/test_execution.py) and [`test_backtest.py`](https://github.com/runchengxie/quant-platform/blob/main/tests/test_backtest.py).
 
 These features are intended for research backtests. Recalibrate parameters for the market, account, broker, and execution method being studied. Defaults are starting points, not current broker quotes.
 

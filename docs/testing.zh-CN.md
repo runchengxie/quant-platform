@@ -109,7 +109,7 @@ PR 与 `main` 推送会运行全仓 Ruff 代码和格式检查、严格类型检
 
 ## 类型检查范围
 
-`scripts/dev/run_tests.sh typecheck` 和 `typecheck-release` 会按 `pyproject.toml` 的 `[tool.ty.src]` 检查配置范围，并启用 `--error-on-warning`。当前范围包括 `portfolio-backtester`、orchestration、execution、alpha、microstructure 和 `scripts/`。CI 运行相同的严格检查，不传入缩小后的路径列表。
+`scripts/dev/run_tests.sh typecheck` 和 `typecheck-release` 会按 `pyproject.toml` 的 `[tool.ty.src]` 检查配置范围，并启用 `--error-on-warning`。当前范围包括 `platform`、orchestration、execution、alpha、microstructure 和 `scripts/`。CI 运行相同的严格检查，不传入缩小后的路径列表。
 
 只有两个可选依赖保留逐文件导入例外：Qlib 后端需要 `qlib` extra，Rich 渲染器在没有 Rich 时使用纯文本输出。其他已配置源码的类型诊断都会阻断检查。
 

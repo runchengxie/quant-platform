@@ -34,8 +34,8 @@
 ### Task 1: Expose the full ledger on the public backend result
 
 **Files:**
-- Modify: `packages/portfolio-backtester/src/portfolio_backtester/backends/base.py`
-- Modify: `packages/portfolio-backtester/src/portfolio_backtester/backends/native.py`
+- Modify: `packages/platform/src/portfolio_backtester/backends/base.py`
+- Modify: `packages/platform/src/portfolio_backtester/backends/native.py`
 - Test: `tests/test_backtest_backends.py`
 
 **Interfaces:**
@@ -51,8 +51,8 @@
 ### Task 2: Publish a result with the official bundle writer
 
 **Files:**
-- Create: `packages/portfolio-backtester/src/portfolio_backtester/backends/bundle.py`
-- Modify: `packages/portfolio-backtester/src/portfolio_backtester/backends/__init__.py`
+- Create: `packages/platform/src/portfolio_backtester/backends/bundle.py`
+- Modify: `packages/platform/src/portfolio_backtester/backends/__init__.py`
 - Test: `tests/test_backtest_bundle.py`
 
 **Interfaces:**

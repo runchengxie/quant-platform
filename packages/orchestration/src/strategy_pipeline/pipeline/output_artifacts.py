@@ -7,24 +7,22 @@ from typing import Any
 import pandas as pd
 from alpha_research.signal_artifact import CANONICAL_SIGNAL_FILE, write_signal_artifact
 
-from portfolio_backtester.backtest_contracts import (
-    assert_backtest_periods_frame,
-    assert_backtest_return_frame,
-    build_backtest_periods_frame,
-    build_backtest_return_frame,
-)
-from portfolio_backtester.position_outputs import write_position_outputs
-from portfolio_backtester.position_postprocess_outputs import (
-    write_position_postprocess_outputs,
-)
-from portfolio_backtester.reporting import (
+from quant_platform.analytics.reporting import (
     build_backtest_layer_comparison_frame,
     build_backtest_report,
     build_benchmark_compare_entry,
     build_benchmark_compare_summary_frame,
     slugify_report_name,
 )
-from portfolio_backtester.tearsheet import write_backtest_tearsheet
+from quant_platform.analytics.tearsheet import write_backtest_tearsheet
+from quant_platform.backtest.legacy.backtest_contracts import (
+    assert_backtest_periods_frame,
+    assert_backtest_return_frame,
+    build_backtest_periods_frame,
+    build_backtest_return_frame,
+)
+from quant_platform.backtest.legacy.position_outputs import write_position_outputs
+from quant_platform.portfolio.position_postprocess_outputs import write_position_postprocess_outputs
 
 from .diagnostic_artifacts import (
     _write_factor_diagnostics_artifacts,

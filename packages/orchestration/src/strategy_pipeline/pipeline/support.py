@@ -9,7 +9,7 @@ from typing import Any, cast
 import numpy as np
 import pandas as pd
 
-from portfolio_backtester._symbol_utils import canonicalize_symbol_columns
+from quant_platform.symbols import canonicalize_symbol_columns
 
 from .symbols import (
     PROVIDER_SYMBOL_PRIORITY,

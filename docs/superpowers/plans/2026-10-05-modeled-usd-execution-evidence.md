@@ -31,9 +31,9 @@
 ### Task 1: Define and validate modeled execution references
 
 **Files:**
-- Modify: `packages/portfolio-backtester/src/portfolio_backtester/usd_ledger_models.py`
-- Modify: `packages/portfolio-backtester/src/portfolio_backtester/usd_ledger_inputs.py`
-- Modify: `packages/portfolio-backtester/src/portfolio_backtester/__init__.py`
+- Modify: `packages/platform/src/portfolio_backtester/usd_ledger_models.py`
+- Modify: `packages/platform/src/portfolio_backtester/usd_ledger_inputs.py`
+- Modify: `packages/platform/src/portfolio_backtester/__init__.py`
 - Test: `tests/test_usd_ledger_inputs.py`
 
 **Interfaces:**
@@ -64,7 +64,7 @@ Validate aware UTC scheduled opens, positive finite Decimal prices, `currency_pe
 - [ ] **Step 5: Commit Task 1**
 
 ```bash
-git add packages/portfolio-backtester/src/portfolio_backtester/usd_ledger_models.py packages/portfolio-backtester/src/portfolio_backtester/usd_ledger_inputs.py packages/portfolio-backtester/src/portfolio_backtester/__init__.py tests/test_usd_ledger_inputs.py
+git add packages/platform/src/portfolio_backtester/usd_ledger_models.py packages/platform/src/portfolio_backtester/usd_ledger_inputs.py packages/platform/src/portfolio_backtester/__init__.py tests/test_usd_ledger_inputs.py
 git commit -m "feat: add modeled USD execution references"
 ```
 
@@ -73,8 +73,8 @@ git commit -m "feat: add modeled USD execution references"
 ### Task 2: Replay modeled references without verified-fill claims
 
 **Files:**
-- Modify: `packages/portfolio-backtester/src/portfolio_backtester/usd_ledger.py`
-- Modify: `packages/portfolio-backtester/src/portfolio_backtester/usd_ledger_accounting.py`
+- Modify: `packages/platform/src/portfolio_backtester/usd_ledger.py`
+- Modify: `packages/platform/src/portfolio_backtester/usd_ledger_accounting.py`
 - Test: `tests/test_usd_ledger_replay.py`
 - Test: `tests/test_usd_ledger_accounting.py`
 
@@ -103,7 +103,7 @@ At each scheduled execution event, require exactly one permitted evidence path. 
 - [ ] **Step 5: Commit Task 2**
 
 ```bash
-git add packages/portfolio-backtester/src/portfolio_backtester/usd_ledger.py packages/portfolio-backtester/src/portfolio_backtester/usd_ledger_accounting.py tests/test_usd_ledger_replay.py tests/test_usd_ledger_accounting.py
+git add packages/platform/src/portfolio_backtester/usd_ledger.py packages/platform/src/portfolio_backtester/usd_ledger_accounting.py tests/test_usd_ledger_replay.py tests/test_usd_ledger_accounting.py
 git commit -m "feat: replay modeled USD execution references"
 ```
 
@@ -112,8 +112,8 @@ git commit -m "feat: replay modeled USD execution references"
 ### Task 3: Validate and document modeled evidence bundles
 
 **Files:**
-- Modify: `packages/portfolio-backtester/src/portfolio_backtester/usd_ledger_bundle.py`
-- Modify: `packages/portfolio-backtester/src/portfolio_backtester/usd_ledger.py`
+- Modify: `packages/platform/src/portfolio_backtester/usd_ledger_bundle.py`
+- Modify: `packages/platform/src/portfolio_backtester/usd_ledger.py`
 - Modify: `docs/reference/usd-price-ledger.md`
 - Test: `tests/test_usd_ledger_bundle.py`
 
@@ -140,7 +140,7 @@ Expected: all USD ledger tests pass, including existing verified behavior.
 - [ ] **Step 5: Commit Task 3**
 
 ```bash
-git add packages/portfolio-backtester/src/portfolio_backtester/usd_ledger_bundle.py packages/portfolio-backtester/src/portfolio_backtester/usd_ledger.py docs/reference/usd-price-ledger.md tests/test_usd_ledger_bundle.py
+git add packages/platform/src/portfolio_backtester/usd_ledger_bundle.py packages/platform/src/portfolio_backtester/usd_ledger.py docs/reference/usd-price-ledger.md tests/test_usd_ledger_bundle.py
 git commit -m "feat: publish modeled USD execution evidence"
 ```
 

@@ -24,7 +24,7 @@ All constraints and delivery gates in [the master plan](2026-10-09-research-assu
 
 ### Task 1: Factory, export and CLI
 
-**Files:** quant-platform: create packages/portfolio-backtester/src/quant_platform/scenarios.py, tests/test_assurance_scenarios.py and docs/guides/assurance-scenarios.md.
+**Files:** quant-platform: create packages/platform/src/quant_platform/scenarios.py, tests/test_assurance_scenarios.py and docs/guides/assurance-scenarios.md.
 
 **Interfaces:** ScenarioBundle(name: str, seed: int, frames: dict[str, pd.DataFrame], truth: dict[str, object]); build_scenario(name: str, *, seed: int = 0) -> ScenarioBundle; write_scenario(bundle: ScenarioBundle, destination: Path) -> Path; read_scenario(manifest: Path) -> ScenarioBundle. Schema quant.assurance-scenario.v1. Names: null_signal, industry_confound, delayed_revision, partial_fill, sequence_gap. CLI: python -m quant_platform.scenarios NAME --seed N --output DIR.
 

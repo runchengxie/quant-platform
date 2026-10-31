@@ -70,20 +70,20 @@
 
     | 内容 | 代码位置 |
     | --- | --- |
-    | 顶层公开入口 | `packages/portfolio-backtester/src/portfolio_backtester/__init__.py` |
-    | 通用多袖组合构造 | `packages/portfolio-backtester/src/portfolio_backtester/sleeve_portfolio.py` |
-    | 回测规范 | `packages/portfolio-backtester/src/portfolio_backtester/backtest_spec.py` |
-    | 回测配置解析 | `packages/portfolio-backtester/src/portfolio_backtester/backtest_config.py` |
-    | 高层 API | `packages/portfolio-backtester/src/portfolio_backtester/api.py` |
-    | 输入和输出契约 | `packages/portfolio-backtester/src/portfolio_backtester/contracts.py` |
-    | 执行领域契约 | `packages/portfolio-backtester/src/portfolio_backtester/execution_contracts.py` |
-    | 执行分配参考资产 | `packages/portfolio-backtester/src/portfolio_backtester/allocation_reference.py` |
-    | 后端协议与规范化结果 | `packages/portfolio-backtester/src/portfolio_backtester/backends/` |
-    | 成本与滑点 | `packages/portfolio-backtester/src/portfolio_backtester/execution.py` |
-    | 持仓回放 | `packages/portfolio-backtester/src/portfolio_backtester/position_backtest.py` |
-    | 晋级证据成交模拟 | `packages/portfolio-backtester/src/portfolio_backtester/promotion_sidecar.py` |
+    | 顶层公开入口 | `packages/platform/src/portfolio_backtester/__init__.py` |
+    | 通用多袖组合构造 | `packages/platform/src/portfolio_backtester/sleeve_portfolio.py` |
+    | 回测规范 | `packages/platform/src/portfolio_backtester/backtest_spec.py` |
+    | 回测配置解析 | `packages/platform/src/portfolio_backtester/backtest_config.py` |
+    | 高层 API | `packages/platform/src/portfolio_backtester/api.py` |
+    | 输入和输出契约 | `packages/platform/src/portfolio_backtester/contracts.py` |
+    | 执行领域契约 | `packages/platform/src/portfolio_backtester/execution_contracts.py` |
+    | 执行分配参考资产 | `packages/platform/src/portfolio_backtester/allocation_reference.py` |
+    | 后端协议与规范化结果 | `packages/platform/src/portfolio_backtester/backends/` |
+    | 成本与滑点 | `packages/platform/src/portfolio_backtester/execution.py` |
+    | 持仓回放 | `packages/platform/src/portfolio_backtester/position_backtest.py` |
+    | 晋级证据成交模拟 | `packages/platform/src/portfolio_backtester/promotion_sidecar.py` |
     | 测试入口 | `scripts/dev/run_tests.sh` |
-    | 网格回测辅助函数 | `packages/portfolio-backtester/src/portfolio_backtester/grid_support.py` |
+    | 网格回测辅助函数 | `packages/platform/src/portfolio_backtester/grid_support.py` |
     | 微观结构模拟接口 | `packages/microstructure/src/ticknet/simulator/` |
     | Rust 模拟内核 | `packages/microstructure/rust/src/lib.rs` |
 

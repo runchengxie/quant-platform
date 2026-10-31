@@ -31,7 +31,7 @@ run_ruff() {
 
 run_ty() {
   local -a source_roots=(
-    "packages/portfolio-backtester/src"
+    "packages/platform/src"
     "packages/orchestration/src"
     "packages/execution/src"
     "packages/alpha/src"

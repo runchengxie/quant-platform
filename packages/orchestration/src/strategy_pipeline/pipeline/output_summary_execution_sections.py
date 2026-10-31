@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from portfolio_backtester.execution_sim import describe_execution_sim_config
+from quant_platform.backtest.legacy.execution_sim import describe_execution_sim_config
 from strategy_pipeline.pipeline.output_summary_formatting import _date_text, _path_text
 
 

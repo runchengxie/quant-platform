@@ -18,7 +18,7 @@ from alpha_research.date_slices import (
 from alpha_research.evaluation_config import warn_if_purge_too_small
 from numpy.typing import NDArray
 
-from portfolio_backtester.rebalance import estimate_rebalance_gap
+from quant_platform.portfolio.rebalance import estimate_rebalance_gap
 
 logger = logging.getLogger("strategy_pipeline")
 _managed_stream_handler: logging.Handler | None = None

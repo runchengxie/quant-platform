@@ -23,8 +23,8 @@
 ### Task 1: Add inverse-volatility backend to quant-platform
 
 **Files:**
-- Modify: `packages/portfolio-backtester/src/portfolio_backtester/optimization.py`
-- Modify: `packages/portfolio-backtester/src/portfolio_backtester/__init__.py`
+- Modify: `packages/platform/src/portfolio_backtester/optimization.py`
+- Modify: `packages/platform/src/portfolio_backtester/__init__.py`
 - Modify: `tests/test_optimizer_backends.py`
 
 **Interfaces:**
@@ -64,8 +64,8 @@ Expected: all optimizer tests pass.
 - [x] **Step 5: Commit the provider backend**
 
 ```bash
-git add packages/portfolio-backtester/src/portfolio_backtester/optimization.py \
-  packages/portfolio-backtester/src/portfolio_backtester/__init__.py \
+git add packages/platform/src/portfolio_backtester/optimization.py \
+  packages/platform/src/portfolio_backtester/__init__.py \
   tests/test_optimizer_backends.py
 git commit -m "feat: add inverse volatility optimizer backend"
 ```
@@ -73,8 +73,8 @@ git commit -m "feat: add inverse volatility optimizer backend"
 ### Task 2: Add economic no-trade rebalancing baseline to quant-platform
 
 **Files:**
-- Create: `packages/portfolio-backtester/src/portfolio_backtester/economic_rebalance.py`
-- Modify: `packages/portfolio-backtester/src/portfolio_backtester/__init__.py`
+- Create: `packages/platform/src/portfolio_backtester/economic_rebalance.py`
+- Modify: `packages/platform/src/portfolio_backtester/__init__.py`
 - Create: `tests/test_economic_rebalance.py`
 
 **Interfaces:**
@@ -112,8 +112,8 @@ Expected: all selected tests pass and package exports are available.
 - [x] **Step 5: Commit the provider rebalance primitive**
 
 ```bash
-git add packages/portfolio-backtester/src/portfolio_backtester/economic_rebalance.py \
-  packages/portfolio-backtester/src/portfolio_backtester/__init__.py \
+git add packages/platform/src/portfolio_backtester/economic_rebalance.py \
+  packages/platform/src/portfolio_backtester/__init__.py \
   tests/test_economic_rebalance.py
 git commit -m "feat: add no-trade economic rebalance baseline"
 ```
@@ -157,7 +157,7 @@ uv run --locked --extra dev python -m pytest tests/strategy_research/test_portfo
 For local provider/consumer validation before the provider release is installed, prepend the provider source path:
 
 ```bash
-PYTHONPATH=/home/richard/code/.worktrees/quant-platform-portfolio-construction/packages/portfolio-backtester/src:src:. \
+PYTHONPATH=/home/richard/code/.worktrees/quant-platform-portfolio-construction/packages/platform/src:src:. \
   uv run --locked --extra dev python -m pytest tests/strategy_research/test_portfolio_construction.py -q
 ```
 
