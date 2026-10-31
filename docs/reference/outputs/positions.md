@@ -2,7 +2,7 @@
 
 Language: English · [简体中文](positions.zh-CN.md)
 
-This page describes the stable fields, validation behavior, and downstream use of `positions_by_rebalance.csv`. The contract and writer are implemented in [`contracts.py`](https://github.com/runchengxie/quant-platform/blob/main/packages/portfolio-backtester/src/portfolio_backtester/contracts.py) and [`positions_artifact.py`](https://github.com/runchengxie/quant-platform/blob/main/packages/portfolio-backtester/src/portfolio_backtester/positions_artifact.py); behavior is covered by [contract tests](https://github.com/runchengxie/quant-platform/blob/main/tests/test_contracts.py) and [artifact tests](https://github.com/runchengxie/quant-platform/blob/main/tests/test_positions_artifact.py).
+This page describes the stable fields, validation behavior, and downstream use of `positions_by_rebalance.csv`. The contract and writer are implemented in [`contracts.py`](https://github.com/runchengxie/quant-platform/blob/main/packages/platform/src/portfolio_backtester/contracts.py) and [`positions_artifact.py`](https://github.com/runchengxie/quant-platform/blob/main/packages/platform/src/portfolio_backtester/positions_artifact.py); behavior is covered by [contract tests](https://github.com/runchengxie/quant-platform/blob/main/tests/test_contracts.py) and [artifact tests](https://github.com/runchengxie/quant-platform/blob/main/tests/test_positions_artifact.py).
 
 ## Canonical file and contract
 

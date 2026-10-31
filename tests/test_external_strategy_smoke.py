@@ -107,7 +107,7 @@ package_root = Path(portfolio_backtester.__file__).resolve().parent
 expected_package_root = (
     Path(os.environ["PYTHONPATH"]).resolve()
     / "packages"
-    / "portfolio-backtester"
+    / "platform"
     / "src"
     / "portfolio_backtester"
 )

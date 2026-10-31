@@ -56,7 +56,7 @@ The initial ty command lacked this repository's multiple source roots and theref
 
 **Files:**
 - Modify: `packages/research-contracts/**/*.py`
-- Modify: `packages/portfolio-backtester/src/portfolio_backtester/**/*.py`
+- Modify: `packages/platform/src/portfolio_backtester/**/*.py`
 - Modify: corresponding `tests/` files
 - Modify: `pyproject.toml`
 
@@ -66,8 +66,8 @@ The initial ty command lacked this repository's multiple source roots and theref
 - [x] Run Ruff separately on `packages/research-contracts` and the complete portfolio-backtester source and test selections.
 - [x] Fix imports, unused names, complexity, long lines, and collection issues with behavior-preserving edits; review every Unicode warning against its surrounding Chinese text.
 - [x] Run the matching pytest selections for contracts, optimizer, execution simulation, and portfolio backtester.
-- [x] Remove the `packages/research-contracts`, `packages/portfolio-backtester/src/portfolio_backtester`, and `packages/portfolio-backtester/src/research_contracts` exclusions only after their whole source directories pass.
-- [x] Run `uv run --locked ty check --error-on-warning packages/portfolio-backtester/src` and fix concrete errors.
+- [x] Remove the `packages/research-contracts`, `packages/platform/src/portfolio_backtester`, and `packages/platform/src/research_contracts` exclusions only after their whole source directories pass.
+- [x] Run `uv run --locked ty check --error-on-warning packages/platform/src` and fix concrete errors.
 
 The complete `portfolio_backtester` and `research_contracts` sources now pass Ruff and blocking ty. Ruff's remaining source exclusions are limited to orchestration, execution, alpha, and microstructure. CI now runs ty across the full configured source surface and blocks errors; the 396 legacy warnings remain visible while subsequent packages are cleaned.
 

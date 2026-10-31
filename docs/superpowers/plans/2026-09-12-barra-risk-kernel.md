@@ -11,9 +11,9 @@
 ## Task 1: Define the public risk-model contracts and validation behavior
 
 **Files:**
-- Create `packages/portfolio-backtester/src/portfolio_backtester/risk_model.py`.
+- Create `packages/platform/src/portfolio_backtester/risk_model.py`.
 - Create `tests/test_risk_model.py`.
-- Modify `packages/portfolio-backtester/src/portfolio_backtester/__init__.py`.
+- Modify `packages/platform/src/portfolio_backtester/__init__.py`.
 
 **Implementation details:**
 
@@ -65,7 +65,7 @@
 ## Task 2: Implement daily weighted cross-sectional factor-return estimation
 
 **Files:**
-- Modify `packages/portfolio-backtester/src/portfolio_backtester/risk_model.py`.
+- Modify `packages/platform/src/portfolio_backtester/risk_model.py`.
 - Modify `tests/test_risk_model.py`.
 
 **Implementation details:**
@@ -91,7 +91,7 @@
 ## Task 3: Implement factor covariance, PSD stabilization, and specific risk
 
 **Files:**
-- Modify `packages/portfolio-backtester/src/portfolio_backtester/risk_model.py`.
+- Modify `packages/platform/src/portfolio_backtester/risk_model.py`.
 - Modify `tests/test_risk_model.py`.
 
 **Implementation details:**
@@ -118,7 +118,7 @@
 ## Task 4: Implement portfolio risk exposure and factor attribution
 
 **Files:**
-- Modify `packages/portfolio-backtester/src/portfolio_backtester/risk_model.py`.
+- Modify `packages/platform/src/portfolio_backtester/risk_model.py`.
 - Modify `tests/test_risk_model.py`.
 
 **Implementation details:**
@@ -143,7 +143,7 @@
 ## Task 5: Add public API documentation and repository-level verification
 
 **Files:**
-- Modify `packages/portfolio-backtester/src/portfolio_backtester/__init__.py` if any exports are still missing.
+- Modify `packages/platform/src/portfolio_backtester/__init__.py` if any exports are still missing.
 - Create `docs/risk-model-kernel.md`.
 - Modify `tests/test_risk_model.py` only if verification exposes a contract gap.
 
@@ -158,7 +158,7 @@
    ```bash
    uv sync --locked --all-groups
    uv run pytest tests/test_risk_model.py
-   uv run ruff check packages/portfolio-backtester/src/portfolio_backtester/risk_model.py tests/test_risk_model.py
+   uv run ruff check packages/platform/src/portfolio_backtester/risk_model.py tests/test_risk_model.py
    uv run pytest
    uv run ruff check .
    ```

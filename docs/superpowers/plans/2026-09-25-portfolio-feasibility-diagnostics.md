@@ -34,7 +34,7 @@
 
 **Files:**
 - Modify: `tests/test_optimizer_backends.py`
-- Source: `packages/portfolio-backtester/src/portfolio_backtester/optimization.py`
+- Source: `packages/platform/src/portfolio_backtester/optimization.py`
 
 **Interfaces:**
 - Consumes: `LinearExposureConstraint`, `PortfolioOptimizationRequest`, `QpMinVarianceOptimizerBackend`.
@@ -49,7 +49,7 @@
 ### Task 2: Decide whether the existing diagnostics are sufficient
 
 **Files:**
-- Review: `packages/portfolio-backtester/src/portfolio_backtester/optimization.py`
+- Review: `packages/platform/src/portfolio_backtester/optimization.py`
 - Review: `docs/concepts/portfolio-optimization-backends.md`
 - Modify only if required: the same source and docs files
 
@@ -68,7 +68,7 @@
 **Files:**
 - Test: `tests/test_optimizer_backends.py`
 - Documentation: `docs/concepts/portfolio-optimization-backends.md`
-- Source only if an additive diagnostic is justified: `packages/portfolio-backtester/src/portfolio_backtester/optimization.py`
+- Source only if an additive diagnostic is justified: `packages/platform/src/portfolio_backtester/optimization.py`
 
 **Interfaces:**
 - Consumes: the optimizer's linear constraints and asset ordering.
@@ -89,6 +89,6 @@
 - Produces: a PR with focused optimizer evidence and compatibility results.
 
 - [x] Run `uv run --locked python -m pytest tests/test_optimizer_backends.py tests/test_contracts.py -q`.
-- [x] Run `uv run --locked ruff check packages/portfolio-backtester/src/portfolio_backtester/optimization.py tests/test_optimizer_backends.py`.
-- [x] Run `uv run --locked ty check --error-on-warning packages/portfolio-backtester/src/portfolio_backtester/optimization.py tests/test_optimizer_backends.py`.
+- [x] Run `uv run --locked ruff check packages/platform/src/portfolio_backtester/optimization.py tests/test_optimizer_backends.py`.
+- [x] Run `uv run --locked ty check --error-on-warning packages/platform/src/portfolio_backtester/optimization.py tests/test_optimizer_backends.py`.
 - [x] Commit tests first and any required additive diagnostic separately.

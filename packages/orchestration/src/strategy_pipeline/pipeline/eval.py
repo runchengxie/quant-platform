@@ -13,16 +13,16 @@ from alpha_research.period_evaluation import (
 )
 from numpy.typing import NDArray
 
-from portfolio_backtester.period_outputs import (
+from quant_platform.backtest.legacy.period_outputs import (
     build_period_positions as _build_period_positions_impl,
 )
-from portfolio_backtester.period_outputs import (
+from quant_platform.backtest.legacy.period_outputs import (
     record_period_backtest_nav_outputs as _record_period_backtest_nav_outputs_impl,
 )
-from portfolio_backtester.period_outputs import (
+from quant_platform.backtest.legacy.period_outputs import (
     record_period_exposure_outputs as _record_period_exposure_outputs_impl,
 )
-from portfolio_backtester.portfolio import build_positions_by_rebalance
+from quant_platform.portfolio.portfolio import build_positions_by_rebalance
 
 logger = logging.getLogger("strategy_pipeline")
 

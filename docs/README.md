@@ -72,20 +72,20 @@ Agents should start with the root README, this page, and the relevant category d
 
     | Area | Implementation |
     | --- | --- |
-    | Public package entry points | `packages/portfolio-backtester/src/portfolio_backtester/__init__.py` |
-    | Multi-sleeve portfolio construction | `packages/portfolio-backtester/src/portfolio_backtester/sleeve_portfolio.py` |
-    | Backtest specification | `packages/portfolio-backtester/src/portfolio_backtester/backtest_spec.py` |
-    | Backtest configuration parsing | `packages/portfolio-backtester/src/portfolio_backtester/backtest_config.py` |
-    | High-level API | `packages/portfolio-backtester/src/portfolio_backtester/api.py` |
-    | Input and output contracts | `packages/portfolio-backtester/src/portfolio_backtester/contracts.py` |
-    | Execution-domain contracts | `packages/portfolio-backtester/src/portfolio_backtester/execution_contracts.py` |
-    | Execution allocation reference | `packages/portfolio-backtester/src/portfolio_backtester/allocation_reference.py` |
-    | Backend protocols and normalized results | `packages/portfolio-backtester/src/portfolio_backtester/backends/` |
-    | Costs and slippage | `packages/portfolio-backtester/src/portfolio_backtester/execution.py` |
-    | Position replay | `packages/portfolio-backtester/src/portfolio_backtester/position_backtest.py` |
-    | Promotion-evidence execution simulation | `packages/portfolio-backtester/src/portfolio_backtester/promotion_sidecar.py` |
+    | Public package entry points | `packages/platform/src/portfolio_backtester/__init__.py` |
+    | Multi-sleeve portfolio construction | `packages/platform/src/portfolio_backtester/sleeve_portfolio.py` |
+    | Backtest specification | `packages/platform/src/portfolio_backtester/backtest_spec.py` |
+    | Backtest configuration parsing | `packages/platform/src/portfolio_backtester/backtest_config.py` |
+    | High-level API | `packages/platform/src/portfolio_backtester/api.py` |
+    | Input and output contracts | `packages/platform/src/portfolio_backtester/contracts.py` |
+    | Execution-domain contracts | `packages/platform/src/portfolio_backtester/execution_contracts.py` |
+    | Execution allocation reference | `packages/platform/src/portfolio_backtester/allocation_reference.py` |
+    | Backend protocols and normalized results | `packages/platform/src/portfolio_backtester/backends/` |
+    | Costs and slippage | `packages/platform/src/portfolio_backtester/execution.py` |
+    | Position replay | `packages/platform/src/portfolio_backtester/position_backtest.py` |
+    | Promotion-evidence execution simulation | `packages/platform/src/portfolio_backtester/promotion_sidecar.py` |
     | Test entry point | `scripts/dev/run_tests.sh` |
-    | [Grid backtest helpers](grid-support.en.md) | `packages/portfolio-backtester/src/portfolio_backtester/grid_support.py` |
+    | [Grid backtest helpers](grid-support.en.md) | `packages/platform/src/portfolio_backtester/grid_support.py` |
     | Microstructure simulation API | `packages/microstructure/src/ticknet/simulator/` |
     | Rust simulation kernel | `packages/microstructure/rust/src/lib.rs` |
 

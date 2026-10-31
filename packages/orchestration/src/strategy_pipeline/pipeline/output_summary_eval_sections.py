@@ -7,7 +7,7 @@ from typing import Any
 
 import pandas as pd
 
-from portfolio_backtester.execution import describe_execution_model
+from quant_platform.backtest.legacy.execution import describe_execution_model
 from strategy_pipeline.pipeline.output_summary_diagnostic_sections import (
     _build_signal_stability_summary,
     _build_turnover_attribution_summary,

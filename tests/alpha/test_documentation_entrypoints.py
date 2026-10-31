@@ -107,7 +107,7 @@ def test_typecheck_script_registers_all_source_roots() -> None:
     )
 
     for source_root in (
-        "packages/portfolio-backtester/src",
+        "packages/platform/src",
         "packages/orchestration/src",
         "packages/execution/src",
         "packages/alpha/src",

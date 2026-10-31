@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 @pytest.mark.parametrize(
     ("script", "business_source"),
     [
-        ("scripts/dev/maintainability_metrics.py", "packages/portfolio-backtester/src/"),
+        ("scripts/dev/maintainability_metrics.py", "packages/platform/src/"),
         ("scripts/alpha-research/dev/maintainability_metrics.py", "packages/alpha/src/"),
     ],
 )

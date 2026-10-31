@@ -465,11 +465,11 @@ def test_dated_fee_types_are_available_from_the_public_execution_module():
         FeeSchedulePeriod,
     )
 
-    assert DatedFeeQuote.__module__ == "portfolio_backtester.dated_fees"
-    assert DatedFeeSchedule.__module__ == "portfolio_backtester.dated_fees"
-    assert DatedTradeFeeModel.__module__ == "portfolio_backtester.dated_fees"
-    assert FeeQuoteContext.__module__ == "portfolio_backtester.dated_fees"
-    assert FeeSchedulePeriod.__module__ == "portfolio_backtester.dated_fees"
+    assert DatedFeeQuote.__module__ == "quant_platform._portfolio.dated_fees"
+    assert DatedFeeSchedule.__module__ == "quant_platform._portfolio.dated_fees"
+    assert DatedTradeFeeModel.__module__ == "quant_platform._portfolio.dated_fees"
+    assert FeeQuoteContext.__module__ == "quant_platform._portfolio.dated_fees"
+    assert FeeSchedulePeriod.__module__ == "quant_platform._portfolio.dated_fees"
 
 
 def test_ideal_nav_rejects_dated_model_before_any_legacy_or_empty_result_path():

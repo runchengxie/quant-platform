@@ -36,7 +36,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_ROOTS = ("packages", "scripts", "tests")
 DEFAULT_LIMIT = 10
 PYPROJECT_PATH = Path("pyproject.toml")
-COMMAND_PATH_PREFIX = "packages/portfolio-backtester/src/portfolio_backtester/commands/"
+COMMAND_PATH_PREFIX = "packages/platform/src/portfolio_backtester/commands/"
 DEFAULT_RATCHET_BUDGETS = {
     "long_lines_over_100": 0,
     "functions_over_100": 0,

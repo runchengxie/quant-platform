@@ -77,4 +77,4 @@ realized return、MFE、MAE、peak giveback 和 holding period，返回收益分
 
 未列在顶层导出中的模块仍可供仓库内部使用，其接口稳定性低于上表中的公开入口。
 
-完整导出列表见 `packages/portfolio-backtester/src/portfolio_backtester/__init__.py`。
+完整导出列表见 `packages/platform/src/portfolio_backtester/__init__.py`。

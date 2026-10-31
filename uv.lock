@@ -4071,6 +4071,11 @@ wheels = [
 ]
 
 [[package]]
+name = "quant-backtest-engine-client"
+version = "0.2.0"
+source = { git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=python&rev=f0ba2ef193c721c7bd497c4d80a7bc8a01c18a31#f0ba2ef193c721c7bd497c4d80a7bc8a01c18a31" }
+
+[[package]]
 name = "quant-platform"
 version = "0.0.1"
 source = { editable = "." }
@@ -4096,6 +4101,9 @@ dev = [
     { name = "ty" },
     { name = "xgboost" },
 ]
+engine = [
+    { name = "quant-backtest-engine-client" },
+]
 microstructure = [
     { name = "polars" },
     { name = "scikit-learn" },
@@ -4119,6 +4127,7 @@ dev = [
     { name = "polars" },
     { name = "pytest" },
     { name = "pytest-cov" },
+    { name = "quant-backtest-engine-client" },
     { name = "research-code-quality" },
     { name = "ruff" },
     { name = "scikit-learn" },
@@ -4147,6 +4156,7 @@ requires-dist = [
     { name = "pyqlib", marker = "extra == 'qlib'", specifier = ">=0.9.5" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.3" },
     { name = "pyyaml", specifier = ">=6.0" },
+    { name = "quant-backtest-engine-client", marker = "extra == 'engine'", git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=python&rev=f0ba2ef193c721c7bd497c4d80a7bc8a01c18a31" },
     { name = "research-code-quality", marker = "extra == 'dev'", git = "https://github.com/runchengxie/quant-code-quality.git?rev=1c754c3" },
     { name = "research-contracts", directory = "packages/research-contracts" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8" },
@@ -4160,7 +4170,7 @@ requires-dist = [
     { name = "xgboost", marker = "extra == 'dev'", specifier = ">=1.7" },
     { name = "xgboost", marker = "extra == 'ml'", specifier = ">=1.7" },
 ]
-provides-extras = ["ml", "dev", "qlib", "microstructure"]
+provides-extras = ["engine", "ml", "dev", "qlib", "microstructure"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -4170,6 +4180,7 @@ dev = [
     { name = "polars", specifier = ">=1.0" },
     { name = "pytest", specifier = ">=9.0.3" },
     { name = "pytest-cov", specifier = ">=6.0" },
+    { name = "quant-backtest-engine-client", git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=python&rev=f0ba2ef193c721c7bd497c4d80a7bc8a01c18a31" },
     { name = "research-code-quality", git = "https://github.com/runchengxie/quant-code-quality.git?rev=1c754c3" },
     { name = "ruff", specifier = ">=0.8" },
     { name = "scikit-learn", specifier = ">=1.9.0" },

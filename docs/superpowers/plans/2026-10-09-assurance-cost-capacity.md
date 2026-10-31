@@ -24,7 +24,7 @@ The [master plan](2026-10-09-research-assurance.md) applies. No automatic promot
 
 ### Task 1: Signed order shortfall
 
-**Files:** quant-platform: create packages/portfolio-backtester/src/portfolio_backtester/shortfall.py and tests/test_order_shortfall.py. Leave tca_calibration.py v1 unchanged.
+**Files:** quant-platform: create packages/platform/src/portfolio_backtester/shortfall.py and tests/test_order_shortfall.py. Leave tca_calibration.py v1 unchanged.
 
 **Interfaces:** Fill(quantity: float, price: float); OrderCost(order_id: str, trade_date: str, side: Literal['buy','sell'], decision_price: float, requested_quantity: float, fills: tuple[Fill,...], fees: float, unfilled_price: float | None, unfilled_at: str | None); order_shortfall(order: OrderCost) -> dict[str, object]. Schema portfolio_backtester.order-shortfall.v1; cash/bps execution, opportunity, fee and total components.
 
@@ -36,7 +36,7 @@ The [master plan](2026-10-09-research-assurance.md) applies. No automatic promot
 
 ### Task 2: Grouped evidence and uncertainty
 
-**Files:** quant-platform: create packages/portfolio-backtester/src/portfolio_backtester/tca_evidence.py, tests/test_tca_evidence.py and docs/guides/cost-evidence.md.
+**Files:** quant-platform: create packages/platform/src/portfolio_backtester/tca_evidence.py, tests/test_tca_evidence.py and docs/guides/cost-evidence.md.
 
 **Interfaces:** summarize_tca(observations: pd.DataFrame, *, group_cols: Sequence[str], min_observations: int, min_coverage: float, bootstrap_samples: int = 500, seed: int = 0) -> dict[str, object]. Schema portfolio_backtester.tca-evidence.v2. Rows contain order ID/date, requested/filled notional and Task 1 components. Duplicate order IDs fail.
 
@@ -48,7 +48,7 @@ The [master plan](2026-10-09-research-assurance.md) applies. No automatic promot
 
 ### Task 3: Capacity and research report consumption
 
-**Files:** quant-platform: modify packages/portfolio-backtester/src/portfolio_backtester/_capacity_report_grid.py, _capacity_report_cli.py and tests/test_capacity_report.py. quant-research: modify scripts/research/experiments/cashflow_indices/replication/run_cashflow_platform_replay.py, pyproject.toml and uv.lock; create tests/strategy_research/test_cost_assurance_report.py.
+**Files:** quant-platform: modify packages/platform/src/portfolio_backtester/_capacity_report_grid.py, _capacity_report_cli.py and tests/test_capacity_report.py. quant-research: modify scripts/research/experiments/cashflow_indices/replication/run_cashflow_platform_replay.py, pyproject.toml and uv.lock; create tests/strategy_research/test_cost_assurance_report.py.
 
 **Interfaces:** Existing build_capacity_report gains optional cost_evidence: Mapping[str, object] | None = None; capacity CLI and research replay accept --cost-evidence PATH. Research execution metadata records evidence schema/hash/coverage/tails. Existing no-evidence callers remain compatible.
 

@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
+
 from quant_platform import (
     build_platform_publication,
     file_sha256,

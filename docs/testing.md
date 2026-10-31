@@ -78,8 +78,10 @@ The `coverage` mode requires `pytest-cov`. It generates a report without imposin
 Public CI uses `pip-audit` to check locked dependencies for known vulnerabilities. Run the same check locally with:
 
 ```bash
-uvx --from pip-audit pip-audit --strict -r <(uv export --locked --all-groups --extra dev --extra microstructure --format requirements-txt --no-hashes --no-emit-project --no-emit-local --no-emit-package quant-platform --no-emit-package research-contracts --no-emit-package research-code-quality)
+uvx --from pip-audit pip-audit --strict -r <(uv export --locked --all-groups --extra dev --extra microstructure --format requirements-txt --no-hashes --no-emit-project --no-emit-local --no-emit-package quant-platform --no-emit-package research-contracts --no-emit-package research-code-quality --no-emit-package quant-backtest-engine-client)
 ```
+
+The source-only engine SDK has no runtime dependencies and is pinned to a reviewed Git revision. It is excluded from registry lookup alongside the other local/source packages because PyPI cannot identify it. Its own isolated wheel tests and real-engine checks run separately. The remaining registry dependencies retain strict vulnerability auditing.
 
 Current CI does not run Bandit or unused-dependency scanning. Before adding either gate, define the source and dependency scope it will scan.
 
@@ -107,7 +109,7 @@ Pull requests and main-branch pushes run repository-wide Ruff lint and formattin
 
 ## Type-check scope
 
-`scripts/dev/run_tests.sh typecheck` and `typecheck-release` use the configured `[tool.ty.src]` scope in `pyproject.toml` and enable `--error-on-warning`. The current scope includes `portfolio-backtester`, orchestration, execution, alpha, microstructure, and `scripts/`. CI runs the same strict check without passing a narrower path list.
+`scripts/dev/run_tests.sh typecheck` and `typecheck-release` use the configured `[tool.ty.src]` scope in `pyproject.toml` and enable `--error-on-warning`. The current scope includes `platform`, orchestration, execution, alpha, microstructure, and `scripts/`. CI runs the same strict check without passing a narrower path list.
 
 Only two optional-dependency imports retain file-level exceptions: the Qlib backend requires the `qlib` extra, and the Rich renderer falls back to plain text when Rich is absent. Other diagnostics in configured source files fail the check.
 

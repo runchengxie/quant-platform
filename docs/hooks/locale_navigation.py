@@ -11,6 +11,7 @@ from copy import copy
 from mkdocs.structure.nav import Navigation
 
 ENGLISH_PAGES = {
+    "migration/portfolio-boundaries.md",
     "README.md",
     "LANGUAGE_MIGRATION_STATUS.md",
     "LANGUAGE_POLICY.md",

@@ -24,7 +24,7 @@ The [master plan](2026-10-09-research-assurance.md) applies. Preserve current al
 
 ### Task 1: Latest visible revision
 
-**Files:** quant-platform: modify packages/portfolio-backtester/src/portfolio_backtester/point_in_time.py, tests/test_point_in_time_view.py and docs/guides/assurance-scenarios.md.
+**Files:** quant-platform: modify packages/platform/src/portfolio_backtester/point_in_time.py, tests/test_point_in_time_view.py and docs/guides/assurance-scenarios.md.
 
 **Interfaces:** Bound view read_latest(name: str, *, identity_cols: Sequence[str], revision_col: str) -> pd.DataFrame. Filter visibility first; select latest availability then declared comparable revision per identity. Existing read(name) stays unchanged.
 

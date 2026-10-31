@@ -27,8 +27,8 @@ Spec: this public implementation contract expands the user-approved generic corp
 ### Task 1: Corporate-action accounting integrated with execution
 
 Files:
-- Create `packages/portfolio-backtester/src/portfolio_backtester/corporate_actions.py`: immutable `CorporateAction` event and validation.
-- Create `packages/portfolio-backtester/src/portfolio_backtester/execution_sim/corporate_actions.py`: run-local rights state, opening-day settlement and closing entitlement capture.
+- Create `packages/platform/src/portfolio_backtester/corporate_actions.py`: immutable `CorporateAction` event and validation.
+- Create `packages/platform/src/portfolio_backtester/execution_sim/corporate_actions.py`: run-local rights state, opening-day settlement and closing entitlement capture.
 - Modify `execution_sim/core.py`, `models.py`, `results.py`, `reporting.py` and public exports as needed for explicit optional inputs and opt-in receipts.
 - Test `tests/test_execution_corporate_actions.py`.
 - Document `docs/corporate-action-ledger.md`.

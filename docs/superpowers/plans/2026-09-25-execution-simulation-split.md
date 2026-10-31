@@ -34,8 +34,8 @@
 
 **Files:**
 - Test: `tests/test_execution_sim.py`
-- Source: `packages/portfolio-backtester/src/portfolio_backtester/execution_sim/core.py`
-- Source: `packages/portfolio-backtester/src/portfolio_backtester/execution_sim/__init__.py`
+- Source: `packages/platform/src/portfolio_backtester/execution_sim/core.py`
+- Source: `packages/platform/src/portfolio_backtester/execution_sim/__init__.py`
 
 **Interfaces:**
 - Consumes: existing simulator API and deterministic fixtures.
@@ -49,8 +49,8 @@
 ### Task 2: Move table preparation behind a compatibility facade
 
 **Files:**
-- Create: `packages/portfolio-backtester/src/portfolio_backtester/execution_sim/table_preparation.py`
-- Modify: `packages/portfolio-backtester/src/portfolio_backtester/execution_sim/core.py`
+- Create: `packages/platform/src/portfolio_backtester/execution_sim/table_preparation.py`
+- Modify: `packages/platform/src/portfolio_backtester/execution_sim/core.py`
 - Modify: `tests/test_execution_sim.py`
 
 **Interfaces:**
@@ -64,9 +64,9 @@
 ### Task 3: Move adjusted and ideal NAV flows
 
 **Files:**
-- Create: `packages/portfolio-backtester/src/portfolio_backtester/execution_sim/adjusted_nav.py`
-- Create: `packages/portfolio-backtester/src/portfolio_backtester/execution_sim/ideal_nav.py`
-- Modify: `packages/portfolio-backtester/src/portfolio_backtester/execution_sim/core.py`
+- Create: `packages/platform/src/portfolio_backtester/execution_sim/adjusted_nav.py`
+- Create: `packages/platform/src/portfolio_backtester/execution_sim/ideal_nav.py`
+- Modify: `packages/platform/src/portfolio_backtester/execution_sim/core.py`
 - Test: `tests/test_execution_sim.py`
 
 **Interfaces:**
@@ -81,9 +81,9 @@
 ### Task 4: Move capacity simulation and verify package exports
 
 **Files:**
-- Create: `packages/portfolio-backtester/src/portfolio_backtester/execution_sim/capacity_simulation.py`
-- Modify: `packages/portfolio-backtester/src/portfolio_backtester/execution_sim/core.py`
-- Modify: `packages/portfolio-backtester/src/portfolio_backtester/execution_sim/__init__.py`
+- Create: `packages/platform/src/portfolio_backtester/execution_sim/capacity_simulation.py`
+- Modify: `packages/platform/src/portfolio_backtester/execution_sim/core.py`
+- Modify: `packages/platform/src/portfolio_backtester/execution_sim/__init__.py`
 - Test: `tests/test_execution_sim.py`
 
 **Interfaces:**
@@ -103,8 +103,8 @@
 - Consumes: Tasks 1–4.
 - Produces: split modules with no Ruff or blocking `ty` diagnostics.
 
-- [x] Run `uv run --locked ruff check packages/portfolio-backtester/src/portfolio_backtester/execution_sim tests/test_execution_sim.py tests/test_execution_sim_market_rules.py tests/test_execution_sim_quote_safety.py` and fix each finding without broad rule suppressions.
-- [x] Run `uv run --locked ty check --error-on-warning packages/portfolio-backtester/src/portfolio_backtester/execution_sim tests/test_execution_sim.py tests/test_execution_sim_market_rules.py tests/test_execution_sim_quote_safety.py` and fix type issues at their source.
+- [x] Run `uv run --locked ruff check packages/platform/src/portfolio_backtester/execution_sim tests/test_execution_sim.py tests/test_execution_sim_market_rules.py tests/test_execution_sim_quote_safety.py` and fix each finding without broad rule suppressions.
+- [x] Run `uv run --locked ty check --error-on-warning packages/platform/src/portfolio_backtester/execution_sim tests/test_execution_sim.py tests/test_execution_sim_market_rules.py tests/test_execution_sim_quote_safety.py` and fix type issues at their source.
 - [x] Remove the relevant Ruff exclusion only when the full owning package is clean under the configured rules.
 - [x] Run the complete portfolio backtester unit test selection from CI.
 - [x] Commit code movement and static cleanup separately, with the golden behavior tests included before the moves.

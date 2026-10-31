@@ -7,7 +7,7 @@ from portfolio_backtester import evaluation
 
 
 def test_portfolio_package_does_not_own_freshness_score_transform() -> None:
-    duplicate = Path("packages/portfolio-backtester/src/portfolio_backtester/freshness_overlay.py")
+    duplicate = Path("packages/platform/src/quant_platform/_portfolio/freshness_overlay.py")
     assert not duplicate.exists(), (
         "freshness score transformation is alpha-owned; portfolio-backtester "
         "must consume an already-transformed score"
@@ -79,7 +79,7 @@ def test_walk_forward_backtest_fails_closed_without_freshness_owner() -> None:
 
 def test_evaluation_does_not_import_local_freshness_module() -> None:
     source = Path(
-        "packages/portfolio-backtester/src/portfolio_backtester/_evaluation_backtest.py"
+        "packages/platform/src/quant_platform/_portfolio/_evaluation_backtest.py"
     ).read_text()
 
     assert "from .freshness_overlay import" not in source

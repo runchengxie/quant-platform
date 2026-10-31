@@ -6,6 +6,11 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+SDK_REVISION = "f0ba2ef193c721c7bd497c4d80a7bc8a01c18a31"
+SDK_REPOSITORY = "https://github.com/runchengxie/quant-backtest-engine.git"
+SDK_DEPENDENCY = (
+    f"quant-backtest-engine-client @ git+{SDK_REPOSITORY}@{SDK_REVISION}#subdirectory=python"
+)
 
 
 def _assert_allowed_package_sources(lock: dict[str, object]) -> None:
@@ -20,6 +25,10 @@ def _assert_allowed_package_sources(lock: dict[str, object]) -> None:
             assert source == {"directory": "packages/research-contracts"}
         elif package["name"] == "research-code-quality":
             assert source["git"].startswith("https://github.com/runchengxie/quant-code-quality.git")
+        elif package["name"] == "quant-backtest-engine-client":
+            assert source == {
+                "git": f"{SDK_REPOSITORY}?subdirectory=python&rev={SDK_REVISION}#{SDK_REVISION}"
+            }
         else:
             assert source == {"registry": "https://pypi.org/simple"}
 
@@ -44,7 +53,9 @@ def test_distribution_declares_only_public_registry_dependencies() -> None:
         "ta>=0.11,<0.12",
         "xgboost>=1.7",
     ]
+    assert project["project"]["optional-dependencies"]["engine"] == [SDK_DEPENDENCY]
     assert dev_dependencies == [
+        SDK_DEPENDENCY,
         "maturin>=1,<2",
         "pandas-ta>=0.3.14b0",
         "scikit-learn>=1.9.0",

@@ -80,8 +80,10 @@ scripts/dev/run_tests.sh maintainability
 公开 CI 使用 `pip-audit` 检查锁定依赖中的已知漏洞。本地可运行同一命令：
 
 ```bash
-uvx --from pip-audit pip-audit --strict -r <(uv export --locked --all-groups --extra dev --extra microstructure --format requirements-txt --no-hashes --no-emit-project --no-emit-local --no-emit-package quant-platform --no-emit-package research-contracts --no-emit-package research-code-quality)
+uvx --from pip-audit pip-audit --strict -r <(uv export --locked --all-groups --extra dev --extra microstructure --format requirements-txt --no-hashes --no-emit-project --no-emit-local --no-emit-package quant-platform --no-emit-package research-contracts --no-emit-package research-code-quality --no-emit-package quant-backtest-engine-client)
 ```
+
+引擎 SDK 没有运行时依赖，固定到已审查的 Git 提交。由于 PyPI 无法识别这个源码包，它与其他本地或源码包一样不参与注册表查询。SDK 的独立 wheel 和真实引擎测试另行执行，其余注册表依赖仍使用严格漏洞审计。
 
 当前 CI 不运行 Bandit 或未使用依赖扫描。新增此类门禁前，应先定义实际扫描的源码和依赖范围。
 
@@ -109,7 +111,7 @@ PR 与 `main` 推送会运行全仓 Ruff 代码和格式检查、严格类型检
 
 ## 类型检查范围
 
-`scripts/dev/run_tests.sh typecheck` 和 `typecheck-release` 会按 `pyproject.toml` 的 `[tool.ty.src]` 检查配置范围，并启用 `--error-on-warning`。当前范围包括 `portfolio-backtester`、orchestration、execution、alpha、microstructure 和 `scripts/`。CI 运行相同的严格检查，不传入缩小后的路径列表。
+`scripts/dev/run_tests.sh typecheck` 和 `typecheck-release` 会按 `pyproject.toml` 的 `[tool.ty.src]` 检查配置范围，并启用 `--error-on-warning`。当前范围包括 `platform`、orchestration、execution、alpha、microstructure 和 `scripts/`。CI 运行相同的严格检查，不传入缩小后的路径列表。
 
 只有两个可选依赖保留逐文件导入例外：Qlib 后端需要 `qlib` extra，Rich 渲染器在没有 Rich 时使用纯文本输出。其他已配置源码的类型诊断都会阻断检查。
 
