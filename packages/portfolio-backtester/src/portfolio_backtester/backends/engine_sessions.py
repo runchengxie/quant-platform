@@ -181,85 +181,9 @@ class EngineClient:
         daily = _unique(result["daily_ledger"], "session_date")
         _require(list(daily) == list(sessions), "session ledger coverage/order mismatch")
         fills_by_date, orders, rejections = _order_evidence(request, result, sessions, zone)
-        quantities = defaultdict(Decimal)
-        cash = _number(result["initial_cash"])
-        commission = Decimal(0)
-        positions = {}
-        for position in result["daily_positions"]:
-            key = (position["session_date"], position["symbol"])
-            _require(
-                key not in positions
-                and key[0] in daily
-                and key[1] in {i["symbol"] for i in request["instruments"]},
-                "invalid position identity",
-            )
-            positions[key] = position
-            quantity = _number(position["quantity"], integer=True)
-            _equal(_number(position["market_value"]), quantity * _number(position["mark_price"]))
-        daily_rows, position_rows = [], []
-        for day, balance in daily.items():
-            session = sessions[day]
-            _require(
-                balance["valuation_ts_ns"] == session["valuation_ts_ns"],
-                "valuation timestamp mismatch",
-            )
-            _require(
-                pd.Timestamp(session["valuation_ts_ns"], unit="ns", tz="UTC")
-                .tz_convert(zone)
-                .date()
-                .isoformat()
-                == day,
-                "invalid local session date",
-            )
-            day_fee = Decimal(0)
-            for fill in fills_by_date[day]:
-                qty, price, fee = (_number(fill[k]) for k in ("quantity", "price", "commission"))
-                signed = qty if fill["side"] == "buy" else -qty
-                quantities[fill["symbol"]] += signed
-                notional = (qty * price).quantize(Decimal("0.01"), rounding=ROUND_HALF_EVEN)
-                cash -= (notional if signed > 0 else -notional) + fee
-                day_fee += fee
-            commission += day_fee
-            _equal(_number(balance["cash"]), cash)
-            _equal(_number(balance["commission"]), day_fee)
-            value = Decimal(0)
-            for symbol, qty in quantities.items():
-                position = positions.get((day, symbol))
-                _require(qty >= 0 and (position is not None or qty == 0), "missing position")
-                if position is not None:
-                    _require(_number(position["quantity"]) == qty, "position quantity mismatch")
-            for (position_day, symbol), position in positions.items():
-                if position_day != day:
-                    continue
-                _require(
-                    _number(position["quantity"]) == quantities[symbol],
-                    "unexpected position quantity",
-                )
-                market_value = _number(position["market_value"])
-                value += market_value
-                nav = _number(balance["nav"])
-                position_rows.append(
-                    {
-                        **position,
-                        "rebalance_date": day,
-                        "weight": float(market_value / nav) if nav else 0.0,
-                    }
-                )
-            _equal(_number(balance["positions_value"]), value)
-            _equal(_number(balance["nav"]), _number(balance["cash"]) + value)
-            daily_rows.append(
-                {
-                    **balance,
-                    "trade_date": day,
-                    **{
-                        k: float(_number(balance[k]))
-                        for k in ("cash", "positions_value", "nav", "commission")
-                    },
-                }
-            )
-        _equal(_number(result["final_cash"]), _number(result["daily_ledger"][-1]["cash"]))
-        _equal(_number(result["final_nav"]), _number(result["daily_ledger"][-1]["nav"]))
-        _equal(_number(result["total_commission"]), commission)
+        daily_rows, position_rows = _ledger_evidence(
+            request, result, sessions, daily, fills_by_date, zone
+        )
         canonical = CanonicalBacktestResult(
             backend_name="independent_engine_sessions",
             performance=pd.DataFrame(
@@ -296,6 +220,91 @@ class EngineClient:
         )
         canonical.validate()
         return canonical
+
+
+def _ledger_evidence(
+    request: dict, result: dict, sessions: dict, daily: dict, fills_by_date, zone: str
+):
+    quantities = defaultdict(Decimal)
+    cash = _number(result["initial_cash"])
+    commission = Decimal(0)
+    positions = {}
+    for position in result["daily_positions"]:
+        key = (position["session_date"], position["symbol"])
+        _require(
+            key not in positions
+            and key[0] in daily
+            and key[1] in {i["symbol"] for i in request["instruments"]},
+            "invalid position identity",
+        )
+        positions[key] = position
+        quantity = _number(position["quantity"], integer=True)
+        _equal(_number(position["market_value"]), quantity * _number(position["mark_price"]))
+    daily_rows, position_rows = [], []
+    for day, balance in daily.items():
+        session = sessions[day]
+        _require(
+            balance["valuation_ts_ns"] == session["valuation_ts_ns"],
+            "valuation timestamp mismatch",
+        )
+        _require(
+            pd.Timestamp(session["valuation_ts_ns"], unit="ns", tz="UTC")
+            .tz_convert(zone)
+            .date()
+            .isoformat()
+            == day,
+            "invalid local session date",
+        )
+        day_fee = Decimal(0)
+        for fill in fills_by_date[day]:
+            qty, price, fee = (_number(fill[k]) for k in ("quantity", "price", "commission"))
+            signed = qty if fill["side"] == "buy" else -qty
+            quantities[fill["symbol"]] += signed
+            notional = (qty * price).quantize(Decimal("0.01"), rounding=ROUND_HALF_EVEN)
+            cash -= (notional if signed > 0 else -notional) + fee
+            day_fee += fee
+        commission += day_fee
+        _equal(_number(balance["cash"]), cash)
+        _equal(_number(balance["commission"]), day_fee)
+        value = Decimal(0)
+        for symbol, qty in quantities.items():
+            position = positions.get((day, symbol))
+            _require(qty >= 0 and (position is not None or qty == 0), "missing position")
+            if position is not None:
+                _require(_number(position["quantity"]) == qty, "position quantity mismatch")
+        for (position_day, symbol), position in positions.items():
+            if position_day != day:
+                continue
+            _require(
+                _number(position["quantity"]) == quantities[symbol],
+                "unexpected position quantity",
+            )
+            market_value = _number(position["market_value"])
+            value += market_value
+            nav = _number(balance["nav"])
+            position_rows.append(
+                {
+                    **position,
+                    "rebalance_date": day,
+                    "weight": float(market_value / nav) if nav else 0.0,
+                }
+            )
+        _equal(_number(balance["positions_value"]), value)
+        _equal(_number(balance["nav"]), _number(balance["cash"]) + value)
+        daily_rows.append(
+            {
+                **balance,
+                "trade_date": day,
+                **{
+                    k: float(_number(balance[k]))
+                    for k in ("cash", "positions_value", "nav", "commission")
+                },
+            }
+        )
+    _equal(_number(result["final_cash"]), _number(result["daily_ledger"][-1]["cash"]))
+    _equal(_number(result["final_nav"]), _number(result["daily_ledger"][-1]["nav"]))
+    _equal(_number(result["total_commission"]), commission)
+    return daily_rows, position_rows
 
 
 def _order_evidence(request: dict, result: dict, sessions: dict, zone: str):
