@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from typing import cast
 
 from .control_plane.targets import export_targets
@@ -72,8 +73,18 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
         return 0
-    print(json.dumps({"command": args.command, "run_id": args.run_id}))
-    return 0
+    print(
+        json.dumps(
+            {
+                "status": "not_implemented",
+                "command": args.command,
+                "run_id": args.run_id,
+                "message": "This operation requires an implementation in the owning repository.",
+            }
+        ),
+        file=sys.stderr,
+    )
+    return 1
 
 
 if __name__ == "__main__":
