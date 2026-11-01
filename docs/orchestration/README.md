@@ -17,6 +17,8 @@ See the [control-plane API](control-plane.md) for the request and receipt contra
 
 The installable `strategy-pipeline` CLI is registered by the root project. Its command surface includes target export, research-protocol and AFML-evidence commands, and a cashflow shadow-publication adapter.
 
+The reserved `inspect`, `publish`, and `handoff` commands accept `--run-id` but have no owner adapter. They exit with status `1`, emit a JSON diagnostic with `status: "not_implemented"` on stderr, and leave stdout empty. Use the control-plane API with explicit owner and publisher implementations for those operations.
+
 ## English documentation
 
 - [Evaluation orchestration](evaluation.md) and [control-plane API](control-plane.md)

@@ -20,3 +20,5 @@
 - [参考资料](reference/README.zh-CN.md)，包括 [CLI 辅助函数](reference/cli-helpers.zh-CN.md)、[配置解析](reference/configuration.zh-CN.md)和[运行时辅助函数](reference/runtime-helpers.md)
 
 其他页面的英文版本请从对应页面顶部切换。整体翻译进度见[本地化状态](../LANGUAGE_MIGRATION_STATUS.md)。
+
+`inspect`、`publish` 和 `handoff` 是预留命令，接受 `--run-id`，但尚未接入所属项目的 adapter。它们以退出码 `1` 结束，在 stderr 输出 `status: "not_implemented"` 的 JSON 诊断，stdout 为空。这些操作应通过控制面 API 调用显式提供的 owner 和 publisher 实现。
