@@ -57,11 +57,11 @@ class ImpactEstimator:
             raise ValueError("side must be 1 or -1")
         if schedule.total_volume < 0 or schedule.n_child < 1:
             raise ValueError("total_volume must be nonnegative and n_child must be positive")
-        mid_before = _mid(self.session)
-        fill_start = len(self.session.fills)
-        child_ids: set[str] = set()
+        self.session.validate_pending()
+        self.session.validate_timestamp(schedule.start_time_ms)
         child_vol = schedule.total_volume // max(schedule.n_child, 1)
         span = max(schedule.end_time_ms - schedule.start_time_ms, 1)
+        children = []
         for i in range(schedule.n_child):
             t = schedule.start_time_ms + span * i // max(schedule.n_child, 1)
             vol = (
@@ -69,8 +69,13 @@ class ImpactEstimator:
                 if i < schedule.n_child - 1
                 else (schedule.total_volume - child_vol * (schedule.n_child - 1))
             )
-            if vol <= 0:
-                continue
+            if vol > 0:
+                self.session.validate_timestamp(t)
+                children.append((i, t, vol))
+        mid_before = _mid(self.session)
+        fill_start = len(self.session.fills)
+        child_ids: set[str] = set()
+        for i, t, vol in children:
             # 按计划提交时的对手最优价构造限价单。
             if schedule.side == 1:
                 ask = self.session.engine.lob.best_ask()
