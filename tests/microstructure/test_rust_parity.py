@@ -180,3 +180,14 @@ def test_replay_generated_ids_follow_sorted_background_position():
     for order_id in ("BG0", "BG1"):
         assert rust_book.cancel_order(order_id) == python_engine.cancel_order(order_id)
         assert rust_book.best_bid() == python_engine.lob.best_bid()
+
+
+def test_native_impact_estimation_rejects_missing_fill_evidence():
+    _native()
+    from ticknet.simulator.impact import ExecutionSchedule, ImpactEstimator
+
+    session = ReplaySession(MatchingEngine(backend="rust"), (100, 50), (101, 40))
+    with pytest.raises(NotImplementedError, match="per-fill execution evidence"):
+        ImpactEstimator(session).estimate(ExecutionSchedule(1, 10))
+    assert session.engine.lob.best_ask() == (101, 40)
+    assert len(session.ticks) == 1

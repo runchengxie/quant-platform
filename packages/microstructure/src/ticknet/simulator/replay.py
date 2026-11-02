@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .matching import MatchingEngine
+from .matching import Fill, MatchingEngine, Trade
 
 
 @dataclass
@@ -33,6 +33,14 @@ class BackgroundOrder:
     order_id: str = ""
 
 
+@dataclass(frozen=True)
+class ReplayFill(Fill):
+    """Actual execution evidence in replay order (Python backend only)."""
+
+    time_ms: int
+    source: str
+
+
 @dataclass
 class Tick:
     time_ms: int
@@ -55,6 +63,9 @@ class ReplaySession:
         self._background: list[BackgroundOrder] = []
         self._interventions: list[InterventionOrder] = []
         self.ticks: list[Tick] = []
+        self.fills: list[ReplayFill] = []
+        self._background_sequence = 0
+        self._order_ids = {"INIT_BID", "INIT_ASK"}
         # 注入初始盘口 prefix
         bid_px, bid_vol = initial_bid
         ask_px, ask_vol = initial_ask
@@ -67,13 +78,30 @@ class ReplaySession:
     def add_background(
         self, time_ms: int, side: int, price: int, volume: int, order_id: str = ""
     ) -> None:
+        if order_id:
+            self._order_ids.add(order_id)
         self._background.append(BackgroundOrder(time_ms, side, price, volume, order_id))
 
     def add_intervention(self, order: InterventionOrder) -> None:
+        self._order_ids.add(order.order_id)
         self._interventions.append(order)
 
+    def reserve_order_id(self, candidate: str) -> str:
+        """Reserve a child ID disjoint from queued, historical and live order IDs."""
+        order_id = candidate
+        suffix = 0
+        while order_id in self._order_ids or self.engine.has_order(order_id):
+            suffix += 1
+            order_id = f"{candidate}_{suffix}"
+        self._order_ids.add(order_id)
+        return order_id
+
     def run(self) -> list[Tick]:
-        """按时间顺序消费背景流与干预订单，返回合成轨迹。"""
+        """Consume queued orders once; ticks and Python fill evidence are cumulative."""
+        for order in sorted(self._background, key=lambda o: o.time_ms):
+            if not order.order_id:
+                order.order_id = self.reserve_order_id(f"BG{self._background_sequence}")
+            self._background_sequence += 1
         if self.engine.backend == "rust":
             background = [
                 (o.time_ms, o.side, o.price, o.volume, o.order_id) for o in self._background
@@ -82,6 +110,8 @@ class ReplaySession:
                 (o.time_ms, o.side, o.price, o.volume, o.order_id) for o in self._interventions
             ]
             self.ticks.extend(Tick(*row) for row in self.engine.replay(background, interventions))
+            self._background.clear()
+            self._interventions.clear()
             return self.ticks
         bg = sorted(self._background, key=lambda o: o.time_ms)
         iv = sorted(self._interventions, key=lambda o: o.time_ms)
@@ -91,7 +121,8 @@ class ReplaySession:
             next_iv = iv[ivi].time_ms if ivi < len(iv) else None
             if next_iv is not None and (next_bg is None or next_iv <= next_bg):
                 o = iv[ivi]
-                self.engine.apply_order(o.order_id, o.side, o.price, o.volume)
+                trade = self.engine.apply_order(o.order_id, o.side, o.price, o.volume)
+                self._record_fills(trade, o.time_ms, "intervention")
                 self.ticks.append(
                     Tick(
                         o.time_ms,
@@ -103,8 +134,8 @@ class ReplaySession:
                 ivi += 1
             else:
                 o = bg[bi]
-                oid = o.order_id or f"BG{bi}"
-                self.engine.apply_order(oid, o.side, o.price, o.volume)
+                trade = self.engine.apply_order(o.order_id, o.side, o.price, o.volume)
+                self._record_fills(trade, o.time_ms, "background")
                 self.ticks.append(
                     Tick(
                         o.time_ms,
@@ -114,4 +145,13 @@ class ReplaySession:
                     )
                 )
                 bi += 1
+        self._background.clear()
+        self._interventions.clear()
         return self.ticks
+
+    def _record_fills(self, trade: Trade | None, time_ms: int, source: str) -> None:
+        if trade is not None:
+            self.fills.extend(
+                ReplayFill(f.buy_id, f.sell_id, f.price, f.volume, time_ms, source)
+                for f in trade.fills
+            )

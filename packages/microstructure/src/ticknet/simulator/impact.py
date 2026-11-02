@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .replay import InterventionOrder, ReplaySession
+from .replay import InterventionOrder, ReplayFill, ReplaySession
 
 
 @dataclass
@@ -26,6 +26,10 @@ class ImpactResult:
     mid_after: float
     slippage_bps: float
     filled_volume: int
+    unfilled_volume: int = 0
+    execution_vwap: float | None = None
+    execution_slippage_bps: float | None = None
+    fills: tuple[ReplayFill, ...] = ()
 
 
 def _mid(session: ReplaySession) -> float:
@@ -47,7 +51,15 @@ class ImpactEstimator:
         self.session = session
 
     def estimate(self, schedule: ExecutionSchedule) -> ImpactResult:
+        if self.session.engine.backend != "python":
+            raise NotImplementedError("ImpactEstimator requires Python per-fill execution evidence")
+        if schedule.side not in (-1, 1):
+            raise ValueError("side must be 1 or -1")
+        if schedule.total_volume < 0 or schedule.n_child < 1:
+            raise ValueError("total_volume must be nonnegative and n_child must be positive")
         mid_before = _mid(self.session)
+        fill_start = len(self.session.fills)
+        child_ids: set[str] = set()
         child_vol = schedule.total_volume // max(schedule.n_child, 1)
         span = max(schedule.end_time_ms - schedule.start_time_ms, 1)
         for i in range(schedule.n_child):
@@ -59,15 +71,19 @@ class ImpactEstimator:
             )
             if vol <= 0:
                 continue
-            # 激进执行：市价单用对手方最优价
+            # 按计划提交时的对手最优价构造限价单。
             if schedule.side == 1:
                 ask = self.session.engine.lob.best_ask()
                 price = ask[0] if ask is not None else int(mid_before + 1)
             else:
                 bid = self.session.engine.lob.best_bid()
                 price = bid[0] if bid is not None else int(mid_before - 1)
+            order_id = self.session.reserve_order_id(f"IMPACT{i}")
+            child_ids.add(order_id)
             self.session.add_intervention(
-                InterventionOrder(time_ms=t, side=schedule.side, price=int(price), volume=vol)
+                InterventionOrder(
+                    time_ms=t, side=schedule.side, price=int(price), volume=vol, order_id=order_id
+                )
             )
         self.session.run()
         mid_after = _mid(self.session)
@@ -77,9 +93,29 @@ class ImpactEstimator:
             slippage *= schedule.side
         else:
             slippage = 0.0
+        fills = tuple(
+            fill
+            for fill in self.session.fills[fill_start:]
+            if (fill.buy_id if schedule.side == 1 else fill.sell_id) in child_ids
+        )
+        filled_volume = sum(fill.volume for fill in fills)
+        vwap = (
+            sum(fill.price * fill.volume for fill in fills) / filled_volume
+            if filled_volume
+            else None
+        )
+        execution_slippage = (
+            (vwap / mid_before - 1) * 10000 * schedule.side
+            if vwap is not None and mid_before > 0
+            else None
+        )
         return ImpactResult(
             mid_before=mid_before,
             mid_after=mid_after,
             slippage_bps=slippage,
-            filled_volume=schedule.total_volume,
+            filled_volume=filled_volume,
+            unfilled_volume=schedule.total_volume - filled_volume,
+            execution_vwap=vwap,
+            execution_slippage_bps=execution_slippage,
+            fills=fills,
         )
