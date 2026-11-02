@@ -6,6 +6,7 @@ from typing import Any, cast
 
 import pandas as pd
 
+from quant_platform.backtest.costs import CostEvidence
 from quant_platform.backtest.ledger import UnifiedLedger
 
 __all__ = [
@@ -21,6 +22,16 @@ class ExecutionSimResult:
     summary: dict[str, Any]
     orders: pd.DataFrame
     fills: pd.DataFrame
+
+    def to_cost_evidence(
+        self, *, source_id: str, source_revision: str, currency: str | None = None
+    ) -> tuple[CostEvidence, ...]:
+        """Adapt modeled fills without repricing or changing accounting tables."""
+        from .cost_evidence import simulator_cost_evidence
+
+        return simulator_cost_evidence(
+            self.fills, source_id=source_id, source_revision=source_revision, currency=currency
+        )
 
     def to_unified_ledger(
         self,
@@ -38,6 +49,16 @@ class ExecutionAdjustedNavResult:
     fills: pd.DataFrame
     actions: pd.DataFrame | None = None
     holdings: pd.DataFrame | None = None
+
+    def to_cost_evidence(
+        self, *, source_id: str, source_revision: str, currency: str | None = None
+    ) -> tuple[CostEvidence, ...]:
+        """Adapt modeled fills without repricing or changing accounting tables."""
+        from .cost_evidence import simulator_cost_evidence
+
+        return simulator_cost_evidence(
+            self.fills, source_id=source_id, source_revision=source_revision, currency=currency
+        )
 
     def to_unified_ledger(
         self,
