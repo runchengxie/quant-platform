@@ -7,8 +7,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from numbers import Integral
 
 from .matching import Fill, MatchingEngine, Trade
+
+
+def _integer_time_ms(value: int) -> int:
+    if isinstance(value, bool) or not isinstance(value, Integral):
+        raise ValueError("replay time_ms must be an integer")
+    return int(value)
 
 
 @dataclass
@@ -59,6 +66,7 @@ class ReplaySession:
         initial_ask: tuple[int, int],
         init_time_ms: int = 0,
     ) -> None:
+        self._processed_time_ms = _integer_time_ms(init_time_ms)
         self.engine = engine
         self._background: list[BackgroundOrder] = []
         self._interventions: list[InterventionOrder] = []
@@ -78,13 +86,28 @@ class ReplaySession:
     def add_background(
         self, time_ms: int, side: int, price: int, volume: int, order_id: str = ""
     ) -> None:
+        self.validate_timestamp(time_ms)
         if order_id:
             self._order_ids.add(order_id)
         self._background.append(BackgroundOrder(time_ms, side, price, volume, order_id))
 
     def add_intervention(self, order: InterventionOrder) -> None:
+        self.validate_timestamp(order.time_ms)
         self._order_ids.add(order.order_id)
         self._interventions.append(order)
+
+    def validate_timestamp(self, time_ms: int) -> None:
+        """Check a proposed timestamp without changing queued or executed state."""
+        timestamp = _integer_time_ms(time_ms)
+        if timestamp < self._processed_time_ms:
+            raise ValueError("event time_ms precedes processed replay time")
+
+    def validate_pending(self) -> None:
+        """Recheck mutable queued orders before allocating IDs or matching."""
+        for order in self._background:
+            self.validate_timestamp(order.time_ms)
+        for order in self._interventions:
+            self.validate_timestamp(order.time_ms)
 
     def reserve_order_id(self, candidate: str) -> str:
         """Reserve a child ID disjoint from queued, historical and live order IDs."""
@@ -98,6 +121,7 @@ class ReplaySession:
 
     def run(self) -> list[Tick]:
         """Consume queued orders once; ticks and Python fill evidence are cumulative."""
+        self.validate_pending()
         for order in sorted(self._background, key=lambda o: o.time_ms):
             if not order.order_id:
                 order.order_id = self.reserve_order_id(f"BG{self._background_sequence}")
@@ -110,6 +134,10 @@ class ReplaySession:
                 (o.time_ms, o.side, o.price, o.volume, o.order_id) for o in self._interventions
             ]
             self.ticks.extend(Tick(*row) for row in self.engine.replay(background, interventions))
+            self._processed_time_ms = max(
+                (_integer_time_ms(o.time_ms) for o in self._background + self._interventions),
+                default=self._processed_time_ms,
+            )
             self._background.clear()
             self._interventions.clear()
             return self.ticks
@@ -131,6 +159,7 @@ class ReplaySession:
                         "intervention",
                     )
                 )
+                self._processed_time_ms = _integer_time_ms(o.time_ms)
                 ivi += 1
             else:
                 o = bg[bi]
@@ -144,6 +173,7 @@ class ReplaySession:
                         "background",
                     )
                 )
+                self._processed_time_ms = _integer_time_ms(o.time_ms)
                 bi += 1
         self._background.clear()
         self._interventions.clear()
