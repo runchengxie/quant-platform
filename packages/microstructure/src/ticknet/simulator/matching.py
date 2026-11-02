@@ -21,12 +21,23 @@ class RestingOrder:
     seq: int  # 到达序号，用于时间优先
 
 
+@dataclass(frozen=True)
+class Fill:
+    """One execution against one resting order, at its actual price."""
+
+    buy_id: str
+    sell_id: str
+    price: int
+    volume: int
+
+
 @dataclass
 class Trade:
     buy_id: str
     sell_id: str
     price: int
     volume: int
+    fills: tuple[Fill, ...] = ()
 
 
 class _RustOrderBook(Protocol):
@@ -89,6 +100,7 @@ class LimitOrderBook:
         if not counterparty_prices:
             return None
         remaining = volume
+        fills: list[Fill] = []
         counterparty_id = ""
         trade_price = 0
         for p in counterparty_prices:
@@ -96,6 +108,14 @@ class LimitOrderBook:
             while queue and remaining > 0:
                 top = queue[0]
                 fill = min(top.volume, remaining)
+                fills.append(
+                    Fill(
+                        order_id if side == 1 else top.order_id,
+                        top.order_id if side == 1 else order_id,
+                        p,
+                        fill,
+                    )
+                )
                 top.volume -= fill
                 remaining -= fill
                 counterparty_id = top.order_id
@@ -113,6 +133,7 @@ class LimitOrderBook:
                 sell_id=counterparty_id if side == 1 else order_id,
                 price=trade_price,
                 volume=volume - remaining,
+                fills=tuple(fills),
             )
         return None
 

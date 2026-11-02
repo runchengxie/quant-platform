@@ -59,3 +59,15 @@ processed 100,000 background orders and 1,000 interventions in 1.137 seconds
 for Python and 0.250 seconds for Rust (4.54× median speedup). Both outputs
 were equal. This is a synthetic single-process replay measurement, not a claim
 about exchange latency, live execution, or arbitrary market data.
+
+## Fill evidence and impact estimation limits
+
+`ImpactEstimator` currently supports only the Python backend. Rust returns an aggregate trade with the last execution price and counterparty ID, while batch replay returns book ticks only. Neither provides per-fill quantities and prices. Requesting Rust impact estimation raises `NotImplementedError` before changing the session; it does not switch backends or manufacture a VWAP. Existing backend parity tests do not establish per-fill evidence parity.
+
+Python `Trade.fills` retains each actual execution's buyer/seller IDs, price and quantity. Existing `Trade.price` and counterparty ID fields retain their last-fill compatibility meaning. `ReplaySession.fills` adds the triggering event's time and source, including background orders hitting resting child orders. Each `run()` consumes only queued new orders, with cumulative tick and fill history; rerunning an empty queue cannot trade again. Callers should append batches in chronological order. Direct book operations are outside replay evidence.
+
+`ImpactResult.filled_volume` counts actual fills attributed to the current schedule's unique child IDs. `unfilled_volume` is requested minus filled quantity, and `execution_vwap` is executed notional divided by executed quantity. With no executions, VWAP and `execution_slippage_bps` are `None`. Execution slippage uses the pre-execution midpoint and adjusts for side, so positive values mean adverse execution. Existing `slippage_bps` retains its side-adjusted midpoint-change meaning; it is neither execution slippage nor causal impact net of background flow.
+
+Children remain limit orders priced at the best opposing quote when the schedule is submitted. Unfilled quantity remains in the book. Results cover only the current `run()` window; later batches do not retroactively revise earlier results. This synthetic execution evidence reconciles simulator accounting and does not establish real-market impact calibration.
+
+`estimate_sqrt_law` remains a synthetic observation helper: its regression uses requested quantity rather than actual executions on the x-axis, and absolute midpoint changes floored at `1e-6` on the y-axis. Its slope is not a calibration of actual execution impact. Such an interpretation requires separately designed execution-volume, background-control and sample-selection rules.

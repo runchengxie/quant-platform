@@ -1,6 +1,6 @@
 """RED: 冲击成本估计接口。
 
-把候选执行单（如 TWAP 子单）放入回放会话，估计真实冲击成本 / slippage。
+把候选执行单放入合成回放会话，核对成交证据与中间价变化。
 """
 
 from __future__ import annotations
@@ -28,7 +28,8 @@ def test_impact_estimator_reports_slippage():
     assert result.mid_before == 1000.5  # 买一卖一中间价 (1000+1001)/2
     assert result.mid_after is not None
     assert result.slippage_bps >= 0  # 买入冲击非负
-    assert result.filled_volume == 2000
+    assert result.filled_volume == 300
+    assert result.unfilled_volume == 1700
 
 
 def test_larger_order_has_higher_impact():
@@ -43,3 +44,101 @@ def test_larger_order_has_higher_impact():
     small = run(500)
     large = run(2000)
     assert large >= small  # 买入量越大，冲击不小于小单
+
+
+def test_partial_fill_uses_execution_evidence():
+    session = ReplaySession(MatchingEngine(), (1000, 500), (1001, 30))
+    result = ImpactEstimator(session).estimate(ExecutionSchedule(1, 100, n_child=3))
+    assert result.filled_volume == 30
+    assert result.unfilled_volume == 70
+    assert result.execution_vwap == 1001
+    assert sum(fill.volume for fill in result.fills) == 30
+
+
+def test_zero_fill_has_no_execution_price():
+    session = ReplaySession(MatchingEngine(), (1000, 500), (1001, 0))
+    result = ImpactEstimator(session).estimate(ExecutionSchedule(1, 100))
+    assert result.filled_volume == 0
+    assert result.unfilled_volume == 100
+    assert result.execution_vwap is None
+    assert result.execution_slippage_bps is None
+    assert result.fills == ()
+
+
+def test_fill_vwap_includes_multiple_prices_and_excludes_background():
+    session = ReplaySession(MatchingEngine(), (90, 100), (110, 10))
+    session.add_background(100, -1, 101, 5, "cheaper")
+    session.add_background(200, 1, 90, 1, "unrelated-bid")
+    session.add_background(300, -1, 90, 1, "unrelated-sell")
+    result = ImpactEstimator(session).estimate(ExecutionSchedule(1, 15))
+    assert result.filled_volume == 15
+    assert result.execution_vwap == (101 * 5 + 110 * 10) / 15
+    assert [(f.price, f.volume) for f in result.fills] == [(101, 5), (110, 10)]
+    assert result.execution_slippage_bps == (result.execution_vwap / 100 - 1) * 10000
+
+
+def test_sell_fill_evidence_and_direction():
+    session = ReplaySession(MatchingEngine(), (90, 10), (110, 100))
+    session.add_background(100, 1, 99, 5, "better-bid")
+    result = ImpactEstimator(session).estimate(ExecutionSchedule(-1, 20, n_child=2))
+    assert result.filled_volume == 15
+    assert result.unfilled_volume == 5
+    assert result.execution_vwap == (99 * 5 + 90 * 10) / 15
+    assert result.execution_slippage_bps > 0
+
+
+def test_passive_child_fills_are_attributed_once_across_runs():
+    session = ReplaySession(MatchingEngine(), (1000, 50), (1001, 10))
+    session.add_background(2000, -1, 1001, 5, "later-sell")
+    estimator = ImpactEstimator(session)
+    first = estimator.estimate(ExecutionSchedule(1, 30, n_child=2))
+    assert first.filled_volume == 15
+    assert len({f.buy_id for f in first.fills}) == 1
+    ticks = len(session.ticks)
+    session.run()
+    assert len(session.ticks) == ticks
+    second = estimator.estimate(ExecutionSchedule(1, 10, start_time_ms=6000))
+    assert second.filled_volume == 0
+    assert second.fills == ()
+
+
+def test_child_ids_do_not_collide_with_existing_session_orders():
+    from ticknet.simulator.replay import InterventionOrder
+
+    session = ReplaySession(MatchingEngine(), (100, 50), (101, 10))
+    session.add_intervention(InterventionOrder(500, 1, 101, 1, "IMPACT0"))
+    session.add_background(500, 1, 101, 1, "IMPACT1")
+    result = ImpactEstimator(session).estimate(ExecutionSchedule(1, 20, n_child=2))
+    assert result.filled_volume == 8
+    assert all(f.buy_id not in {"IMPACT0", "IMPACT1"} for f in result.fills)
+
+
+def test_rust_backend_rejects_missing_fill_capability_before_mutation():
+    import pytest
+
+    session = ReplaySession(MatchingEngine(), (100, 50), (101, 10))
+    session.engine.backend = "rust"
+    with pytest.raises(NotImplementedError, match="per-fill execution evidence"):
+        ImpactEstimator(session).estimate(ExecutionSchedule(1, 20))
+    assert len(session.ticks) == 1
+    assert session.engine.lob.best_ask() == (101, 10)
+
+
+def test_reserved_child_id_excludes_queued_history_and_live_book():
+    session = ReplaySession(MatchingEngine(), (100, 50), (101, 10))
+    session.add_background(1, 1, 101, 1, "candidate")
+    session.run()
+    session.engine.apply_order("candidate_1", 1, 99, 1)
+    assert session.reserve_order_id("candidate") == "candidate_2"
+    assert session.reserve_order_id("candidate") == "candidate_3"
+
+
+def test_child_fill_evidence_is_deterministic_and_reconciles_remainders():
+    def run():
+        session = ReplaySession(MatchingEngine(), (100, 50), (101, 20))
+        return ImpactEstimator(session).estimate(ExecutionSchedule(1, 11, n_child=3)).fills
+
+    fills = run()
+    assert fills == run()
+    assert [f.volume for f in fills] == [3, 3, 5]
+    assert len({f.buy_id for f in fills}) == 3
