@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 
 import pandas as pd
 
+from quant_platform.backtest.costs import CostEvidence
+
 from .execution import CostModel, EntryPolicy, ExitPolicy, SelectionConstraints, SlippageModel
 from .turnover import TurnoverBreakdown
 
@@ -84,6 +86,21 @@ class CostBreakdown:
     @property
     def total_cost(self) -> float:
         return float(self.fee_cost + self.slippage_cost)
+
+    def to_cost_evidence(
+        self, *, source_id: str, source_revision: str, currency: str | None = None
+    ) -> CostEvidence:
+        """Preserve aggregate buckets without treating default sub-items as known."""
+        return CostEvidence(
+            source_id=source_id,
+            source_revision=source_revision,
+            stage="aggregate_estimate",
+            scope="aggregate_leg",
+            currency=currency,
+            total=self.total_cost,
+            unallocated_total=self.total_cost,
+            raw_buckets={"fee_cost": self.fee_cost, "slippage_cost": self.slippage_cost},
+        )
 
     def to_dict(self) -> dict[str, float]:
         return {
