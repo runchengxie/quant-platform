@@ -67,7 +67,9 @@ def test_fill_evidence_uses_time_order_with_interventions_first_on_ties():
     session.add_intervention(InterventionOrder(1, 1, 101, 4, "iv-tie"))
     session.run()
     assert [(f.time_ms, f.buy_id, f.volume) for f in session.fills] == [
-        (1, "iv-tie", 4), (1, "bg-tie", 3), (2, "bg-later", 2)
+        (1, "iv-tie", 4),
+        (1, "bg-tie", 3),
+        (2, "bg-later", 2),
     ]
 
 
