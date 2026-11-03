@@ -147,8 +147,7 @@ def _validate_target_weights(targets):
         raise ValueError("order_type must be market; intrabar conditional orders are unsupported")
     if "information_time" in targets:
         if any(
-            not isinstance(t, pd.Timestamp) or t.tzinfo is None
-            for t in targets.information_time
+            not isinstance(t, pd.Timestamp) or t.tzinfo is None for t in targets.information_time
         ):
             raise ValueError("information_time must be timezone aware pandas Timestamps")
         if (targets.information_time > targets.decision_time).any():
