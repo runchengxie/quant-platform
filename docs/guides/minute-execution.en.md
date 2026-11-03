@@ -22,3 +22,31 @@ Explicit `ValuationEvent(event_id, symbol, effective_time, available_time, value
 Events within the bars/targets window apply at their own instant before sizing. Earlier declarations establish state at the first base instant, retaining their original timestamps. Future declarations are ignored and listed in `summary.ignored_future_event_ids`; they never extend the end date. Persistent declared valuations remain explicit assumptions: opt-in `daily.valuation_marks` retains source, basis, effective/available time, and source/event age, and does not classify them as observed fresh quotes. `valuation_ledger` records each application, actual shares, stock rights, prior/new mark, value change, and unchanged cash. Zero is a valuation declaration, never a zero OHLC bar or assumed disposal.
 
 With valuation events enabled, bar times, interval starts, and target decision/entry times must share one declared market timezone. Event timestamps may use other timezones and are converted to that market timezone without changing their instants, so calendar-day accounting follows the market.
+
+### Conditional orders and declared information time
+
+`simulate_minute_execution` remains available through
+`quant_platform.backtest.legacy.minute_execution`. It consumes complete target
+snapshots rather than arbitrary submitted broker orders. An optional target
+`order_type` column accepts only `market`; `limit`, `stop`, `stop_limit` and other
+conditional instructions fail explicitly. High and low do not reveal which
+price occurred first, so this simulator cannot infer stop/limit trigger ordering.
+Its existing exchange-limit rule blocks an entire buy bar touching `up_limit`
+or sell bar touching `down_limit`; this is a conservative assumption, not queue
+matching. `up_limit` and `down_limit` are exchange price bands, not order prices.
+
+An optional timezone-aware `information_time` column declares the latest
+information used to form each target and must be at or before `decision_time`.
+This checks the supplied declaration only; it cannot certify the underlying
+features' availability. Omitting the column preserves the existing caller-owned
+point-in-time contract. Entry follows decision, sizing uses marks observed
+strictly before entry, and a fill requires the complete bar to begin strictly
+after release plus latency. Bar volume/amount become known at the bar end;
+VWAP is an ex-post execution proxy rather than an order submission price.
+
+Participation capacity is decremented after each fill within a symbol/bar.
+Complete snapshots supersede earlier pending orders, so the public target API
+normally has at most one pending parent per symbol. Fee sensitivity should be
+checked with fixed targets and sufficient cash headroom when isolating cost;
+with binding cash, fees can also change lot-rounded fills. Synthetic regression
+examples are in `tests/test_minute_execution_hardening.py`.
