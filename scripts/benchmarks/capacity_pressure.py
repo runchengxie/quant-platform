@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import math
+import platform
 import subprocess
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
@@ -95,6 +96,22 @@ def experiment(scenario: Scenario) -> tuple[dict, dict[str, pd.DataFrame]]:
     }
     terminal = result.holdings[result.holdings.date == result.daily.iloc[-1].date]
     final = result.daily.iloc[-1]
+    last_marks = bars.sort_values("time").groupby("symbol").close.last()
+    independently_marked = sum(
+        q * last_marks[s] for s, q in zip(terminal.symbol, terminal.quantity, strict=True)
+    )
+    if not math.isclose(independently_marked, final.positions_value, abs_tol=1e-7):
+        raise RuntimeError("terminal holdings and marks do not reconcile")
+    buys = result.fills.loc[result.fills.side == "buy", "gross_amount"].sum()
+    sells = result.fills.loc[result.fills.side == "sell", "gross_amount"].sum()
+    if not math.isclose(
+        scenario.capital + sells - buys - result.fills.transaction_cost.sum(),
+        final.cash,
+        abs_tol=1e-7,
+    ):
+        raise RuntimeError("fill cash does not reconcile")
+    if result.orders.filled_quantity.sum() != result.fills.quantity.sum():
+        raise RuntimeError("order and fill quantities do not reconcile")
     if not math.isclose(final.cash + final.positions_value, final.nav, abs_tol=1e-7):
         raise RuntimeError("terminal NAV does not reconcile")
     row = dict(
@@ -173,6 +190,7 @@ def main() -> None:
         "bars_sha256": digest(fixture(Scenario())[1]),
         "source_revision": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
         "pandas": pd.__version__,
+        "python": platform.python_version(),
         "symbols": 20,
         "sessions": 7,
         "bars": 4620,

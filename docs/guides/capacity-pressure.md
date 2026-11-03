@@ -27,7 +27,7 @@ requests. Unfilled CNY values use each parent's sizing reference price, not a
 terminal or execution price. Full order status/reason rows preserve expiry and
 cash-or-participation ambiguity; the API does not isolate cash rejection counts.
 NAV/P&L use terminal marks and require valid marking; remaining inventory is not
-assumed sold. The fixture includes final-day observations for its only symbol.
+assumed sold. The fixture includes final-day observations for all twenty symbols.
 
 The separate fixed-fill cost control freezes baseline quantities and prices and
 subtracts proportional fees from baseline zero-fee P&L. It is conditional
