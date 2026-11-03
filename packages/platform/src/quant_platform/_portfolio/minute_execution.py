@@ -143,6 +143,15 @@ def _validate_bar_numbers(bars):
 
 
 def _validate_target_weights(targets):
+    if "order_type" in targets and not targets.order_type.eq("market").all():
+        raise ValueError("order_type must be market; intrabar conditional orders are unsupported")
+    if "information_time" in targets:
+        if any(
+            not isinstance(t, pd.Timestamp) or t.tzinfo is None for t in targets.information_time
+        ):
+            raise ValueError("information_time must be timezone aware pandas Timestamps")
+        if (targets.information_time > targets.decision_time).any():
+            raise ValueError("information_time must be at or before decision_time")
     if not targets.weight.map(lambda x: math.isfinite(x) and 0 <= x <= 1).all():
         raise ValueError("invalid weight")
     if (targets.entry_time <= targets.decision_time).any():
@@ -158,6 +167,10 @@ def simulate_minute_execution(targets, bars, config, *, corporate_actions=(), va
 
     ``targets`` has aware decision_time/entry_time, symbol and weight; each entry
     is a complete portfolio snapshot, so omitted holdings receive a zero target.
+    Optional order_type declares market only: conditional orders requiring an
+    intrabar path are rejected. Optional information_time declares the latest
+    information used for a decision and must be aware and <= decision_time.
+    Omitting it retains the caller's responsibility for point-in-time inputs.
     Entry must follow decision. ``bars`` uses aware end-stamped time, symbol,
     raw OHLC, volume in shares, amount in currency, up_limit/down_limit and a
     strict boolean tradable. Optional interval_start is aware and precedes time;
