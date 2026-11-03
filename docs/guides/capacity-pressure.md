@@ -14,8 +14,8 @@ two explicit zero-target T+1 unwind sessions (4,620 bars per case); terminal inv
 if liquidation does not complete. No case is selected for best return.
 
 `capital_normalized_target` uses weights equal to CNY 50,000 divided by initial
-capital; this fixes initial desired shares across capital cases. It is **not a
-fixed order quantity experiment**: subsequent target sizing uses current NAV and
+capital; this fixes initial desired shares across capital cases. It is not a
+fixed order quantity experiment: subsequent target sizing uses current NAV and
 marks, and generated orders can change with fees and execution. `scaled_weight`
 keeps 50% weights across capital cases. Compare generated order hashes and
 side-specific quantities before interpreting a capital comparison. Idle cash in
