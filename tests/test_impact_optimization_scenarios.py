@@ -86,3 +86,18 @@ def test_lot_oracle_rejects_invalid_contract(kwargs):
             'lot_sizes': [1], 'cash_budget': 3}
     with pytest.raises(ValueError):
         enumerate_lot_portfolios(**(base | kwargs))
+
+
+def test_decimal_cash_boundary_preserves_feasible_exact_target():
+    result = enumerate_lot_portfolios(prices=[0.1, 0.2], target_quantities=[1, 1],
+        max_lots=[1, 1], lot_sizes=[1, 1], cash_budget=0.3)
+    assert result.quantities == (1, 1)
+    assert result.spent == 0.3
+    assert result.objective == 0
+
+
+@pytest.mark.parametrize('path', [[1, -1], [-2, 1, 1], [1, 3, -2, -2], [0, 2, -2]])
+def test_permanent_only_round_trips_have_zero_cash_change(path):
+    result = linear_impact_scenario(path, unaffected_price=100, permanent=.5)
+    assert result.cash_change == pytest.approx(0)
+    assert result.final_inventory == 0

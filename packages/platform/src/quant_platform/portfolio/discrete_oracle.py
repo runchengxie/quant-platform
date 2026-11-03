@@ -1,6 +1,7 @@
 """Bounded synthetic buy-only lot oracle; not a production portfolio solver."""
 from collections.abc import Sequence
 from dataclasses import dataclass
+from fractions import Fraction
 from itertools import product
 from math import isfinite, prod
 
@@ -25,7 +26,9 @@ def enumerate_lot_portfolios(
     """Minimize sum squared quantity tracking errors over a finite lot grid.
 
     Each nonzero asset order pays max(minimum, proportional * notional).
-    Budget includes fees; residual cash is allowed. Exact optimality covers only
+    Decimal-string inputs are compared using exact rational arithmetic.
+    Float result amounts are display values; budget includes fees and allows
+    residual cash. Exact optimality covers only
     this enumerated domain, objective and fee rule. A candidate gap is reported
     only when the candidate is feasible. No holdings, shorts, covariance, or tax
     lots are modeled. The squared continuous objective is convex; integer lots
@@ -38,10 +41,16 @@ def enumerate_lot_portfolios(
     if states > max_states:
         return LotOracleResult('search_limit')
 
+    exact_prices = tuple(Fraction(str(p)) for p in prices)
+    exact_targets = tuple(Fraction(str(t)) for t in target_quantities)
+    exact_budget = Fraction(str(cash_budget))
+    exact_minimum = Fraction(str(minimum_commission))
+    exact_rate = Fraction(str(proportional_commission))
+
     def evaluate(q):
-        spent = sum(p * x + (max(minimum_commission, proportional_commission * p * x)
-                    if x else 0) for p, x in zip(prices, q, strict=True))
-        loss = sum((x - t) ** 2 for x, t in zip(q, target_quantities, strict=True))
+        spent = sum(p * x + (max(exact_minimum, exact_rate * p * x)
+                    if x else 0) for p, x in zip(exact_prices, q, strict=True))
+        loss = sum((x - t) ** 2 for x, t in zip(q, exact_targets, strict=True))
         if not isfinite(spent) or not isfinite(loss):
             raise ValueError('objective or budget overflow')
         return spent, loss
@@ -50,7 +59,7 @@ def enumerate_lot_portfolios(
     for lots in product(*(range(v + 1) for v in max_lots)):
         q = tuple(x * size for x, size in zip(lots, lot_sizes, strict=True))
         spent, loss = evaluate(q)
-        if spent <= cash_budget and (best is None or loss < best[0]):
+        if spent <= exact_budget and (best is None or loss < best[0]):
             best = (loss, q, spent)
     candidate_status, gap = 'not_provided', None
     if candidate_quantities is not None:
@@ -60,9 +69,9 @@ def enumerate_lot_portfolios(
             for x, bound, size in zip(candidate_quantities, max_lots, lot_sizes, strict=True)
         ):
             cost, loss = evaluate(candidate_quantities)
-            if cost <= cash_budget:
-                candidate_status, gap = 'feasible', loss - best[0]
-    return LotOracleResult('optimal_exhaustive', best[1], best[0], best[2], states,
+            if cost <= exact_budget:
+                candidate_status, gap = 'feasible', float(loss - best[0])
+    return LotOracleResult('optimal_exhaustive', best[1], float(best[0]), float(best[2]), states,
                            candidate_status, gap)
 
 

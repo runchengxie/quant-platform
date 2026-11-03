@@ -62,7 +62,9 @@ diagnostics retain their historical meaning; these additions do not upgrade them
 sum of squared share-target errors over a bounded, buy-only integer lot grid.
 It starts with cash only; it cannot fund purchases from unfilled sells. Per-asset
 nonzero orders pay `max(minimum_commission, proportional_commission*notional)`;
-zero orders pay zero. Cash budget includes all those fees. Residual cash is
+zero orders pay zero. Cash budget includes all those fees. Budget, fees and objective comparisons use
+exact rational arithmetic from decimal strings of inputs; returned float amounts
+are display values. Thus `0.1 + 0.2` of asset costs fits a `0.3` budget. Residual cash is
 allowed. This fixed minimum creates a discontinuity at zero; lots introduce
 integer decisions. Market impact is not inherently nonconvex.
 
