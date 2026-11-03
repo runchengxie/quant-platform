@@ -3,7 +3,7 @@
 Two opt-in experimental modules make a narrow set of assumptions inspectable.
 They do not change historical replay, production accounting or the optimizer
 registry. Implementation and synthetic checks are available; real historical
-validation and actual-fill calibration have **not** been performed.
+validation and actual-fill calibration have not been performed.
 
 ## Permanent impact sensitivity
 
@@ -72,7 +72,7 @@ Results include quantities, objective, spent cash, number of enumerated states,
 and candidate feasibility. A feasible supplied rounded/heuristic portfolio gets
 an absolute objective gap relative to the exhaustive optimum; an infeasible
 candidate gets no gap. `optimal_exhaustive` covers only this finite domain,
-objective and fee rule. `search_limit` rejects oversized search **before**
+objective and fee rule. `search_limit` rejects oversized search before
 enumeration, returning no solution, objective or certificate. Inputs are validated;
 there is no borrowing, risk budget, covariance, initial holdings, sell side,
 tax-lot handling or global production MIQP solver. Commission is charged once
