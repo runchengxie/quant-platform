@@ -113,6 +113,34 @@ def _validate(targets, bars):
     _validate_intervals(bars)
     _validate_bar_numbers(bars)
     _validate_target_weights(targets)
+    _validate_mark_provenance(bars)
+
+
+def _validate_mark_provenance(bars):
+    columns = {"mark_source_time", "mark_basis"}
+    if not columns.intersection(bars.columns):
+        return
+    if not columns <= set(bars.columns):
+        raise ValueError("mark_source_time and mark_basis must be provided together")
+    if any(not isinstance(t, pd.Timestamp) or t.tzinfo is None for t in bars.mark_source_time):
+        raise ValueError("mark_source_time must be timezone aware pandas Timestamps")
+    if (bars.mark_source_time > bars.time).any():
+        raise ValueError("mark_source_time must not follow bar time")
+    if not bars.mark_basis.isin(["raw", "declared_nontrading"]).all():
+        raise ValueError("unsupported mark_basis")
+    raw = bars.mark_basis.eq("raw")
+    if (bars.loc[raw, "mark_source_time"] != bars.loc[raw, "time"]).any():
+        raise ValueError("raw mark source time must equal bar time")
+    declared = ~raw
+    if (
+        bars.loc[declared, "tradable"]
+        | bars.loc[declared, "volume"].ne(0)
+        | bars.loc[declared, "amount"].ne(0)
+    ).any():
+        raise ValueError("declared nontrading marks cannot trade or carry volume/amount")
+    prices = bars.loc[declared, ["open", "high", "low", "close"]]
+    if not prices.eq(prices["close"], axis=0).all().all():
+        raise ValueError("declared nontrading marks must have one flat price")
 
 
 def _validate_intervals(bars):
@@ -183,6 +211,12 @@ def simulate_minute_execution(targets, bars, config, *, corporate_actions=(), va
     proxies, shared bar participation, whole lots, T+1 and fee-aware cash checks.
     Conservative side-specific limit touches block the entire bar. This does
     not reproduce auction/queue matching, intrabar paths, market impact or taxes.
+
+    Optional paired mark_source_time/mark_basis columns declare provenance. Raw
+    marks retain their bar timestamp. declared_nontrading marks are zero-volume,
+    nontradable flat-price valuation observations with source time <= bar time;
+    they do not permanently prohibit subsequent trading or certify the caller's
+    source/event policy. Source time and basis appear in later order references.
 
     Known ex-date distributions adjust prior marks by (mark-gross_cash)/(1+stock)
     before sizing; orders disclose the synthetic basis and effective/source times.
@@ -652,8 +686,8 @@ class _MinuteSimulation:
             self.marks[symbol] = bar.close
             self.mark_days[symbol] = time.date()
             self.mark_times[symbol] = time
-            self.mark_source_times[symbol] = time
-            self.mark_basis[symbol] = "raw"
+            self.mark_source_times[symbol] = getattr(bar, "mark_source_time", time)
+            self.mark_basis[symbol] = getattr(bar, "mark_basis", "raw")
 
     def expire_orders(self, time):
         for order in self.pending:
