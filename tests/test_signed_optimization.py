@@ -161,7 +161,31 @@ def test_additional_invalid_contracts(kind):
 
 def test_alpha_risk_tradeoff_has_hand_computed_interior_solution():
     req = request()
-    result = optimize_signed_paper(replace(req, expected_returns=req.expected_returns * .2))
-    assert result.weights.to_list() == pytest.approx([.2, -.2, 0], abs=1e-6)
-    assert result.expected_return == pytest.approx(.008, abs=1e-7)
-    assert result.variance == pytest.approx(.008, abs=1e-7)
+    result = optimize_signed_paper(replace(req, expected_returns=req.expected_returns * 0.2))
+    assert result.weights.to_list() == pytest.approx([0.2, -0.2, 0], abs=1e-6)
+    assert result.expected_return == pytest.approx(0.008, abs=1e-7)
+    assert result.variance == pytest.approx(0.008, abs=1e-7)
+
+
+def test_offset_strings_cannot_bypass_information_time_guard():
+    req = request(
+        information_time="2026-01-01T00:00:00-12:00",
+        decision_time="2026-01-01T01:00:00+14:00",
+    )
+    with pytest.raises(ValueError, match="timezone-aware pandas Timestamp"):
+        optimize_signed_paper(req)
+
+
+@pytest.mark.parametrize("field", ["information_time", "decision_time"])
+def test_missing_timestamp_is_rejected(field):
+    with pytest.raises(ValueError):
+        optimize_signed_paper(request(**{field: pd.NaT}))
+
+
+def test_aware_offset_timestamps_are_compared_as_instants():
+    req = request(
+        information_time=pd.Timestamp("2026-01-01T00:00:00-12:00"),
+        decision_time=pd.Timestamp("2026-01-01T01:00:00+14:00"),
+    )
+    with pytest.raises(ValueError, match="Information must not follow"):
+        optimize_signed_paper(req)

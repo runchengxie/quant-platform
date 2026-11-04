@@ -22,8 +22,8 @@ borrow and holding rates all cover that same horizon. `units` must be
 in squared decimal returns, and weights are NAV fractions. Trade costs are
 one-time decimal rates per absolute traded NAV. There is no automatic horizon
 conversion. The caller is responsible for consistent estimates and documents
-these in the required nonempty `assumptions` string. Both timestamps must be
-timezone aware; `information_time <= decision_time` attests the latest
+these in the required nonempty `assumptions` string. Both timestamps must be timezone-aware `pd.Timestamp` objects (strings and
+other timestamp types are rejected); `information_time <= decision_time` attests the latest
 information available across all inputs. This check cannot independently
 verify historical availability or eliminate estimation bias.
 

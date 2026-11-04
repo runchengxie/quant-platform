@@ -17,7 +17,7 @@
 `units` 必须为 `"horizon_decimal"`。收益和成本以净资产小数比例表示，协方差单位
 为收益小数的平方。交易成本按交易净资产绝对额一次性收取，不自动换算持有期。
 调用者负责各输入口径一致，并在非空 `assumptions` 字符串中记录假设。
-两个时间戳均须包含时区，`information_time <= decision_time` 表示全部输入的最晚
+两个时间戳均须为包含时区的 `pd.Timestamp` 对象（拒绝字符串及其他时间类型），`information_time <= decision_time` 表示全部输入的最晚
 信息时间不晚于决策时间。该检查不能独立核实历史可得性或消除估计偏差。
 
 调用 `optimize_signed_paper(request)`。目标为最小化

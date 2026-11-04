@@ -133,8 +133,14 @@ def _validate_policy(r: SignedOptimizationRequest) -> None:
     if not isinstance(r.assumptions, str) or not r.assumptions.strip():
         raise ValueError("Explicit assumptions required")
     for timestamp in (r.information_time, r.decision_time):
-        if pd.isna(timestamp) or pd.Timestamp(timestamp).tzinfo is None:
-            raise ValueError("Valid timezone-aware information and decision times required")
+        if (
+            not isinstance(timestamp, pd.Timestamp)
+            or pd.isna(timestamp)
+            or timestamp.tzinfo is None
+        ):
+            raise ValueError(
+                "Valid timezone-aware pandas Timestamp information and decision times required"
+            )
     if r.information_time > r.decision_time:
         raise ValueError("Information must not follow decision time")
 
