@@ -17,6 +17,12 @@ its `covariance` field with these three inputs:
 | `factor_covariance` | Small symmetric positive semidefinite DataFrame F, with both axes matching B's columns exactly |
 | `specific_variance` | Nonnegative finite Series D, matching asset labels and order exactly |
 
+Factor covariance validation is strict: F must be exactly symmetric and its computed
+small-matrix eigenvalues must all be nonnegative. No negative-eigenvalue tolerance,
+symmetrization or clipping is applied: large risk loadings could amplify even
+small discrepancies. Validation, the QP and the variance receipt use this same F.
+Callers must supply an already valid factor covariance.
+
 Risk factors and `factor_loadings` used for exposure constraints are independent.
 All asset Series and both loading matrices must have the same ordered asset
 index. Returns, F, D and costs cover the declared `horizon_days`; units are

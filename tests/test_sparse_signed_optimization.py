@@ -193,3 +193,58 @@ def test_finite_inputs_that_overflow_qp_are_numerical_failure():
     result = sparse.SparseSignedOptimizer(backend="osqp").solve(r)
     assert result.status == "numerical_failure"
     assert result.weights is None
+
+
+@pytest.mark.filterwarnings("error::RuntimeWarning")
+def test_overflow_in_unbounded_reported_factor_releases_no_weights_or_scores():
+    r = factor_request()
+    r = replace(
+        r,
+        expected_returns=r.expected_returns * 10,
+        lower_bounds=r.lower_bounds * 4,
+        upper_bounds=r.upper_bounds * 4,
+        gross_limit=4,
+        factor_loadings=pd.DataFrame(
+            {"unbounded_report": [1e308, -1e308, 0]}, index=r.expected_returns.index
+        ),
+    )
+    result = sparse.SparseSignedOptimizer(backend="osqp").solve(r)
+    assert result.status == "numerical_failure"
+    assert result.weights is None
+    for name in (
+        "gross",
+        "net",
+        "turnover",
+        "expected_return",
+        "variance",
+        "trade_cost",
+        "borrow_cost",
+        "holding_cost",
+    ):
+        assert getattr(result, name) is None
+    assert result.factor_exposures == {} and result.residuals == {}
+
+
+def test_tiny_negative_factor_eigenvalue_is_rejected_before_amplification():
+    r = factor_request()
+    r = replace(
+        r,
+        risk_loadings=pd.DataFrame({"beta": [1e8, -1e8, 0]}, index=r.expected_returns.index),
+        factor_covariance=pd.DataFrame([[-1e-13]], index=["beta"], columns=["beta"]),
+    )
+    with pytest.raises(ValueError, match="PSD"):
+        sparse.SparseSignedOptimizer(backend="osqp").solve(r)
+
+
+def test_tiny_factor_asymmetry_is_rejected_instead_of_using_different_triangles():
+    r = factor_request()
+    names = ["beta", "gamma"]
+    r = replace(
+        r,
+        risk_loadings=pd.DataFrame(
+            [[1e8, 1], [-1e8, 0], [0, 1]], index=r.expected_returns.index, columns=names
+        ),
+        factor_covariance=pd.DataFrame([[0.02, 1e-13], [0, 0.02]], index=names, columns=names),
+    )
+    with pytest.raises(ValueError, match="symmetric"):
+        sparse.SparseSignedOptimizer(backend="osqp").solve(r)

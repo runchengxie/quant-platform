@@ -84,9 +84,9 @@ def _validate(r):
     ):
         raise ValueError("Factor covariance must have matching finite factor axes")
     matrix = f.to_numpy(dtype=float)
-    if not np.allclose(matrix, matrix.T, atol=1e-12, rtol=0):
+    if not np.array_equal(matrix, matrix.T):
         raise ValueError("Factor covariance must be symmetric")
-    if np.linalg.eigvalsh(matrix).min() < -1e-12 or (r.specific_variance < 0).any():
+    if np.linalg.eigvalsh(matrix).min() < 0 or (r.specific_variance < 0).any():
         raise ValueError("Factor covariance must be PSD and specific variance nonnegative")
     _validate_factors(r, index)
     _validate_policy(r)
@@ -229,6 +229,14 @@ class SparseSignedOptimizer:
 
 
 def _receipt(r, x, a, lo, hi, message):
+    try:
+        with np.errstate(over="raise", invalid="raise", divide="raise"):
+            return _checked_receipt(r, x, a, lo, hi, message)
+    except FloatingPointError:
+        return SignedOptimizationResult("numerical_failure", "Nonfinite derived receipt")
+
+
+def _checked_receipt(r, x, a, lo, hi, message):
     if x is None or not np.isfinite(x).all():
         return SignedOptimizationResult("numerical_failure", "Nonfinite solution")
     n = len(r.expected_returns)
@@ -236,6 +244,8 @@ def _receipt(r, x, a, lo, hi, message):
     gross, net = float(np.abs(w).sum()), float(w.sum())
     exposures = r.factor_loadings.T @ w
     values = a @ x
+    if not np.isfinite(values).all() or not np.isfinite(exposures.to_numpy()).all():
+        return SignedOptimizationResult("numerical_failure", "Nonfinite derived receipt")
     residuals = {
         "gross": max(0.0, gross - r.gross_limit),
         "net": abs(net - r.net_target),
@@ -252,18 +262,23 @@ def _receipt(r, x, a, lo, hi, message):
     if max(residuals.values()) > 1e-7 or not np.isfinite(variance):
         return SignedOptimizationResult("numerical_failure", "Constraint residual exceeds 1e-7")
     trades = np.abs(w - r.current_weights.to_numpy())
+    economics = {
+        "gross": gross,
+        "net": net,
+        "turnover": float(trades.sum()),
+        "expected_return": float(r.expected_returns @ w),
+        "variance": variance,
+        "trade_cost": float(r.trade_costs @ trades),
+        "borrow_cost": float(r.borrow_costs @ np.maximum(-w, 0)),
+        "holding_cost": float(r.holding_costs @ np.abs(w)),
+    }
+    if not np.isfinite([*economics.values(), *residuals.values()]).all():
+        return SignedOptimizationResult("numerical_failure", "Nonfinite derived receipt")
     return SignedOptimizationResult(
         status="optimal",
         message=message,
         weights=pd.Series(w, index=r.expected_returns.index, name="weight"),
-        gross=gross,
-        net=net,
-        turnover=float(trades.sum()),
-        expected_return=float(r.expected_returns @ w),
-        variance=variance,
-        trade_cost=float(r.trade_costs @ trades),
-        borrow_cost=float(r.borrow_costs @ np.maximum(-w, 0)),
-        holding_cost=float(r.holding_costs @ np.abs(w)),
+        **economics,
         factor_exposures=exposures.to_dict(),
         residuals=residuals,
         active=gross > 1e-7,
