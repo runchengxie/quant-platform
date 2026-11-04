@@ -2,7 +2,7 @@
 
 语言：简体中文 · [English](backend-architecture.en.md)
 
-本页记录 `portfolio-backtester` 当前已经落地的后端边界，以及历史候选、参考框架和规划项的真实状态。
+本页记录 `portfolio-backtester` 当前已实现的后端边界，以及历史候选、参考框架和规划项的真实状态。
 
 ## 当前结论
 
@@ -24,7 +24,7 @@ NativePositionReplayBackend
 CanonicalBacktestResult
 ```
 
-`BackendRegistry` 提供显式登记和查找机制，不会自动发现插件。主分支没有第三方回测框架适配器。`pyqlib` 仅作为可选依赖 extra 声明，不代表当前存在 Qlib 后端。两种原生 API 的输入与用途见下文。
+`BackendRegistry` 通过显式登记和查找使用后端，插件需要调用方登记。主分支尚无第三方回测框架适配器，`pyqlib` 目前只列在可选依赖 extra 中。两种原生 API 的输入与用途见下文。
 
 ## 框架状态
 
@@ -48,7 +48,7 @@ vn.py 属于本仓库范围外。本仓库不维护 Gateway、实时订单传输
 
 ### 执行契约
 
-`portfolio_backtester.execution_contracts` 定义框架中立的类型：
+`portfolio_backtester.execution_contracts` 定义以下框架中立类型。
 
 - `Instrument`
 - `Target`
@@ -61,7 +61,7 @@ vn.py 属于本仓库范围外。本仓库不维护 Gateway、实时订单传输
 
 ### 后端协议
 
-`portfolio_backtester.backends` 公开：
+`portfolio_backtester.backends` 公开以下接口。
 
 - `BacktestBackend`
 - `BackendCapabilities`
@@ -77,7 +77,7 @@ vn.py 属于本仓库范围外。本仓库不维护 Gateway、实时订单传输
 
 原生回放显式启用 `ledger=True` 且执行模拟产生非空每日账本后，`CanonicalBacktestResult.unified_ledger` 会携带同一次模拟得到的八张完整账本表。订单、成交 ID 和每日现金、持仓价值、净值必须与结果视图一致。默认回放或无每日账本时，该字段为 `None`，能力声明保持诊断等级。调用 `write_execution_aware_result_bundle` 并提供完整、时序合法的 `research.clock.v1`、producer 和至少一个输入来源后，平台用标准 bundle writer 校验能力与账户对账并原子发布证据。`CanonicalBacktestResult.performance` 仍是历史持仓周期收益视图。执行感知净值应读取 bundle 的 `daily_nav.parquet`。
 
-`NativePositionReplayBackend` 对当前持仓周期回放做安全收口：
+`NativePositionReplayBackend` 对持仓周期回放施加以下约束。
 
 - 拒绝 `long_only=False`、空头和负权重。
 - 使用 `ffill` 成交价时要求显式允许过期价格。
@@ -85,7 +85,7 @@ vn.py 属于本仓库范围外。本仓库不维护 Gateway、实时订单传输
 
 ## 内置后端保留能力
 
-以下能力继续由内置实现维护：
+内置实现继续维护以下能力。
 
 - T+1 可卖数量。
 - 买入整手和零股卖出。
@@ -98,13 +98,13 @@ vn.py 属于本仓库范围外。本仓库不维护 Gateway、实时订单传输
 
 ## 固定对照场景
 
-后端变更至少覆盖三组固定场景：
+后端变更至少覆盖以下三组固定场景。
 
 1. 充分流动性多头场景，对比持仓、换手、毛收益、费用和净值。
 2. A 股规则场景，覆盖 T+1、涨跌停、停牌、整手和最低佣金。
 3. 容量与部分成交场景，覆盖多日成交、撤单重报、现金不足和非线性最低佣金。
 
-未来的 Backtrader 适配器只有满足以下条件，才有资格进入 registry：
+未来的 Backtrader 适配器须满足以下条件，才可申请进入 registry。
 
 - 作为可选依赖安装。
 - 转换为 `CanonicalBacktestResult`。
@@ -113,21 +113,21 @@ vn.py 属于本仓库范围外。本仓库不维护 Gateway、实时订单传输
 - A 股领域语义保持完整。
 - 迁移和回滚路径经过评审。
 
-达到这些条件代表适配器可以接受评审，不会自动替换内置实现。
+满足这些条件后，适配器可以进入评审。替换内置实现仍需单独决定。
 
 ## 统一账本路线
 
-长期账本链路为：
+长期账本按以下链路组织。
 
 ```text
 目标持仓 -> 订单 -> 成交 -> 持股与现金 -> 每日净值 -> 报告
 ```
 
-当前 `NativePositionReplayBackend` 默认仍是周期级回放，它的 `orders`、`fills` 和 `daily_ledger` 为空，能力声明会如实反映这一限制。启用可选 ledger 模式后会调用已落地的订单级执行引擎并填充统一账本，详见 [会计与执行路线图](../governance/accounting-execution-roadmap.md)。
+当前 `NativePositionReplayBackend` 默认仍是周期级回放，它的 `orders`、`fills` 和 `daily_ledger` 为空，能力声明会如实反映这一限制。启用可选 ledger 模式后会调用现有订单级执行引擎并填充统一账本，详见 [会计与执行路线图](../governance/accounting-execution-roadmap.md)。
 
 ## 范围约束
 
-本仓库不新增以下通用基础设施：
+以下通用基础设施继续由本仓库之外的项目负责。
 
 - 通用事件引擎。
 - 通用 Gateway。
@@ -152,8 +152,8 @@ platform 继续维护组合构造、分析工具和现有 Python 后端，作为
 目标权重转为订单需要另外明确的股数换算与时点约定。
 
 新引擎首版只覆盖简化的美元现金股票账户和市价单。
-A 股 T+1、涨跌停、公司行为、容量限制和每日完整账本尚未达到已验证兼容状态。
-最终估值快照不能标为本平台的 execution_aware bundle。
+首版的 A 股 T+1、涨跌停、公司行为、容量限制和每日完整账本尚无已验证兼容结论。
+下文的交易时段客户端使用后续 v2 契约。v1 最终估值快照不能标为本平台的 execution_aware bundle。
 迁移前需要逐笔核对时间、费用、现金和持仓，再增加显式版本适配。
 只有调用方完成迁移且语义对照通过后，才考虑移除旧接口。
 
@@ -189,8 +189,8 @@ ROUND_HALF_EVEN 舍入，与上游 Money 转换一致。`result.metadata['engine
 输出顺序生成。摘要与调用方可选提供的源码版本记录来源。调用方负责确认所选二进制及
 发布源码可信。
 
-此适配器不构造统一执行账本，也不声称支持平台完整的 `execution_aware` 结果包。
-不支持公司行动、复权价格、做空、策略生成、数据加载和运行时编排，不会自动注册。
+此适配器输出规范化的会话结果，尚无统一执行账本，因此无法提供平台完整的 `execution_aware` 结果包。
+公司行动、复权价格和做空均不受支持。策略生成、数据加载和运行时编排由调用方负责，客户端须显式选择。
 引擎仓库负责契约及财务语义，本仓库仅负责传输、勾稽校验和格式转换。
 
 运行真实二进制集成测试时，设置绝对路径 `SESSION_ENGINE_BINARY` 和摘要

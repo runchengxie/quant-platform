@@ -28,7 +28,7 @@ from portfolio_backtester.execution_sim import (
 
 ## 配置
 
-`ExecutionSimConfig` 默认关闭。启用后的主要默认值如下：
+`ExecutionSimConfig` 默认关闭。启用后的主要默认值见下表。
 
 | 参数 | 默认值 | 含义 |
 | --- | --- | --- |
@@ -44,7 +44,7 @@ from portfolio_backtester.execution_sim import (
 
 `build_execution_sim_config` 负责读取配置映射，`required_execution_sim_columns` 返回启用模拟后需要的价格和流动性列。
 
-`audit_delisting_exits` 使用成交名义金额和同日执行价重建模拟股数，核对退市日前仓位归零，且退市当日及之后没有成交。输入是 `fills`、`pricing`、证券到退市日期的映射及 `price_col`。发现残余仓位、退市后成交或缺失执行价时会抛出错误。该审计只覆盖模拟账本，不证明交易所现金结算或未建模的公司行为。
+`audit_delisting_exits` 使用成交名义金额和同日执行价重建模拟股数，核对退市日前仓位归零，且退市当日及之后没有成交。输入是 `fills`、`pricing`、证券到退市日期的映射及 `price_col`。发现残余仓位、退市后成交或缺失执行价时会抛出错误。该审计覆盖模拟账本。交易所现金结算和模型之外的公司行为还需另行核实。
 
 ## 输入与结果
 
@@ -60,7 +60,7 @@ from portfolio_backtester.execution_sim import (
 
 ## 使用边界
 
-理想每日净值用于比较充分流动性情形。执行后每日净值用于观察延迟成交、未成交和成本拖累。两者都属于研究模拟，不能替代真实订单状态、账户现金账本和券商风控。
+理想每日净值用于比较充分流动性情形。执行后每日净值用于观察延迟成交、未成交和成本拖累。两者都属于研究模拟。真实交易仍需核对订单状态、账户现金账本和券商风控。
 
 在份额账本入口 `simulate_execution_adjusted_nav` 中，`round_lot` 只控制买入。独立参数 `sell_round_lot` 默认为 `None`，保留调整后份额的连续卖出行为。设为正整数后，部分卖出的成交量先受请求量、流动性容量和 T+1 可卖量约束，再向下取整到该股数的整数倍。只有三个约束都容许卖出全部实际持仓时，才允许一次清空整数零股。受容量或结算限制的清仓仍按部分卖出处理。容差不会增加可成交数量，配置描述会序列化此参数。
 

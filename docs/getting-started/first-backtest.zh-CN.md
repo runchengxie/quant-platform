@@ -2,11 +2,11 @@
 
 语言：简体中文 · [English](first-backtest.md)
 
-本页使用一份很小的合成数据，演示从分数、执行模型到回测结果的完整流程。示例中的价格和信号只用于学习 API，不代表任何投资观点。
+本页使用一份很小的合成数据，演示从分数、执行模型到回测结果的完整流程。示例中的价格和信号仅供学习 API，投资观点不在示例范围内。
 
 ## 1. 准备数据
 
-回测输入是一张 `pandas.DataFrame`。最小示例需要以下列：
+回测输入是一张 `pandas.DataFrame`。最小示例需要以下列。
 
 | 列 | 含义 |
 | --- | --- |
@@ -15,7 +15,7 @@
 | `signal` | 用于排序和选股的分数 |
 | `close` | 执行模型使用的价格 |
 
-下面的四只证券有三个交易日，每天都会重新排名：
+下面的示例包含四只证券和三个交易日，每天重新排名。
 
 ```python
 import pandas as pd
@@ -45,7 +45,7 @@ scores = pd.DataFrame(
 
 ## 2. 配置执行模型
 
-执行模型负责开仓价格、退出价格、成本和滑点。这个示例先关闭显式交易成本，让结果更容易理解：
+执行模型负责开仓价格、退出价格、成本和滑点。这个示例先关闭显式交易成本，便于检查结果。
 
 ```python
 from portfolio_backtester.execution import build_execution_model
@@ -61,7 +61,7 @@ execution = build_execution_model(
 
 ## 3. 配置策略和回测
 
-`StrategySpec` 描述如何选股和分配权重。`BacktestSpec` 把策略、执行模型和回测区间组合在一起：
+`StrategySpec` 描述如何选股和分配权重。`BacktestSpec` 把策略、执行模型和回测区间组合在一起。
 
 ```python
 from portfolio_backtester import BacktestSpec, StrategySpec, run_backtest
@@ -87,7 +87,7 @@ if result is None:
 
 ## 4. 读取结果
 
-默认返回值包含五部分：
+默认返回值包含以下五部分。
 
 ```python
 stats, net_returns, gross_returns, turnover, periods = result
@@ -97,7 +97,7 @@ print(net_returns)
 print(periods[0]["entry_date"], periods[0]["exit_date"])
 ```
 
-其中：
+这些结果分别用于以下检查。
 
 - `stats` 是汇总统计字典
 - `net_returns` 是扣除模型成本后的持有期收益
@@ -109,7 +109,7 @@ print(periods[0]["entry_date"], periods[0]["exit_date"])
 
 ## 这个示例省略了什么
 
-真实研究通常还需要：
+真实研究还需补充以下检查。
 
 - 使用已发布、带版本信息的数据资产
 - 明确信号的形成时间和可用时间
