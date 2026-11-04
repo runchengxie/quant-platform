@@ -423,3 +423,30 @@ def test_sorted_json_resume_preserves_split_report_membership_order():
     a.apply(split)
     b.apply(split)
     assert a.checkpoint() == b.checkpoint()
+
+
+def test_short_dividend_payable_triggers_margin_at_ex_and_cover_before_pay_can_resolve():
+    a = account(qty=-4)
+    assert not a.actual_margin["breach"]
+    a.apply(event("dividend_record", "r", symbol="A", entitlement_id="d"))
+    a.apply(event("dividend_ex", "ex", delay=1, entitlement_id="d", amount=6))
+    assert a.actual_nav == 36
+    assert a.actual_margin == {"required": 40, "excess": -4, "breach": True,
+                               "equity_basis": "nav_including_signed_receivables"}
+    assert not a.visible_margin["breach"]
+    assert a.actual.quantities["A"] == -4
+    assert any(i["reason"] == "margin" and i["status"] == "required" for i in a.reductions)
+    a.deliver(T + pd.Timedelta(seconds=1))
+    assert a.visible_margin["breach"]
+    a.admit_order("cover", "A", 2, 10, as_of=T + pd.Timedelta(seconds=1),
+                  locate_quantity=0, risk_limit=1000)
+    a.apply(event("fill", "cover", 1, order_id="cover", quantity=2, price=10, inputs=inputs(1)))
+    assert a.actual_nav == pytest.approx(36 - 4 / 86400 / 365)
+    assert not a.actual_margin["breach"]
+    assert a.actual.quantities["A"] == -2
+    assert a.visible_margin["breach"]
+    assert all(i["status"] == "resolved" for i in a.reductions if i["reason"] == "margin")
+    a.apply(event("dividend_pay", "pay", 1, entitlement_id="d"))
+    a.deliver(T + pd.Timedelta(seconds=1))
+    assert not a.visible_margin["breach"]
+    assert a.visible_margin["required"] == 20

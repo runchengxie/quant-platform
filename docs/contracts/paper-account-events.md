@@ -17,6 +17,8 @@ historically.
 `actual` contains modeled truth, while `visible` contains delivered financial
 snapshots. Both are immutable `PaperState` values. `actual_nav`, `visible_nav` and
 `visible_receivables` include signed dividend entitlements after ex and before pay.
+`actual_margin` and `visible_margin` expose required margin, excess, breach and
+the declared equity basis `nav_including_signed_receivables`.
 `pending`, `entitlements`, `reductions` and `visible_reductions` return copies.
 Strategy decisions use `visible`, `visible_receivables`, `pending` and
 `available_cash(as_of)`. They must never read `actual` or `actual_nav` as strategy
@@ -123,8 +125,12 @@ Split reports retain the IDs of orders open when the split occurred. Delayed
 delivery transforms only those orders; an order admitted afterward never receives
 that earlier split retroactively, including admission at the same timestamp.
 
-Borrow breaches and margin breaches from projections emit explicit `required`
-reduction intents. These are diagnostic instructions, not filled covers or an
+Borrow breaches from projections and margin breaches after every event emit
+explicit `required` reduction intents. Margin equity includes all signed ex-date
+receivables and payables, so an unpaid short dividend can trigger a breach
+immediately at ex. A required margin intent becomes `resolved` only when a later
+actual state restores margin excess to zero or above. Its delivered status
+changes with the corresponding report. These are diagnostic instructions, not filled covers or an
 execution plan. Failed fills preserve exposure. The caller chooses any reduction
 orders and supplies their modeled fills; intent history is retained.
 

@@ -77,6 +77,20 @@ def _receivables(entitlements):
                   if e["ex"] and not e["paid"])
 
 
+def _account_nav(state, entitlements):
+    return _total([state["cash"], _receivables(entitlements),
+                   *(q * state["marks"][s] for s, q in state["quantities"].items())])
+
+
+def _margin_diagnostics(state, entitlements, margin):
+    required = _total(abs(q) * state["marks"][s]
+                      * (margin.long_haircut if q > 0 else margin.short_haircut)
+                      for s, q in state["quantities"].items())
+    excess = _total([_account_nav(state, entitlements), -required])
+    return {"required": required, "excess": excess, "breach": excess < 0,
+            "equity_basis": "nav_including_signed_receivables"}
+
+
 def _validate_data(data):
     for key, entitlement_key in (("actual", "entitlements"),
                                   ("visible", "visible_entitlements")):
@@ -163,6 +177,8 @@ class AccountEventAdapter:
         }
         _validate_data(self._data)
         self.available_cash(initial.as_of)
+        self._update_margin(self._data)
+        self._data["visible_reductions"] = deepcopy(self._data["reductions"])
 
     @property
     def actual(self):
@@ -194,15 +210,21 @@ class AccountEventAdapter:
 
     @property
     def actual_nav(self):
-        state = self.actual
-        return _total([state.cash, _receivables(self._data["entitlements"]),
-                       *(q * state.marks[s] for s, q in state.quantities.items())])
+        return _account_nav(self._data["actual"], self._data["entitlements"])
 
     @property
     def visible_nav(self):
-        state = self.visible
-        return _total([state.cash, self.visible_receivables,
-                       *(q * state.marks[s] for s, q in state.quantities.items())])
+        return _account_nav(self._data["visible"], self._data["visible_entitlements"])
+
+    @property
+    def actual_margin(self):
+        return _margin_diagnostics(self._data["actual"], self._data["entitlements"],
+                                   self.config.margin)
+
+    @property
+    def visible_margin(self):
+        return _margin_diagnostics(self._data["visible"], self._data["visible_entitlements"],
+                                   self.config.margin)
 
     def available_cash(self, as_of):
         """Delivered cash net of unsettled proceeds, short reserve and buy orders."""
@@ -317,6 +339,7 @@ class AccountEventAdapter:
         candidate = deepcopy(self._data)
         try:
             effects = self._apply_event(candidate, event.kind, payload, occurred, event.event_id)
+            self._update_margin(candidate)
         except (KeyError, TypeError, OverflowError) as error:
             raise ValueError("malformed or unknown event reference") from error
         candidate["processed"][event.event_id] = identity
@@ -395,9 +418,17 @@ class AccountEventAdapter:
             data["reductions"].append({"symbol": symbol,
                                        "quantity": -data["actual"]["quantities"][symbol],
                                        "reason": "recall", "status": "required"})
-        if projection.nav + _receivables(data["entitlements"]) < projection.margin_required:
+
+    def _update_margin(self, data):
+        diagnostics = _margin_diagnostics(data["actual"], data["entitlements"], self.config.margin)
+        active = [intent for intent in data["reductions"]
+                  if intent["reason"] == "margin" and intent["status"] == "required"]
+        if diagnostics["breach"] and not active:
             data["reductions"].append({"symbol": None, "quantity": None,
                                        "reason": "margin", "status": "required"})
+        elif not diagnostics["breach"]:
+            for intent in active:
+                intent["status"] = "resolved"
 
     def _fill(self, data, payload, at, event_id):
         order = data["orders"][payload["order_id"]]
