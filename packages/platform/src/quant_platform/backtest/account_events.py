@@ -10,19 +10,96 @@ from copy import deepcopy
 from dataclasses import asdict, dataclass, field
 from hashlib import sha256
 from math import fsum, isfinite
+from typing import Any, Literal, TypedDict
 
 import pandas as pd
 
 from .paper_account import HouseMargin, Observed, PaperFill, PaperState, project_paper_account
 
 
-def _clock(value):
+class _StateWire(TypedDict):
+    as_of: str
+    cash: float
+    quantities: dict[str, int]
+    marks: dict[str, float]
+
+
+class _Order(TypedDict):
+    symbol: str
+    quantity: int
+    remaining: int
+    limit_price: float
+    locate_quantity: int
+    risk_price: float
+    fee_remaining: float
+    reserved_cash: float
+    reserved_risk: float
+    reserved_locate: int
+    admitted_at: str
+    cancel_requested: bool
+    cancel_requested_at: str | None
+    closed: bool
+
+
+class _Entitlement(TypedDict):
+    symbol: str
+    quantity: int
+    amount: float
+    ex: bool
+    paid: bool
+
+
+class _Settlement(TypedDict):
+    symbol: str
+    available_at: str
+    amount: float
+    short_amount: float
+
+
+class _Reduction(TypedDict):
+    symbol: str | None
+    quantity: int | None
+    reason: str
+    status: str
+
+
+class _Report(TypedDict):
+    available_at: str
+    actual: _StateWire
+    entitlements: dict[str, _Entitlement]
+    settlement: list[_Settlement]
+    reductions: list[_Reduction]
+    kind: str
+    payload: dict[str, Any]
+    effects: dict[str, list[str]]
+
+
+class _AccountData(TypedDict):
+    actual: _StateWire
+    visible: _StateWire
+    pending: dict[str, _Order]
+    orders: dict[str, _Order]
+    processed: dict[str, str]
+    fills: dict[str, str]
+    entitlements: dict[str, _Entitlement]
+    visible_entitlements: dict[str, _Entitlement]
+    queue: list[_Report]
+    reductions: list[_Reduction]
+    visible_reductions: list[_Reduction]
+    settlement: list[_Settlement]
+    visible_settlement: list[_Settlement]
+    event_clock: str
+    delivery_clock: str
+    control_clock: str
+
+
+def _clock(value) -> pd.Timestamp:
     if not isinstance(value, pd.Timestamp) or pd.isna(value) or value.tzinfo is None:
         raise ValueError("clocks must be aware pd.Timestamp values")
     return value
 
 
-def _finite(value, *, minimum=None):
+def _finite(value, *, minimum=None) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)) or not isfinite(value):
         raise ValueError("finite number required")
     if minimum is not None and value < minimum:
@@ -30,9 +107,13 @@ def _finite(value, *, minimum=None):
     return value
 
 
-def _integer(value, *, nonzero=False):
-    if (isinstance(value, bool) or not isinstance(value, int) or abs(value) > 2**53
-            or (nonzero and not value)):
+def _integer(value, *, nonzero=False) -> int:
+    if (
+        isinstance(value, bool)
+        or not isinstance(value, int)
+        or abs(value) > 2**53
+        or (nonzero and not value)
+    ):
         raise ValueError("raw integer shares required")
     return value
 
@@ -61,39 +142,53 @@ def _total(values):
         raise ValueError("nonfinite aggregate") from error
 
 
-def _wire(state):
-    return {"as_of": state.as_of.isoformat(), "cash": state.cash,
-            "quantities": {s: _integer(int(q)) for s, q in sorted(state.quantities.items())},
-            "marks": dict(sorted(state.marks.items()))}
+def _wire(state: PaperState) -> _StateWire:
+    return {
+        "as_of": state.as_of.isoformat(),
+        "cash": state.cash,
+        "quantities": {s: _integer(int(q)) for s, q in sorted(state.quantities.items())},
+        "marks": dict(sorted(state.marks.items())),
+    }
 
 
-def _state(value):
-    return PaperState(pd.Timestamp(value["as_of"]), value["cash"],
-                      value["quantities"], value["marks"])
+def _state(value: _StateWire):
+    return PaperState(
+        _clock(pd.Timestamp(value["as_of"])), value["cash"], value["quantities"], value["marks"]
+    )
 
 
 def _receivables(entitlements):
-    return _total(e["quantity"] * e["amount"] for e in entitlements.values()
-                  if e["ex"] and not e["paid"])
+    return _total(
+        e["quantity"] * e["amount"] for e in entitlements.values() if e["ex"] and not e["paid"]
+    )
 
 
 def _account_nav(state, entitlements):
-    return _total([state["cash"], _receivables(entitlements),
-                   *(q * state["marks"][s] for s, q in state["quantities"].items())])
+    return _total(
+        [
+            state["cash"],
+            _receivables(entitlements),
+            *(q * state["marks"][s] for s, q in state["quantities"].items()),
+        ]
+    )
 
 
 def _margin_diagnostics(state, entitlements, margin):
-    required = _total(abs(q) * state["marks"][s]
-                      * (margin.long_haircut if q > 0 else margin.short_haircut)
-                      for s, q in state["quantities"].items())
+    required = _total(
+        abs(q) * state["marks"][s] * (margin.long_haircut if q > 0 else margin.short_haircut)
+        for s, q in state["quantities"].items()
+    )
     excess = _total([_account_nav(state, entitlements), -required])
-    return {"required": required, "excess": excess, "breach": excess < 0,
-            "equity_basis": "nav_including_signed_receivables"}
+    return {
+        "required": required,
+        "excess": excess,
+        "breach": excess < 0,
+        "equity_basis": "nav_including_signed_receivables",
+    }
 
 
 def _validate_data(data):
-    for key, entitlement_key in (("actual", "entitlements"),
-                                  ("visible", "visible_entitlements")):
+    for key, entitlement_key in (("actual", "entitlements"), ("visible", "visible_entitlements")):
         state = data[key]
         _clock(pd.Timestamp(state["as_of"]))
         cash = _finite(state["cash"])
@@ -122,7 +217,7 @@ class EventAccountConfig:
     source_binding: str
     input_binding: str
     margin: HouseMargin = field(default_factory=lambda: HouseMargin(1.0, 1.0, 1.0))
-    financing_basis: str = "cash"
+    financing_basis: Literal["cash", "unrestricted_cash"] = "cash"
     max_age_seconds: float = 864000.0
     credit_limit: float = 0.0
     settlement_delay_seconds: float = 0.0
@@ -130,9 +225,14 @@ class EventAccountConfig:
     def __post_init__(self):
         _name(self.source_binding)
         _name(self.input_binding)
-        for value in (self.max_age_seconds, self.credit_limit, self.settlement_delay_seconds,
-                      self.margin.long_haircut, self.margin.short_haircut,
-                      self.margin.short_proceeds_fraction):
+        for value in (
+            self.max_age_seconds,
+            self.credit_limit,
+            self.settlement_delay_seconds,
+            self.margin.long_haircut,
+            self.margin.short_haircut,
+            self.margin.short_proceeds_fraction,
+        ):
             _finite(value, minimum=0)
         if self.financing_basis not in ("cash", "unrestricted_cash"):
             raise ValueError("unsupported financing basis")
@@ -156,6 +256,8 @@ class AccountEventAdapter:
     integer quantity; a cancel acknowledgement terminates further fills.
     """
 
+    _data: _AccountData
+
     def __init__(self, initial: PaperState, config: EventAccountConfig):
         _clock(initial.as_of)
         _finite(initial.cash)
@@ -168,11 +270,21 @@ class AccountEventAdapter:
             _finite(mark, minimum=0.000000000001)
         self.config = config
         self._data = {
-            "actual": _wire(initial), "visible": _wire(initial), "pending": {},
-            "orders": {}, "processed": {}, "fills": {}, "entitlements": {},
-            "visible_entitlements": {}, "queue": [], "reductions": [],
-            "visible_reductions": [], "settlement": [], "visible_settlement": [],
-            "event_clock": initial.as_of.isoformat(), "delivery_clock": initial.as_of.isoformat(),
+            "actual": _wire(initial),
+            "visible": _wire(initial),
+            "pending": {},
+            "orders": {},
+            "processed": {},
+            "fills": {},
+            "entitlements": {},
+            "visible_entitlements": {},
+            "queue": [],
+            "reductions": [],
+            "visible_reductions": [],
+            "settlement": [],
+            "visible_settlement": [],
+            "event_clock": initial.as_of.isoformat(),
+            "delivery_clock": initial.as_of.isoformat(),
             "control_clock": initial.as_of.isoformat(),
         }
         _validate_data(self._data)
@@ -218,13 +330,15 @@ class AccountEventAdapter:
 
     @property
     def actual_margin(self):
-        return _margin_diagnostics(self._data["actual"], self._data["entitlements"],
-                                   self.config.margin)
+        return _margin_diagnostics(
+            self._data["actual"], self._data["entitlements"], self.config.margin
+        )
 
     @property
     def visible_margin(self):
-        return _margin_diagnostics(self._data["visible"], self._data["visible_entitlements"],
-                                   self.config.margin)
+        return _margin_diagnostics(
+            self._data["visible"], self._data["visible_entitlements"], self.config.margin
+        )
 
     def available_cash(self, as_of):
         """Delivered cash net of unsettled proceeds, short reserve and buy orders."""
@@ -236,16 +350,22 @@ class AccountEventAdapter:
         return _total([self.visible.cash, -unsettled, -reserved, -short_reserve, overlap])
 
     def _cash_reserves(self, at):
-        unsettled = [s for s in self._data["visible_settlement"]
-                     if pd.Timestamp(s["available_at"]) > at]
-        restricted = {s: _finite(-q * self.visible.marks[s]
-                                * self.config.margin.short_proceeds_fraction)
-                      for s, q in self.visible.quantities.items() if q < 0}
-        overlap = _total(min(amount, _total(item["short_amount"] for item in unsettled
-                                           if item["symbol"] == symbol))
-                         for symbol, amount in restricted.items())
-        return (_total(item["amount"] for item in unsettled),
-                _total(restricted.values()), overlap)
+        unsettled = [
+            s for s in self._data["visible_settlement"] if pd.Timestamp(s["available_at"]) > at
+        ]
+        restricted = {
+            s: _finite(-q * self.visible.marks[s] * self.config.margin.short_proceeds_fraction)
+            for s, q in self.visible.quantities.items()
+            if q < 0
+        }
+        overlap = _total(
+            min(
+                amount,
+                _total(item["short_amount"] for item in unsettled if item["symbol"] == symbol),
+            )
+            for symbol, amount in restricted.items()
+        )
+        return (_total(item["amount"] for item in unsettled), _total(restricted.values()), overlap)
 
     def _mutation_clock(self, as_of):
         at = _clock(as_of)
@@ -253,8 +373,19 @@ class AccountEventAdapter:
             raise ValueError("mutation predates account control clock")
         return at
 
-    def admit_order(self, order_id, symbol, quantity, limit_price, *, as_of,
-                    locate_quantity, risk_limit, risk_price=None, fee_budget=0):
+    def admit_order(
+        self,
+        order_id,
+        symbol,
+        quantity,
+        limit_price,
+        *,
+        as_of,
+        locate_quantity,
+        risk_limit,
+        risk_price=None,
+        fee_budget=0,
+    ):
         """Reserve against delivered state, supplied known locate and gross cap.
 
         locate_quantity and risk_limit are caller observations at as_of; the
@@ -289,12 +420,22 @@ class AccountEventAdapter:
         already_short = max(-self.visible.quantities.get(symbol, 0), 0)
         if short and already_short + located + short > locate_quantity:
             raise ValueError("short locate reservation exceeds known units")
-        order = {"symbol": symbol, "quantity": quantity, "remaining": quantity,
-                 "limit_price": limit_price, "locate_quantity": locate_quantity,
-                 "risk_price": risk_price, "fee_remaining": fee_budget,
-                 "reserved_cash": cash, "reserved_risk": risk, "reserved_locate": short,
-                 "admitted_at": at.isoformat(), "cancel_requested": False,
-                 "cancel_requested_at": None, "closed": False}
+        order: _Order = {
+            "symbol": symbol,
+            "quantity": quantity,
+            "remaining": quantity,
+            "limit_price": limit_price,
+            "locate_quantity": locate_quantity,
+            "risk_price": risk_price,
+            "fee_remaining": fee_budget,
+            "reserved_cash": cash,
+            "reserved_risk": risk,
+            "reserved_locate": short,
+            "admitted_at": at.isoformat(),
+            "cancel_requested": False,
+            "cancel_requested_at": None,
+            "closed": False,
+        }
         self._data["pending"][order_id] = deepcopy(order)
         self._data["orders"][order_id] = deepcopy(order)
         self._data["control_clock"] = at.isoformat()
@@ -324,8 +465,14 @@ class AccountEventAdapter:
         payload = json.loads(_json(event.payload))
         if not isinstance(payload, dict) or "duplicate_fill" in payload:
             raise ValueError("event payload must be an object without reserved fields")
-        identity = _digest({"kind": event.kind, "occurred_at": occurred.isoformat(),
-                            "available_at": available.isoformat(), "payload": payload})
+        identity = _digest(
+            {
+                "kind": event.kind,
+                "occurred_at": occurred.isoformat(),
+                "available_at": available.isoformat(),
+                "payload": payload,
+            }
+        )
         previous = self._data["processed"].get(event.event_id)
         if previous is not None:
             if previous != identity:
@@ -345,13 +492,18 @@ class AccountEventAdapter:
         candidate["processed"][event.event_id] = identity
         candidate["event_clock"] = occurred.isoformat()
         candidate["control_clock"] = occurred.isoformat()
-        candidate["queue"].append({
-            "available_at": available.isoformat(), "actual": deepcopy(candidate["actual"]),
-            "entitlements": deepcopy(candidate["entitlements"]),
-            "settlement": deepcopy(candidate["settlement"]),
-            "reductions": deepcopy(candidate["reductions"]),
-            "kind": event.kind, "payload": payload, "effects": effects or {},
-        })
+        candidate["queue"].append(
+            {
+                "available_at": available.isoformat(),
+                "actual": deepcopy(candidate["actual"]),
+                "entitlements": deepcopy(candidate["entitlements"]),
+                "settlement": deepcopy(candidate["settlement"]),
+                "reductions": deepcopy(candidate["reductions"]),
+                "kind": event.kind,
+                "payload": payload,
+                "effects": effects or {},
+            }
+        )
         _json(candidate)
         _validate_data(candidate)
         self._data = candidate
@@ -362,8 +514,7 @@ class AccountEventAdapter:
             return None
         if kind == "cancel_ack":
             order = data["orders"][payload["order_id"]]
-            if (not order["cancel_requested"]
-                    or at < pd.Timestamp(order["cancel_requested_at"])):
+            if not order["cancel_requested"] or at < pd.Timestamp(order["cancel_requested_at"]):
                 raise ValueError("cancel acknowledgement predates cancel request")
             if order["closed"] and order["remaining"]:
                 raise ValueError("order already closed")
@@ -379,8 +530,14 @@ class AccountEventAdapter:
             symbol = _name(payload["symbol"])
             quantity = data["actual"]["quantities"].get(symbol, 0)
             if quantity < 0:
-                data["reductions"].append({"symbol": symbol, "quantity": -quantity,
-                                           "reason": "recall", "status": "required"})
+                data["reductions"].append(
+                    {
+                        "symbol": symbol,
+                        "quantity": -quantity,
+                        "reason": "recall",
+                        "status": "required",
+                    }
+                )
         else:
             raise ValueError("unknown account event kind")
         return None
@@ -389,9 +546,13 @@ class AccountEventAdapter:
         inputs = payload["inputs"]
         if inputs.get("price_basis") != "raw":
             raise ValueError("projection requires explicit raw price basis")
-        observed = {name: {s: Observed(v["value"], pd.Timestamp(v["available_at"]))
-                           for s, v in inputs[name].items()}
-                    for name in ("marks", "borrow_rates", "locate_quantities")}
+        observed = {
+            name: {
+                s: Observed(v["value"], _clock(pd.Timestamp(v["available_at"])))
+                for s, v in inputs[name].items()
+            }
+            for name in ("marks", "borrow_rates", "locate_quantities")
+        }
         rate = inputs["financing_rate"]
         opening = pd.Timestamp(data["actual"]["as_of"])
         for name, values in observed.items():
@@ -407,25 +568,43 @@ class AccountEventAdapter:
             if modeled_fill is None:
                 return
             fills = [modeled_fill]
+        max_age = pd.Timedelta(seconds=self.config.max_age_seconds)
+        if not isinstance(max_age, pd.Timedelta):
+            raise ValueError("finite max-age duration required")
         projection = project_paper_account(
-            _state(data["actual"]), as_of=at, **observed,
-            financing_rate=Observed(rate["value"], pd.Timestamp(rate["available_at"])),
-            financing_basis=self.config.financing_basis, margin=self.config.margin,
-            max_age=pd.Timedelta(seconds=self.config.max_age_seconds), fills=fills,
+            _state(data["actual"]),
+            as_of=at,
+            marks=observed["marks"],
+            borrow_rates=observed["borrow_rates"],
+            locate_quantities=observed["locate_quantities"],
+            financing_rate=Observed(rate["value"], _clock(pd.Timestamp(rate["available_at"]))),
+            financing_basis=self.config.financing_basis,
+            margin=self.config.margin,
+            max_age=max_age,
+            fills=fills,
         )
         data["actual"] = _wire(projection.state)
         for symbol in projection.borrow_breaches:
-            data["reductions"].append({"symbol": symbol,
-                                       "quantity": -data["actual"]["quantities"][symbol],
-                                       "reason": "recall", "status": "required"})
+            data["reductions"].append(
+                {
+                    "symbol": symbol,
+                    "quantity": -data["actual"]["quantities"][symbol],
+                    "reason": "recall",
+                    "status": "required",
+                }
+            )
 
     def _update_margin(self, data):
         diagnostics = _margin_diagnostics(data["actual"], data["entitlements"], self.config.margin)
-        active = [intent for intent in data["reductions"]
-                  if intent["reason"] == "margin" and intent["status"] == "required"]
+        active = [
+            intent
+            for intent in data["reductions"]
+            if intent["reason"] == "margin" and intent["status"] == "required"
+        ]
         if diagnostics["breach"] and not active:
-            data["reductions"].append({"symbol": None, "quantity": None,
-                                       "reason": "margin", "status": "required"})
+            data["reductions"].append(
+                {"symbol": None, "quantity": None, "reason": "margin", "status": "required"}
+            )
         elif not diagnostics["breach"]:
             for intent in active:
                 intent["status"] = "resolved"
@@ -456,18 +635,25 @@ class AccountEventAdapter:
         order["fee_remaining"] -= fee
         order["closed"] = not order["remaining"]
         data["fills"][fill_id] = economic
-        cash_at = pd.Timestamp(payload.get("cash_available_at", at + pd.Timedelta(
-            seconds=self.config.settlement_delay_seconds)))
+        cash_at = pd.Timestamp(
+            payload.get(
+                "cash_available_at", at + pd.Timedelta(seconds=self.config.settlement_delay_seconds)
+            )
+        )
         if _clock(cash_at) < at:
             raise ValueError("cash availability predates fill")
         if quantity < 0:
             before = data["actual"]["quantities"].get(order["symbol"], 0)
             opened_short = max(-(before + quantity), 0) - max(-before, 0)
             proceeds = _finite(max(-quantity * price - fee, 0))
-            data["settlement"].append({
-                "symbol": order["symbol"], "available_at": cash_at.isoformat(),
-                "amount": proceeds, "short_amount": proceeds * (opened_short / -quantity),
-            })
+            data["settlement"].append(
+                {
+                    "symbol": order["symbol"],
+                    "available_at": cash_at.isoformat(),
+                    "amount": proceeds,
+                    "short_amount": proceeds * (opened_short / -quantity),
+                }
+            )
         return PaperFill(order["symbol"], quantity, price, at, fee)
 
     def _validate_fill_budget(self, order, price, fee):
@@ -483,8 +669,11 @@ class AccountEventAdapter:
                 raise ValueError("entitlement id reused")
             symbol = _name(payload["symbol"])
             data["entitlements"][ident] = {
-                "symbol": symbol, "quantity": data["actual"]["quantities"].get(symbol, 0),
-                "amount": 0, "ex": False, "paid": False,
+                "symbol": symbol,
+                "quantity": data["actual"]["quantities"].get(symbol, 0),
+                "amount": 0,
+                "ex": False,
+                "paid": False,
             }
             return
         entitlement = data["entitlements"][ident]
@@ -503,10 +692,12 @@ class AccountEventAdapter:
         denominator = _integer(payload["denominator"], nonzero=True)
         if numerator <= 0 or denominator <= 0 or payload["price_basis"] != "raw":
             raise ValueError("positive split ratio and raw prices required")
+
         def shares(value):
             if value * numerator % denominator:
                 raise ValueError("fractional split shares unsupported")
             return _integer(value * numerator // denominator)
+
         quantities = data["actual"]["quantities"]
         if symbol in quantities:
             quantities[symbol] = shares(quantities[symbol])
@@ -562,8 +753,9 @@ class AccountEventAdapter:
             order["remaining"] -= payload["quantity"]
             order["fee_remaining"] -= payload.get("fee", 0)
             remaining = abs(order["remaining"])
-            order["reserved_cash"] = _total([max(order["remaining"], 0) * order["limit_price"],
-                                             order["fee_remaining"]])
+            order["reserved_cash"] = _total(
+                [max(order["remaining"], 0) * order["limit_price"], order["fee_remaining"]]
+            )
             order["reserved_risk"] = remaining * order["risk_price"]
             order["reserved_locate"] = max(-order["remaining"], 0)
             if not remaining:

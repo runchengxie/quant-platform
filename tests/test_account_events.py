@@ -34,8 +34,9 @@ def inputs(seconds=0, price=10, locate=100):
 def account(cash=100, qty=0):
     return AccountEventAdapter(
         PaperState(T, cash, {"A": qty} if qty else {}, {"A": 10}),
-        EventAccountConfig(source_binding="synthetic-v1", input_binding="inputs-v1",
-                           credit_limit=1000),
+        EventAccountConfig(
+            source_binding="synthetic-v1", input_binding="inputs-v1", credit_limit=1000
+        ),
     )
 
 
@@ -136,8 +137,17 @@ def test_funding_recall_margin_reductions_and_settlement_are_explicit():
     assert all(intent["status"] == "required" for intent in a.reductions)
     b = account(qty=5)
     admit(b, qty=-5)
-    b.apply(event("fill", "sell", order_id="o", quantity=-5, price=10,
-                  cash_available_at=(T + pd.Timedelta(days=2)).isoformat(), inputs=inputs()))
+    b.apply(
+        event(
+            "fill",
+            "sell",
+            order_id="o",
+            quantity=-5,
+            price=10,
+            cash_available_at=(T + pd.Timedelta(days=2)).isoformat(),
+            inputs=inputs(),
+        )
+    )
     b.deliver(T)
     assert b.visible.cash == 150
     assert b.available_cash(T) == 100
@@ -151,8 +161,9 @@ def test_checkpoint_rejects_tampering_and_config_change():
     with pytest.raises(ValueError, match="digest"):
         AccountEventAdapter.restore(snapshot, a.config)
     with pytest.raises(ValueError, match="config"):
-        AccountEventAdapter.restore(a.checkpoint(), EventAccountConfig(
-            source_binding="other", input_binding="inputs-v1"))
+        AccountEventAdapter.restore(
+            a.checkpoint(), EventAccountConfig(source_binding="other", input_binding="inputs-v1")
+        )
 
 
 def test_owned_long_sales_need_no_locate_and_pending_buys_cannot_supply_it():
@@ -168,8 +179,9 @@ def test_owned_long_sales_need_no_locate_and_pending_buys_cannot_supply_it():
 
 def test_event_cannot_predate_admission_cancel_request_or_delivered_knowledge():
     a = account()
-    a.admit_order("o", "A", 1, 10, as_of=T + pd.Timedelta(seconds=5),
-                  locate_quantity=0, risk_limit=1000)
+    a.admit_order(
+        "o", "A", 1, 10, as_of=T + pd.Timedelta(seconds=5), locate_quantity=0, risk_limit=1000
+    )
     before = a.checkpoint()
     with pytest.raises(ValueError):
         a.apply(event("fill", "early", order_id="o", quantity=1, price=10, inputs=inputs()))
@@ -201,8 +213,13 @@ def test_full_fill_cancel_ack_race_and_economic_fill_id_deduplication():
     a = account()
     admit(a, qty=2)
     a.request_cancel("o", as_of=T)
-    payload = {"order_id": "o", "quantity": 2, "price": 10,
-               "fill_id": "economic-fill", "inputs": inputs()}
+    payload = {
+        "order_id": "o",
+        "quantity": 2,
+        "price": 10,
+        "fill_id": "economic-fill",
+        "inputs": inputs(),
+    }
     a.apply(event("fill", "one", **payload))
     a.apply(event("fill", "duplicate-report", delay=1, **payload))
     a.apply(event("cancel_ack", "ack", order_id="o"))
@@ -214,9 +231,10 @@ def test_full_fill_cancel_ack_race_and_economic_fill_id_deduplication():
 
 def test_projection_requires_raw_prices_and_rejects_future_observations_atomically():
     a = account(qty=-2)
-    for changes in ({"price_basis": "adjusted"},
-                    {"marks": {"A": {"value": 10, "available_at":
-                                      (T + pd.Timedelta(seconds=1)).isoformat()}}}):
+    for changes in (
+        {"price_basis": "adjusted"},
+        {"marks": {"A": {"value": 10, "available_at": (T + pd.Timedelta(seconds=1)).isoformat()}}},
+    ):
         before = a.checkpoint()
         with pytest.raises(ValueError):
             a.apply(event("projection", "bad", inputs={**inputs(), **changes}))
@@ -228,12 +246,16 @@ def test_failed_cover_keeps_exposure_and_successful_cover_needs_no_locate():
     a.admit_order("cover", "A", 4, 10, as_of=T, locate_quantity=0, risk_limit=1000)
     before = a.checkpoint()
     with pytest.raises(ValueError):
-        a.apply(event("fill", "failure", order_id="cover", quantity=4, price=11,
-                      inputs=inputs(locate=0)))
+        a.apply(
+            event(
+                "fill", "failure", order_id="cover", quantity=4, price=11, inputs=inputs(locate=0)
+            )
+        )
     assert a.checkpoint() == before
     assert a.actual.quantities["A"] == -4
-    a.apply(event("fill", "success", order_id="cover", quantity=4, price=10,
-                  inputs=inputs(locate=0)))
+    a.apply(
+        event("fill", "success", order_id="cover", quantity=4, price=10, inputs=inputs(locate=0))
+    )
     assert not a.actual.quantities
 
 
@@ -276,8 +298,7 @@ def test_record_before_close_ex_after_close_still_books_signed_receivable():
 def test_unused_future_input_and_nonfinite_initial_aggregate_fail_closed():
     a = account()
     bad = inputs()
-    bad["marks"]["UNHELD"] = {"value": 5, "available_at":
-                               (T + pd.Timedelta(seconds=1)).isoformat()}
+    bad["marks"]["UNHELD"] = {"value": 5, "available_at": (T + pd.Timedelta(seconds=1)).isoformat()}
     before = a.checkpoint()
     with pytest.raises(ValueError):
         a.apply(event("projection", "future", inputs=bad))
@@ -294,38 +315,37 @@ def test_sorted_json_resume_preserves_boundary_risk_admission():
     b = AccountEventAdapter.restore(json.loads(json.dumps(a.checkpoint(), sort_keys=True)), cfg)
     for candidate in (a, b):
         with pytest.raises(ValueError, match="risk"):
-            candidate.admit_order("extra", "A", 1, 1, as_of=T,
-                                  locate_quantity=0, risk_limit=1e16)
+            candidate.admit_order("extra", "A", 1, 1, as_of=T, locate_quantity=0, risk_limit=1e16)
 
 
 def test_supplied_short_fill_cannot_exceed_reserved_adverse_price_bound():
     a = account()
-    a.admit_order("short", "A", -2, 10, as_of=T, locate_quantity=100,
-                  risk_limit=1000, risk_price=12)
+    a.admit_order(
+        "short", "A", -2, 10, as_of=T, locate_quantity=100, risk_limit=1000, risk_price=12
+    )
     assert a.pending["short"]["reserved_risk"] == 24
     before = a.checkpoint()
     with pytest.raises(ValueError, match="risk"):
-        a.apply(event("fill", "bad", order_id="short", quantity=-1, price=13,
-                      inputs=inputs(price=13)))
+        a.apply(
+            event("fill", "bad", order_id="short", quantity=-1, price=13, inputs=inputs(price=13))
+        )
     assert a.checkpoint() == before
-    a.apply(event("fill", "good", order_id="short", quantity=-1, price=11,
-                  inputs=inputs(price=11)))
+    a.apply(event("fill", "good", order_id="short", quantity=-1, price=11, inputs=inputs(price=11)))
     a.deliver(T)
     assert a.pending["short"]["reserved_risk"] == 12
 
 
 def test_fee_budget_reservation_stays_until_partial_report_and_rejects_overrun():
     a = account()
-    a.admit_order("buy", "A", 2, 10, as_of=T, locate_quantity=0,
-                  risk_limit=1000, fee_budget=3)
+    a.admit_order("buy", "A", 2, 10, as_of=T, locate_quantity=0, risk_limit=1000, fee_budget=3)
     assert a.pending["buy"]["reserved_cash"] == 23
     before = a.checkpoint()
     with pytest.raises(ValueError, match="fee"):
-        a.apply(event("fill", "bad", order_id="buy", quantity=1, price=10,
-                      fee=4, inputs=inputs()))
+        a.apply(event("fill", "bad", order_id="buy", quantity=1, price=10, fee=4, inputs=inputs()))
     assert a.checkpoint() == before
-    a.apply(event("fill", "good", delay=1, order_id="buy", quantity=1, price=10,
-                  fee=1, inputs=inputs()))
+    a.apply(
+        event("fill", "good", delay=1, order_id="buy", quantity=1, price=10, fee=1, inputs=inputs())
+    )
     assert a.pending["buy"]["reserved_cash"] == 23
     a.deliver(T + pd.Timedelta(seconds=1))
     assert a.pending["buy"]["reserved_cash"] == 12
@@ -334,8 +354,17 @@ def test_fee_budget_reservation_stays_until_partial_report_and_rejects_overrun()
 def test_unsettled_short_proceeds_and_collateral_are_reserved_once():
     a = account()
     admit(a, qty=-5)
-    a.apply(event("fill", "short", order_id="o", quantity=-5, price=10,
-                  cash_available_at=(T + pd.Timedelta(days=2)).isoformat(), inputs=inputs()))
+    a.apply(
+        event(
+            "fill",
+            "short",
+            order_id="o",
+            quantity=-5,
+            price=10,
+            cash_available_at=(T + pd.Timedelta(days=2)).isoformat(),
+            inputs=inputs(),
+        )
+    )
     a.deliver(T)
     assert a.visible.cash == 150
     assert a.available_cash(T) == 100
@@ -349,8 +378,17 @@ def test_other_symbol_collateral_does_not_overlap_closed_short_sale_settlement()
     for key in ("marks", "borrow_rates", "locate_quantities"):
         observed[key]["B"] = observed[key]["A"].copy()
     a.admit_order("short", "B", -5, 10, as_of=T, locate_quantity=100, risk_limit=1000)
-    a.apply(event("fill", "sell", order_id="short", quantity=-5, price=10,
-                  cash_available_at=(T + pd.Timedelta(days=2)).isoformat(), inputs=observed))
+    a.apply(
+        event(
+            "fill",
+            "sell",
+            order_id="short",
+            quantity=-5,
+            price=10,
+            cash_available_at=(T + pd.Timedelta(days=2)).isoformat(),
+            inputs=observed,
+        )
+    )
     a.deliver(T)
     assert a.available_cash(T) == 50
     a.admit_order("cover", "B", 5, 10, as_of=T, locate_quantity=0, risk_limit=1000)
@@ -363,15 +401,17 @@ def test_other_symbol_collateral_does_not_overlap_closed_short_sale_settlement()
 
 def test_future_control_action_prevents_retroactive_corporate_transform():
     a = account(qty=2)
-    a.admit_order("future", "A", 2, 10, as_of=T + pd.Timedelta(seconds=10),
-                  locate_quantity=0, risk_limit=1000)
+    a.admit_order(
+        "future", "A", 2, 10, as_of=T + pd.Timedelta(seconds=10), locate_quantity=0, risk_limit=1000
+    )
     before = a.checkpoint()
     with pytest.raises(ValueError):
-        a.apply(event("split", "past", symbol="A", numerator=3,
-                      denominator=2, price_basis="raw"))
+        a.apply(event("split", "past", symbol="A", numerator=3, denominator=2, price_basis="raw"))
     assert a.checkpoint() == before
-    for mutation in (lambda: a.deliver(T + pd.Timedelta(seconds=9)),
-                     lambda: a.request_cancel("future", as_of=T + pd.Timedelta(seconds=9))):
+    for mutation in (
+        lambda: a.deliver(T + pd.Timedelta(seconds=9)),
+        lambda: a.request_cancel("future", as_of=T + pd.Timedelta(seconds=9)),
+    ):
         with pytest.raises(ValueError):
             mutation()
         assert a.checkpoint() == before
@@ -379,11 +419,13 @@ def test_future_control_action_prevents_retroactive_corporate_transform():
 
 def test_delayed_split_report_never_scales_an_order_admitted_after_occurrence():
     a = account()
-    a.apply(event("split", "s", delay=10, symbol="A", numerator=2,
-                  denominator=1, price_basis="raw"))
+    a.apply(
+        event("split", "s", delay=10, symbol="A", numerator=2, denominator=1, price_basis="raw")
+    )
     a.deliver(T + pd.Timedelta(seconds=1))
-    a.admit_order("new", "A", 2, 10, as_of=T + pd.Timedelta(seconds=1),
-                  locate_quantity=0, risk_limit=1000)
+    a.admit_order(
+        "new", "A", 2, 10, as_of=T + pd.Timedelta(seconds=1), locate_quantity=0, risk_limit=1000
+    )
     a.apply(event("fill", "f", 2, order_id="new", quantity=2, price=10, inputs=inputs(2)))
     a.deliver(T + pd.Timedelta(seconds=10))
     assert a.actual.quantities["A"] == 2
@@ -394,15 +436,17 @@ def test_delayed_split_report_never_scales_an_order_admitted_after_occurrence():
 def test_delayed_split_transforms_preexisting_partial_order_only():
     a = account()
     admit(a, ident="old", qty=4, price=20)
-    a.apply(event("fill", "partial", delay=5, order_id="old", quantity=1,
-                  price=10, inputs=inputs()))
-    a.apply(event("split", "s", delay=10, symbol="A", numerator=2,
-                  denominator=1, price_basis="raw"))
+    a.apply(
+        event("fill", "partial", delay=5, order_id="old", quantity=1, price=10, inputs=inputs())
+    )
+    a.apply(
+        event("split", "s", delay=10, symbol="A", numerator=2, denominator=1, price_basis="raw")
+    )
     a.deliver(T + pd.Timedelta(seconds=1))
-    a.admit_order("new", "A", 2, 10, as_of=T + pd.Timedelta(seconds=1),
-                  locate_quantity=0, risk_limit=1000)
-    a.apply(event("fill", "new-full", 2, order_id="new", quantity=2,
-                  price=10, inputs=inputs(2)))
+    a.admit_order(
+        "new", "A", 2, 10, as_of=T + pd.Timedelta(seconds=1), locate_quantity=0, risk_limit=1000
+    )
+    a.apply(event("fill", "new-full", 2, order_id="new", quantity=2, price=10, inputs=inputs(2)))
     a.deliver(T + pd.Timedelta(seconds=10))
     assert set(a.pending) == {"old"}
     assert a.pending["old"]["quantity"] == 8
@@ -417,9 +461,9 @@ def test_sorted_json_resume_preserves_split_report_membership_order():
     admit(a, ident="z", qty=2)
     admit(a, ident="a", qty=2)
     b = AccountEventAdapter.restore(
-        json.loads(json.dumps(a.checkpoint(), sort_keys=True)), a.config)
-    split = event("split", "s", delay=10, symbol="A", numerator=2,
-                  denominator=1, price_basis="raw")
+        json.loads(json.dumps(a.checkpoint(), sort_keys=True)), a.config
+    )
+    split = event("split", "s", delay=10, symbol="A", numerator=2, denominator=1, price_basis="raw")
     a.apply(split)
     b.apply(split)
     assert a.checkpoint() == b.checkpoint()
@@ -431,15 +475,20 @@ def test_short_dividend_payable_triggers_margin_at_ex_and_cover_before_pay_can_r
     a.apply(event("dividend_record", "r", symbol="A", entitlement_id="d"))
     a.apply(event("dividend_ex", "ex", delay=1, entitlement_id="d", amount=6))
     assert a.actual_nav == 36
-    assert a.actual_margin == {"required": 40, "excess": -4, "breach": True,
-                               "equity_basis": "nav_including_signed_receivables"}
+    assert a.actual_margin == {
+        "required": 40,
+        "excess": -4,
+        "breach": True,
+        "equity_basis": "nav_including_signed_receivables",
+    }
     assert not a.visible_margin["breach"]
     assert a.actual.quantities["A"] == -4
     assert any(i["reason"] == "margin" and i["status"] == "required" for i in a.reductions)
     a.deliver(T + pd.Timedelta(seconds=1))
     assert a.visible_margin["breach"]
-    a.admit_order("cover", "A", 2, 10, as_of=T + pd.Timedelta(seconds=1),
-                  locate_quantity=0, risk_limit=1000)
+    a.admit_order(
+        "cover", "A", 2, 10, as_of=T + pd.Timedelta(seconds=1), locate_quantity=0, risk_limit=1000
+    )
     a.apply(event("fill", "cover", 1, order_id="cover", quantity=2, price=10, inputs=inputs(1)))
     assert a.actual_nav == pytest.approx(36 - 4 / 86400 / 365)
     assert not a.actual_margin["breach"]
