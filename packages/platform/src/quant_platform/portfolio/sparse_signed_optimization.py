@@ -92,7 +92,7 @@ def _validate(r):
     _validate_policy(r)
 
 
-def _problem(r):
+def _problem(r, cash_limit=None):
     n, k = r.risk_loadings.shape
     eye, zero = sparse.eye(n, format="csc"), sparse.csc_matrix((n, n))
     zfactor = sparse.csc_matrix((n, k))
@@ -133,6 +133,13 @@ def _problem(r):
         rows.append(sparse.csc_matrix(np.r_[r.factor_loadings[name], np.zeros(3 * n + k)][None, :]))
         lower.append([lo])
         upper.append([hi])
+    if cash_limit is not None:
+        available_weight, fee_rates = cash_limit
+        # Positive trades cost cash; sales never fund buys. t >= abs(w-current).
+        row = np.r_[np.full(n, 0.5), 0.5 + fee_rates, np.zeros(2 * n + k)]
+        rows.append(sparse.csc_matrix(row[None, :]))
+        lower.append([-np.inf])
+        upper.append([available_weight + 0.5 * current.sum()])
     p = sparse.block_diag(
         [
             sparse.diags(r.specific_variance.to_numpy()),
@@ -192,10 +199,14 @@ class SparseSignedOptimizer:
 
     def solve(self, r: SparseSignedOptimizationRequest) -> SignedOptimizationResult:
         """Return existing signed scalar/cost semantics, never executable weights."""
+        return self._solve(r)
+
+    def _solve(self, r, cash_limit=None):
+        """Owner extension for the pending allocator's non-netted cash constraint."""
         _validate(r)
         try:
             with np.errstate(over="raise", invalid="raise"):
-                p, q, a, lo, hi = _problem(r)
+                p, q, a, lo, hi = _problem(r, cash_limit)
         except FloatingPointError as exc:
             return SignedOptimizationResult("numerical_failure", str(exc))
         signature = (
