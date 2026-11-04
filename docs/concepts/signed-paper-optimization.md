@@ -53,3 +53,6 @@ execution approval. The dense solver is intended for small research problems.
 These assumptions omit discrete shares, margin mechanics, funding and cash
 accounts, market impact, recall risk and point-in-time borrow evidence. Real
 execution requires separate evidence, risk checks and execution contracts.
+
+For factor-risk problems without a dense asset covariance, see the
+[sparse OSQP interface](sparse-signed-optimization.md).

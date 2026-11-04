@@ -4118,6 +4118,9 @@ ml = [
 qlib = [
     { name = "pyqlib" },
 ]
+sparse = [
+    { name = "osqp" },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -4140,6 +4143,7 @@ docs = [
     { name = "mkdocs-material" },
 ]
 test = [
+    { name = "osqp" },
     { name = "pytest" },
 ]
 
@@ -4148,6 +4152,7 @@ requires-dist = [
     { name = "duckdb", specifier = ">=1.2" },
     { name = "jsonschema", marker = "extra == 'dev'", specifier = ">=4.25" },
     { name = "numpy", specifier = ">=1.23" },
+    { name = "osqp", marker = "extra == 'sparse'", specifier = ">=1.1,<2" },
     { name = "pandas", specifier = ">=2.0" },
     { name = "pandas-ta", marker = "extra == 'dev'", specifier = ">=0.3.14b0" },
     { name = "pandas-ta", marker = "extra == 'ml'", specifier = ">=0.3.14b0" },
@@ -4170,7 +4175,7 @@ requires-dist = [
     { name = "xgboost", marker = "extra == 'dev'", specifier = ">=1.7" },
     { name = "xgboost", marker = "extra == 'ml'", specifier = ">=1.7" },
 ]
-provides-extras = ["engine", "ml", "dev", "qlib", "microstructure"]
+provides-extras = ["sparse", "engine", "ml", "dev", "qlib", "microstructure"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -4190,7 +4195,10 @@ dev = [
     { name = "xgboost", specifier = ">=1.7" },
 ]
 docs = [{ name = "mkdocs-material", specifier = ">=9.6,<10" }]
-test = [{ name = "pytest", specifier = ">=9.0.3" }]
+test = [
+    { name = "osqp", specifier = ">=1.1,<2" },
+    { name = "pytest", specifier = ">=9.0.3" },
+]
 
 [[package]]
 name = "redis"
