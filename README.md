@@ -8,7 +8,7 @@
 
 ## Quick start
 
-Requirements: Python 3.12 or newer and `uv`.
+Use Python 3.12 or newer with `uv`.
 
 ```bash
 uv sync --locked --all-groups
@@ -38,5 +38,5 @@ The existing `portfolio_backtester` Python import namespace remains for compatib
 
 [quant-backtest-engine](https://github.com/runchengxie/quant-backtest-engine) provides
 an independent Rust library and CLI backed by NautilusTrader. Existing Python backends
-remain supported; see [engine ownership and migration limits](docs/concepts/backend-architecture.en.md#independent-rust-engine)
+remain supported. See [engine ownership and migration limits](docs/concepts/backend-architecture.en.md#independent-rust-engine)
 for the new boundary and verified capabilities.

@@ -2,7 +2,7 @@
 
 语言：简体中文 · [English](understanding-results.md)
 
-`run_backtest` 的默认结果是一个五元素元组：
+`run_backtest` 默认返回一个五元素元组。
 
 ```python
 stats, net_returns, gross_returns, turnover, periods = result
@@ -10,7 +10,7 @@ stats, net_returns, gross_returns, turnover, periods = result
 
 ## 汇总统计
 
-`stats` 通常包含总收益、年化收益、年化波动、Sharpe、最大回撤和平均换手率等指标。具体字段以当前代码和测试为准，常见读取方式如下：
+`stats` 通常包含总收益、年化收益、年化波动、Sharpe、最大回撤和平均换手率等指标。具体字段以当前代码和测试为准，可按下例读取。
 
 ```python
 summary = {
@@ -30,17 +30,17 @@ summary = {
 - `net_returns` 在相同持仓路径上扣除了模型中的交易成本和滑点。
 - 两者的差异可以帮助判断收益是否被换手和执行假设显著侵蚀。
 
-示例：
+下例计算成本拖累。
 
 ```python
 cost_drag = gross_returns - net_returns
 ```
 
-这里的成本拖累是模型结果，不代表真实成交回报。真实成交需要订单、成交和账户账本等执行证据。
+这里的成本拖累描述模型中的费用影响。判断真实成交回报还需要订单、成交和账户账本等执行证据。
 
 ## 持有期明细
 
-`periods` 是按持有期组织的字典列表。常见字段包括：
+`periods` 是按持有期组织的字典列表，常见字段见下表。
 
 | 字段 | 含义 |
 | --- | --- |

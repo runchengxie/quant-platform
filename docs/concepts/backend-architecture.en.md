@@ -55,14 +55,14 @@ its executable through an opt-in job version and retains state/publication owner
 
 This platform continues to own portfolio construction, analytics and its existing
 Python backends as compatibility references. No existing imports, default backends or
-financial results change. Do not copy the whole portfolio-backtester package into the
-new repository: it also contains portfolio and research utilities. Target weights need
+financial results change. Keep portfolio and research utilities in this repository
+when separating engine responsibilities from the portfolio-backtester package. Target weights need
 an explicit sizing contract before they become engine orders.
 
-The new engine currently covers synthetic USD cash equities and market orders. It
-has no verified A-share T+1, price-limit, corporate-action, capacity or daily-ledger
-parity. Its final snapshot cannot be presented as this platform's execution-aware
-bundle. Migration requires matched timing, fees, account balances and per-trade
+The engine's first release covered synthetic USD cash equities and market orders.
+That release had no verified A-share T+1, price-limit, corporate-action, capacity
+or daily-ledger parity. The session client below consumes the later v2 contract.
+The v1 final snapshot cannot be presented as this platform's execution-aware bundle. Migration requires matched timing, fees, account balances and per-trade
 comparisons, then an explicitly versioned adapter; old APIs remain until consumers
 have migrated and those comparisons pass. The new engine's published supported
 capabilities are the authority for its own request version.
