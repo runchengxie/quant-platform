@@ -153,6 +153,55 @@ def _funding_principal(cash, quantities, prices, restriction, basis):
     return _number(max(0, (reserve if basis == "unrestricted_cash" else 0) - cash))
 
 
+def _accrue_opening(
+    cash,
+    quantities,
+    prior_marks,
+    start,
+    days,
+    borrow_rates,
+    financing_rate,
+    financing_basis,
+    restriction,
+    max_age,
+    dividends,
+):
+    financing = _observed({"cash": financing_rate}, "cash", start, max_age)
+    borrow_cost = 0.0
+    shorts = set()
+    for symbol, quantity in quantities.items():
+        if quantity < 0:
+            shorts.add(symbol)
+            rate = _observed(borrow_rates, symbol, start, max_age)
+            borrow_cost = _number(borrow_cost + -quantity * prior_marks[symbol] * rate * days / 365)
+    financing_principal = _funding_principal(
+        cash,
+        quantities,
+        prior_marks,
+        restriction,
+        financing_basis,
+    )
+    financing_cost = _number(financing_principal * financing * days / 365)
+    dividend_cash = 0.0
+    for symbol, amount in (dividends or {}).items():
+        dividend_cash = _number(
+            dividend_cash + quantities.get(symbol, 0) * _number(amount, minimum=0)
+        )
+    return borrow_cost, financing_cost, financing_principal, dividend_cash, shorts
+
+
+def _interval(start, end, max_age):
+    start, end = _timestamp(start), _timestamp(end)
+    if (
+        end < start
+        or not isinstance(max_age, pd.Timedelta)
+        or pd.isna(max_age)
+        or max_age < pd.Timedelta(0)
+    ):
+        raise ValueError("invalid interval or max_age")
+    return start, end
+
+
 def project_paper_account(
     state: PaperState,
     *,
@@ -179,14 +228,7 @@ def project_paper_account(
     Financing uses opening negative cash or opening cash less the marked short
     reserve, selected explicitly; this is an assumed funding model, not broker terms.
     """
-    start, end = _timestamp(state.as_of), _timestamp(as_of)
-    if (
-        end < start
-        or not isinstance(max_age, pd.Timedelta)
-        or pd.isna(max_age)
-        or max_age < pd.Timedelta(0)
-    ):
-        raise ValueError("invalid interval or max_age")
+    start, end = _interval(state.as_of, as_of, max_age)
     cash = _number(state.cash)
     haircuts = [
         _number(x, minimum=0)
@@ -197,27 +239,19 @@ def project_paper_account(
         (marks, borrow_rates, locate_quantities, dividends or {}),
     )
     days = (end - start).total_seconds() / 86400
-    financing = _observed({"cash": financing_rate}, "cash", start, max_age)
-    borrow_cost = 0.0
-    shorts = set()
-    for symbol, quantity in quantities.items():
-        if quantity < 0:
-            shorts.add(symbol)
-            rate = _observed(borrow_rates, symbol, start, max_age)
-            borrow_cost = _number(borrow_cost + -quantity * prior_marks[symbol] * rate * days / 365)
-    financing_principal = _funding_principal(
+    borrow_cost, financing_cost, financing_principal, dividend_cash, shorts = _accrue_opening(
         cash,
         quantities,
         prior_marks,
-        haircuts[2],
+        start,
+        days,
+        borrow_rates,
+        financing_rate,
         financing_basis,
+        haircuts[2],
+        max_age,
+        dividends,
     )
-    financing_cost = _number(financing_principal * financing * days / 365)
-    dividend_cash = 0.0
-    for symbol, amount in (dividends or {}).items():
-        dividend_cash = _number(
-            dividend_cash + quantities.get(symbol, 0) * _number(amount, minimum=0)
-        )
     cash = _number(cash + dividend_cash - borrow_cost - financing_cost)
     cash, fill_fees = _apply_fills(
         quantities,
