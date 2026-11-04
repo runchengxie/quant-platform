@@ -34,6 +34,10 @@ def request(n):
     def series(value):
         return pd.Series(value, index=assets, dtype=float)
 
+    information_time = pd.Timestamp("2026-01-01", tz="UTC")
+    decision_time = pd.Timestamp("2026-01-02", tz="UTC")
+    assert isinstance(information_time, pd.Timestamp)
+    assert isinstance(decision_time, pd.Timestamp)
     return SparseSignedOptimizationRequest(
         expected_returns=series(rng.normal(0, 0.001, n)),
         risk_loadings=pd.DataFrame(rng.normal(0, 0.1, (n, 2)), index=assets, columns=factors),
@@ -53,8 +57,8 @@ def request(n):
         horizon_days=5,
         units="horizon_decimal",
         assumptions="Synthetic scale example",
-        information_time=pd.Timestamp("2026-01-01", tz="UTC"),
-        decision_time=pd.Timestamp("2026-01-02", tz="UTC"),
+        information_time=information_time,
+        decision_time=decision_time,
     )
 
 

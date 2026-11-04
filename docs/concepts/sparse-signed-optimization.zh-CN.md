@@ -30,8 +30,7 @@ from quant_platform.portfolio.sparse_signed_optimization import (
     SparseSignedOptimizer,
 )
 
-solver = SparseSignedOptimizer(backend="osqp", max_iter=100_000,
-                               time_limit=10.0, tolerance=1e-9)
+solver = SparseSignedOptimizer(backend="osqp", max_iter=100_000, time_limit=10.0, tolerance=1e-9)
 result = solver.solve(request)  # SparseSignedOptimizationRequest
 next_result = solver.solve(next_request)
 ```
