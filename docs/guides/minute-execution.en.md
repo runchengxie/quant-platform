@@ -50,3 +50,17 @@ normally has at most one pending parent per symbol. Fee sensitivity should be
 checked with fixed targets and sufficient cash headroom when isolating cost;
 with binding cash, fees can also change lot-rounded fills. Synthetic regression
 examples are in `tests/test_minute_execution_hardening.py`.
+
+## Temporary nontrading mark provenance
+
+Optional paired `mark_source_time` and `mark_basis` bar columns preserve the
+observation time behind a declared valuation mark. `raw` requires source time to
+equal bar time. `declared_nontrading` requires a flat OHLC price, zero volume and
+amount, `tradable=False`, and an aware source time no later than the bar time.
+The caller must supply and audit the source and corporate-action policy.
+
+A declaration can value a temporary suspension and later permit trading again.
+Later order references retain both the effective mark time and its original
+source time/basis. It is not an executable quote or a source-quality certificate.
+Permanent nontrading valuation events retain their existing separate contract.
+Omitting both columns preserves legacy behavior.
