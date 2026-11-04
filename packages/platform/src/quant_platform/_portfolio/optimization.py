@@ -49,9 +49,11 @@ def _numeric_series_for_assets(
     if not isinstance(value, pd.Series):
         raise TypeError(f"{label} must be a pandas Series")
     normalized = pd.to_numeric(value, errors="coerce")
-    if set(map(str, normalized.index)) != set(assets):
-        raise ValueError(f"{label} assets must match returns columns")
     normalized.index = normalized.index.map(str)
+    if not normalized.index.is_unique:
+        raise ValueError(f"{label} assets must be unique after string normalization")
+    if set(normalized.index) != set(assets):
+        raise ValueError(f"{label} assets must match returns columns")
     normalized = normalized.reindex(assets)
     if normalized.isna().any() or not np.isfinite(normalized.to_numpy(dtype=float)).all():
         raise ValueError(f"{label} must contain finite values for every asset")
@@ -234,14 +236,8 @@ class PortfolioOptimizationResult:
             raise ValueError(f"unsupported optimization result schema {self.schema_version!r}")
         if not isinstance(self.weights, pd.Series):
             raise TypeError("weights must be a pandas Series")
-        weights = pd.to_numeric(self.weights, errors="coerce")
-        weights.index = weights.index.map(str)
-        if set(weights.index) != set(request.assets):
-            raise ValueError("weights assets must match optimization request")
-        weights = weights.reindex(request.assets)
-        values = weights.to_numpy(dtype=float)
-        if np.isnan(values).any() or not np.isfinite(values).all():
-            raise ValueError("weights must be finite")
+        weights = _numeric_series_for_assets(self.weights, request.assets, label="weights")
+        assert weights is not None
         if abs(float(weights.sum()) - 1.0) > 1e-8:
             raise ValueError("weights must sum to 1")
         if request.long_only and (weights < -1e-12).any():
@@ -250,7 +246,24 @@ class PortfolioOptimizationResult:
             raise ValueError("weights violate min_weight")
         if request.max_weight is not None and (weights > request.max_weight + 1e-12).any():
             raise ValueError("weights violate max_weight")
+        _validate_linear_exposures(weights, request)
         _validate_json_scalars(self.diagnostics)
+
+
+def _validate_linear_exposures(weights: pd.Series, request: PortfolioOptimizationRequest) -> None:
+    values = weights.to_numpy(dtype=float)
+    for constraint in request.linear_constraints:
+        exposure_values = _numeric_series_for_assets(
+            constraint.values, request.assets, label=constraint.name
+        )
+        assert exposure_values is not None
+        exposure = float(values @ exposure_values.to_numpy(dtype=float))
+        if not np.isfinite(exposure):
+            raise ValueError(f"linear exposure {constraint.name!r} must be finite")
+        if constraint.lower is not None and exposure < constraint.lower - 1e-7:
+            raise ValueError(f"weights violate linear exposure {constraint.name!r} lower bound")
+        if constraint.upper is not None and exposure > constraint.upper + 1e-7:
+            raise ValueError(f"weights violate linear exposure {constraint.name!r} upper bound")
 
 
 @runtime_checkable
@@ -341,6 +354,8 @@ class EqualWeightOptimizerBackend:
     name = "native.equal_weight"
 
     def run(self, request: PortfolioOptimizationRequest) -> PortfolioOptimizationResult:
+        if request.linear_constraints:
+            raise ValueError(f"{self.name} does not support linear_constraints")
         weight = 1.0 / len(request.assets)
         result = PortfolioOptimizationResult(
             backend_name=self.name,
@@ -355,6 +370,8 @@ class HrpOptimizerBackend:
     name = "native.hrp"
 
     def run(self, request: PortfolioOptimizationRequest) -> PortfolioOptimizationResult:
+        if request.linear_constraints:
+            raise ValueError(f"{self.name} does not support linear_constraints")
         if len(request.assets) < 2:
             result = PortfolioOptimizationResult(
                 backend_name=self.name,
@@ -399,6 +416,8 @@ class InverseVolOptimizerBackend:
         self.config = config or InverseVolConfig()
 
     def run(self, request: PortfolioOptimizationRequest) -> PortfolioOptimizationResult:
+        if request.linear_constraints:
+            raise ValueError(f"{self.name} does not support linear_constraints")
         if len(request.assets) == 1:
             result = PortfolioOptimizationResult(
                 backend_name=self.name,

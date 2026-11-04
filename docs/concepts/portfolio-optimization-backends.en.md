@@ -19,13 +19,13 @@ These are reusable portfolio mechanisms. They do not assign strategy-specific me
 
 `PortfolioOptimizationRequest` carries a return matrix and optional expected returns, previous weights, benchmark weights, anchor weights, covariance matrix, and `LinearExposureConstraint` values. It also carries long-only weight bounds and a covariance-shrinkage parameter.
 
-Asset identities must match across request inputs. Covariance must be finite, symmetric, and ordered to match the return columns. Linear constraints name an exposure vector and may define a lower bound, an upper bound, or both. The current native request contract requires `long_only=True`.
+Asset identities must match across request inputs and remain unique after conversion to strings. Covariance must be finite, symmetric, and ordered to match the return columns. Linear constraints name an exposure vector and may define a lower bound, an upper bound, or both. The current native request contract requires `long_only=True`.
 
-The request keeps common caller inputs available even when a particular baseline does not use them. Backend output still must honor the requested asset set and weight rules.
+The request keeps common caller inputs available even when a particular baseline does not use them. Backend output still must honor the requested asset set and weight rules. Equal weight, HRP, and inverse volatility reject any nonempty `linear_constraints` before calculation, including constraints that their output would happen to satisfy. Use a backend that supports these constraints, such as `native.qp_min_variance`.
 
 ## Results and validation
 
-`PortfolioOptimizationResult` contains the backend name, normalized weights, JSON-compatible diagnostics, and schema version `portfolio_optimization_result.v1`. Validation checks asset identity, finite weights, a sum of 1, long-only behavior, requested per-asset bounds, and serializable diagnostics.
+`PortfolioOptimizationResult` contains the backend name, normalized weights, JSON-compatible diagnostics, and schema version `portfolio_optimization_result.v1`. Validation checks asset identity, finite weights, a sum of 1, long-only behavior, requested per-asset bounds, every linear exposure bound, and serializable diagnostics. Exposure vectors and weights are aligned by asset identity; exposure values and resulting exposures must be finite. Linear lower and upper bounds use an absolute tolerance of `1e-7`, matching QP feasibility checks. Equal lower and upper bounds enforce equality within that tolerance. These checks also apply to results returned by external backends through `OptimizerRegistry`; validation never adjusts weights to satisfy a constraint.
 
 For `native.qp_min_variance`, `diagnostics.constraint_residuals` records signed slack by constraint name. A lower bound uses the constraint name; an upper bound uses `<name>.upper`. Negative residuals indicate a violated bound. If the solver fails, equal weights are used only when that fallback satisfies the requested bounds; otherwise the call raises an error listing the violated bounds. The result schema remains unchanged.
 
