@@ -4,17 +4,19 @@ jobs:
   engine-sessions:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Check out the released session protocol provider
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: runchengxie/quant-backtest-engine
-          ref: f0ba2ef193c721c7bd497c4d80a7bc8a01c18a31
+          ref: c65548a4ee1e938125cce1edbcc282c760c4c8f2
           path: session-engine-provider
-      - uses: astral-sh/setup-uv@v6
-      - uses: dtolnay/rust-toolchain@1.99.0
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "0.13.7"
+      - uses: dtolnay/rust-toolchain@1.99.1
       - name: Build pinned provider
-        run: cargo +1.99.0 build --locked --release --manifest-path session-engine-provider/Cargo.toml
+        run: cargo +1.99.1 build --locked --release --manifest-path session-engine-provider/Cargo.toml
       - run: uv sync --locked --no-default-groups --group test --extra engine --python 3.12
       - name: Exercise sizing and session replay against the real engine
         shell: bash
@@ -29,8 +31,10 @@ jobs:
       matrix:
         python: ["3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "0.13.7"
       - run: uv sync --locked --no-default-groups --python ${{ matrix.python }}
       - name: Verify lean runtime dependencies
         run: .venv/bin/python scripts/check_minimal_install.py
@@ -48,8 +52,10 @@ jobs:
   platform-wheel:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "0.13.7"
       - run: uv build --wheel --out-dir "$RUNNER_TEMP/platform-wheels"
       - run: uv venv --python 3.13 "$RUNNER_TEMP/platform-wheel-env"
       - name: Install regular base wheel outside project configuration
@@ -74,9 +80,11 @@ jobs:
   rust-microstructure:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
-      - uses: dtolnay/rust-toolchain@1.98.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "0.13.7"
+      - uses: dtolnay/rust-toolchain@1.99.1
         with:
           components: rustfmt, clippy
       - name: Log Rust compiler version
@@ -97,8 +105,10 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "0.13.7"
       - run: uv sync --locked --all-groups --extra dev --extra microstructure
       - run: uv run ruff check .
       - name: Keep production imports on public platform owners

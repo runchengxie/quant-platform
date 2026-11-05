@@ -6,7 +6,7 @@
 
 ## 构建与使用
 
-先安装项目依赖，再在同一环境中构建并安装 wheel。`rust-toolchain.toml` 指定 Rust 1.98.1，根目录开发依赖组提供由 `uv.lock` 锁定版本的 Maturin：
+先安装项目依赖，再在同一环境中构建并安装 wheel。`rust-toolchain.toml` 指定 Rust 1.99.1，根目录开发依赖组提供由 `uv.lock` 锁定版本的 Maturin：
 
 ```bash
 uv sync --locked --all-groups --extra microstructure

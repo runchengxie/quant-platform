@@ -4,9 +4,11 @@ import tomllib
 from pathlib import Path
 
 import pytest
+from packaging.markers import Marker
+from packaging.version import Version
 
 ROOT = Path(__file__).resolve().parents[1]
-SDK_REVISION = "f0ba2ef193c721c7bd497c4d80a7bc8a01c18a31"
+SDK_REVISION = "c65548a4ee1e938125cce1edbcc282c760c4c8f2"
 SDK_REPOSITORY = "https://github.com/runchengxie/quant-backtest-engine.git"
 SDK_DEPENDENCY = (
     f"quant-backtest-engine-client @ git+{SDK_REPOSITORY}@{SDK_REVISION}#subdirectory=python"
@@ -24,7 +26,9 @@ def _assert_allowed_package_sources(lock: dict[str, object]) -> None:
         elif package["name"] == "research-contracts":
             assert source == {"directory": "packages/research-contracts"}
         elif package["name"] == "research-code-quality":
-            assert source["git"].startswith("https://github.com/runchengxie/quant-code-quality.git")
+            assert source["git"].startswith(
+                "https://github.com/runchengxie/research-code-quality.git"
+            )
         elif package["name"] == "quant-backtest-engine-client":
             assert source == {
                 "git": f"{SDK_REPOSITORY}?subdirectory=python&rev={SDK_REVISION}#{SDK_REVISION}"
@@ -67,7 +71,7 @@ def test_distribution_declares_only_public_registry_dependencies() -> None:
         "pytest-cov>=6.0",
         "research-code-quality",
         "ruff>=0.8",
-        "ty==0.0.77",
+        "ty==0.0.86",
         "ta>=0.11,<0.12",
     ]
     assert project["tool"]["uv"]["sources"]["research-contracts"] == {
@@ -97,3 +101,20 @@ def test_lock_source_policy_rejects_nonpublic_or_unexpected_sources(
 
     with pytest.raises(AssertionError):
         _assert_allowed_package_sources(lock)
+
+
+@pytest.mark.parametrize("python_version", ["3.12", "3.13"])
+def test_lock_preserves_current_pandas_in_supported_python_modes(python_version: str) -> None:
+    lock = tomllib.loads((ROOT / "uv.lock").read_text(encoding="utf-8"))
+    environment = {"python_version": python_version, "python_full_version": f"{python_version}.0"}
+    selected = [
+        package["version"]
+        for package in lock["package"]
+        if package["name"] == "pandas"
+        and (
+            not package.get("resolution-markers")
+            or any(Marker(marker).evaluate(environment) for marker in package["resolution-markers"])
+        )
+    ]
+    assert len(selected) == 1
+    assert Version(selected[0]) >= Version("3.0.5")

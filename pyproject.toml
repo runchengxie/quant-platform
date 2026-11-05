@@ -22,7 +22,7 @@ strategy-pipeline = "strategy_pipeline.cli:main"
 
 [project.optional-dependencies]
 sparse = ["osqp>=1.1,<2"]
-engine = ["quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@f0ba2ef193c721c7bd497c4d80a7bc8a01c18a31#subdirectory=python"]
+engine = ["quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@c65548a4ee1e938125cce1edbcc282c760c4c8f2#subdirectory=python"]
 ml = [
   "pandas-ta>=0.3.14b0",
   "scikit-learn>=1.9.0",
@@ -37,7 +37,7 @@ dev = [
   "pytest>=9.0.3",
   "research-code-quality",
   "ruff>=0.8",
-  "ty==0.0.77",
+  "ty==0.0.86", # Newer releases reject standard torch.nn.Module.forward overrides.
 ]
 qlib = ["pyqlib>=0.9.5"]
 microstructure = ["polars>=1.0", "torch>=2.0", "scikit-learn>=1.9.0"]
@@ -45,7 +45,7 @@ microstructure = ["polars>=1.0", "torch>=2.0", "scikit-learn>=1.9.0"]
 [dependency-groups]
 test = ["pytest>=9.0.3", "osqp>=1.1,<2"]
 dev = [
-  "quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@f0ba2ef193c721c7bd497c4d80a7bc8a01c18a31#subdirectory=python",
+  "quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@c65548a4ee1e938125cce1edbcc282c760c4c8f2#subdirectory=python",
   "maturin>=1,<2",
   "pandas-ta>=0.3.14b0",
   "scikit-learn>=1.9.0",
@@ -57,7 +57,7 @@ dev = [
   "pytest-cov>=6.0",
   "research-code-quality",
   "ruff>=0.8",
-  "ty==0.0.77",
+  "ty==0.0.86", # Newer releases reject standard torch.nn.Module.forward overrides.
   "ta>=0.11,<0.12",
 ]
 docs = [
@@ -104,11 +104,14 @@ quant_execution_engine = "packages/execution/src/quant_execution_engine"
 ticknet = "packages/microstructure/src/ticknet"
 
 [tool.uv.sources]
-research-code-quality = { git = "https://github.com/runchengxie/quant-code-quality.git", rev = "1c754c3" }
+research-code-quality = { git = "https://github.com/runchengxie/research-code-quality.git", rev = "76a869e4f7982a456e4807f454815d6aa027d712" }
 research-contracts = { path = "packages/research-contracts" }
 
 [tool.uv]
 override-dependencies = ["research-contracts>=0.1.0"]
+# Pandas 3.1 changes type contracts across the financial API; migrate that surface separately.
+# Keep pandas 3.0 on CI versions while newer Python retains its NumPy-compatible fallback.
+constraint-dependencies = ["pandas>=3.0.5,<3.1; python_version < '3.14'"]
 
 [tool.pytest.ini_options]
 pythonpath = [

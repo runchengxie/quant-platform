@@ -20,7 +20,7 @@ def _check_clean_imports(engine_enabled: bool) -> None:
     assert not any(name.startswith("quant_platform._portfolio") for name in sys.modules)
     from quant_platform.analytics.metrics import summarize_ic
 
-    assert summarize_ic
+    assert callable(summarize_ic)
     assert not any(
         name.startswith("quant_platform._portfolio.execution_sim") for name in sys.modules
     )

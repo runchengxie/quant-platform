@@ -12,7 +12,7 @@ execution engine remain in Python.
 ## Build and use
 
 Install project dependencies first, then build and install the wheel in the
-same environment. `rust-toolchain.toml` selects Rust 1.98.1, and the root
+same environment. `rust-toolchain.toml` selects Rust 1.99.1, and the root
 development dependency group supplies the Maturin version locked in `uv.lock`:
 
 ```bash
