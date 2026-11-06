@@ -25,6 +25,7 @@ class PositionBacktestConfig:
     exit_price_policy: PositionExitPolicy = "period"
     exit_fallback_policy: Literal["ffill", "none"] = "ffill"
     tradable_col: str | None = None
+    terminal_exit_price_col: str | None = None
 
     @property
     def effective_entry_price_col(self) -> str:
@@ -90,29 +91,33 @@ def normalize_position_backtest_pricing(
     entry_price_col: str | None = None,
     exit_price_col: str | None = None,
     tradable_col: str | None = None,
+    terminal_exit_price_col: str | None = None,
 ) -> pd.DataFrame:
-    required = {"trade_date", "symbol", price_col}
-    if entry_price_col and entry_price_col != price_col:
-        required.add(entry_price_col)
-    if exit_price_col and exit_price_col != price_col:
-        required.add(exit_price_col)
+    price_columns = list(
+        dict.fromkeys(
+            col
+            for col in (price_col, entry_price_col, exit_price_col, terminal_exit_price_col)
+            if col
+        )
+    )
+    required = {"trade_date", "symbol", *price_columns}
     missing = sorted(required - set(pricing.columns))
     if missing:
         raise ValueError("Pricing file is missing required column(s): " + ", ".join(missing))
-    columns = ["trade_date", "symbol", price_col]
-    for col in (entry_price_col, exit_price_col):
-        if col and col != price_col and col not in columns:
-            columns.append(col)
+    columns = ["trade_date", "symbol", *price_columns]
     if tradable_col and tradable_col in pricing.columns:
         columns.append(tradable_col)
     out = pricing[columns].copy()
     out["trade_date"] = _date_series(out["trade_date"])
     out["symbol"] = out["symbol"].astype(str)
-    out[price_col] = pd.to_numeric(out[price_col], errors="coerce")
-    for col in (entry_price_col, exit_price_col):
-        if col and col != price_col and col in out.columns:
-            out[col] = pd.to_numeric(out[col], errors="coerce")
-    return out.dropna(subset=["trade_date", "symbol", price_col]).drop_duplicates(
+    for col in price_columns:
+        out[col] = pd.to_numeric(out[col], errors="coerce")
+    if terminal_exit_price_col:
+        # An unused mark must not erase an otherwise valid execution price.
+        out = out.dropna(subset=["trade_date", "symbol"]).dropna(subset=price_columns, how="all")
+    else:
+        out = out.dropna(subset=["trade_date", "symbol", price_col])
+    return out.drop_duplicates(
         subset=["trade_date", "symbol"],
         keep="last",
     )
