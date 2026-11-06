@@ -487,6 +487,7 @@ def _evaluate_position_periods(
     periods: pd.DataFrame,
     table: pd.DataFrame,
     exit_table: pd.DataFrame | None = None,
+    terminal_exit_table: pd.DataFrame | None = None,
     tradable_table: pd.DataFrame | None,
     config: PositionBacktestConfig,
     cost_model: BpsCostModel,
@@ -494,7 +495,7 @@ def _evaluate_position_periods(
     state = _PositionBacktestState()
     rows: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = []
-    for period in periods.itertuples(index=False):
+    for period_index, period in enumerate(periods.itertuples(index=False)):
         period = cast(Any, period)
         rebalance_key = str(period.rebalance_key)
         entry_date = cast(pd.Timestamp, pd.Timestamp(period.entry_date_ts))
@@ -509,7 +510,11 @@ def _evaluate_position_periods(
         prices = _resolve_position_period_prices(
             weights=target,
             price_table=table,
-            exit_price_table=exit_table,
+            exit_price_table=(
+                terminal_exit_table
+                if terminal_exit_table is not None and period_index == len(periods) - 1
+                else exit_table
+            ),
             tradable_table=tradable_table,
             period=period,
             config=config,
@@ -579,6 +584,11 @@ def _summarize_position_backtest(
             "exit_price_policy": config.exit_price_policy,
             "exit_fallback_policy": config.exit_fallback_policy,
             "tradable_col": config.tradable_col,
+            **(
+                {"terminal_exit_price_col": config.terminal_exit_price_col}
+                if config.terminal_exit_price_col is not None
+                else {}
+            ),
         },
         "stats": stats,
         "periods": int(period_frame.shape[0]),
@@ -616,6 +626,14 @@ def run_position_backtest(
     config: PositionBacktestConfig,
     intraday_bars: pd.DataFrame | None = None,
 ) -> PositionBacktestResult:
+    terminal_col = config.terminal_exit_price_col
+    if terminal_col is not None:
+        if not terminal_col.strip():
+            raise ValueError("terminal_exit_price_col must be a non-empty column name")
+        if config.exit_price_policy != "period":
+            raise ValueError("terminal_exit_price_col requires the period exit policy")
+        if intraday_bars is not None and not intraday_bars.empty:
+            raise ValueError("terminal_exit_price_col does not support intraday VWAP")
     entry_col = config.effective_entry_price_col
     exit_col = config.effective_exit_price_col
     normalized_positions = normalize_position_backtest_positions(positions)
@@ -625,6 +643,7 @@ def run_position_backtest(
         entry_price_col=entry_col if entry_col != config.price_col else None,
         exit_price_col=exit_col if exit_col != config.price_col else None,
         tradable_col=config.tradable_col,
+        terminal_exit_price_col=terminal_col,
     )
     normalized_periods = normalize_position_backtest_periods(periods)
 
@@ -646,11 +665,15 @@ def run_position_backtest(
         )
 
     tradable_table = _tradable_table(normalized_pricing, tradable_col=config.tradable_col)
+    terminal_exit_table = (
+        _price_table(normalized_pricing, price_col=terminal_col) if terminal_col else None
+    )
     period_frame, skipped = _evaluate_position_periods(
         positions=normalized_positions,
         periods=normalized_periods,
         table=entry_table,
         exit_table=exit_table if entry_col != exit_col else None,
+        terminal_exit_table=terminal_exit_table,
         tradable_table=tradable_table,
         config=config,
         cost_model=BpsCostModel(float(config.transaction_cost_bps)),

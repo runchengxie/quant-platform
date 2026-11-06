@@ -113,6 +113,30 @@ Holding periods come from a separate `periods` table, which must contain at leas
 
 ## Missing prices
 
+### Optional terminal valuation price
+
+`PositionBacktestConfig(terminal_exit_price_col="close")` can use a separate
+price column for the last requested period, after period normalization and
+sorting. For example, `price_col="open", entry_price_col="open"` uses open
+handoffs between portfolios and the final close for terminal valuation, even
+when the final entry and valuation share a date. The same replay loop retains
+previous weights and turnover-cost state. A skipped last requested period does
+not move the override to an earlier period. Missing selected prices follow the
+existing cash/renormalization setting; an unused price does not invalidate an
+otherwise available entry or mark.
+
+| Mode | Optional terminal column |
+| --- | --- |
+| `exit_price_policy="period"`, daily period-return replay | Supported |
+| `strict`, `ffill`, or `delay` exit policy | Rejected when the option is set |
+| Intraday VWAP or native `ledger=True` | Rejected when the option is set |
+| Option omitted or `None` | Historical behavior remains unchanged |
+
+The terminal column is an optional Python configuration field, appended after
+existing fields to preserve positional construction. Existing CLI options and
+artifact schemas are unchanged. Only opt-in summaries include its name; this
+does not turn period-return replay into a daily execution ledger.
+
 If an entry or exit price cannot be resolved under the configured price and exit policies, the affected position is removed from that period. By default, the remaining weights are renormalized.
 
 This changes the number of securities included in the replay. Inspect the period outputs for:

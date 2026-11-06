@@ -219,6 +219,8 @@ def _aligned_performance_frame(
 
 
 def _validate_request(request: NativePositionReplayRequest) -> None:
+    if request.config.terminal_exit_price_col is not None and request.ledger:
+        raise ValueError("terminal_exit_price_col does not support ledger replay")
     if not request.config.long_only:
         raise ValueError(
             "NativePositionReplayBackend currently supports long-only positions; "
