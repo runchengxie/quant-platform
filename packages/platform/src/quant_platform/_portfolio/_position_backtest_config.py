@@ -95,9 +95,8 @@ def normalize_position_backtest_pricing(
 ) -> pd.DataFrame:
     price_columns = list(
         dict.fromkeys(
-            col
-            for col in (price_col, entry_price_col, exit_price_col, terminal_exit_price_col)
-            if col
+            [price_col]
+            + [col for col in (entry_price_col, exit_price_col, terminal_exit_price_col) if col]
         )
     )
     required = {"trade_date", "symbol", *price_columns}
