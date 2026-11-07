@@ -262,6 +262,21 @@ class ParticipationSlippageModel:
     portfolio_value: float = 1_000_000.0
     power: float = 0.5
     max_participation: float | None = None
+    coverage_policy: str = "raise"
+
+    def __post_init__(self):
+        if self.coverage_policy not in {"raise", "legacy"}:
+            raise ValueError("coverage_policy must be raise or legacy")
+        for name in ("base_bps", "impact_bps", "amount_multiplier", "portfolio_value", "power"):
+            value = getattr(self, name)
+            if not np.isfinite(value) or value < 0:
+                raise ValueError(f"invalid {name}")
+        if self.amount_multiplier <= 0 or self.portfolio_value <= 0 or self.power <= 0:
+            raise ValueError("amount_multiplier, portfolio_value and power must be positive")
+        if self.max_participation is not None and (
+            not np.isfinite(self.max_participation) or self.max_participation <= 0
+        ):
+            raise ValueError("max_participation must be positive")
 
     def cost(
         self,
@@ -277,6 +292,20 @@ class ParticipationSlippageModel:
         trade_abs = trade_abs[trade_abs.notna() & (trade_abs > 0)]
         if trade_abs.empty:
             return 0.0
+
+        if self.coverage_policy == "raise" and self.impact_bps > 0:
+            if pricing_row is None or pricing_row.empty:
+                raise ValueError("liquidity unavailable for participation cost")
+            liquidity = pd.to_numeric(pricing_row.reindex(trade_abs.index), errors="coerce")
+            liquidity = liquidity * self.amount_multiplier
+            if not (liquidity.notna() & np.isfinite(liquidity) & liquidity.gt(0)).all():
+                raise ValueError("liquidity unavailable for participation cost")
+            participation = trade_abs * self.portfolio_value / liquidity
+            if (
+                self.max_participation is not None
+                and participation.gt(self.max_participation).any()
+            ):
+                raise ValueError("participation outside calibrated range")
 
         per_weight_bps = pd.Series(
             np.repeat(float(self.base_bps), len(trade_abs)),

@@ -7,11 +7,25 @@ bar starting at or before its release plus latency. No queue or impact model.
 from __future__ import annotations
 
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass, field
+from types import MappingProxyType
 from typing import cast
 
 import pandas as pd
 
+from ._minute_validation import (
+    _validate as _validate,
+)
+from ._minute_validation import (
+    _validate_bar_numbers as _validate_bar_numbers,
+)
+from ._minute_validation import (
+    _validate_intervals as _validate_intervals,
+)
+from ._minute_validation import (
+    _validate_target_weights as _validate_target_weights,
+)
 from .corporate_actions import CorporateAction, normalize_corporate_actions
 from .valuation_events import VALUATION_LEDGER_COLUMNS, normalize_valuation_events
 from .valuation_events import ValuationEvent as ValuationEvent
@@ -79,118 +93,35 @@ class MinuteExecutionResult:
     )
 
 
-def _validate(targets, bars):
-    required = {
-        "symbol",
-        "time",
-        "open",
-        "high",
-        "low",
-        "close",
-        "volume",
-        "amount",
-        "up_limit",
-        "down_limit",
-        "tradable",
-    }
-    if not required <= set(bars) or not {"decision_time", "entry_time", "symbol", "weight"} <= set(
-        targets
-    ):
-        raise ValueError("missing required columns")
-    for frame, cols in ((bars, ["time"]), (targets, ["decision_time", "entry_time"])):
-        if frame.isna().any().any():
-            raise ValueError("null inputs")
-        for col in cols:
-            if any(not isinstance(t, pd.Timestamp) or t.tzinfo is None for t in frame[col]):
-                raise ValueError("timestamps must be timezone aware pandas Timestamps")
-        if any(not isinstance(s, str) or not s.strip() for s in frame.symbol):
-            raise ValueError("invalid symbol")
-    if (
-        bars.duplicated(["symbol", "time"]).any()
-        or targets.duplicated(["symbol", "entry_time"]).any()
-    ):
-        raise ValueError("duplicate bars or targets")
-    _validate_intervals(bars)
-    _validate_bar_numbers(bars)
-    _validate_target_weights(targets)
-    _validate_mark_provenance(bars)
+@dataclass(frozen=True)
+class MinuteDecisionState:
+    """Synchronous delivered account, strictly before the decision-clock bar.
+
+    No exchange-report delay is modeled. Raw marks may be stale: consumers must
+    inspect mark_times. Pending orders remain live until entry supersession.
+    """
+
+    time: pd.Timestamp
+    cash: float
+    nav: float
+    holdings: Mapping
+    marks: Mapping
+    mark_times: Mapping
+    pending_orders: tuple
+    cash_receivable: float
+    stock_receivable_value: float
 
 
-def _validate_mark_provenance(bars):
-    columns = {"mark_source_time", "mark_basis"}
-    if not columns.intersection(bars.columns):
-        return
-    if not columns <= set(bars.columns):
-        raise ValueError("mark_source_time and mark_basis must be provided together")
-    if any(not isinstance(t, pd.Timestamp) or t.tzinfo is None for t in bars.mark_source_time):
-        raise ValueError("mark_source_time must be timezone aware pandas Timestamps")
-    if (bars.mark_source_time > bars.time).any():
-        raise ValueError("mark_source_time must not follow bar time")
-    if not bars.mark_basis.isin(["raw", "declared_nontrading"]).all():
-        raise ValueError("unsupported mark_basis")
-    raw = bars.mark_basis.eq("raw")
-    if (bars.loc[raw, "mark_source_time"] != bars.loc[raw, "time"]).any():
-        raise ValueError("raw mark source time must equal bar time")
-    declared = ~raw
-    if (
-        bars.loc[declared, "tradable"]
-        | bars.loc[declared, "volume"].ne(0)
-        | bars.loc[declared, "amount"].ne(0)
-    ).any():
-        raise ValueError("declared nontrading marks cannot trade or carry volume/amount")
-    prices = bars.loc[declared, ["open", "high", "low", "close"]]
-    if not prices.eq(prices["close"], axis=0).all().all():
-        raise ValueError("declared nontrading marks must have one flat price")
-
-
-def _validate_intervals(bars):
-    if "interval_start" not in bars:
-        return
-    if any(not isinstance(t, pd.Timestamp) or t.tzinfo is None for t in bars.interval_start):
-        raise ValueError("interval_start must be timezone aware")
-    if (bars.interval_start >= bars.time).any():
-        raise ValueError("interval_start must precede time")
-
-
-def _validate_bar_numbers(bars):
-    numbers = bars[["open", "high", "low", "close", "volume", "amount", "up_limit", "down_limit"]]
-    if not numbers.map(lambda x: isinstance(x, (int, float)) and math.isfinite(x)).all().all():
-        raise ValueError("nonfinite numeric bars")
-    if (numbers < 0).any().any() or (
-        bars[["open", "high", "low", "close", "up_limit", "down_limit"]] <= 0
-    ).any().any():
-        raise ValueError("invalid price or volume")
-    if (
-        (bars.low > bars[["open", "close"]].min(axis=1))
-        | (bars.high < bars[["open", "close"]].max(axis=1))
-        | (bars.low > bars.high)
-    ).any():
-        raise ValueError("inconsistent OHLC")
-    if any(type(v) is not bool for v in bars.tradable):
-        raise ValueError("tradable must be boolean")
-
-
-def _validate_target_weights(targets):
-    if "order_type" in targets and not targets.order_type.eq("market").all():
-        raise ValueError("order_type must be market; intrabar conditional orders are unsupported")
-    if "information_time" in targets:
-        if any(
-            not isinstance(t, pd.Timestamp) or t.tzinfo is None for t in targets.information_time
-        ):
-            raise ValueError("information_time must be timezone aware pandas Timestamps")
-        if (targets.information_time > targets.decision_time).any():
-            raise ValueError("information_time must be at or before decision_time")
-    if not targets.weight.map(lambda x: math.isfinite(x) and 0 <= x <= 1).all():
-        raise ValueError("invalid weight")
-    if (targets.entry_time <= targets.decision_time).any():
-        raise ValueError("entry must be after decision")
-    if (targets.groupby("entry_time").weight.sum() > 1 + 1e-10).any():
-        raise ValueError("weights exceed one")
-    if (targets.groupby("entry_time").decision_time.nunique() != 1).any():
-        raise ValueError("one decision time required per rebalance")
-
-
-def simulate_minute_execution(targets, bars, config, *, corporate_actions=(), valuation_events=()):
+def simulate_minute_execution(
+    targets,
+    bars,
+    config,
+    *,
+    corporate_actions=(),
+    valuation_events=(),
+    decision_policy=None,
+    impact_model=None,
+):
     """Complete target snapshots; quantities fixed from marks known at entry.
 
     ``targets`` has aware decision_time/entry_time, symbol and weight; each entry
@@ -228,6 +159,17 @@ def simulate_minute_execution(targets, bars, config, *, corporate_actions=(), va
     fractional shares remain unsellable and are disclosed in summary.
     A superseding snapshot cancels all unfilled pending orders explicitly.
 
+    decision_policy(state, proposed_weights) optionally computes complete weights
+    at decision_time using strictly earlier observations and synchronous economic
+    account state. Returned None preserves existing orders at entry; an empty
+    mapping exits all holdings. Weights freeze until entry. Snapshots are read-only.
+
+    impact_model is an optional uncalibrated LinearImpact research stress model.
+    It changes actual fill prices and later fills, never adds a duplicate cash fee.
+    Raw valuation and strategy marks remain external historical observations;
+    this is execution-price stress, not an endogenous market or feature simulator.
+    Impacted prices outside historical price limits cannot fill.
+
     Optional ValuationEvent declarations establish permanent nontrading states.
     Apply at effective time before sizing, preserving cash and legal inventory.
     Declared marks persist and only later events replace them; nontradable bars
@@ -237,7 +179,14 @@ def simulate_minute_execution(targets, bars, config, *, corporate_actions=(), va
     Opt-in valuation_marks and valuation_ledger expose source/effective times and
     age; declared persistence never claims observed daily quote freshness.
     """
-    return _MinuteSimulation(targets, bars, config, corporate_actions, valuation_events).run()
+    simulation = _MinuteSimulation(targets, bars, config, corporate_actions, valuation_events)
+    simulation.decision_policy = decision_policy
+    simulation.impact_model = impact_model
+    if decision_policy is not None:
+        simulation.times = sorted(set(simulation.times) | set(simulation.decisions))
+        simulation.ignored_future_event_ids = []
+        simulation.scheduled_valuations = simulation.schedule_valuations()
+    return simulation.run()
 
 
 class _MinuteSimulation:
@@ -287,7 +236,15 @@ class _MinuteSimulation:
         self.scheduled_valuations = self.schedule_valuations()
         self.times = sorted(set(self.times) | set(self.scheduled_valuations))
         self.current_day = None
+        self.day_has_events = False
         self.pending = []
+        self.decision_policy = None
+        self.impact_model = None
+        self.decisions = {}
+        self.policy_snapshots = {}
+        for entry, snapshot in self.snapshots.items():
+            decision = snapshot.decision_time.iloc[0]
+            self.decisions.setdefault(decision, []).append(entry)
 
     def value(self):
         if any((s not in self.marks for s, q in self.holdings.items() if q)):
@@ -473,11 +430,56 @@ class _MinuteSimulation:
                 self.holdings[action.symbol] = self.holdings.get(action.symbol, 0) + right["stock"]
                 right["stock"] = 0
 
+    def decide(self, time):
+        cr, sr = self.receivables()
+        state = MinuteDecisionState(
+            time=time,
+            cash=self.cash,
+            nav=self.cash + self.value() + cr + sr,
+            holdings=MappingProxyType(dict(self.holdings)),
+            marks=MappingProxyType(dict(self.marks)),
+            mark_times=MappingProxyType(dict(self.mark_times)),
+            pending_orders=tuple(
+                MappingProxyType({**o, "remaining_quantity": o["quantity"] - o["filled_quantity"]})
+                for o in self.pending
+                if o["status"] == "pending" and time <= o["deadline"]
+            ),
+            cash_receivable=cr,
+            stock_receivable_value=sr,
+        )
+        for entry in self.decisions[time]:
+            original = self.snapshots[entry]
+            proposed = MappingProxyType(dict(zip(original.symbol, original.weight, strict=True)))
+            policy = self.decision_policy
+            if policy is None:
+                raise ValueError("decision policy unavailable")
+            weights = policy(state, proposed)
+            if weights is None:
+                self.policy_snapshots[entry] = None
+                continue
+            if not isinstance(weights, Mapping) or any(
+                not isinstance(symbol, str) or not symbol.strip() for symbol in weights
+            ):
+                raise ValueError("policy weights require nonempty symbol keys")
+            snapshot = pd.DataFrame(
+                [
+                    {"decision_time": time, "entry_time": entry, "symbol": symbol, "weight": weight}
+                    for symbol, weight in weights.items()
+                ],
+                columns=["decision_time", "entry_time", "symbol", "weight"],
+            )
+            _validate_target_weights(snapshot)
+            self.policy_snapshots[entry] = snapshot
+
     def rebalance(self, time):
+        snapshot = self.snapshots[time]
+        if self.decision_policy is not None:
+            snapshot = self.policy_snapshots[time]
+            if snapshot is None:
+                return
         for order in self.orders:
             if order["status"] == "pending":
                 order.update(status="cancelled", reason="superseded")
-        snapshot = self.snapshots[time]
         weights = dict(zip(snapshot.symbol, snapshot.weight, strict=False))
         cr, sr = self.receivables()
         nav = self.cash + self.value() + cr + sr
@@ -491,7 +493,7 @@ class _MinuteSimulation:
                         "order_id": len(self.orders),
                         "symbol": symbol,
                         "entry_time": time,
-                        "decision_time": snapshot.decision_time.iloc[0],
+                        "decision_time": self.snapshots[time].decision_time.iloc[0],
                         "reference_price": mark,
                         "reference_basis": self.mark_basis.get(symbol, "raw"),
                         "reference_time": self.mark_times.get(symbol),
@@ -521,7 +523,7 @@ class _MinuteSimulation:
                     "order_id": len(self.orders),
                     "symbol": symbol,
                     "entry_time": time,
-                    "decision_time": snapshot.decision_time.iloc[0],
+                    "decision_time": self.snapshots[time].decision_time.iloc[0],
                     "reference_price": mark,
                     "reference_basis": self.mark_basis.get(symbol, "raw"),
                     "reference_time": self.mark_times.get(symbol),
@@ -582,11 +584,15 @@ class _MinuteSimulation:
         )
         return max(0.0, total_commission - order["commission_paid"]), gross * tax_rate
 
-    def affordable_buy(self, order, quantity, price):
+    def affordable_buy(self, order, quantity, price, time):
         low, high = 0, math.floor(quantity / self.config.lot_size)
         while low < high:
             middle = (low + high + 1) // 2
-            gross = middle * self.config.lot_size * price
+            shares = middle * self.config.lot_size
+            affected = price
+            if self.impact_model is not None:
+                affected += self.impact_model.preview(order["symbol"], time.timestamp(), shares)
+            gross = shares * affected
             commission, tax = self.incremental_fee(order, gross)
             if gross + commission + tax <= self.cash:
                 low = middle
@@ -604,6 +610,11 @@ class _MinuteSimulation:
             reason = "down_limit_touch"
         return reason
 
+    def impacted_price(self, symbol, time, signed, price):
+        if self.impact_model is None:
+            return price
+        return price + self.impact_model.preview(symbol, time.timestamp(), signed)
+
     def fill_order(self, order, bar, time, cap):
         symbol = bar.symbol
         available = self.released_quantity(order, bar.interval_start)
@@ -616,7 +627,7 @@ class _MinuteSimulation:
         price = min(bar.high, max(bar.low, bar.amount / bar.volume))
         quantity = min(available, cap)
         if order["side"] == "buy":
-            quantity = self.affordable_buy(order, quantity, price)
+            quantity = self.affordable_buy(order, quantity, price, time)
             order["reason"] = "cash_or_participation"
         else:
             quantity = min(quantity, self.holdings.get(symbol, 0) - self.bought.get(symbol, 0))
@@ -628,12 +639,19 @@ class _MinuteSimulation:
             )
         if quantity <= 0:
             return cap
+        signed = quantity if order["side"] == "buy" else -quantity
+        price = self.impacted_price(symbol, time, signed, price)
+        if self.impact_model is not None and not bar.down_limit < price < bar.up_limit:
+            order["reason"] = "impact_price_limit"
+            return cap
         gross = quantity * price
         commission, tax = self.incremental_fee(order, gross)
         fee = commission + tax
         if order["side"] == "sell" and fee > self.cash + gross:
             order["reason"] = "fee_cash"
             return cap
+        if self.impact_model is not None:
+            self.impact_model.execute(symbol, time.timestamp(), signed)
         order["executed_notional"] += gross
         order["commission_paid"] += commission
         order["tax_paid"] += tax
@@ -694,24 +712,34 @@ class _MinuteSimulation:
             if order["status"] == "pending" and time > order["deadline"]:
                 order["status"] = "expired"
 
+    def advance_account(self, time):
+        day = time.date()
+        if day != self.current_day:
+            if self.day_has_events:
+                self.close_day()
+            self.current_day = day
+            self.day_has_events = False
+            self.bought = {}
+            self.open_day(day)
+        self.current_time = time
+        self.apply_valuations(time)
+        self.expire_orders(time)
+
     def run(self):
         for time in self.times:
-            day = time.date()
-            if day != self.current_day:
-                if self.current_day is not None:
-                    self.close_day()
-                self.current_day = day
-                self.bought = {}
-                self.open_day(day)
-            self.current_time = time
-            self.apply_valuations(time)
+            self.advance_account(time)
+            if time in self.grouped or time in self.snapshots or time in self.scheduled_valuations:
+                self.day_has_events = True
+            if self.decision_policy is not None and time in self.decisions:
+                self.decide(time)
             if time in self.snapshots:
                 self.rebalance(time)
-            self.expire_orders(time)
-            if time not in self.grouped:
-                continue
-            self.process_bars(time)
-        if self.current_day is not None:
+            if time in self.grouped:
+                self.process_bars(time)
+        return self.finish()
+
+    def finish(self):
+        if self.day_has_events:
             self.close_day()
         for order in self.orders:
             if order["status"] == "pending":
@@ -737,6 +765,14 @@ class _MinuteSimulation:
             ),
             {
                 "initial_cash": self.config.initial_cash,
+                "result_semantics": "execution_ledger_daily_nav",
+                "account_feedback": self.decision_policy is not None,
+                "account_delivery": "synchronous_no_report_delay",
+                "cancellation": "synchronous_at_superseding_entry",
+                "impact_checkpoint": self.impact_model.checkpoint() if self.impact_model else None,
+                "impact_calibration": "uncalibrated_stress_only" if self.impact_model else "none",
+                "valuation_basis": "external_raw_marks_excludes_own_impact",
+                "strategy_market_basis": "external_raw_marks_excludes_own_impact",
                 "valuation_event_count": len(self.valuation_ledger),
                 "ignored_future_event_ids": self.ignored_future_event_ids,
                 "valuation_event_window": "prewindow_at_first_instant_future_ignored",
