@@ -1,7 +1,7 @@
 # Exploration mechanisms validation — 2026-11-08
 
 Implementation `15d8f26f587007c3c97f775e915b3046e0d20e56` passes the complete
-locked all-groups Platform suite: **2,140 passed, 25 skipped**, exit 0, 96.31 s.
+locked all-groups Platform suite: 2,140 passed, 25 skipped, exit 0, 96.31 s.
 Eight existing pandas/NumPy deprecation or constant-series warnings remain.
 Ruff, complete formatting and strict ty checks pass. No baseline was relaxed.
 
@@ -27,3 +27,7 @@ writes to shared caches. Private campaign data and raw logs stay in Research DAT
 The companion [API boundaries](exploration-api.md) distinguish mechanism evidence
 from market calibration and formal research admission. Subsequent task commits
 record validation/navigation only.
+
+The first remote CI run caught bold markup in this newly added receipt, which
+violated the repository documentation-style gate. The markup was removed and
+both documentation test groups rerun; no implementation or test gate changed.
