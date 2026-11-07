@@ -34,7 +34,8 @@ These guides use synthetic data and small examples. They help you run the full f
     12. [Backtest backend boundary](concepts/backend-architecture.en.md)
     13. [Costs and execution assumptions](concepts/execution-costs.md) · [Dated execution fees](dated-execution-fees.md)
     14. [Execution capacity and daily NAV simulation](guides/execution-simulation.en.md)
-    15. [Minute execution scenarios](guides/minute-execution.en.md)
+    15. [Minute execution scenarios](guides/minute-execution.en.md), including
+        [account feedback and impact stress](backtest/account-feedback.md)
     16. [Turnover definitions](concepts/turnover.en-US.md)
     17. [Cost breakdown](concepts/cost-breakdown.md)
         · [Cost evidence and capacity](guides/cost-evidence.md)

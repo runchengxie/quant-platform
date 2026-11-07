@@ -199,6 +199,7 @@ def build_slippage_model(slippage_cfg: Mapping | None) -> SlippageModel:
             ),
             power=power,
             max_participation=max_participation,
+            coverage_policy=str(slippage_cfg.get("coverage_policy", "raise")),
         )
     raise ValueError(f"Unsupported slippage model: {name}")
 
@@ -382,6 +383,7 @@ def describe_slippage_model(slippage_model: SlippageModel) -> dict:
             "amount_multiplier": float(slippage_model.amount_multiplier),
             "portfolio_value": float(slippage_model.portfolio_value),
             "power": float(slippage_model.power),
+            "coverage_policy": slippage_model.coverage_policy,
             "max_participation": (
                 float(slippage_model.max_participation)
                 if slippage_model.max_participation is not None
