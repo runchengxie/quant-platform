@@ -29,18 +29,18 @@ Use isolated task worktrees and PRs. Preserve default replay behavior.
 
 Files: `_portfolio/minute_execution.py`, `tests/test_minute_execution_feedback.py`.
 Interface: `decision_policy(state, proposed_weights) -> Mapping[str,float] | None`.
-- [ ] Write partial-fill, preserve-pending, immutable-state and causal-prefix tests.
-- [ ] Watch tests fail, implement decision-clock scheduling and frozen weights.
-- [ ] Run minute execution regression tests and commit.
+- [x] Write partial-fill, preserve-pending, immutable-state and causal-prefix tests.
+- [x] Watch tests fail, implement decision-clock scheduling and frozen weights.
+- [x] Run minute execution regression tests and commit.
 
 ### Task 2: Cost coverage and persistent impact
 
 Files: `_portfolio/_execution_models.py`, `backtest/impact.py`, focused tests.
 Interfaces: explicit coverage policy; `LinearImpact.execute(symbol,time,quantity)`
 returns average price offset; checkpoint/restore maintain all symbol states.
-- [ ] Write missing-liquidity, out-of-range, round-trip, splitting and restore tests.
-- [ ] Watch tests fail, implement and run regression tests.
-- [ ] Document uncalibrated units and cost accounting; commit.
+- [x] Write missing-liquidity, out-of-range, round-trip, splitting and restore tests.
+- [x] Watch tests fail, implement and run regression tests.
+- [x] Document uncalibrated units and cost accounting; commit.
 
 ### Task 3: Paired historical execution research
 
