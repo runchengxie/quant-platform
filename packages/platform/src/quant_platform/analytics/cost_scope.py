@@ -168,3 +168,114 @@ def validate_cost_scope(
         "evidence_kind": model.evidence_kind,
         "promoted": False,
     }
+
+
+def validate_cost_scope_uncertainty(
+    model: ScopedCostModel,
+    observations: pd.DataFrame,
+    *,
+    source_binding: str,
+    cluster_column: str,
+    cluster_kind: str,
+    min_clusters: int = 3,
+    bootstrap_samples: int = 1000,
+    seed: int = 0,
+) -> dict:
+    """Bootstrap later supported residuals from an already frozen model.
+
+    The caller must justify independent date/order clusters. Labels never verify
+    independence or broker provenance. Intervals condition on the fitted model,
+    and do not describe coefficient uncertainty or future market probabilities.
+    """
+    if (
+        cluster_kind not in {"date", "order"}
+        or not isinstance(cluster_column, str)
+        or not cluster_column.strip()
+    ):
+        raise ValueError("explicit date/order cluster column required")
+    if (
+        type(min_clusters) is not int
+        or min_clusters < 3
+        or type(bootstrap_samples) is not int
+        or bootstrap_samples < 100
+        or type(seed) is not int
+        or seed < 0
+    ):
+        raise ValueError("minimum >=3 clusters, >=100 bootstrap draws and integer seed required")
+    report = validate_cost_scope(model, observations, source_binding=source_binding) | {
+        "schema": "scoped-cost-cluster-validation.v1",
+        "cluster_column": cluster_column,
+        "cluster_kind": cluster_kind,
+        "cluster_provenance": "caller_asserted",
+        "independent_clusters": 0,
+        "minimum_clusters": min_clusters,
+        "bootstrap_samples": bootstrap_samples,
+        "seed": seed,
+        "confidence": 0.95,
+        "bias_interval_bps": None,
+        "rmse_interval_bps": None,
+        "real_calibration": "unavailable",
+        "uncertainty_status": "unavailable_clusters",
+    }
+    frame = _frame(observations)
+    frame = frame.loc[frame.available_ns > model.cutoff_ns]
+    frame = _supported_cost_rows(model, frame)
+    if cluster_column not in frame or frame[cluster_column].isna().any():
+        return report
+    if (
+        not frame[cluster_column]
+        .map(lambda value: isinstance(value, str) and bool(value.strip()))
+        .all()
+    ):
+        return report
+    frame["_error"] = [
+        row.shortfall_bps
+        - model.predict(
+            row.participation,
+            side=row.side,
+            liquidity_bucket=row.liquidity_bucket,
+            execution_minutes=row.execution_minutes,
+        )
+        for row in frame.itertuples()
+    ]
+    clusters = []
+    for _, group in frame.groupby(cluster_column, sort=True):
+        weight = group.filled_notional.to_numpy(dtype=float)
+        errors = group["_error"].to_numpy(dtype=float)
+        clusters.append(
+            [float(weight.sum()), float(np.dot(weight, errors)), float(np.dot(weight, errors**2))]
+        )
+    count = len(clusters)
+    report["independent_clusters"] = count
+    report["uncertainty_status"] = "insufficient_clusters"
+    if count < min_clusters:
+        return report
+    # Resample whole clusters, never iid fills. Retain notional weighting.
+    rng = np.random.default_rng(seed)
+    array = np.array(clusters)
+    bias, rmse = [], []
+    for _ in range(bootstrap_samples):
+        total_weight, signed, squared = array[rng.integers(0, count, count)].sum(axis=0)
+        bias.append(signed / total_weight)
+        rmse.append(np.sqrt(squared / total_weight))
+    report["bias_interval_bps"] = np.quantile(bias, [0.025, 0.975]).tolist()
+    report["rmse_interval_bps"] = np.quantile(rmse, [0.025, 0.975]).tolist()
+    report["uncertainty_status"] = "evaluated"
+    return report
+
+
+def _supported_cost_rows(model, frame):
+    supported = []
+    for row in frame.itertuples():
+        try:
+            model.predict(
+                row.participation,
+                side=row.side,
+                liquidity_bucket=row.liquidity_bucket,
+                execution_minutes=row.execution_minutes,
+            )
+        except ValueError:
+            supported.append(False)
+        else:
+            supported.append(True)
+    return frame.loc[supported].copy()

@@ -9,7 +9,9 @@
 ```python
 import pandas as pd
 from quant_platform.backtest.market_paths import (
-    MarketPathSpec, fit_market_paths, generate_market_paths,
+    MarketPathSpec,
+    fit_market_paths,
+    generate_market_paths,
 )
 
 # training_panel 是包含下述必需列的平衡合成面板。

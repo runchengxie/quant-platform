@@ -10,7 +10,9 @@ of future market outcomes.
 ```python
 import pandas as pd
 from quant_platform.backtest.market_paths import (
-    MarketPathSpec, fit_market_paths, generate_market_paths,
+    MarketPathSpec,
+    fit_market_paths,
+    generate_market_paths,
 )
 
 # training_panel is a balanced synthetic panel with the required columns below.
