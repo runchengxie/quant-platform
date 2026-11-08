@@ -499,3 +499,27 @@ def test_short_dividend_payable_triggers_margin_at_ex_and_cover_before_pay_can_r
     a.deliver(T + pd.Timedelta(seconds=1))
     assert not a.visible_margin["breach"]
     assert a.visible_margin["required"] == 20
+
+
+def test_cashflows_and_late_fee_are_atomic_delayed_and_event_idempotent():
+    a = account(cash=100, qty=0)
+    deposit = event("cashflow", "deposit", delay=5, amount=50, reason="declared_deposit")
+    a.apply(deposit)
+    a.apply(deposit)
+    assert a.actual.cash == 150 and a.visible.cash == 100
+    a.deliver(T + pd.Timedelta(seconds=5))
+    assert a.visible.cash == 150
+    before = a.checkpoint()
+    with pytest.raises(ValueError, match="project"):
+        a.apply(event("cashflow", "future", 6, amount=1, reason="deposit"))
+    assert a.checkpoint() == before
+    # Same economic clock is behind delivery now, so use a separate account probe.
+    b = account(cash=100, qty=0)
+    b.apply(event("fee_adjustment", "fee", amount=7, reason="supplementary_commission"))
+    assert b.actual.cash == 93
+    with pytest.raises(ValueError):
+        b.apply(event("fee_adjustment", "credit", amount=-7, reason="invalid_fee_credit"))
+    assert b.actual.cash == 93
+    restored = AccountEventAdapter.restore(b.checkpoint(), b.config)
+    restored.deliver(T)
+    assert restored.visible.cash == 93
