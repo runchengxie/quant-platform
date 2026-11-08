@@ -12,6 +12,7 @@ from mkdocs.structure.nav import Navigation
 
 ENGLISH_PAGES = {
     "backtest/minute-session.md",
+    "backtest/sleeve-allocation.md",
     "migration/portfolio-boundaries.md",
     "migration/matched-ledger-comparison.md",
     "README.md",

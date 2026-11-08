@@ -1,4 +1,7 @@
-"""Complete long-only target pooling for one execution account, not fill attribution."""
+"""Complete long-only target pooling for one execution account.
+
+Defaults stay independent of the opt-in single-batch ``sleeve_allocation`` helper.
+"""
 
 import math
 

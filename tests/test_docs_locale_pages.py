@@ -10,6 +10,7 @@ from pathlib import Path
 import yaml
 
 PAIRS = (
+    ("backtest/sleeve-allocation.md", "backtest/sleeve-allocation.zh-CN.md"),
     ("backtest/minute-session.md", "backtest/minute-session.zh-CN.md"),
     ("concepts/discrete-inventory.md", "concepts/discrete-inventory.zh-CN.md"),
     ("concepts/impact-planning.md", "concepts/impact-planning.zh-CN.md"),
@@ -117,6 +118,8 @@ def test_new_pages_render_locale_specific_navigation(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stdout + result.stderr
 
     expected = {
+        "backtest/sleeve-allocation": "en",
+        "backtest/sleeve-allocation.zh-CN": "zh",
         "concepts/discrete-inventory": "en",
         "concepts/discrete-inventory.zh-CN": "zh",
         "concepts/impact-planning": "en",
