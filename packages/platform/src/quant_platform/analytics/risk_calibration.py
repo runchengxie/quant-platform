@@ -9,8 +9,10 @@ read PIT data, authenticate provenance, or change existing aligned-risk defaults
 from __future__ import annotations
 
 import hashlib
+import json
 from dataclasses import dataclass
-from typing import cast
+from datetime import date, datetime
+from decimal import Decimal
 
 import numpy as np
 import pandas as pd
@@ -389,22 +391,7 @@ def audit_risk_calibration(
     summary = _summaries(rows, minimum_observations)
     statuses = summary.sample_status.tolist()
     status = next((s for s in statuses if s.startswith("insufficient")), statuses[0])
-    digest = hashlib.sha256(
-        (
-            cast(
-                str,
-                forecasts.to_json(
-                    orient="records", date_format="iso", date_unit="ns", default_handler=str
-                ),
-            )
-            + cast(
-                str,
-                outcomes.to_json(
-                    orient="records", date_format="iso", date_unit="ns", default_handler=str
-                ),
-            )
-        ).encode()
-    ).hexdigest()
+    digest = _input_digest(forecasts, outcomes)
     ranks = pd.DataFrame(
         [_rank(row, clock) for row in f.itertuples(index=False)],
         columns=[*_KEYS, "forecast_at", "raw_rank", "shrunk_rank", "dimension", "status", "source"],
@@ -591,3 +578,61 @@ def _finite_mean(values):
     if not np.isfinite(result):
         raise ValueError("finite risk mean required; rescale declared units explicitly")
     return result
+
+
+def _digest_float(value):
+    # Integer ratios encode every finite binary floating value exactly, including
+    # adjacent/subnormal values and NumPy scalars, without a decimal precision cap.
+    try:
+        numerator, denominator = value.as_integer_ratio()
+    except (ValueError, OverflowError):
+        return ["float_special", str(value)]
+    return ["float", hex(numerator), hex(denominator), bool(numerator == 0 and np.signbit(value))]
+
+
+def _digest_scalar(value):
+    if value is None or value is pd.NA or value is pd.NaT:
+        return ["missing"]
+    if isinstance(value, str):
+        return ["text", value]
+    if isinstance(value, (bool, np.bool_)):
+        return ["bool", bool(value)]
+    if isinstance(value, (int, np.integer)):
+        return ["integer", hex(int(value))]
+    if isinstance(value, (float, np.floating)):
+        return _digest_float(value)
+    if isinstance(value, Decimal):
+        return ["decimal", str(value)]
+    if isinstance(value, (pd.Timestamp, datetime, date, np.datetime64)):
+        clock = pd.Timestamp(value)
+        if pd.isna(clock):
+            return ["missing"]
+        return ["timestamp", (clock.tz_convert("UTC") if clock.tzinfo else clock).isoformat()]
+    if isinstance(value, bytes):
+        return ["bytes", value.hex()]
+    raise TypeError(f"unsupported digest evidence cell type: {type(value).__name__}")
+
+
+def _digest_value(value):
+    if isinstance(value, np.ndarray):
+        value = value.tolist()
+    if isinstance(value, (list, tuple)):
+        return ["sequence", [_digest_value(item) for item in value]]
+    if isinstance(value, dict):
+        pairs = [[_digest_value(key), _digest_value(item)] for key, item in value.items()]
+        return ["mapping", sorted(pairs, key=lambda pair: json.dumps(pair[0], ensure_ascii=True))]
+    return _digest_scalar(value)
+
+
+def _input_digest(forecasts, outcomes):
+    frames = []
+    for frame in [forecasts, outcomes]:
+        # Include empty-table schema, retain row order, and ignore pandas indices
+        # and mapping/column ordering. All cell types have explicit tags.
+        schema = _digest_value(dict.fromkeys(frame.columns))
+        records = [_digest_value(record) for record in frame.to_dict(orient="records")]
+        frames.append([schema, records])
+    payload = json.dumps(
+        ["risk-input.v2", frames], ensure_ascii=True, separators=(",", ":"), allow_nan=False
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()

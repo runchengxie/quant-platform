@@ -591,3 +591,63 @@ def test_smallest_representable_positive_variance_mean_stays_positive(sample):
     s = audit(f, o).summary.iloc[0]
     assert s.predicted_variance == np.nextafter(0.0, 1.0)
     assert s.variance_ratio == 0
+
+
+@pytest.mark.parametrize(
+    "side,column,initial,changed",
+    [
+        ("forecast", "forecast_variance", 1.0, 1.00000000001),
+        ("forecast", "forecast_variance", 1.0, np.nextafter(1.0, 2.0)),
+        ("forecast", "forecast_variance", 1e-200, np.nextafter(1e-200, 1.0)),
+        ("outcome", "realized", 1.0, 1.00000000001),
+        ("outcome", "realized", 1.0, np.nextafter(1.0, 2.0)),
+        ("outcome", "realized", 1e-150, np.nextafter(1e-150, 1.0)),
+    ],
+)
+def test_input_digest_distinguishes_lossless_accepted_numeric_values(
+    sample, side, column, initial, changed
+):
+    f, o = sample
+    frame = f if side == "forecast" else o
+    frame.loc[0, column] = initial
+    before = audit(f, o)
+    frame.loc[0, column] = changed
+    after = audit(f, o)
+    if side == "forecast":
+        assert before.rows.iloc[0].predicted_variance != after.rows.iloc[0].predicted_variance
+    else:
+        assert before.rows.iloc[0].matched_realized != after.rows.iloc[0].matched_realized
+    assert before.input_digest != after.input_digest
+
+
+@pytest.mark.parametrize("container", [list, np.array])
+def test_input_digest_preserves_nested_covariance_float_differences(sample, container):
+    f, o = sample
+    f["raw_covariance"] = pd.Series([container([[1.0]])] * 4, dtype=object)
+    f["covariance_labels"] = [("F1",)] * 4
+    f["covariance_unit"] = "return_bps^2"
+    f["covariance_available_at"] = f.forecast_at
+    f["covariance_source"] = "synthetic"
+    before = audit(f, o)
+    f.at[0, "raw_covariance"] = container([[np.nextafter(1.0, 2.0)]])
+    after = audit(f, o)
+    assert before.rows.iloc[0].raw_covariance[0][0] != after.rows.iloc[0].raw_covariance[0][0]
+    assert before.input_digest != after.input_digest
+
+
+def test_input_digest_is_canonical_for_mapping_order_indices_and_matrix_containers(sample):
+    f, o = sample
+    f["raw_covariance"] = pd.Series([[[1.0]]] * 4, dtype=object)
+    f["covariance_labels"] = [("F1",)] * 4
+    f["covariance_unit"] = "return_bps^2"
+    f["covariance_available_at"] = f.forecast_at
+    f["covariance_source"] = "synthetic"
+    f["annotation"] = [{"a": 1.0, "b": 2.0}] * 4
+    before = audit(f, o)
+    f["raw_covariance"] = [np.array([[1.0]])] * 4
+    f["covariance_labels"] = [["F1"]] * 4
+    f["annotation"] = [{"b": 2.0, "a": 1.0}] * 4
+    f.index = [3, 3, 0, 1]
+    o.index = [3, 3, 0, 1]
+    after = audit(f[f.columns[::-1]], o[o.columns[::-1]])
+    assert before.input_digest == after.input_digest

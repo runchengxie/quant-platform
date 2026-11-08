@@ -170,9 +170,19 @@ fail. This does not audit the fitting sample, shrinkage coefficient or transform
 heterogeneous factor units, economic covariance, or realized cross-asset covariance.
 A PSD or full-rank matrix never establishes calibration.
 
-`input_digest` hashes ordered JSON-serialized input records, excluding pandas
-index labels. It binds these parsed values, not original source-file bytes,
-provider authenticity or economic truth. Caller manifests must separately bind
+`input_digest` hashes the `risk-input.v2` canonical tagged input representation.
+Finite binary floats use exact integer ratios with hexadecimal integers, so
+adjacent values and very small values survive without decimal rounding. Nested
+matrix cells use the same representation. Integers, decimal values, text,
+booleans, missing markers, bytes and timestamps have explicit tags. Aware timestamps
+normalize to UTC with nanosecond precision. NaN payload bits are not retained.
+Lists, tuples and NumPy arrays with the same parsed values share one sequence
+representation. Mapping and column order and pandas index labels do not affect
+the hash. Record order, empty-table schema and parsed values remain bound.
+Unsupported opaque object cells have no string fallback. This serialization
+version changes prior digests and is identified alongside the code revision.
+It binds parsed evidence, not original source-file bytes, provider authenticity
+or economic truth. Caller manifests must separately bind
 raw source bytes, model/fit version and clocks, code/consumer revisions, unit
 semantics and provenance. `provenance_status="caller_asserted"`,
 `real_calibration="unavailable"` and `certified=False` remain explicit. Seen
