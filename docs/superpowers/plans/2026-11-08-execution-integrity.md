@@ -18,8 +18,8 @@ held assets with missing marks, and accounting shares as realized cash require t
 
 ## Task 1: Public evidence helpers
 
-- [ ] Add failing tests for fill-prefix mismatch detection, complete sleeve schedule validation and noncash exit wealth.
-- [ ] Implement public helpers, run focused tests.
-- [ ] Add synthetic benchmark against actual pinned Rust binary and public Python minute owner, explicitly retaining IOC divergence.
-- [ ] Verify pooled versus isolated capacity with one shared owner and impact state.
-- [ ] Run Ruff/format/ty/maintainability and full pytest; request independent review, merge PR and retain exact source evidence.
+- [x] Add failing tests for fill-prefix mismatch detection, complete sleeve schedule validation and noncash exit wealth.
+- [x] Implement public helpers, run focused tests.
+- [x] Add synthetic benchmark against actual pinned Rust binary and public Python minute owner, explicitly retaining IOC divergence.
+- [x] Verify pooled versus isolated capacity with one shared owner and impact state.
+- [x] Run Ruff/format/ty/maintainability and full pytest; request independent review, merge PR and retain exact source evidence.
