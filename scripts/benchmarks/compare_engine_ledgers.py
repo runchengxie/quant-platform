@@ -231,7 +231,7 @@ def _flatten(value: Any, path: str = "") -> dict[str, Any]:
     return {path: value}
 
 
-def compare(left: dict[str, Any], right: dict[str, Any]) -> list[dict[str, Any]]:
+def compare(left: Any, right: Any) -> list[dict[str, Any]]:
     """Compare all normalized fields; use a fixed absolute float boundary tolerance."""
     a, b = _flatten(left), _flatten(right)
     mismatches = []
