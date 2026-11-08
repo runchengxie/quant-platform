@@ -1,6 +1,6 @@
 # 交易成本证据
 
-[English](transaction-cost-evidence.md)
+语言：简体中文 · [English](transaction-cost-evidence.md)
 
 `quant_platform.analytics.transaction_costs.audit_transaction_costs` 审核已结束的父订单和物理成交，计算经纪费用模型与有方向的基准差额。它不撮合订单、不生成成交、不扣账户现金，也不把校准结果自动发布到生产。函数不修改输入，现有成本范围接口的默认行为保持兼容。
 

@@ -79,6 +79,8 @@ nav:
       - Guides:
           - Common entry points: guides/entry-points.md
           - Execution simulation: guides/execution-simulation.en.md
+          - Dependent synthetic market paths: backtest/market-paths.md
+          - Transaction cost evidence: backtest/transaction-cost-evidence.md
           - Minute execution scenarios: guides/minute-execution.en.md
           - Recoverable minute sessions: backtest/minute-session.md
           - Shared sleeve allocation: backtest/sleeve-allocation.md
@@ -134,6 +136,8 @@ nav:
           - 术语表: reference/glossary.zh-CN.md
       - 常用指南:
           - 常用入口: guides/entry-points.zh-CN.md
+          - 保留共同时间块的合成市场路径: backtest/market-paths.zh-CN.md
+          - 交易成本证据: backtest/transaction-cost-evidence.zh-CN.md
           - 分钟执行情景: guides/minute-execution.md
           - 可恢复的分钟会话: backtest/minute-session.zh-CN.md
           - 共用账户策略分配: backtest/sleeve-allocation.zh-CN.md

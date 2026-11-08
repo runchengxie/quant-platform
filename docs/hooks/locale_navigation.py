@@ -11,6 +11,8 @@ from copy import copy
 from mkdocs.structure.nav import Navigation
 
 ENGLISH_PAGES = {
+    "backtest/market-paths.md",
+    "backtest/transaction-cost-evidence.md",
     "backtest/minute-session.md",
     "backtest/sleeve-allocation.md",
     "migration/portfolio-boundaries.md",

@@ -1,6 +1,6 @@
 # 保留共同时间块的合成市场路径
 
-[English](market-paths.md)
+语言：简体中文 · [English](market-paths.md)
 
 通过 `quant_platform.backtest.market_paths` 可生成带有共同时间块的收益与流动性替代路径，
 同一抽样时间块同时作用于所有资产。这些是未经真实市场校准的合成情景。

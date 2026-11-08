@@ -1,6 +1,6 @@
 # Dependent synthetic market paths
 
-[简体中文](market-paths.zh-CN.md)
+Language: English · [简体中文](market-paths.zh-CN.md)
 
 Use `quant_platform.backtest.market_paths` for conditional return and liquidity
 paths with common sampled time blocks across assets. These are uncalibrated

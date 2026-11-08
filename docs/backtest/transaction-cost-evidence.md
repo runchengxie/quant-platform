@@ -1,6 +1,6 @@
 # Transaction cost evidence
 
-[简体中文](transaction-cost-evidence.zh-CN.md)
+Language: English · [简体中文](transaction-cost-evidence.zh-CN.md)
 
 `quant_platform.analytics.transaction_costs.audit_transaction_costs` audits terminal
 parent orders and physical fills. It calculates modeled brokerage fees and signed

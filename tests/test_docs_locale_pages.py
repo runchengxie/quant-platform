@@ -6,10 +6,13 @@ import subprocess
 import sys
 from html.parser import HTMLParser
 from pathlib import Path
+from urllib.parse import urljoin
 
 import yaml
 
 PAIRS = (
+    ("backtest/market-paths.md", "backtest/market-paths.zh-CN.md"),
+    ("backtest/transaction-cost-evidence.md", "backtest/transaction-cost-evidence.zh-CN.md"),
     ("backtest/sleeve-allocation.md", "backtest/sleeve-allocation.zh-CN.md"),
     ("backtest/minute-session.md", "backtest/minute-session.zh-CN.md"),
     ("concepts/discrete-inventory.md", "concepts/discrete-inventory.zh-CN.md"),
@@ -26,7 +29,8 @@ PAIRS = (
 
 def test_new_english_pages_are_registered_and_linked_to_chinese_companions() -> None:
     root = Path(__file__).resolve().parents[1]
-    navigation_hook = (root / "docs/hooks/locale_navigation.py").read_text(encoding="utf-8")
+    english_paths = runpy.run_path(str(root / "docs/hooks/locale_navigation.py"))["ENGLISH_PAGES"]
+    navigation_paths = _navigation_pages(root)
 
     for english_path, chinese_path in PAIRS:
         english = root / "docs" / english_path
@@ -37,12 +41,12 @@ def test_new_english_pages_are_registered_and_linked_to_chinese_companions() -> 
         chinese_text = chinese.read_text(encoding="utf-8")
         assert f"Language: English · [简体中文]({Path(chinese_path).name})" in english_text
         assert f"语言：简体中文 · [English]({Path(english_path).name})" in chinese_text
-        assert f'"{english_path}"' in navigation_hook
+        assert english_path in english_paths
+        assert chinese_path not in english_paths
+        assert {english_path, chinese_path} <= navigation_paths
 
 
-def test_every_chinese_navigation_page_links_to_an_english_canonical() -> None:
-    root = Path(__file__).resolve().parents[1]
-    english_paths = runpy.run_path(str(root / "docs/hooks/locale_navigation.py"))["ENGLISH_PAGES"]
+def _navigation_pages(root: Path) -> set[str]:
     navigation = yaml.load(
         (root / "mkdocs.yml").read_text(encoding="utf-8"),
         Loader=yaml.BaseLoader,
@@ -60,7 +64,13 @@ def test_every_chinese_navigation_page_links_to_an_english_canonical() -> None:
             page_paths.add(item)
 
     collect_pages(navigation)
-    for chinese_path in sorted(page_paths - english_paths):
+    return page_paths
+
+
+def test_every_chinese_navigation_page_links_to_an_english_canonical() -> None:
+    root = Path(__file__).resolve().parents[1]
+    english_paths = runpy.run_path(str(root / "docs/hooks/locale_navigation.py"))["ENGLISH_PAGES"]
+    for chinese_path in sorted(_navigation_pages(root) - english_paths):
         path = Path(chinese_path)
         if path.name.endswith(".zh-CN.md"):
             candidate_names = [path.name.replace(".zh-CN.md", ".md")]
@@ -83,8 +93,14 @@ class _PrimaryNavigation(HTMLParser):
         self.active = False
         self.depth = 0
         self.text: list[str] = []
+        self.links: list[str] = []
+        self.page_links: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag == "a" and (href := dict(attrs).get("href")):
+            self.page_links.append(href)
+            if self.active:
+                self.links.append(href)
         if tag != "nav":
             return
         classes = (dict(attrs).get("class") or "").split()
@@ -118,20 +134,9 @@ def test_new_pages_render_locale_specific_navigation(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stdout + result.stderr
 
     expected = {
-        "backtest/sleeve-allocation": "en",
-        "backtest/sleeve-allocation.zh-CN": "zh",
-        "concepts/discrete-inventory": "en",
-        "concepts/discrete-inventory.zh-CN": "zh",
-        "concepts/impact-planning": "en",
-        "concepts/impact-planning.zh-CN": "zh",
-        "backtest/risk-calibration": "en",
-        "backtest/risk-calibration.zh-CN": "zh",
-        "architecture/runtime-kernel": "en",
-        "architecture/runtime-kernel.zh-CN": "zh",
-        "risk-model-kernel": "en",
-        "risk-model-kernel.zh-CN": "zh",
-        "development/portfolio-execution-profiling-2026-09": "en",
-        "development/portfolio-execution-profiling-2026-09.zh-CN": "zh",
+        path.removesuffix(".md"): language
+        for pair in PAIRS
+        for path, language in zip(pair, ("en", "zh"), strict=True)
     }
     for page, language in expected.items():
         rendered = (site / page / "index.html").read_text(encoding="utf-8")
@@ -139,6 +144,13 @@ def test_new_pages_render_locale_specific_navigation(tmp_path: Path) -> None:
         assert match is not None and match.group(1) == language, page
         nav = _PrimaryNavigation()
         nav.feed(rendered)
+        page_url = f"/{page}/"
+        navigation_urls = {urljoin(page_url, link) for link in nav.links}
+        for path, locale in expected.items():
+            if locale == language:
+                assert f"/{path}/" in navigation_urls, (page, path)
+        counterpart = page.removesuffix(".zh-CN") if language == "zh" else f"{page}.zh-CN"
+        assert f"/{counterpart}/" in {urljoin(page_url, link) for link in nav.page_links}, page
         labels = " ".join(nav.text)
         if language == "en":
             assert not re.search(r"[\u3400-\u9fff]", labels), page

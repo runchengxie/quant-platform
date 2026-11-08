@@ -3,6 +3,7 @@
 from dataclasses import replace
 from decimal import Decimal
 from fractions import Fraction
+from itertools import product
 
 import pandas as pd
 import pytest
@@ -48,6 +49,22 @@ def test_literal_exhaustive_fixture_and_feasible_local_heuristic():
     assert result.heuristic.objective == Fraction(1, 2)
     assert result.heuristic_gap == 0
     assert result.lower_bound == result.upper_bound == Fraction(1, 2)
+
+    # An exact grid target is the unique zero-error plan when it is feasible.
+    # Changing only the target preserves the original funding/fee domain.
+    for state in product(range(4), repeat=2):
+        targeted = solve_discrete_inventory(request(target_shares=state))
+        assert targeted.status == "optimal_exhaustive"
+        assert targeted.domain_states == targeted.evaluated == 16
+        assert targeted.incumbent.trades in literal
+        assert targeted.incumbent.projected_cash == literal[targeted.incumbent.trades][1]
+        if state in literal:
+            assert targeted.incumbent.trades == state
+            assert targeted.incumbent.objective == 0
+            assert targeted.incumbent.projected_cash == literal[state][1]
+        else:
+            assert targeted.incumbent.trades != state
+            assert targeted.incumbent.objective > 0
 
 
 def test_minimum_fixed_and_proportional_fees_change_feasible_winner():
