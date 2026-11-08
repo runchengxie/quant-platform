@@ -2,135 +2,28 @@
 
 Uses the existing minute matcher and ledger. No queue model or network cancel
 latency is added. Quotes remain external and undelivered reports prohibit new
-orders, regardless of policy behavior. Corporate actions and valuation events
-are outside this initial session API.
+orders, regardless of policy behavior. Financial tapes reuse the synchronous
+owner, with delayed receivables and explicit external capital accounting.
 """
 
 from __future__ import annotations
 
-import hashlib
-import inspect
 import json
 import math
 from dataclasses import asdict, replace
-from datetime import date
-from pathlib import Path
 from types import MappingProxyType
 from typing import Any
 
 import pandas as pd
 
-from quant_platform._portfolio.minute_execution import MinuteDecisionState, _MinuteSimulation
+from quant_platform._portfolio.capital_flows import CapitalFlow, initialize_capital
+from quant_platform._portfolio.corporate_actions import CorporateAction
+from quant_platform._portfolio.minute_execution import _MinuteSimulation
+from quant_platform._portfolio.valuation_events import ValuationEvent
 
+from ._minute_checkpoint import _FIELDS, _binding, _digest, _unwire, _wire
 from .impact import LinearImpact
 from .quantity_locks import QuantityLock
-
-_FIELDS = [
-    "cash",
-    "holdings",
-    "bought",
-    "marks",
-    "orders",
-    "fills",
-    "daily",
-    "costs",
-    "mark_days",
-    "mark_times",
-    "mark_source_times",
-    "mark_basis",
-    "adjusted_ex_dates",
-    "holdings_ledger",
-    "clipped_vwap_bars",
-    "current_day",
-    "day_has_events",
-    "current_time",
-    "policy_snapshots",
-    "execution_locked_symbols",
-    "bar_execution_locked_symbols",
-]
-
-
-def _wire(value):
-    if isinstance(value, pd.Timestamp):
-        return {
-            "type": "timestamp",
-            "value": value.isoformat(),
-            "zone": str(value.tz) if value.tz else None,
-        }
-    if isinstance(value, date):
-        return {"type": "date", "value": value.isoformat()}
-    if isinstance(value, pd.DataFrame):
-        return {"type": "frame", "value": _wire(value.to_dict("list"))}
-    if isinstance(value, dict):
-        return {"type": "dict", "value": [[_wire(k), _wire(v)] for k, v in value.items()]}
-    if isinstance(value, (set, tuple)):
-        return {
-            "type": "set" if isinstance(value, set) else "tuple",
-            "value": [_wire(v) for v in sorted(value) if isinstance(value, set)]
-            if isinstance(value, set)
-            else [_wire(v) for v in value],
-        }
-    if isinstance(value, list):
-        return [_wire(v) for v in value]
-    if isinstance(value, float) and not math.isfinite(value):
-        return {"type": "nonfinite", "value": repr(value)}
-    return value
-
-
-def _unwire(value):
-    if isinstance(value, list):
-        return [_unwire(v) for v in value]
-    if not isinstance(value, dict):
-        return value
-    kind, data = value["type"], value["value"]
-    if kind == "dict":
-        return {_unwire(k): _unwire(v) for k, v in data}
-    if kind == "timestamp":
-        return (
-            pd.Timestamp(data).tz_convert(value["zone"])
-            if value.get("zone")
-            else pd.Timestamp(data)
-        )
-    if kind == "date":
-        return date.fromisoformat(data)
-    if kind == "frame":
-        return pd.DataFrame(_unwire(data))
-    if kind == "nonfinite":
-        if data not in {"nan", "inf", "-inf"}:
-            raise ValueError("invalid nonfinite encoding")
-        return float(data)
-    if kind in {"set", "tuple"}:
-        return set(_unwire(data)) if kind == "set" else tuple(_unwire(data))
-    raise ValueError("unknown checkpoint type")
-
-
-def _digest(value):
-    return hashlib.sha256(json.dumps(value, sort_keys=True, allow_nan=False).encode()).hexdigest()
-
-
-def _binding(targets, bars, config, policy, locks):
-    return _digest(
-        {
-            "targets": targets.to_json(date_format="iso", date_unit="ns"),
-            "bars": bars.to_json(date_format="iso", date_unit="ns"),
-            "config": asdict(config),
-            "quantity_locks": [asdict(lock) for lock in locks],
-            "policy_type": type(policy).__module__ + "." + type(policy).__qualname__,
-            "policy_source": hashlib.sha256(
-                Path(inspect.getfile(type(policy))).read_bytes()
-            ).hexdigest(),
-            "source": {
-                str(Path(p).name): hashlib.sha256(Path(p).read_bytes()).hexdigest()
-                for p in (
-                    __file__,
-                    inspect.getfile(_MinuteSimulation),
-                    inspect.getfile(LinearImpact),
-                    inspect.getfile(QuantityLock),
-                    inspect.getfile(MinuteDecisionState),
-                )
-            },
-        }
-    )
 
 
 class MinuteSession:
@@ -151,6 +44,9 @@ class MinuteSession:
         report_delay_seconds=0,
         impact=None,
         quantity_locks=(),
+        corporate_actions=(),
+        valuation_events=(),
+        capital_flows=(),
     ):
         if impact is not None and type(impact) is not LinearImpact:
             raise ValueError("recoverable session requires exact LinearImpact type")
@@ -162,18 +58,39 @@ class MinuteSession:
         self.targets, self.bars, self.config = targets.copy(), bars.copy(), config
         self.policy = policy
         self.delay = report_delay_seconds
-        self.binding = _binding(targets, bars, config, policy, self.quantity_locks)
-        self.cursor, self.finished = 0, False
+        self.cursor, self.finished, self.failed = 0, False, False
         self.queue = []
-        self.simulation = _MinuteSimulation(self.targets, self.bars, config, (), ())
+        self.corporate_actions = tuple(corporate_actions)
+        self.valuation_events = tuple(valuation_events)
+        self.capital_flows = tuple(capital_flows)
+        self.tapes = {
+            "corporate_actions": self.corporate_actions,
+            "valuation_events": self.valuation_events,
+            "capital_flows": self.capital_flows,
+        }
+        for name, cls in (
+            ("corporate_actions", CorporateAction),
+            ("valuation_events", ValuationEvent),
+            ("capital_flows", CapitalFlow),
+        ):
+            if any(type(event) is not cls for event in self.tapes[name]):
+                raise ValueError(f"{name} requires exact {cls.__name__} events")
+        self.simulation = _MinuteSimulation(
+            self.targets, self.bars, config, self.corporate_actions, self.valuation_events
+        )
+        self.binding = _binding(targets, bars, config, policy, self.quantity_locks, self.tapes)
         self.simulation.decision_policy = self._decide
         self.simulation.impact_model = impact
         self.simulation.times = sorted(set(self.simulation.times) | set(self.simulation.decisions))
+        self.simulation.ignored_future_event_ids = []
+        self.simulation.scheduled_valuations = self.simulation.schedule_valuations()
+        initialize_capital(self.simulation, self.capital_flows)
         self._schedule_locks()
         self.delivered: dict[str, Any] = {
             "cash": config.initial_cash,
             "holdings": {},
             "pending_orders": (),
+            "rights": {},
         }
         self.trace = []
 
@@ -225,11 +142,25 @@ class MinuteSession:
                 {"status": "undelivered_financial_report", "remaining_quantity": 0},
             )
         holdings = self.delivered["holdings"]
-        nav = self.delivered["cash"] + sum(q * state.marks[s] for s, q in holdings.items())
+        rights = self.delivered["rights"]
+        cr = sum(r["cash"] for r in rights.values() if r["ex"])
+        sr = sum(
+            r["stock"] * state.marks.get(r["symbol"], float("nan"))
+            for r in rights.values()
+            if r["ex"] and r["stock"]
+        )
+        nav = (
+            self.delivered["cash"]
+            + cr
+            + sr
+            + sum(q * state.marks.get(s, float("nan")) for s, q in holdings.items() if q)
+        )
         visible = replace(
             state,
             cash=self.delivered["cash"],
             nav=nav,
+            cash_receivable=cr,
+            stock_receivable_value=sr,
             holdings=MappingProxyType(dict(holdings)),
             quantity_locks=tuple(
                 lock for lock in self.quantity_locks if lock.available_ns <= state.time.value
@@ -253,6 +184,7 @@ class MinuteSession:
         return {
             "cash": sim.cash,
             "holdings": dict(sim.holdings),
+            "rights": {key: dict(right) for key, right in sim.rights.items()},
             "pending_orders": tuple(
                 {**o, "remaining_quantity": o["quantity"] - o["filled_quantity"]}
                 for o in sim.pending
@@ -267,6 +199,15 @@ class MinuteSession:
     def step(self):
         if self.finished:
             raise ValueError("session already finished")
+        if self.failed:
+            raise ValueError("failed session: reconstruct from last successful checkpoint")
+        try:
+            return self._step()
+        except Exception:
+            self.failed = True
+            raise
+
+    def _step(self):
         sim = self.simulation
         if self.cursor == len(sim.times):
             return False
@@ -275,9 +216,18 @@ class MinuteSession:
         sim.advance_account(time)
         self._apply_locks(time)
         self._deliver(time)
+        after_account = self._snapshot()
+        if self.delay and before != after_account:
+            self.queue.append((time + pd.Timedelta(seconds=self.delay), after_account))
+        before = after_account
         if not self.delay:
             self.delivered = self._snapshot()
-        if time in sim.grouped or time in sim.snapshots:
+        if (
+            time in sim.grouped
+            or time in sim.snapshots
+            or time in sim.scheduled_valuations
+            or time in sim.scheduled_capital_flows
+        ):
             sim.day_has_events = True
         if time in sim.decisions:
             sim.decide(time)
@@ -309,12 +259,16 @@ class MinuteSession:
         return result
 
     def checkpoint(self):
+        if self.failed:
+            raise ValueError("failed session: reconstruct from last successful checkpoint")
         if self.finished:
             raise ValueError("cannot checkpoint a finished session")
         sim = self.simulation
-        state = {key: getattr(sim, key) for key in _FIELDS if hasattr(sim, key)}
+        state = {key: getattr(sim, key) for key in _FIELDS}
         value = {
-            "schema": "minute-session.v1",
+            "schema": "minute-session.v2",
+            "tape_contract": "minute-financial-tapes.v1",
+            "tapes": _wire(self.tapes),
             "binding": self.binding,
             "cursor": self.cursor,
             "delay": self.delay,
@@ -327,16 +281,41 @@ class MinuteSession:
         return {**value, "digest": _digest(value)}
 
     @classmethod
-    def restore(cls, targets, bars, config, checkpoint, *, policy):
+    def restore(
+        cls,
+        targets,
+        bars,
+        config,
+        checkpoint,
+        *,
+        policy,
+        corporate_actions=None,
+        valuation_events=None,
+        capital_flows=None,
+    ):
         value = dict(checkpoint)
         digest = value.pop("digest", None)
-        if value.get("schema") != "minute-session.v1" or digest != _digest(value):
+        if value.get("schema") != "minute-session.v2":
+            raise ValueError(
+                "unsupported checkpoint schema: restart from inputs or use original pinned sources"
+            )
+        if value.get("tape_contract") != "minute-financial-tapes.v1" or digest != _digest(value):
             raise ValueError("checkpoint integrity mismatch")
+        tapes = _unwire(value["tapes"])
+        expected = {
+            "corporate_actions": corporate_actions,
+            "valuation_events": valuation_events,
+            "capital_flows": capital_flows,
+        }
+        for name, supplied in expected.items():
+            if supplied is not None and _wire(tuple(supplied)) != _wire(tapes[name]):
+                raise ValueError("checkpoint financial tape binding mismatch")
         result = cls(
             targets,
             bars,
             config,
             policy=policy,
+            **tapes,
             report_delay_seconds=value["delay"],
             impact=LinearImpact.restore(value["impact"]) if value["impact"] else None,
             quantity_locks=tuple(
@@ -359,7 +338,10 @@ class MinuteSession:
             result.simulation.times
         ):
             raise ValueError("invalid checkpoint cursor")
-        for key, item in _unwire(value["state"]).items():
+        state = _unwire(value["state"])
+        if set(state) != set(_FIELDS):
+            raise ValueError("checkpoint state incomplete: restart from inputs or original sources")
+        for key, item in state.items():
             if key not in _FIELDS:
                 raise ValueError("invalid checkpoint field")
             setattr(result.simulation, key, item)

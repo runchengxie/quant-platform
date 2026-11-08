@@ -10,6 +10,7 @@ from pathlib import Path
 import yaml
 
 PAIRS = (
+    ("backtest/minute-session.md", "backtest/minute-session.zh-CN.md"),
     ("concepts/discrete-inventory.md", "concepts/discrete-inventory.zh-CN.md"),
     ("concepts/impact-planning.md", "concepts/impact-planning.zh-CN.md"),
     ("backtest/risk-calibration.md", "backtest/risk-calibration.zh-CN.md"),

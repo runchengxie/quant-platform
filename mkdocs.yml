@@ -80,6 +80,7 @@ nav:
           - Common entry points: guides/entry-points.md
           - Execution simulation: guides/execution-simulation.en.md
           - Minute execution scenarios: guides/minute-execution.en.md
+          - Recoverable minute sessions: backtest/minute-session.md
           - Point-in-time research data: guides/point-in-time-data.en.md
           - Synthetic assurance scenarios: guides/assurance-scenarios.md
           - Cost evidence and capacity: guides/cost-evidence.md
@@ -133,6 +134,7 @@ nav:
       - 常用指南:
           - 常用入口: guides/entry-points.zh-CN.md
           - 分钟执行情景: guides/minute-execution.md
+          - 可恢复的分钟会话: backtest/minute-session.zh-CN.md
   - Guides (Chinese originals; translation in progress):
       - 袖套组合: guides/sleeve-portfolio.md
       - 执行模拟: guides/execution-simulation.md

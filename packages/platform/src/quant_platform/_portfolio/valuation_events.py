@@ -116,3 +116,22 @@ def normalize_valuation_events(
         if conflict.any():
             raise ValueError("tradable bars conflict with permanent nontrading valuation event")
     return tuple(sorted(converted, key=lambda e: (e.effective_time, e.symbol, e.event_id)))
+
+
+def minute_valuation_provenance(sim):
+    time = cast(pd.Timestamp, sim.current_time)
+    return tuple(
+        {
+            "symbol": symbol,
+            "event_id": event.event_id,
+            "value_per_share": event.value_per_share,
+            "basis": event.basis,
+            "source": event.source,
+            "effective_time": event.effective_time,
+            "available_time": event.available_time,
+            "event_age_seconds": (time - cast(pd.Timestamp, event.effective_time)).total_seconds(),
+            "source_age_seconds": (time - cast(pd.Timestamp, event.available_time)).total_seconds(),
+            "observed_quote": False,
+        }
+        for symbol, event in sorted(sim.valuation_state.items())
+    )

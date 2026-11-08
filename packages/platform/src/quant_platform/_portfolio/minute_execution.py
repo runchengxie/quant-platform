@@ -27,8 +27,18 @@ from ._minute_validation import (
 from ._minute_validation import (
     _validate_target_weights as _validate_target_weights,
 )
+from .capital_flows import (
+    CAPITAL_FLOW_COLUMNS,
+    apply_capital_flows,
+    capital_daily,
+    initialize_capital,
+)
 from .corporate_actions import CorporateAction, normalize_corporate_actions
-from .valuation_events import VALUATION_LEDGER_COLUMNS, normalize_valuation_events
+from .valuation_events import (
+    VALUATION_LEDGER_COLUMNS,
+    minute_valuation_provenance,
+    normalize_valuation_events,
+)
 from .valuation_events import ValuationEvent as ValuationEvent
 
 
@@ -92,6 +102,9 @@ class MinuteExecutionResult:
     valuation_ledger: pd.DataFrame = field(
         default_factory=lambda: pd.DataFrame(columns=VALUATION_LEDGER_COLUMNS)
     )
+    capital_flow_ledger: pd.DataFrame = field(
+        default_factory=lambda: pd.DataFrame(columns=CAPITAL_FLOW_COLUMNS)
+    )
 
 
 def simulate_minute_execution(
@@ -101,6 +114,7 @@ def simulate_minute_execution(
     *,
     corporate_actions=(),
     valuation_events=(),
+    capital_flows=(),
     decision_policy=None,
     impact_model=None,
 ):
@@ -168,10 +182,14 @@ def simulate_minute_execution(
         simulation.times = sorted(set(simulation.times) | set(simulation.decisions))
         simulation.ignored_future_event_ids = []
         simulation.scheduled_valuations = simulation.schedule_valuations()
+    initialize_capital(simulation, capital_flows)
     return simulation.run()
 
 
 class _MinuteSimulation:
+    scheduled_capital_flows: dict[pd.Timestamp, list]
+    capital_flow_ledger: list[dict]
+
     def __init__(self, targets, bars, config, corporate_actions, valuation_events):
         self.targets = targets
         self.bars = bars.copy()
@@ -217,6 +235,7 @@ class _MinuteSimulation:
         self.times = sorted(set(self.snapshots) | set(self.grouped))
         self.scheduled_valuations = self.schedule_valuations()
         self.times = sorted(set(self.times) | set(self.scheduled_valuations))
+        self.current_time = None
         self.current_day = None
         self.day_has_events = False
         self.pending = []
@@ -229,6 +248,8 @@ class _MinuteSimulation:
         for entry, snapshot in self.snapshots.items():
             decision = snapshot.decision_time.iloc[0]
             self.decisions.setdefault(decision, []).append(entry)
+
+        initialize_capital(self, ())
 
     def value(self):
         if any((s not in self.marks for s, q in self.holdings.items() if q)):
@@ -282,8 +303,9 @@ class _MinuteSimulation:
                 "transaction_cost": self.costs,
             }
         )
+        capital_daily(self, self.daily[-1])
         if self.valuation_events:
-            self.daily[-1]["valuation_marks"] = self.valuation_provenance()
+            self.daily[-1]["valuation_marks"] = minute_valuation_provenance(self)
 
     def stale_mark(self, symbol):
         return symbol not in self.valuation_state and self.mark_days.get(symbol) != self.current_day
@@ -336,27 +358,6 @@ class _MinuteSimulation:
             for order in self.pending:
                 if order["symbol"] == symbol and order["status"] == "pending":
                     order.update(status="cancelled", reason="nontrading_valuation")
-
-    def valuation_provenance(self):
-        return tuple(
-            {
-                "symbol": symbol,
-                "event_id": event.event_id,
-                "value_per_share": event.value_per_share,
-                "basis": event.basis,
-                "source": event.source,
-                "effective_time": event.effective_time,
-                "available_time": event.available_time,
-                "event_age_seconds": (
-                    self.current_time - cast(pd.Timestamp, event.effective_time)
-                ).total_seconds(),
-                "source_age_seconds": (
-                    self.current_time - cast(pd.Timestamp, event.available_time)
-                ).total_seconds(),
-                "observed_quote": False,
-            }
-            for symbol, event in sorted(self.valuation_state.items())
-        )
 
     def adjust_ex_references(self, day):
         groups = {}
@@ -715,12 +716,18 @@ class _MinuteSimulation:
             self.open_day(day)
         self.current_time = time
         self.apply_valuations(time)
+        apply_capital_flows(self, time)
         self.expire_orders(time)
 
     def run(self):
         for time in self.times:
             self.advance_account(time)
-            if time in self.grouped or time in self.snapshots or time in self.scheduled_valuations:
+            if (
+                time in self.grouped
+                or time in self.snapshots
+                or time in self.scheduled_valuations
+                or time in self.scheduled_capital_flows
+            ):
                 self.day_has_events = True
             if self.decision_policy is not None and time in self.decisions:
                 self.decide(time)
@@ -787,4 +794,5 @@ class _MinuteSimulation:
             },
             pd.DataFrame(self.holdings_ledger, columns=["date", "symbol", "quantity"]),
             pd.DataFrame(self.valuation_ledger, columns=VALUATION_LEDGER_COLUMNS),
+            pd.DataFrame(self.capital_flow_ledger, columns=CAPITAL_FLOW_COLUMNS),
         )

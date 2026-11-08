@@ -11,6 +11,7 @@ from copy import copy
 from mkdocs.structure.nav import Navigation
 
 ENGLISH_PAGES = {
+    "backtest/minute-session.md",
     "migration/portfolio-boundaries.md",
     "migration/matched-ledger-comparison.md",
     "README.md",

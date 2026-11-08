@@ -1,55 +1,135 @@
 # Recoverable minute execution sessions
 
-`quant_platform.backtest.minute_session.MinuteSession` reuses the existing minute
-matcher and economic ledger. It adds event stepping, source-bound JSON checkpoints
-and a conservative delayed view of financial account snapshots.
+Language: English · [简体中文](minute-session.zh-CN.md)
 
-Construct with the same targets, bars and `MinuteExecutionConfig` as the minute
-simulator, plus a callable policy implementing `checkpoint()`. Use `step()` to
-advance one existing event, `checkpoint()` before finalization, and `run()` to
-finish. Restore with `MinuteSession.restore(targets, bars, config, checkpoint,
-policy=restored_policy)`. The caller reconstructs its policy from the checkpoint's
-`policy` field; the session verifies canonical state and policy implementation
-identity. Policy source files must be inspectable. Only the exact `LinearImpact`
-class, or no impact, is supported for recoverable impact state.
+`quant_platform.backtest.minute_session.MinuteSession` steps and restores the
+existing minute matcher and economic ledger. It supports immutable corporate
+action, permanent valuation and external capital-flow tapes, with a conservative
+delayed financial view. It does not implement broker recovery or historical queues.
 
-Financial snapshots deliver after `report_delay_seconds`; raw market marks remain
-independent historical observations. While any financial report is undelivered,
-new target submissions are suppressed at both decision and entry. Policies still
-receive observations, including an explicit pending-report marker. This is a
-conservative waiting protocol, not a model of informed trading under partial state.
-Exchange cancellation is synchronous; its acknowledgement is delayed. No network
-cancel latency, queue position or endogenous market response is simulated.
+## Construct and restore
 
-Checkpoint state includes T+1 inventory, parent commissions, orders, fills, pending
-references, policy snapshots, impact and delivery queue. Inputs, configuration and
-loaded implementations are content-bound. Digests detect accidental modification,
-not a hostile party able to rewrite a checkpoint. Nonfinite valuation diagnostics
-retain explicit tagged encodings; they are not silently repaired. Restoring requires
-the same sources and inputs. Finalized sessions cannot be checkpointed or rerun.
+Use targets, bars and `MinuteExecutionConfig`, plus a callable policy implementing
+`checkpoint()`. Optional keywords are `corporate_actions=()`,
+`valuation_events=()`, `capital_flows=()`, `quantity_locks=()`,
+`report_delay_seconds=0` and `impact=None`. Old constructor inputs remain valid.
+Import `CorporateAction`, `ValuationEvent` and `CapitalFlow` from
+`quant_platform.backtest.minute`. The synchronous `simulate_minute_execution`
+accepts the same three financial tapes and uses the same ledger.
 
-This initial session API does not accept corporate actions or valuation events.
-It therefore cannot certify a historical strategy requiring those events. Existing
-synchronous execution remains available for that separate scope. Result summary
-fields state delivery, cancellation and remaining report semantics. Zero-delay
-parity covers financial tables; delivery metadata intentionally differs.
+Call `step()` for one scheduled instant, `checkpoint()` before finalization,
+and `run()` to finish. Reconstruct the policy from the checkpoint's `policy`
+field, then call:
 
-Pass `quantity_locks=(QuantityLock(...),)` using
-`quant_platform.backtest.quantity_locks.QuantityLock` for share-preserving
-restrictions. Each immutable notice supplies `available_ns`, `start_ns`, `end_ns`
-(integer UTC nanoseconds), a tuple of unique `symbols`, and `source_binding`.
-The effective interval is inclusive and begins after both availability and start.
-The owner cancels only remaining orders for those symbols, skips their target
-sizing and prohibits fills; holdings and cash are never overwritten. Other
-symbols can trade subject to the existing account and report guards. Cancellation
-acknowledgements use the ordinary delayed financial snapshot queue. Release never
-revives cancelled orders. A bar overlapping the interval is entirely unavailable
-for that symbol because an intra-bar unlocked execution time is unknown.
+```python
+restored = MinuteSession.restore(
+    targets,
+    bars,
+    config,
+    checkpoint,
+    policy=restored_policy,
+    corporate_actions=expected_actions,
+    valuation_events=expected_valuations,
+    capital_flows=expected_capital_flows,
+)
+```
 
-Policy state exposes `locked_symbols` at the current event and `quantity_locks`
-whose availability clocks have arrived, including received future restrictions.
-Neither is a certification of historical notice provenance. Notices, boundaries
-and active guards are checkpoint-bound. Old checkpoints require their original
-pinned sources; this change does not migrate them. No notices preserves existing
-financial behavior, including empty sessions. Corporate actions remain outside
-this API, so share conservation here concerns trading only.
+Expected tapes are checked exactly. Omitting a tape argument uses its embedded
+checkpoint tape for convenience. An external job must still bind its expected
+source artifacts and supply expected tapes, including empty tuples. Embedded
+data alone does not establish that the caller intended those inputs.
+Policies need inspectable source files. Recoverable models accept only the exact
+`LinearImpact` type, and financial tapes require exact supported event types.
+
+## Financial clocks and ordering
+
+Corporate actions retain the existing timezone-naive calendar-date contract:
+`available_date <= record_date < ex_date`. Record-day closing holdings establish
+rights. The first observed subsequent day recognizes ex-date receivables and
+credits due cash payments or released stock. Dates are not invented historical
+intraday timestamps. Missing record-day coverage fails. Synthetic ex references,
+withholding, fractional entitlements, T+1 and fees retain their owner semantics.
+
+At a scheduled instant, the owner closes the prior observed day, resets T+1,
+opens the new day and applies due actions, then applies permanent valuations,
+capital flows, order expiry and quantity-lock guards. Due financial reports are
+delivered before decisions. Decisions precede entries and bars. A bar stamped at
+the same clock is not a pre-flow or decision mark.
+
+`ValuationEvent` retains its aware availability/effective clocks and permanent
+trading prohibition. Pre-window declarations apply at the first instant.
+Post-window valuations are disclosed as ignored and do not extend the window.
+Their marks include legal stock receivables without creating disposal cash.
+Absent held marks remain unknown. Stale daily marks still invalidate daily NAV.
+
+## External capital and returns
+
+`CapitalFlow(event_id, available_time, effective_time, amount, source)` declares
+signed cash in the account currency. Amount must be finite and nonzero.
+Availability must be timezone-aware and no later than the effective time.
+The effective time must lie within the simulation window and is added to its
+event schedule. Sessions include decision instants in that window. Synchronous
+execution includes them when a decision policy is supplied. Pre-window and post-window capital
+flows fail rather than changing the initial account or being silently ignored.
+Unique event IDs deduplicate effects. Multiple flows at one clock apply in
+lexicographic event-ID order, irrespective of input order.
+
+Deposits increase cash. Withdrawals use existing economic cash only, never
+assumed liquidation proceeds, and may not overdraw it. Result
+`capital_flow_ledger` records clocks, source, signed amount and before/after cash
+and NAV. Flow tapes opt in to daily `capital_flow`,
+`cumulative_capital_flow`, `pnl` and `cumulative_return`.
+Inception PnL equals NAV minus initial cash minus cumulative external capital.
+
+Returns chain marked subperiod growth: initialize anchor wealth to initial cash
+and factor to one. Immediately before each flow, multiply the factor by
+`pre_flow_NAV / anchor`, then set the anchor to `pre_flow_NAV + amount`.
+At daily close report `factor * daily_NAV / anchor - 1`. Thus capital never
+counts as investment return. Subperiod marks use prior observations and any
+already-effective permanent valuation, including outstanding rights.
+If held shares or stock rights lack a mark or a current-day observation
+(except persistent permanent valuations), pre-flow NAV and subsequent cumulative
+return are unknown. A stale daily close alone makes that day's return unknown.
+Zero or negative pre-flow wealth, post-flow anchor or daily wealth has no defined
+reported return. An undefined flow boundary keeps subsequent returns unknown.
+No borrowing, insolvency resolution or executable terminal liquidation is inferred.
+
+## Delayed visibility and locks
+
+Snapshots contain cash, legal holdings, entitlement rights and pending orders.
+Visible NAV values delivered holdings and rights using current external marks.
+Undelivered changes at the current clock immediately create a pending-report
+marker. While any financial report remains undelivered, new target submissions
+are suppressed at both decision and entry, even if the policy requests them.
+Cancellation is synchronous with delayed acknowledgement, without network latency.
+
+`QuantityLock` uses inclusive UTC-nanosecond availability/start/end clocks and
+symbol restrictions. Restrictions apply after both availability and start.
+Actions may increase legal shares under a lock, but none become executable until
+the restriction ends and owner T+1/release rules permit them. Locks cancel remaining
+orders, skip sizing and prohibit fills in any overlapping bar. Release does not
+revive cancelled orders. Fractional rights remain unsellable. Lock notices and
+active guards restore together with economic and delivered state.
+
+## Checkpoint version and failure policy
+
+`minute-session.v2` embeds `minute-financial-tapes.v1`, event tapes, the event
+cursor, rights, valuations, capital-flow dedup IDs and return anchors, T+1 state,
+parent fees, orders/fills, policy snapshots, impact and the delivery queue.
+Float inputs bind their exact consumed Python values, without decimal truncation.
+Inputs, configuration, policy implementation and all participating owner helper
+sources are content-bound. Nonfinite diagnostics use explicit tagged encodings.
+Digests detect accidental corruption, not a hostile author who can rewrite them.
+
+Version 1 checkpoints are rejected with instructions to restart from original
+inputs or run their original pinned sources. Missing new state is never silently
+defaulted. No in-place migration is provided. A failed step poisons the session:
+it cannot run or checkpoint further. Discard it and reconstruct from the last
+successful checkpoint. Earlier effects within a failed multi-event instant may
+exist only in that discarded object. Fixing an input requires a fresh run because
+the checkpoint binds the original tape. Finalized sessions cannot be checkpointed
+or rerun. Final closing rights and order expiry remain owner finalization behavior.
+
+Every-boundary tests compare full state and financial tables to uninterrupted
+execution. Zero-delay cases also compare with the synchronous owner. These are
+synthetic accounting tests, not Runtime process-kill or live-broker recovery claims.
