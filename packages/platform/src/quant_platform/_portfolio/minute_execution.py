@@ -182,6 +182,7 @@ def simulate_minute_execution(
         simulation.times = sorted(set(simulation.times) | set(simulation.decisions))
         simulation.ignored_future_event_ids = []
         simulation.scheduled_valuations = simulation.schedule_valuations()
+        simulation.times = sorted(set(simulation.times) | set(simulation.scheduled_valuations))
     initialize_capital(simulation, capital_flows)
     return simulation.run()
 

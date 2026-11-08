@@ -545,3 +545,62 @@ def test_utc_flow_crossing_local_midnight_uses_owner_calendar_once():
         result = resumed.run()
         for name in ("daily", "holdings", "fills", "valuation_ledger", "capital_flow_ledger"):
             pd.testing.assert_frame_equal(getattr(result, name), getattr(expected, name))
+
+
+def earlier_decision_valuation_inputs():
+    t = targets()
+    t.loc[0, "decision_time"] = pd.Timestamp("2026-01-05 09:27", tz="Asia/Shanghai")
+    b = bars().assign(tradable=False)
+    event = ValuationEvent(
+        "residual",
+        "A",
+        "2026-01-05 09:28+08:00",
+        "2026-01-05 09:26+08:00",
+        3,
+        "declared",
+        "synthetic",
+    )
+    return t, b, MinuteExecutionConfig(10000, 0.1, 0, 0), event
+
+
+def test_earlier_decision_executes_newly_in_window_valuation_synchronously():
+    t, b, cfg, event = earlier_decision_valuation_inputs()
+    result = simulate_minute_execution(
+        t, b, cfg, decision_policy=Policy(), valuation_events=(event,)
+    )
+    assert result.valuation_ledger.event_id.tolist() == ["residual"]
+    assert result.valuation_ledger.time.tolist() == [event.effective_time]
+    assert result.daily.valuation_marks.iloc[-1][0]["value_per_share"] == 3
+    assert result.summary["nontrading_valuation_symbols"] == ["A"]
+
+
+def test_newly_in_window_valuation_recovers_at_every_event_boundary():
+    t, b, cfg, event = earlier_decision_valuation_inputs()
+
+    def build():
+        return MinuteSession(t, b, cfg, policy=Policy(), valuation_events=(event,))
+
+    full = build()
+    expected = full.run()
+    assert expected.valuation_ledger.event_id.tolist() == ["residual"]
+    assert expected.valuation_ledger.time.tolist() == [event.effective_time]
+    assert full.simulation.marks == {"A": 3}
+    assert full.simulation.valuation_state == {"A": event}
+    assert full.simulation.times.count(event.effective_time) == 1
+    synchronous = simulate_minute_execution(
+        t, b, cfg, decision_policy=Policy(), valuation_events=(event,)
+    )
+    for name in ("daily", "orders", "fills", "holdings", "valuation_ledger"):
+        pd.testing.assert_frame_equal(getattr(expected, name), getattr(synchronous, name))
+    for boundary in range(len(full.simulation.times) + 1):
+        part = build()
+        for _ in range(boundary):
+            part.step()
+        resumed = restore(part)
+        assert resumed.checkpoint() == part.checkpoint()
+        result = resumed.run()
+        assert resumed.simulation.marks == {"A": 3}
+        assert resumed.simulation.valuation_state == {"A": event}
+        assert resumed.policy.rows == full.policy.rows
+        for name in ("daily", "orders", "fills", "holdings", "valuation_ledger"):
+            pd.testing.assert_frame_equal(getattr(result, name), getattr(expected, name))

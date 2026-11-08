@@ -84,6 +84,9 @@ class MinuteSession:
         self.simulation.times = sorted(set(self.simulation.times) | set(self.simulation.decisions))
         self.simulation.ignored_future_event_ids = []
         self.simulation.scheduled_valuations = self.simulation.schedule_valuations()
+        self.simulation.times = sorted(
+            set(self.simulation.times) | set(self.simulation.scheduled_valuations)
+        )
         initialize_capital(self.simulation, self.capital_flows)
         self._schedule_locks()
         self.delivered: dict[str, Any] = {
