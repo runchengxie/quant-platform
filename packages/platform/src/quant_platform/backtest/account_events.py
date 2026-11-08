@@ -10,87 +10,16 @@ from copy import deepcopy
 from dataclasses import asdict, dataclass, field
 from hashlib import sha256
 from math import fsum, isfinite
-from typing import Any, Literal, TypedDict
+from typing import Literal
 
 import pandas as pd
 
+from ._account_event_types import (
+    _AccountData,
+    _Order,
+    _StateWire,
+)
 from .paper_account import HouseMargin, Observed, PaperFill, PaperState, project_paper_account
-
-
-class _StateWire(TypedDict):
-    as_of: str
-    cash: float
-    quantities: dict[str, int]
-    marks: dict[str, float]
-
-
-class _Order(TypedDict):
-    symbol: str
-    quantity: int
-    remaining: int
-    limit_price: float
-    locate_quantity: int
-    risk_price: float
-    fee_remaining: float
-    reserved_cash: float
-    reserved_risk: float
-    reserved_locate: int
-    admitted_at: str
-    cancel_requested: bool
-    cancel_requested_at: str | None
-    closed: bool
-
-
-class _Entitlement(TypedDict):
-    symbol: str
-    quantity: int
-    amount: float
-    ex: bool
-    paid: bool
-
-
-class _Settlement(TypedDict):
-    symbol: str
-    available_at: str
-    amount: float
-    short_amount: float
-
-
-class _Reduction(TypedDict):
-    symbol: str | None
-    quantity: int | None
-    reason: str
-    status: str
-
-
-class _Report(TypedDict):
-    available_at: str
-    actual: _StateWire
-    entitlements: dict[str, _Entitlement]
-    settlement: list[_Settlement]
-    reductions: list[_Reduction]
-    kind: str
-    payload: dict[str, Any]
-    effects: dict[str, list[str]]
-
-
-class _AccountData(TypedDict):
-    actual: _StateWire
-    visible: _StateWire
-    pending: dict[str, _Order]
-    orders: dict[str, _Order]
-    processed: dict[str, str]
-    fills: dict[str, str]
-    entitlements: dict[str, _Entitlement]
-    visible_entitlements: dict[str, _Entitlement]
-    queue: list[_Report]
-    reductions: list[_Reduction]
-    visible_reductions: list[_Reduction]
-    settlement: list[_Settlement]
-    visible_settlement: list[_Settlement]
-    event_clock: str
-    delivery_clock: str
-    control_clock: str
 
 
 def _clock(value) -> pd.Timestamp:
@@ -513,15 +442,13 @@ class AccountEventAdapter:
             self._project(data, payload, at, event_id, fill=kind == "fill")
             return None
         if kind == "cancel_ack":
-            order = data["orders"][payload["order_id"]]
-            if not order["cancel_requested"] or at < pd.Timestamp(order["cancel_requested_at"]):
-                raise ValueError("cancel acknowledgement predates cancel request")
-            if order["closed"] and order["remaining"]:
-                raise ValueError("order already closed")
-            order["closed"] = True
+            self._cancel_ack(data, payload, at)
             return None
         if at != pd.Timestamp(data["actual"]["as_of"]):
-            raise ValueError("project to corporate-action clock first")
+            raise ValueError("project to economic event clock first")
+        if kind in {"cashflow", "fee_adjustment"}:
+            self._cash_adjustment(data, kind, payload)
+            return None
         if kind.startswith("dividend_"):
             self._dividend(data, kind, payload)
         elif kind == "split":
@@ -541,6 +468,24 @@ class AccountEventAdapter:
         else:
             raise ValueError("unknown account event kind")
         return None
+
+    def _cash_adjustment(self, data, kind, payload):
+        _name(payload["reason"])
+        amount = _finite(payload["amount"])
+        if kind == "fee_adjustment" and amount < 0:
+            raise ValueError("fee adjustment must be a nonnegative cost")
+        cash = _total([data["actual"]["cash"], amount if kind == "cashflow" else -amount])
+        if cash < -self.config.credit_limit:
+            raise ValueError("cash adjustment exceeds configured credit")
+        data["actual"]["cash"] = cash
+
+    def _cancel_ack(self, data, payload, at):
+        order = data["orders"][payload["order_id"]]
+        if not order["cancel_requested"] or at < pd.Timestamp(order["cancel_requested_at"]):
+            raise ValueError("cancel acknowledgement predates cancel request")
+        if order["closed"] and order["remaining"]:
+            raise ValueError("order already closed")
+        order["closed"] = True
 
     def _project(self, data, payload, at, event_id, *, fill):
         inputs = payload["inputs"]
