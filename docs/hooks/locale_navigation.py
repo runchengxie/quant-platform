@@ -21,6 +21,7 @@ ENGLISH_PAGES = {
     "risk-model-kernel.md",
     "backtest/risk-calibration.md",
     "concepts/impact-planning.md",
+    "concepts/discrete-inventory.md",
     "development/portfolio-execution-profiling-2026-09.md",
     "getting-started/installation.md",
     "getting-started/first-backtest.md",
