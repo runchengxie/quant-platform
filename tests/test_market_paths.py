@@ -1,5 +1,6 @@
 """Synthetic hand cases for dependent return/liquidity resampling."""
 
+import math
 from dataclasses import FrozenInstanceError
 
 import pandas as pd
@@ -197,3 +198,81 @@ def test_changed_initial_anchor_cannot_alias_financial_path_evidence(panel):
     # Mapping insertion order does not define a different anchor contract.
     reordered = generate_market_paths(model, CALENDAR, ["one"], {"A": 100, "B": 200})["one"]
     pd.testing.assert_frame_equal(original, reordered)
+
+
+@pytest.mark.parametrize("anchor", [0.1, 0.2, 0.3, 0.7, 1e-100, 1e100])
+def test_flat_generated_vwap_allows_only_bounded_float_roundoff(anchor):
+    source = pd.DataFrame(
+        [
+            {
+                "symbol": "A",
+                "time": time,
+                "open": 1.0,
+                "high": 1.0,
+                "low": 1.0,
+                "close": 1.0,
+                "volume": 3.0,
+                "amount": 3.0,
+            }
+            for time in pd.date_range("2026-01-01", periods=2, tz="UTC")
+        ]
+    )
+    model = fit_market_paths(source, source.time.iloc[-1], MarketPathSpec(1, 7))
+    path = generate_market_paths(model, CALENDAR, ["rounding"], {"A": anchor})["rounding"]
+    assert path.close.tolist() == [anchor] * 4
+    assert path.open.tolist() == path.high.tolist() == path.low.tolist() == [anchor] * 4
+    assert path.volume.tolist() == [3.0] * 4
+    assert path.amount.tolist() == pytest.approx([3 * anchor] * 4)
+    vwap = path.amount / path.volume
+    assert vwap.between(
+        math.nextafter(anchor, -math.inf, steps=4),
+        math.nextafter(anchor, math.inf, steps=4),
+    ).all()
+    prefix = generate_market_paths(model, CALENDAR[:2], ["other", "rounding"], {"A": anchor})
+    pd.testing.assert_frame_equal(path.iloc[:2].reset_index(drop=True), prefix["rounding"])
+
+
+@pytest.mark.parametrize("amount", [math.nextafter(3.0, math.inf), 3.03])
+def test_source_vwap_outside_flat_bar_remains_strictly_rejected(amount):
+    source = pd.DataFrame(
+        [
+            {
+                "symbol": "A",
+                "time": time,
+                "open": 1.0,
+                "high": 1.0,
+                "low": 1.0,
+                "close": 1.0,
+                "volume": 3.0,
+                "amount": amount,
+            }
+            for time in pd.date_range("2026-01-01", periods=2, tz="UTC")
+        ]
+    )
+    with pytest.raises(ValueError, match="VWAP"):
+        fit_market_paths(source, source.time.iloc[-1], MarketPathSpec(1, 7))
+
+
+@pytest.mark.parametrize("volume,anchor", [(1e-308, 1e-308), (0.5, 1.5e-323)])
+def test_material_generated_vwap_roundoff_is_rejected_without_clipping(volume, anchor):
+    source = pd.DataFrame(
+        [
+            {
+                "symbol": "A",
+                "time": time,
+                "open": 1.0,
+                "high": 1.0,
+                "low": 1.0,
+                "close": 1.0,
+                "volume": volume,
+                "amount": volume,
+            }
+            for time in pd.date_range("2026-01-01", periods=2, tz="UTC")
+        ]
+    )
+    model = fit_market_paths(source, source.time.iloc[-1], MarketPathSpec(1, 7))
+    # First case loses all amount to underflow. Second has a one-ULP VWAP
+    # error but a material relative discrepancy near zero; the relative cap
+    # must reject it even though a four-ULP-only check would accept it.
+    with pytest.raises(ValueError, match="VWAP"):
+        generate_market_paths(model, CALENDAR, ["underflow"], {"A": anchor})

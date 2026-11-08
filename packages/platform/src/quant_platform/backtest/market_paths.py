@@ -63,7 +63,22 @@ class FrozenPathModel:
     units: tuple[tuple[str, str], ...] = _UNITS
 
 
-def _validate_bar(values: tuple[float, ...]) -> None:
+def _validate_vwap(vwap: float, low: float, high: float, *, generated: bool) -> None:
+    if low <= vwap <= high:
+        return
+    if generated and math.isfinite(vwap) and vwap > 0:
+        boundary = low if vwap < low else high
+        # Scaling amount and dividing by volume round separately from scaling
+        # the price boundary. Allow only local arithmetic drift, never clip it.
+        # The relative cap also prevents large allowances near subnormal zero.
+        if abs(vwap - boundary) <= 4 * math.ulp(boundary) and math.isclose(
+            vwap, boundary, rel_tol=8 * math.ulp(1.0), abs_tol=0.0
+        ):
+            return
+    raise ValueError("VWAP must be inside OHLC range")
+
+
+def _validate_bar(values: tuple[float, ...], *, generated: bool = False) -> None:
     opening, high, low, close, volume, amount = values
     if not all(math.isfinite(value) for value in values):
         raise ValueError("all OHLC, volume and amount must be finite")
@@ -76,8 +91,8 @@ def _validate_bar(values: tuple[float, ...]) -> None:
     if volume == 0:
         if amount != 0:
             raise ValueError("zero volume requires zero amount")
-    elif not low <= amount / volume <= high:
-        raise ValueError("VWAP must be inside OHLC range")
+    else:
+        _validate_vwap(amount / volume, low, high, generated=generated)
 
 
 def fit_market_paths(
@@ -156,7 +171,7 @@ def _generate_one(
             prices = [value * scale for value in sampled[:4]]
             volume = sampled[4]
             amount = sampled[5] * scale
-            _validate_bar((*prices, volume, amount))
+            _validate_bar((*prices, volume, amount), generated=True)
             previous[asset] = prices[3]
             rows.append(
                 dict(
@@ -187,6 +202,7 @@ def _generate_one(
         "scenario_id": scenario_id,
         "block_length": block_length,
         "missing_policy": model.spec.missing_policy,
+        "vwap_coherence": "source_exact; generated_4_boundary_ulps_and_8_machine_eps_relative",
         "initial_prices": anchors,
         "clock_semantics": "time is availability; source_time is sampled training availability",
     }

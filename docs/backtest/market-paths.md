@@ -71,8 +71,15 @@ identity and block ordinal. Every asset uses the same block index. Each sampled
 OHLC value is multiplied by
 `generated_previous_close / sampled_previous_close`. Sampled volume is retained;
 amount is scaled by the same price factor, retaining sampled VWAP relative to
-prices. Zero volume and amount remain zero. Nonfinite or incoherent output
-fails explicitly rather than being clipped.
+prices. Zero volume and amount remain zero. Source VWAP validation uses exact
+float inequalities. Generated VWAP arithmetic alone may fall outside an OHLC
+boundary by at most both four ULPs of that boundary (using `math.ulp(boundary)`)
+and eight machine epsilons relative error, with no absolute tolerance floor.
+The relative cap prevents a large percentage allowance near subnormal zero.
+Values remain unmodified: no clipping or amount correction occurs. Positive
+volume still requires positive finite VWAP. Material discrepancies, including
+unrepresentable amount underflow, and other nonfinite or incoherent output fail
+explicitly. The `vwap_coherence` attribute records this numerical contract.
 
 Within blocks, source return/liquidity order and cross-asset pairing are
 preserved. Continuity is lost at boundaries; exact long-horizon dependence is
