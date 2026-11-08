@@ -20,6 +20,7 @@ ENGLISH_PAGES = {
     "architecture/runtime-kernel.md",
     "risk-model-kernel.md",
     "backtest/risk-calibration.md",
+    "concepts/impact-planning.md",
     "development/portfolio-execution-profiling-2026-09.md",
     "getting-started/installation.md",
     "getting-started/first-backtest.md",

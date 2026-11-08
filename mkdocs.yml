@@ -111,6 +111,7 @@ nav:
           - Factor catalog: alpha/concepts/factor-catalog.en-US.md
           - Factor risk model: alpha/concepts/factor-risk-model.en-US.md
           - Risk model kernel: risk-model-kernel.md
+          - Impact-aware rolling planning: concepts/impact-planning.md
           - Risk calibration and missingness: backtest/risk-calibration.md
           - Signal drift: alpha/concepts/signal-drift.en-US.md
           - Factor-expression DSL: alpha/concepts/factor-expression.en-US.md
@@ -199,6 +200,7 @@ nav:
           - 组合研究命名空间: alpha/namespace-migration.md
           - 测试和质量检查: alpha/operations/testing.md
           - 风险模型内核: risk-model-kernel.zh-CN.md
+          - 考虑冲击状态的滚动规划: concepts/impact-planning.zh-CN.md
           - 风险校准与缺失观测: backtest/risk-calibration.zh-CN.md
       - Alpha 研究文档入口: alpha/README.zh-CN.md
       - 研究输出: alpha/reference/research-outputs.md

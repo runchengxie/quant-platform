@@ -10,6 +10,7 @@ from pathlib import Path
 import yaml
 
 PAIRS = (
+    ("concepts/impact-planning.md", "concepts/impact-planning.zh-CN.md"),
     ("backtest/risk-calibration.md", "backtest/risk-calibration.zh-CN.md"),
     ("architecture/runtime-kernel.md", "architecture/runtime-kernel.zh-CN.md"),
     ("risk-model-kernel.md", "risk-model-kernel.zh-CN.md"),
@@ -114,6 +115,8 @@ def test_new_pages_render_locale_specific_navigation(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stdout + result.stderr
 
     expected = {
+        "concepts/impact-planning": "en",
+        "concepts/impact-planning.zh-CN": "zh",
         "backtest/risk-calibration": "en",
         "backtest/risk-calibration.zh-CN": "zh",
         "architecture/runtime-kernel": "en",
