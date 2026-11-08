@@ -485,3 +485,63 @@ def test_missing_quote_preserves_known_arrival_and_terminal_horizon_clocks():
     assert row.arrival_price_shortfall is None
     assert row.opportunity_shortfall is None
     assert row.reference_price_shortfall == pytest.approx(8)
+
+
+@pytest.mark.parametrize(
+    "labels,residuals,expected_clusters,expected_status,expected_interval",
+    [
+        (["same-date"] * 3, [1, 2, 3], 1, "insufficient_clusters", None),
+        (["date-a", "date-b", "date-c"], [2, 2, 2], 3, "evaluated", [2, 2]),
+    ],
+)
+def test_cluster_identity_cannot_collide_with_temporary_residuals(
+    labels, residuals, expected_clusters, expected_status, expected_interval
+):
+    from quant_platform.analytics.cost_scope import validate_cost_scope_uncertainty
+
+    training = pd.DataFrame(
+        [
+            {
+                "available_ns": i,
+                "completed_ns": i,
+                "participation": participation,
+                "filled_notional": 100.0,
+                "shortfall_bps": 0.0,
+                "side": "buy",
+                "liquidity_bucket": "liquid",
+                "execution_minutes": 30,
+            }
+            for i, participation in enumerate([0.01, 0.04, 0.09], 1)
+        ]
+    )
+    model = fit_cost_scope(training, cutoff_ns=3, source_binding="s", evidence_kind="synthetic")
+    later = training.assign(
+        available_ns=[4, 5, 6],
+        completed_ns=[4, 5, 6],
+        shortfall_bps=residuals,
+        date_cluster=labels,
+        _error=labels,
+    )
+    # Positional residual alignment must also survive duplicate, unsorted index labels.
+    later.index = [4, 4, 1]
+    before = later.copy(deep=True)
+    for column in ("date_cluster", "_error"):
+        report = validate_cost_scope_uncertainty(
+            model,
+            later,
+            source_binding="s",
+            cluster_column=column,
+            cluster_kind="date",
+            bootstrap_samples=100,
+            seed=7,
+        )
+        assert report["observations"] == 3
+        assert report["independent_clusters"] == expected_clusters
+        assert report["uncertainty_status"] == expected_status
+        if expected_interval is None:
+            assert report["bias_interval_bps"] is None
+            assert report["rmse_interval_bps"] is None
+        else:
+            assert report["bias_interval_bps"] == pytest.approx(expected_interval)
+            assert report["rmse_interval_bps"] == pytest.approx(expected_interval)
+        assert_frame_equal(later, before)

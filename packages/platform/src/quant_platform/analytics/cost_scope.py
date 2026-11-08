@@ -228,20 +228,25 @@ def validate_cost_scope_uncertainty(
         .all()
     ):
         return report
-    frame["_error"] = [
-        row.shortfall_bps
-        - model.predict(
-            row.participation,
-            side=row.side,
-            liquidity_bucket=row.liquidity_bucket,
-            execution_minutes=row.execution_minutes,
-        )
-        for row in frame.itertuples()
-    ]
+    residuals = np.array(
+        [
+            row.shortfall_bps
+            - model.predict(
+                row.participation,
+                side=row.side,
+                liquidity_bucket=row.liquidity_bucket,
+                execution_minutes=row.execution_minutes,
+            )
+            for row in frame.itertuples()
+        ],
+        dtype=float,
+    )
     clusters = []
-    for _, group in frame.groupby(cluster_column, sort=True):
-        weight = group.filled_notional.to_numpy(dtype=float)
-        errors = group["_error"].to_numpy(dtype=float)
+    # Keep caller columns untouched. Group indices are row positions, so the
+    # separate residual buffer also aligns with duplicate/unsorted frame labels.
+    for positions in frame.groupby(cluster_column, sort=True).indices.values():
+        weight = frame.iloc[positions].filled_notional.to_numpy(dtype=float)
+        errors = residuals[positions]
         clusters.append(
             [float(weight.sum()), float(np.dot(weight, errors)), float(np.dot(weight, errors**2))]
         )
