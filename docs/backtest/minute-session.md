@@ -33,3 +33,23 @@ It therefore cannot certify a historical strategy requiring those events. Existi
 synchronous execution remains available for that separate scope. Result summary
 fields state delivery, cancellation and remaining report semantics. Zero-delay
 parity covers financial tables; delivery metadata intentionally differs.
+
+Pass `quantity_locks=(QuantityLock(...),)` using
+`quant_platform.backtest.quantity_locks.QuantityLock` for share-preserving
+restrictions. Each immutable notice supplies `available_ns`, `start_ns`, `end_ns`
+(integer UTC nanoseconds), a tuple of unique `symbols`, and `source_binding`.
+The effective interval is inclusive and begins after both availability and start.
+The owner cancels only remaining orders for those symbols, skips their target
+sizing and prohibits fills; holdings and cash are never overwritten. Other
+symbols can trade subject to the existing account and report guards. Cancellation
+acknowledgements use the ordinary delayed financial snapshot queue. Release never
+revives cancelled orders. A bar overlapping the interval is entirely unavailable
+for that symbol because an intra-bar unlocked execution time is unknown.
+
+Policy state exposes `locked_symbols` at the current event and `quantity_locks`
+whose availability clocks have arrived, including received future restrictions.
+Neither is a certification of historical notice provenance. Notices, boundaries
+and active guards are checkpoint-bound. Old checkpoints require their original
+pinned sources; this change does not migrate them. No notices preserves existing
+financial behavior, including empty sessions. Corporate actions remain outside
+this API, so share conservation here concerns trading only.

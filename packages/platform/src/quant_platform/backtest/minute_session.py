@@ -20,9 +20,10 @@ from typing import Any
 
 import pandas as pd
 
-from quant_platform._portfolio.minute_execution import _MinuteSimulation
+from quant_platform._portfolio.minute_execution import MinuteDecisionState, _MinuteSimulation
 
 from .impact import LinearImpact
+from .quantity_locks import QuantityLock
 
 _FIELDS = [
     "cash",
@@ -44,6 +45,8 @@ _FIELDS = [
     "day_has_events",
     "current_time",
     "policy_snapshots",
+    "execution_locked_symbols",
+    "bar_execution_locked_symbols",
 ]
 
 
@@ -105,12 +108,13 @@ def _digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, allow_nan=False).encode()).hexdigest()
 
 
-def _binding(targets, bars, config, policy):
+def _binding(targets, bars, config, policy, locks):
     return _digest(
         {
             "targets": targets.to_json(date_format="iso", date_unit="ns"),
             "bars": bars.to_json(date_format="iso", date_unit="ns"),
             "config": asdict(config),
+            "quantity_locks": [asdict(lock) for lock in locks],
             "policy_type": type(policy).__module__ + "." + type(policy).__qualname__,
             "policy_source": hashlib.sha256(
                 Path(inspect.getfile(type(policy))).read_bytes()
@@ -121,6 +125,8 @@ def _binding(targets, bars, config, policy):
                     __file__,
                     inspect.getfile(_MinuteSimulation),
                     inspect.getfile(LinearImpact),
+                    inspect.getfile(QuantityLock),
+                    inspect.getfile(MinuteDecisionState),
                 )
             },
         }
@@ -135,27 +141,81 @@ class MinuteSession:
     Deliveries are a causal prefix. Economic fills and T+1 remain owner behavior.
     """
 
-    def __init__(self, targets, bars, config, *, policy, report_delay_seconds=0, impact=None):
+    def __init__(
+        self,
+        targets,
+        bars,
+        config,
+        *,
+        policy,
+        report_delay_seconds=0,
+        impact=None,
+        quantity_locks=(),
+    ):
         if impact is not None and type(impact) is not LinearImpact:
             raise ValueError("recoverable session requires exact LinearImpact type")
         if not math.isfinite(report_delay_seconds) or report_delay_seconds < 0:
             raise ValueError("finite nonnegative report delay required")
+        self.quantity_locks = tuple(quantity_locks)
+        if any(type(lock) is not QuantityLock for lock in self.quantity_locks):
+            raise ValueError("exact QuantityLock notices required")
         self.targets, self.bars, self.config = targets.copy(), bars.copy(), config
         self.policy = policy
         self.delay = report_delay_seconds
-        self.binding = _binding(targets, bars, config, policy)
+        self.binding = _binding(targets, bars, config, policy, self.quantity_locks)
         self.cursor, self.finished = 0, False
         self.queue = []
         self.simulation = _MinuteSimulation(self.targets, self.bars, config, (), ())
         self.simulation.decision_policy = self._decide
         self.simulation.impact_model = impact
         self.simulation.times = sorted(set(self.simulation.times) | set(self.simulation.decisions))
+        self._schedule_locks()
         self.delivered: dict[str, Any] = {
             "cash": config.initial_cash,
             "holdings": {},
             "pending_orders": (),
         }
         self.trace = []
+
+    def _schedule_locks(self):
+        sim = self.simulation
+        if not sim.times or not self.quantity_locks:
+            return
+        first, last = sim.times[0], sim.times[-1]
+        events = set(sim.times)
+        for lock in self.quantity_locks:
+            for ns in (max(lock.available_ns, lock.start_ns), lock.end_ns + 1):
+                time = pd.Timestamp(ns, tz="UTC").tz_convert(first.tz)
+                if first <= time <= last:
+                    events.add(time)
+        sim.times = sorted(events)
+
+    def _apply_locks(self, time):
+        sim = self.simulation
+        now = int(time.value)
+        active = {
+            symbol
+            for lock in self.quantity_locks
+            if lock.overlaps(now, now)
+            for symbol in lock.symbols
+        }
+        sim.execution_locked_symbols = tuple(sorted(active))
+        for order in sim.pending:
+            if order["status"] == "pending" and order["symbol"] in active:
+                order.update(status="cancelled", reason="quantity_lock")
+        # A bar spanning a lock boundary cannot identify an unlocked fill time.
+        # Conservatively prohibit that entire bar, without moving its clock.
+        sim.bar_execution_locked_symbols = tuple(
+            sorted(
+                {
+                    bar.symbol
+                    for bar in sim.grouped.get(time, pd.DataFrame()).itertuples()
+                    for lock in self.quantity_locks
+                    if bar.symbol in lock.symbols
+                    and lock.overlaps(int(bar.interval_start.value), now)
+                }
+            )
+        )
 
     def _decide(self, state, proposed):
         pending = self.delivered["pending_orders"]
@@ -171,6 +231,9 @@ class MinuteSession:
             cash=self.delivered["cash"],
             nav=nav,
             holdings=MappingProxyType(dict(holdings)),
+            quantity_locks=tuple(
+                lock for lock in self.quantity_locks if lock.available_ns <= state.time.value
+            ),
             pending_orders=tuple(MappingProxyType(dict(order)) for order in pending),
         )
         weights = self.policy(visible, proposed)
@@ -210,6 +273,7 @@ class MinuteSession:
         time = sim.times[self.cursor]
         before = self._snapshot()
         sim.advance_account(time)
+        self._apply_locks(time)
         self._deliver(time)
         if not self.delay:
             self.delivered = self._snapshot()
@@ -240,6 +304,7 @@ class MinuteSession:
             report_delay_seconds=self.delay,
             cancellation="synchronous_exchange_delayed_acknowledgement",
             financial_reports_pending=len(self.queue),
+            quantity_lock_notices=len(self.quantity_locks),
         )
         return result
 
@@ -253,6 +318,7 @@ class MinuteSession:
             "binding": self.binding,
             "cursor": self.cursor,
             "delay": self.delay,
+            "quantity_locks": [asdict(lock) for lock in self.quantity_locks],
             "policy": json.loads(json.dumps(self.policy.checkpoint(), allow_nan=False)),
             "impact": sim.impact_model.checkpoint() if sim.impact_model else None,
             "state": _wire(state),
@@ -273,6 +339,16 @@ class MinuteSession:
             policy=policy,
             report_delay_seconds=value["delay"],
             impact=LinearImpact.restore(value["impact"]) if value["impact"] else None,
+            quantity_locks=tuple(
+                QuantityLock(
+                    available_ns=lock["available_ns"],
+                    start_ns=lock["start_ns"],
+                    end_ns=lock["end_ns"],
+                    symbols=tuple(lock["symbols"]),
+                    source_binding=lock["source_binding"],
+                )
+                for lock in value["quantity_locks"]
+            ),
         )
         if (
             result.binding != value["binding"]
