@@ -14,6 +14,7 @@ from typing import cast
 
 import pandas as pd
 
+from ._minute_state import MinuteDecisionState as MinuteDecisionState
 from ._minute_validation import (
     _validate as _validate,
 )
@@ -91,25 +92,6 @@ class MinuteExecutionResult:
     valuation_ledger: pd.DataFrame = field(
         default_factory=lambda: pd.DataFrame(columns=VALUATION_LEDGER_COLUMNS)
     )
-
-
-@dataclass(frozen=True)
-class MinuteDecisionState:
-    """Synchronous delivered account, strictly before the decision-clock bar.
-
-    No exchange-report delay is modeled. Raw marks may be stale: consumers must
-    inspect mark_times. Pending orders remain live until entry supersession.
-    """
-
-    time: pd.Timestamp
-    cash: float
-    nav: float
-    holdings: Mapping
-    marks: Mapping
-    mark_times: Mapping
-    pending_orders: tuple
-    cash_receivable: float
-    stock_receivable_value: float
 
 
 def simulate_minute_execution(
@@ -238,6 +220,8 @@ class _MinuteSimulation:
         self.current_day = None
         self.day_has_events = False
         self.pending = []
+        self.execution_locked_symbols: tuple[str, ...] = ()
+        self.bar_execution_locked_symbols: tuple[str, ...] = ()
         self.decision_policy = None
         self.impact_model = None
         self.decisions = {}
@@ -446,6 +430,7 @@ class _MinuteSimulation:
             ),
             cash_receivable=cr,
             stock_receivable_value=sr,
+            locked_symbols=tuple(sorted(getattr(self, "execution_locked_symbols", ()))),
         )
         for entry in self.decisions[time]:
             original = self.snapshots[entry]
@@ -484,6 +469,8 @@ class _MinuteSimulation:
         cr, sr = self.receivables()
         nav = self.cash + self.value() + cr + sr
         for symbol in sorted(set(weights) | set(self.holdings)):
+            if symbol in getattr(self, "execution_locked_symbols", ()):
+                continue
             weight = weights.get(symbol, 0)
             mark = self.marks.get(symbol)
             blocked = symbol in self.valuation_state
@@ -695,7 +682,12 @@ class _MinuteSimulation:
         }
         for order in sorted(self.pending, key=lambda o: (o["side"] == "buy", o["order_id"])):
             symbol = order["symbol"]
-            if symbol not in observed or order["status"] != "pending" or time > order["deadline"]:
+            if (
+                symbol not in observed
+                or symbol in getattr(self, "bar_execution_locked_symbols", ())
+                or order["status"] != "pending"
+                or time > order["deadline"]
+            ):
                 continue
             capacities[symbol] = self.fill_order(order, observed[symbol], time, capacities[symbol])
         for symbol, bar in observed.items():
