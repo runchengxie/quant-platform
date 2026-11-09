@@ -2,15 +2,21 @@
 
 Language: English · [简体中文](entry-points.zh-CN.md)
 
-Platform 0.1.0 supports Python 3.12 and 3.13 and depends on Engine core 0.1.0
-with the explicit minute, cost and scenario extras, plus SDK 0.3.0. Both packages
-resolve to merged Engine revision `19a2ae714b567fc1a46cf996fa5a86a90138bc44`
-through immutable Git subdirectory dependencies; this installation does not
-assume a PyPI release. Existing minute, action, impact and leaf evidence imports
-are aliases of the same Engine classes and functions. Statistical risk, generic
-QP optimization, factor workflows and remaining integrations stay in Platform.
-The SDK-only Rust session adapter remains explicitly selected; unsupported
-execution-aware evidence remains false.
+Platform 0.2.0 supports Python 3.12 and 3.13 and installs Engine Core 0.2.0
+with the minute, cost, scenario and planning extras, plus SDK 0.3.0. Core and SDK
+use the same merged Engine revision
+`51ab1e8cb2267d938a0681b81f2419d504ed91cc` through immutable Git subdirectory
+dependencies. No PyPI release is required.
+
+Engine owns minute execution, paper accounts, reservations, execution planning
+and deterministic matching, replay, impact and leaf evidence. Compatibility
+imports expose the same Core objects. The pending adapter retains Platform's full
+sparse-risk validation and original optimizer result. OSQP, statistical risk,
+generic optimization, research calibration, `pool_sleeves`, daily backtests and
+reusable model training, including `generator` and `sqrt_law`, remain in Platform.
+The optional native distribution is built only by Engine. Rust backends require
+explicit selection. The SDK-only Rust session adapter still reports unsupported
+execution-aware evidence as false.
 
 
 `portfolio-backtester` provides five public ways to move from a backtest specification to position replay and benchmark evaluation. For a new score-driven backtest, start with `BacktestSpec` and `run_backtest`.

@@ -2,7 +2,6 @@
 
 Language: English · [简体中文](paper-account-events.zh-CN.md)
 
-<span id="paper-account-event-lifecycle"></span>
 <span id="financial-state-and-clocks"></span>
 <span id="supplied-projections-and-fills"></span>
 <span id="orders-and-reservations"></span>

@@ -2,7 +2,6 @@
 
 Language: English · [简体中文](discrete-inventory.zh-CN.md)
 
-<span id="finite-inventory-and-lot-comparison"></span>
 <span id="prefunded-cash-is-the-optimization-domain"></span>
 <span id="inputs-objective-and-quantities"></span>
 <span id="search-results-and-certificates"></span>

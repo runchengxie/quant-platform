@@ -2,7 +2,6 @@
 
 Language: English · [简体中文](pending-allocation.zh-CN.md)
 
-<span id="pending-aware-paper-allocation"></span>
 <span id="target-and-order-semantics"></span>
 <span id="observations-and-clocks"></span>
 <span id="exposure-envelope"></span>

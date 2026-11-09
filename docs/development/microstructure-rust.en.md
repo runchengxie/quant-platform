@@ -2,7 +2,6 @@
 
 Language: English · [简体中文](microstructure-rust.md)
 
-<span id="rust-microstructure-kernel"></span>
 <span id="build-and-use"></span>
 <span id="correctness-and-measurement"></span>
 <span id="fill-evidence-and-impact-estimation-limits"></span>

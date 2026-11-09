@@ -2,7 +2,6 @@
 
 Language: English · [简体中文](development-guide.md)
 
-<span id="microstructure-development-guide"></span>
 <span id="code-layout"></span>
 <span id="local-checks"></span>
 

@@ -31,13 +31,20 @@
 
 ## 调用方怎么改
 
-Platform 0.1.0 在 Python 3.12/3.13 上安装 core 0.1.0 [minute,cost,scenario] 和
-SDK 0.3.0，两者均固定到已合并的 Engine 提交
-`19a2ae714b567fc1a46cf996fa5a86a90138bc44`。运行 `uv sync --locked` 即可。
-`engine` 扩展保留为兼容选项，只有显式选择 Rust 任务才需要 Rust 可执行文件。
-SDK 仍可独立安装，无需 Platform 或 Python core。
-分钟执行、事件、冲击和基础证据接口现在直接导出 Engine 对象。
-统计风险和通用组合优化仍属于 Platform。
+Platform 0.2.0 支持 Python 3.12 和 3.13，安装 Engine Core 0.2.0 的
+minute、cost、scenario、planning 扩展及 SDK 0.3.0。Core 和 SDK
+通过固定 Git 子目录依赖使用同一已合并 Engine 提交
+`51ab1e8cb2267d938a0681b81f2419d504ed91cc`，无需发布到 PyPI。
+
+分钟执行、纸面账户、资源预留、执行规划、确定性撮合、回放、冲击和基础证据由 Engine 维护。
+兼容导入指向相同的 Core 对象。待成交分配适配器保留 Platform 的完整稀疏风险校验及原优化结果。
+OSQP、统计风险、通用优化、研究校准、`pool_sleeves`、日频回测和可复用模型训练，
+包括 `generator` 与 `sqrt_law`，仍由 Platform 维护。
+可选原生发行包仅由 Engine 构建。Rust 后端必须显式选择。
+仅使用 SDK 的 Rust 会话适配器仍将不支持的执行感知证据标记为 false。
+
+运行 `uv sync --locked`。`engine` 扩展保留为兼容选项。
+只有显式选择 Rust 任务才需要 Rust 可执行文件。SDK 仍可独立安装，无需 Platform 或 Python Core。
 
 ```python
 from quant_platform.analytics.metrics import summarize_ic
@@ -51,6 +58,8 @@ from quant_backtest_engine import EngineClient as WireEngineClient
 ```
 
 深层导入可查[模块映射表](https://github.com/runchengxie/quant-platform/blob/main/docs/migration/portfolio-module-map.json)。
+当前 Engine 别名和待成交适配器见
+[Provider B 归属清单](https://github.com/runchengxie/quant-platform/blob/main/docs/migration/engine-provider-b.json)。
 平台编排已使用这些公开归属。`scripts/dev/check_legacy_imports.py` 阻止第一方生产代码
 重新直接导入旧命名空间。外部调用方迁移期间仍可使用旧导入，兼容测试也会继续验证它们。
 通用契约和 wheel 导入检查独立于旧包执行。

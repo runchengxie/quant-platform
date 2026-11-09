@@ -35,13 +35,25 @@ rewriting hundreds of relative imports and financial algorithms.
 
 ## Caller changes
 
-Platform 0.1.0 installs core 0.1.0 [minute,cost,scenario] and SDK 0.3.0 from
-merged Engine revision `19a2ae714b567fc1a46cf996fa5a86a90138bc44` on Python
-3.12/3.13. Run `uv sync --locked`; the `engine` extra remains a compatibility
-selection. A Rust executable is required only for explicitly selected Rust jobs.
-The SDK remains independently installable without Platform or the Python core.
-Minute execution, events, impact and leaf evidence APIs now alias Engine objects.
-Statistical risk and generic portfolio optimization remain Platform-owned.
+Platform 0.2.0 supports Python 3.12 and 3.13 and installs Engine Core 0.2.0
+with the minute, cost, scenario and planning extras, plus SDK 0.3.0. Core and SDK
+use the same merged Engine revision
+`51ab1e8cb2267d938a0681b81f2419d504ed91cc` through immutable Git subdirectory
+dependencies. No PyPI release is required.
+
+Engine owns minute execution, paper accounts, reservations, execution planning
+and deterministic matching, replay, impact and leaf evidence. Compatibility
+imports expose the same Core objects. The pending adapter retains Platform's full
+sparse-risk validation and original optimizer result. OSQP, statistical risk,
+generic optimization, research calibration, `pool_sleeves`, daily backtests and
+reusable model training, including `generator` and `sqrt_law`, remain in Platform.
+The optional native distribution is built only by Engine. Rust backends require
+explicit selection. The SDK-only Rust session adapter still reports unsupported
+execution-aware evidence as false.
+
+Run `uv sync --locked`. The `engine` extra remains a compatibility option.
+A Rust executable is required only for explicitly selected Rust jobs.
+The SDK remains independently installable without Platform or Python Core.
 
 ```python
 # New analysis callers
@@ -57,6 +69,8 @@ from quant_backtest_engine import EngineClient as WireEngineClient
 
 For deep imports consult the checked-in
 [module map](https://github.com/runchengxie/quant-platform/blob/main/docs/migration/portfolio-module-map.json).
+Current Engine aliases and the pending adapter are recorded in the
+[Provider B ownership manifest](https://github.com/runchengxie/quant-platform/blob/main/docs/migration/engine-provider-b.json).
 Platform orchestration uses these owners. `scripts/dev/check_legacy_imports.py`
 rejects direct old-namespace imports in first-party production code. External callers
 can still use old imports while migrating; compatibility tests intentionally keep them.

@@ -2,7 +2,6 @@
 
 Language: English · [简体中文](paper-account.zh-CN.md)
 
-<span id="signed-paper-account"></span>
 
 This page preserves the original route. See the [Engine documentation](https://runchengxie.github.io/quant-backtest-engine/backtest/paper-account/) for the current implementation, contracts and limits.
 

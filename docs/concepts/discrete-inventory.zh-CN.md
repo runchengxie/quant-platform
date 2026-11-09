@@ -2,7 +2,6 @@
 
 语言：简体中文 · [English](discrete-inventory.md)
 
-<span id="_1"></span>
 <span id="_2"></span>
 <span id="_3"></span>
 <span id="_4"></span>

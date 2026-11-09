@@ -2,12 +2,17 @@
 
 语言：简体中文 · [English](entry-points.md)
 
-Platform 0.1.0 支持 Python 3.12 和 3.13，依赖 Engine core 0.1.0，并显式安装
-minute、cost、scenario 扩展及 SDK 0.3.0。两个包都通过固定 Git 子目录依赖解析到
-已合并的 Engine 提交 `19a2ae714b567fc1a46cf996fa5a86a90138bc44`，不要求 PyPI 发布。
-原有分钟、公司行动、冲击和基础证据接口直接导出同一个 Engine 类和函数。
-统计风险、通用 QP 优化、因子流程及尚未迁移的集成仍属于 Platform。
-仅使用 SDK 的 Rust 会话适配器仍需显式选择。不支持的 execution-aware 证据仍为 false。
+Platform 0.2.0 支持 Python 3.12 和 3.13，安装 Engine Core 0.2.0 的
+minute、cost、scenario、planning 扩展及 SDK 0.3.0。Core 和 SDK
+通过固定 Git 子目录依赖使用同一已合并 Engine 提交
+`51ab1e8cb2267d938a0681b81f2419d504ed91cc`，无需发布到 PyPI。
+
+分钟执行、纸面账户、资源预留、执行规划、确定性撮合、回放、冲击和基础证据由 Engine 维护。
+兼容导入指向相同的 Core 对象。待成交分配适配器保留 Platform 的完整稀疏风险校验及原优化结果。
+OSQP、统计风险、通用优化、研究校准、`pool_sleeves`、日频回测和可复用模型训练，
+包括 `generator` 与 `sqrt_law`，仍由 Platform 维护。
+可选原生发行包仅由 Engine 构建。Rust 后端必须显式选择。
+仅使用 SDK 的 Rust 会话适配器仍将不支持的执行感知证据标记为 false。
 
 
 `portfolio-backtester` 提供五类调用入口，覆盖从高层回测规范到低层持仓回放的不同需求。初次使用时，建议从入口 1 开始。

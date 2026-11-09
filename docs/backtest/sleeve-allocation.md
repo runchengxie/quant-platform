@@ -2,7 +2,6 @@
 
 Language: English · [简体中文](sleeve-allocation.zh-CN.md)
 
-<span id="shared-sleeve-allocation-and-unfinished-exits"></span>
 <span id="declare-a-batch"></span>
 <span id="internal-crossing-and-external-attribution"></span>
 <span id="hand-cases-and-finite-horizons"></span>

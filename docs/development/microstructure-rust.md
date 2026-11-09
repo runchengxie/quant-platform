@@ -2,7 +2,6 @@
 
 语言：简体中文 · [English](microstructure-rust.en.md)
 
-<span id="rust"></span>
 <span id="_1"></span>
 <span id="_2"></span>
 <span id="_3"></span>

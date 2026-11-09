@@ -2,7 +2,6 @@
 
 语言：简体中文 · [English](development-guide.en.md)
 
-<span id="_1"></span>
 <span id="_2"></span>
 <span id="_3"></span>
 
