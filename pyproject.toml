@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quant-platform"
-version = "0.1.0"
+version = "0.2.0"
 description = "Public reusable quant research and portfolio platform"
 requires-python = ">=3.12,<3.14"
 dependencies = [
-  "quant-backtest-core[minute,cost,scenario] @ git+https://github.com/runchengxie/quant-backtest-engine.git@19a2ae714b567fc1a46cf996fa5a86a90138bc44#subdirectory=core",
-  "quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@19a2ae714b567fc1a46cf996fa5a86a90138bc44#subdirectory=python",
+  "quant-backtest-core[minute,cost,scenario,planning] @ git+https://github.com/runchengxie/quant-backtest-engine.git@51ab1e8cb2267d938a0681b81f2419d504ed91cc#subdirectory=core",
+  "quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@51ab1e8cb2267d938a0681b81f2419d504ed91cc#subdirectory=python",
   "duckdb>=1.2",
   "numpy>=1.23",
   "pandas>=2.0",
@@ -24,7 +24,7 @@ strategy-pipeline = "strategy_pipeline.cli:main"
 
 [project.optional-dependencies]
 sparse = ["osqp>=1.1,<2"]
-engine = ["quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@19a2ae714b567fc1a46cf996fa5a86a90138bc44#subdirectory=python"]
+engine = ["quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@51ab1e8cb2267d938a0681b81f2419d504ed91cc#subdirectory=python"]
 ml = [
   "pandas-ta>=0.3.14b0",
   "scikit-learn>=1.9.0",
@@ -47,7 +47,7 @@ microstructure = ["polars>=1.0", "torch>=2.0", "scikit-learn>=1.9.0"]
 [dependency-groups]
 test = ["pytest>=9.0.3", "osqp>=1.1,<2"]
 dev = [
-  "quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@19a2ae714b567fc1a46cf996fa5a86a90138bc44#subdirectory=python",
+  "quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@51ab1e8cb2267d938a0681b81f2419d504ed91cc#subdirectory=python",
   "maturin>=1,<2",
   "pandas-ta>=0.3.14b0",
   "scikit-learn>=1.9.0",
@@ -153,7 +153,6 @@ extra-paths = [
   "packages/execution/src",
   "packages/alpha/src",
   "packages/microstructure/src",
-  "packages/microstructure/rust",
   "packages/research-contracts",
 ]
 

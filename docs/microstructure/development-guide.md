@@ -2,28 +2,16 @@
 
 语言：简体中文 · [English](development-guide.en.md)
 
-本页说明 `packages/microstructure` 当前公开代码的职责和本地检查入口。策略研究、真实行情和生产运行配置不属于这个公开包。
+<span id="_1"></span>
+<span id="_2"></span>
+<span id="_3"></span>
 
-## 代码结构
+本页保留原链接。当前实现、契约和限制见 [Engine 文档](https://runchengxie.github.io/quant-backtest-engine/microstructure/matching.zh-CN/)。
 
-| 路径 | 职责 |
-| --- | --- |
-| `packages/microstructure/src/ticknet/eventstream/` | 事件流打包、数据集与窗口、模型、训练和评估 |
-| `packages/microstructure/src/ticknet/simulator/` | 合成事件生成、订单簿撮合、回放、排序和影响分析 |
-| `packages/microstructure/rust/` | 可选 PyO3 扩展，提供订单簿撮合、批量回放和事件排序 |
-| `tests/microstructure/` | 上述公开实现的合成数据和确定性测试 |
+Platform 0.2.0 支持 Python 3.12 和 3.13，使用已合并提交 `51ab1e8cb2267d938a0681b81f2419d504ed91cc` 的 Engine Core 0.2.0 和 SDK 0.3.0。两者固定到同一 VCS 提交，无需发布到 PyPI。分钟执行、纸面账户、资源预留、执行规划及确定性撮合、回放和冲击估计由 Engine 维护。兼容模块导出相同的 Core 对象。待成交分配适配器保留 Platform 的完整稀疏风险校验和原优化结果。OSQP、统计风险、研究校准、`pool_sleeves`、日频回测和模型训练仍由 Platform 维护。别名至少保留两个次版本周期，并等待所有登记的受支持使用方迁移完成。
 
-Python 是默认实现和行为参考。需要 Rust 后端时，按[可选 Rust 内核说明](../development/microstructure-rust.md)单独构建 wheel 并显式选择后端。
+可选原生发行包仅由 Engine 提供，安装 wheel 后必须显式选择 `backend="rust"`，没有静默回退。原生后端缺少逐笔成交证据，冲击估计会在状态修改前抛出 `NotImplementedError`。生成器和 `sqrt_law` 仍为 Platform 使用方。合成诊断斜率不代表已校准的市场规律。账户原始 schema 2 和 `execution-state.v2` 标识迁移后的状态所有者。旧检查点必须保留原先固定的完整 Platform、Runtime、Go 与依赖环境，不转换或重新绑定。
 
-历史 FI-2010 复现代码保留在 `legacy/`，不属于当前默认开发链路。不要从已归档的说明或历史入口推断当前公开 API，先检查 `pyproject.toml`、`packages/microstructure/src/ticknet/` 和相应测试。
+[历史源码](https://github.com/runchengxie/quant-platform/blob/7a618bddd8fdeee5dbe37fe5b54a9698e0de5355/docs/microstructure/development-guide.md)
 
-## 本地检查
-
-从仓库根目录安装锁定的开发依赖并运行相关测试：
-
-```bash
-uv sync --locked --all-groups --extra microstructure
-uv run --locked pytest tests/microstructure -q
-```
-
-全仓质量检查、严格类型检查和 CI 质量门禁见[开发与测试说明](../testing.md)。Rust parity 测试在普通 Python 环境没有安装扩展时会跳过，强制测试 Rust 后端的构建步骤见 Rust 内核说明。
+[原生构建说明](../development/microstructure-rust.md)

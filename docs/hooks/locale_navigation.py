@@ -11,6 +11,11 @@ from copy import copy
 from mkdocs.structure.nav import Navigation
 
 ENGLISH_PAGES = {
+    "concepts/signed-paper-optimization.md",
+    "concepts/sparse-signed-optimization.md",
+    "backtest/paper-account.md",
+    "contracts/paper-account-events.md",
+    "contracts/pending-allocation.md",
     "backtest/execution-integrity.md",
     "backtest/cost-evidence.md",
     "backtest/capital-and-reconciliation.md",

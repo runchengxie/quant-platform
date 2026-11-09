@@ -2,12 +2,8 @@
 
 [English README](README.md)
 
-Platform 0.1.0 支持 Python 3.12 和 3.13，依赖 Engine core 0.1.0，并显式安装
-minute、cost、scenario 扩展及 SDK 0.3.0。两个包都通过固定 Git 子目录依赖解析到
-已合并的 Engine 提交 `19a2ae714b567fc1a46cf996fa5a86a90138bc44`，不要求 PyPI 发布。
-原有分钟、公司行动、冲击和基础证据接口直接导出同一个 Engine 类和函数。
-统计风险、通用 QP 优化、因子流程及尚未迁移的集成仍属于 Platform。
-仅使用 SDK 的 Rust 会话适配器仍需显式选择。不支持的 execution-aware 证据仍为 false。
+Platform 0.2.0 支持 Python 3.12 和 3.13，使用已合并提交 `51ab1e8cb2267d938a0681b81f2419d504ed91cc` 的 Engine Core 0.2.0 和 SDK 0.3.0。两者固定到同一 VCS 提交，无需发布到 PyPI。分钟执行、纸面账户、资源预留、执行规划及确定性撮合、回放和冲击估计由 Engine 维护。兼容模块导出相同的 Core 对象。待成交分配适配器保留 Platform 的完整稀疏风险校验和原优化结果。OSQP、统计风险、研究校准、`pool_sleeves`、日频回测和模型训练仍由 Platform 维护。别名至少保留两个次版本周期，并等待所有登记的受支持使用方迁移完成。
+
 
 
 `quant-platform` 是可复用的量化研究框架，提供回测、组合构造、风险分析、执行模拟和公共研究产物契约。它面向研究代码与工具开发，不保存真实策略数据、专有特征、凭证或研究结论。

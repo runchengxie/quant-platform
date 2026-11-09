@@ -2,28 +2,16 @@
 
 Language: English · [简体中文](development-guide.md)
 
-This page describes the current public code under `packages/microstructure` and its local test entry point. Strategy research, real market data, and production runtime configuration are outside this public package.
+<span id="microstructure-development-guide"></span>
+<span id="code-layout"></span>
+<span id="local-checks"></span>
 
-## Code layout
+This page preserves the original route. See the [Engine documentation](https://runchengxie.github.io/quant-backtest-engine/microstructure/matching/) for the current implementation, contracts and limits.
 
-| Path | Responsibility |
-| --- | --- |
-| `packages/microstructure/src/ticknet/eventstream/` | Event-stream packing, datasets and windows, models, training, and evaluation |
-| `packages/microstructure/src/ticknet/simulator/` | Synthetic event generation, order-book matching, replay, ordering, and impact analysis |
-| `packages/microstructure/rust/` | Optional PyO3 extension for order-book matching, batch replay, and event ordering |
-| `tests/microstructure/` | Deterministic and synthetic-data tests for these public components |
+Platform 0.2.0 supports Python 3.12 and 3.13 with Engine Core 0.2.0 and SDK 0.3.0 at merged revision `51ab1e8cb2267d938a0681b81f2419d504ed91cc`. Core and SDK use the same exact VCS pin; no PyPI publication is required. Engine owns minute execution, paper accounts, reservations, execution planning and deterministic matching/replay/impact. Compatibility modules expose the identical Core objects; the pending adapter preserves Platform's full sparse validation and actual optimizer result. OSQP, statistical risk, research calibration, `pool_sleeves`, daily backtests and model training remain Platform responsibilities. Aliases stay for at least two minor-release cycles and until all recorded supported consumers migrate.
 
-Python is the default implementation and behavioral reference. To use the Rust backend, build its wheel separately and select the backend explicitly. See the [optional Rust kernel guide](../development/microstructure-rust.en.md).
+The optional native distribution belongs only to Engine; select `backend="rust"` explicitly after installing its wheel. There is no silent fallback. Native impact raises `NotImplementedError` before mutation because per-fill execution evidence is unavailable. Generator and `sqrt_law` remain Platform consumers; synthetic diagnostic slopes are not a calibrated market law. Account raw schema 2 and `execution-state.v2` identify the relocated owner. Older checkpoints require the full original pinned Platform/Runtime/Go/dependency environment; never convert or rebind them.
 
-Historical FI-2010 reproduction code remains under `legacy/` and is not part of the default development path. Do not infer the current public API from archived guides or old entry points. Check `pyproject.toml`, `packages/microstructure/src/ticknet/`, and the relevant tests.
+[Historical source](https://github.com/runchengxie/quant-platform/blob/7a618bddd8fdeee5dbe37fe5b54a9698e0de5355/docs/microstructure/development-guide.en.md)
 
-## Local checks
-
-From the repository root, install the locked development dependencies and run the focused tests:
-
-```bash
-uv sync --locked --all-groups --extra microstructure
-uv run --locked pytest tests/microstructure -q
-```
-
-See the [development and testing guide](../testing.md) for repository-wide quality checks, strict type checking, and CI gates. Rust parity tests are skipped in a regular Python environment when the extension is not installed. The Rust guide documents how to build the extension and require those tests.
+[Native build guide](../development/microstructure-rust.en.md)

@@ -1,6 +1,6 @@
 # Sparse factor-risk signed paper optimization
 
-[简体中文](sparse-signed-optimization.zh-CN.md)
+Language: English · [简体中文](sparse-signed-optimization.zh-CN.md)
 
 Use `quant_platform.portfolio.sparse_signed_optimization` for larger synthetic
 signed portfolios whose risk is supplied as `B F B.T + diag(D)`. Install
@@ -79,3 +79,5 @@ time and independently solved objective differences. These are host-specific
 measurements, not a latency or memory guarantee; inputs and outputs stay outside
 public source control. The implementation follows the official
 [OSQP Python interface](https://osqp.org/docs/interfaces/python.html).
+
+[Pending resource reservations](../contracts/pending-allocation.md): full risk validation and sparse optimization remain in Platform.

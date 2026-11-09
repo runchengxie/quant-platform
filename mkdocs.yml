@@ -100,6 +100,9 @@ nav:
           - Portfolio execution profiling: development/portfolio-execution-profiling-2026-09.md
       - Core concepts:
           - Runtime kernel: architecture/runtime-kernel.md
+          - Paper accounts: backtest/paper-account.md
+          - Account events: contracts/paper-account-events.md
+          - Pending reservations: contracts/pending-allocation.md
       - Alpha and research:
           - Alpha and research overview: alpha/README.md
           - Alpha research outputs: alpha/reference/research-outputs.en-US.md
@@ -178,6 +181,9 @@ nav:
           - 成本口径: concepts/cost-breakdown.zh-CN.md
           - 分期执行费率: dated-execution-fees.zh-CN.md
           - 运行时内核: architecture/runtime-kernel.zh-CN.md
+          - 纸面账户: backtest/paper-account.zh-CN.md
+          - 账户事件: contracts/paper-account-events.zh-CN.md
+          - 待成交预留: contracts/pending-allocation.zh-CN.md
       - 后端架构: concepts/backend-architecture.md
       - LEAN feasibility spike: concepts/lean-differential-spike-2026-09.md
       - 回测结果解读: concepts/backtest-interpretation.md

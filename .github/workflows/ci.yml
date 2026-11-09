@@ -9,7 +9,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: runchengxie/quant-backtest-engine
-          ref: 19a2ae714b567fc1a46cf996fa5a86a90138bc44
+          ref: 51ab1e8cb2267d938a0681b81f2419d504ed91cc
           path: session-engine-provider
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
@@ -63,7 +63,7 @@ jobs:
         run: >-
           uv pip install --python "$RUNNER_TEMP/platform-wheel-env/bin/python"
           "$GITHUB_WORKSPACE/packages/research-contracts"
-          "$RUNNER_TEMP/platform-wheels/quant_platform-0.1.0-py3-none-any.whl"
+          "$RUNNER_TEMP/platform-wheels/quant_platform-0.2.0-py3-none-any.whl"
       - name: Check base wheel with mandatory provider and without machine learning extras
         run: >-
           "$RUNNER_TEMP/platform-wheel-env/bin/python" -I scripts/check_platform_wheel.py
@@ -72,7 +72,7 @@ jobs:
         working-directory: ${{ runner.temp }}
         run: >-
           uv pip install --python "$RUNNER_TEMP/platform-wheel-env/bin/python"
-          "$RUNNER_TEMP/platform-wheels/quant_platform-0.1.0-py3-none-any.whl[engine]"
+          "$RUNNER_TEMP/platform-wheels/quant_platform-0.2.0-py3-none-any.whl[engine]"
       - name: Check regular wheel with compatibility extra
         run: >-
           "$RUNNER_TEMP/platform-wheel-env/bin/python" -I scripts/check_platform_wheel.py
@@ -97,11 +97,16 @@ jobs:
           from ticknet.train import f1_metrics;
           assert f1_metrics(np.array([0, 1, 1]), np.array([0, 1, 1]))['accuracy'] == 1.0"
       - run: uv sync --locked --all-groups --extra dev --extra microstructure
-      - run: cargo fmt --check --manifest-path packages/microstructure/rust/Cargo.toml
-      - run: cargo check --locked --manifest-path packages/microstructure/rust/Cargo.toml
-      - run: uv run --locked maturin build --locked --release -m packages/microstructure/rust/Cargo.toml --out /tmp/microstructure-wheels
-      - run: uv pip install --python .venv/bin/python /tmp/microstructure-wheels/*.whl
-      - run: TICKNET_REQUIRE_RUST=1 .venv/bin/pytest tests/microstructure -q
+      - name: Check out the sole native provider
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: runchengxie/quant-backtest-engine
+          ref: 51ab1e8cb2267d938a0681b81f2419d504ed91cc
+          path: native-engine-provider
+      - run: uv run --locked maturin build --locked --release -m native-engine-provider/core-native/Cargo.toml --out "$RUNNER_TEMP/microstructure-wheels"
+      - run: uv pip install --python .venv/bin/python "$RUNNER_TEMP"/microstructure-wheels/*.whl
+      - run: TICKNET_REQUIRE_RUST=1 .venv/bin/pytest tests/microstructure tests/test_engine_microstructure_compatibility.py -q
+
   check:
     runs-on: ubuntu-latest
     steps:

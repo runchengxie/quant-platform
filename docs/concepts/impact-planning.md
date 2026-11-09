@@ -2,13 +2,15 @@
 
 Language: English · [简体中文](impact-planning.zh-CN.md)
 
-Engine 0.1.0 now provides the minute and leaf evidence APIs described here. See the [current English documentation](https://runchengxie.github.io/quant-backtest-engine/concepts/impact-planning/). Platform 0.1.0 preserves existing import paths as aliases of the same Engine objects.
+<span id="impact-aware-rolling-planning"></span>
+<span id="request-and-objective"></span>
+<span id="affine-cash-envelope-and-execution-checks"></span>
+<span id="reproduction-and-limits"></span>
 
-Statistical risk, generic portfolio optimization and integrations awaiting migration remain in Platform; the destination distinguishes their current scope.
+This page preserves the original route. See the [Engine documentation](https://runchengxie.github.io/quant-backtest-engine/concepts/impact-planning/) for the current implementation, contracts and limits.
 
-[Pre-migration documentation and historical evidence](https://github.com/runchengxie/quant-platform/blob/7a618bddd8fdeee5dbe37fe5b54a9698e0de5355/docs/concepts/impact-planning.md) retain their original meaning.
+Platform 0.2.0 supports Python 3.12 and 3.13 with Engine Core 0.2.0 and SDK 0.3.0 at merged revision `51ab1e8cb2267d938a0681b81f2419d504ed91cc`. Core and SDK use the same exact VCS pin; no PyPI publication is required. Engine owns minute execution, paper accounts, reservations, execution planning and deterministic matching/replay/impact. Compatibility modules expose the identical Core objects; the pending adapter preserves Platform's full sparse validation and actual optimizer result. OSQP, statistical risk, research calibration, `pool_sleeves`, daily backtests and model training remain Platform responsibilities. Aliases stay for at least two minor-release cycles and until all recorded supported consumers migrate.
 
-<a id="impact-aware-rolling-planning"></a>
-<a id="request-and-objective"></a>
-<a id="affine-cash-envelope-and-execution-checks"></a>
-<a id="reproduction-and-limits"></a>
+The optional native distribution belongs only to Engine; select `backend="rust"` explicitly after installing its wheel. There is no silent fallback. Native impact raises `NotImplementedError` before mutation because per-fill execution evidence is unavailable. Generator and `sqrt_law` remain Platform consumers; synthetic diagnostic slopes are not a calibrated market law. Account raw schema 2 and `execution-state.v2` identify the relocated owner. Older checkpoints require the full original pinned Platform/Runtime/Go/dependency environment; never convert or rebind them.
+
+[Historical source](https://github.com/runchengxie/quant-platform/blob/7a618bddd8fdeee5dbe37fe5b54a9698e0de5355/docs/concepts/impact-planning.md)

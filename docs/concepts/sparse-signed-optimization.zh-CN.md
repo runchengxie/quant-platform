@@ -1,6 +1,6 @@
 # 稀疏因子风险模拟组合优化
 
-[English](sparse-signed-optimization.md)
+语言：简体中文 · [English](sparse-signed-optimization.md)
 
 `quant_platform.portfolio.sparse_signed_optimization` 面向使用
 `B F B.T + diag(D)` 风险模型的大规模合成组合。安装 `quant-platform[sparse]`，
@@ -64,3 +64,5 @@ scripts/benchmarks/sparse_signed_qp.py`，可获得 100/500/1000 资产、每组
 CSC 非零元、耗时及独立冷启动的目标值差异。测量仅代表当前机器，不保证时延或
 内存。输入输出不提交到公开源码库。接口依据
 [OSQP 官方 Python 文档](https://osqp.org/docs/interfaces/python.html)。
+
+[待成交资源预留](../contracts/pending-allocation.zh-CN.md)：完整风险校验与稀疏优化仍由 Platform 负责。

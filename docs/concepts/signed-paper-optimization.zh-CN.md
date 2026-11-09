@@ -1,6 +1,6 @@
 # 带符号权重的模拟组合优化
 
-[English](signed-paper-optimization.md)
+语言：简体中文 · [English](signed-paper-optimization.md)
 
 `quant_platform.portfolio.signed_optimization` 用于合成数据或模拟研究，权重以
 组合净资产比例表示，可正可负。它独立于现有只做多优化器，不证明可交易性、融资、
@@ -44,3 +44,5 @@
 
 无需构建稠密资产协方差的因子风险问题，可使用
 [稀疏 OSQP 接口](sparse-signed-optimization.zh-CN.md)。
+
+[待成交资源预留](../contracts/pending-allocation.zh-CN.md)：完整风险校验与稀疏优化仍由 Platform 负责。

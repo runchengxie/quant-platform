@@ -8,14 +8,14 @@ from packaging.markers import Marker
 from packaging.version import Version
 
 ROOT = Path(__file__).resolve().parents[1]
-SDK_REVISION = "19a2ae714b567fc1a46cf996fa5a86a90138bc44"
+SDK_REVISION = "51ab1e8cb2267d938a0681b81f2419d504ed91cc"
 SDK_REPOSITORY = "https://github.com/runchengxie/quant-backtest-engine.git"
 SDK_DEPENDENCY = (
     f"quant-backtest-engine-client @ git+{SDK_REPOSITORY}@{SDK_REVISION}#subdirectory=python"
 )
 
 CORE_DEPENDENCY = (
-    f"quant-backtest-core[minute,cost,scenario] @ git+{SDK_REPOSITORY}@{SDK_REVISION}"
+    f"quant-backtest-core[minute,cost,scenario,planning] @ git+{SDK_REPOSITORY}@{SDK_REVISION}"
     "#subdirectory=core"
 )
 
@@ -48,7 +48,7 @@ def test_distribution_declares_public_registry_and_immutable_provider_dependenci
     dependencies = project["project"]["dependencies"]
     dev_dependencies = project["dependency-groups"]["dev"]
 
-    assert project["project"]["version"] == "0.1.0"
+    assert project["project"]["version"] == "0.2.0"
     assert project["project"]["requires-python"] == ">=3.12,<3.14"
     assert dependencies == [
         CORE_DEPENDENCY,

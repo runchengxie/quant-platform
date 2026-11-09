@@ -3189,8 +3189,8 @@ wheels = [
 
 [[package]]
 name = "quant-backtest-core"
-version = "0.1.0"
-source = { git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=core&rev=19a2ae714b567fc1a46cf996fa5a86a90138bc44#19a2ae714b567fc1a46cf996fa5a86a90138bc44" }
+version = "0.2.0"
+source = { git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=core&rev=51ab1e8cb2267d938a0681b81f2419d504ed91cc#51ab1e8cb2267d938a0681b81f2419d504ed91cc" }
 dependencies = [
     { name = "quant-backtest-engine-client" },
 ]
@@ -3204,6 +3204,11 @@ cost = [
 minute = [
     { name = "pandas" },
 ]
+planning = [
+    { name = "numpy" },
+    { name = "pandas" },
+    { name = "scipy" },
+]
 scenario = [
     { name = "pandas" },
 ]
@@ -3211,11 +3216,11 @@ scenario = [
 [[package]]
 name = "quant-backtest-engine-client"
 version = "0.3.0"
-source = { git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=python&rev=19a2ae714b567fc1a46cf996fa5a86a90138bc44#19a2ae714b567fc1a46cf996fa5a86a90138bc44" }
+source = { git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=python&rev=51ab1e8cb2267d938a0681b81f2419d504ed91cc#51ab1e8cb2267d938a0681b81f2419d504ed91cc" }
 
 [[package]]
 name = "quant-platform"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "duckdb" },
@@ -3223,7 +3228,7 @@ dependencies = [
     { name = "pandas" },
     { name = "pyarrow" },
     { name = "pyyaml" },
-    { name = "quant-backtest-core", extra = ["cost", "minute", "scenario"] },
+    { name = "quant-backtest-core", extra = ["cost", "minute", "planning", "scenario"] },
     { name = "quant-backtest-engine-client" },
     { name = "research-contracts" },
     { name = "scipy" },
@@ -3300,9 +3305,9 @@ requires-dist = [
     { name = "pyqlib", marker = "extra == 'qlib'", specifier = ">=0.9.5" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.3" },
     { name = "pyyaml", specifier = ">=6.0" },
-    { name = "quant-backtest-core", extras = ["minute", "cost", "scenario"], git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=core&rev=19a2ae714b567fc1a46cf996fa5a86a90138bc44" },
-    { name = "quant-backtest-engine-client", git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=python&rev=19a2ae714b567fc1a46cf996fa5a86a90138bc44" },
-    { name = "quant-backtest-engine-client", marker = "extra == 'engine'", git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=python&rev=19a2ae714b567fc1a46cf996fa5a86a90138bc44" },
+    { name = "quant-backtest-core", extras = ["minute", "cost", "scenario", "planning"], git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=core&rev=51ab1e8cb2267d938a0681b81f2419d504ed91cc" },
+    { name = "quant-backtest-engine-client", git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=python&rev=51ab1e8cb2267d938a0681b81f2419d504ed91cc" },
+    { name = "quant-backtest-engine-client", marker = "extra == 'engine'", git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=python&rev=51ab1e8cb2267d938a0681b81f2419d504ed91cc" },
     { name = "research-code-quality", marker = "extra == 'dev'", git = "https://github.com/runchengxie/research-code-quality.git?rev=76a869e4f7982a456e4807f454815d6aa027d712" },
     { name = "research-contracts", directory = "packages/research-contracts" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8" },
@@ -3326,7 +3331,7 @@ dev = [
     { name = "polars", specifier = ">=1.0" },
     { name = "pytest", specifier = ">=9.0.3" },
     { name = "pytest-cov", specifier = ">=6.0" },
-    { name = "quant-backtest-engine-client", git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=python&rev=19a2ae714b567fc1a46cf996fa5a86a90138bc44" },
+    { name = "quant-backtest-engine-client", git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=python&rev=51ab1e8cb2267d938a0681b81f2419d504ed91cc" },
     { name = "research-code-quality", git = "https://github.com/runchengxie/research-code-quality.git?rev=76a869e4f7982a456e4807f454815d6aa027d712" },
     { name = "ruff", specifier = ">=0.8" },
     { name = "scikit-learn", specifier = ">=1.9.0" },

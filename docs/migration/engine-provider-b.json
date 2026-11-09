@@ -1,0 +1,574 @@
+{
+  "schema": "platform-engine-provider-b.v1",
+  "provider_revision": "51ab1e8cb2267d938a0681b81f2419d504ed91cc",
+  "platform_origin": "7b8ba856feaca0f74787365b03ed9050c6d30eec",
+  "modules": {
+    "quant_platform.backtest.market_paths": "quant_backtest_core.backtest.market_paths",
+    "quant_platform.backtest.stress": "quant_backtest_core.backtest.stress",
+    "quant_platform.backtest.costs": "quant_backtest_core.backtest.costs",
+    "quant_platform.backtest.impact": "quant_backtest_core.backtest.impact",
+    "quant_platform.backtest.impact_scenarios": "quant_backtest_core.backtest.impact_scenarios",
+    "quant_platform.analytics.execution_integrity": "quant_backtest_core.evidence.execution_integrity",
+    "quant_platform.analytics.transaction_costs": "quant_backtest_core.evidence.transaction_costs",
+    "quant_platform.analytics.cost_scope": "quant_backtest_core.evidence.cost_scope",
+    "quant_platform.analytics.capital_returns": "quant_backtest_core.evidence.capital_returns",
+    "quant_platform.backtest.minute": "quant_backtest_core.backtest.minute",
+    "quant_platform.backtest.minute_session": "quant_backtest_core.backtest.minute_session",
+    "quant_platform.backtest._minute_checkpoint": "quant_backtest_core.backtest._minute_checkpoint",
+    "quant_platform.backtest.quantity_locks": "quant_backtest_core.backtest.quantity_locks",
+    "quant_platform._portfolio.minute_execution": "quant_backtest_core._minute.minute_execution",
+    "quant_platform._portfolio._minute_state": "quant_backtest_core._minute._minute_state",
+    "quant_platform._portfolio._minute_validation": "quant_backtest_core._minute._minute_validation",
+    "quant_platform._portfolio.capital_flows": "quant_backtest_core._minute.capital_flows",
+    "quant_platform._portfolio.corporate_actions": "quant_backtest_core._minute.corporate_actions",
+    "quant_platform._portfolio.valuation_events": "quant_backtest_core._minute.valuation_events",
+    "quant_platform.backtest.paper_account": "quant_backtest_core.backtest.paper_account",
+    "quant_platform.backtest.account_events": "quant_backtest_core.backtest.account_events",
+    "quant_platform.backtest._account_event_types": "quant_backtest_core.backtest._account_event_types",
+    "quant_platform.backtest.checkpoints": "quant_backtest_core.backtest.checkpoints",
+    "quant_platform.backtest.reconciliation": "quant_backtest_core.backtest.reconciliation",
+    "quant_platform.portfolio.impact_planning": "quant_backtest_core.planning.impact_planning",
+    "quant_platform.portfolio.multiperiod": "quant_backtest_core.planning.multiperiod",
+    "quant_platform.portfolio.discrete_inventory": "quant_backtest_core.planning.discrete_inventory",
+    "quant_platform.portfolio.discrete_oracle": "quant_backtest_core.planning.discrete_oracle",
+    "quant_platform.portfolio.sleeve_allocation": "quant_backtest_core.planning.sleeve_allocation",
+    "ticknet.simulator.matching": "quant_backtest_core.microstructure.matching",
+    "ticknet.simulator.pack": "quant_backtest_core.microstructure.pack",
+    "ticknet.simulator.ordering": "quant_backtest_core.microstructure.ordering",
+    "ticknet.simulator.replay": "quant_backtest_core.microstructure.replay",
+    "ticknet.simulator.correctness": "quant_backtest_core.microstructure.correctness",
+    "ticknet.simulator.impact": "quant_backtest_core.microstructure.impact"
+  },
+  "routes": [
+    {
+      "source": "docs/backtest/market-paths.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/backtest/market-paths/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/market-paths/",
+      "anchors": [
+        "dependent-synthetic-market-paths",
+        "input-and-fit-contract",
+        "generation-and-identities",
+        "execution-boundary"
+      ]
+    },
+    {
+      "source": "docs/backtest/market-paths.zh-CN.md",
+      "locale": "zh-CN",
+      "old_url": "https://runchengxie.github.io/quant-platform/backtest/market-paths.zh-CN/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/market-paths.zh-CN/",
+      "anchors": [
+        "_1",
+        "_2",
+        "_3",
+        "_4"
+      ]
+    },
+    {
+      "source": "docs/backtest/transaction-cost-evidence.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/backtest/transaction-cost-evidence/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/transaction-cost-evidence/",
+      "anchors": [
+        "transaction-cost-evidence",
+        "normalized-inputs",
+        "fees-and-attribution",
+        "existing-scope-fitting-and-clustered-uncertainty"
+      ]
+    },
+    {
+      "source": "docs/backtest/transaction-cost-evidence.zh-CN.md",
+      "locale": "zh-CN",
+      "old_url": "https://runchengxie.github.io/quant-platform/backtest/transaction-cost-evidence.zh-CN/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/transaction-cost-evidence.zh-CN/",
+      "anchors": [
+        "_1",
+        "_2",
+        "_3",
+        "_4"
+      ]
+    },
+    {
+      "source": "docs/concepts/impact-planning.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/concepts/impact-planning/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/concepts/impact-planning/",
+      "anchors": [
+        "impact-aware-rolling-planning",
+        "request-and-objective",
+        "affine-cash-envelope-and-execution-checks",
+        "reproduction-and-limits"
+      ]
+    },
+    {
+      "source": "docs/concepts/impact-planning.zh-CN.md",
+      "locale": "zh-CN",
+      "old_url": "https://runchengxie.github.io/quant-platform/concepts/impact-planning.zh-CN/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/concepts/impact-planning.zh-CN/",
+      "anchors": [
+        "_1",
+        "_2",
+        "_3",
+        "_4"
+      ]
+    },
+    {
+      "source": "docs/backtest/execution-integrity.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/backtest/execution-integrity/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/execution-integrity/",
+      "anchors": [
+        "recorded-fill-integrity-and-pooled-account-exploration"
+      ]
+    },
+    {
+      "source": "docs/backtest/cost-evidence.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/backtest/cost-evidence/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/cost-evidence/",
+      "anchors": [
+        "cost-evidence"
+      ]
+    },
+    {
+      "source": "docs/backtest/capital-and-reconciliation.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/backtest/capital-and-reconciliation/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/capital-and-reconciliation/",
+      "anchors": [
+        "capital-events-investment-returns-and-external-evidence"
+      ]
+    },
+    {
+      "source": "docs/backtest/minute-session.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/backtest/minute-session/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/minute-session/",
+      "anchors": [
+        "recoverable-minute-execution-sessions",
+        "construct-and-restore",
+        "financial-clocks-and-ordering",
+        "external-capital-and-returns",
+        "delayed-visibility-and-locks",
+        "checkpoint-version-and-failure-policy"
+      ]
+    },
+    {
+      "source": "docs/backtest/minute-session.zh-CN.md",
+      "locale": "zh-CN",
+      "old_url": "https://runchengxie.github.io/quant-platform/backtest/minute-session.zh-CN/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/minute-session.zh-CN/",
+      "anchors": [
+        "_1",
+        "_2",
+        "_3",
+        "_4",
+        "_5",
+        "_6"
+      ]
+    },
+    {
+      "source": "docs/guides/minute-execution.en.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/guides/minute-execution.en/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/guides/minute-execution/",
+      "anchors": [
+        "minute-execution-scenarios",
+        "conditional-orders-and-declared-information-time",
+        "temporary-nontrading-mark-provenance"
+      ]
+    },
+    {
+      "source": "docs/guides/minute-execution.md",
+      "locale": "zh-CN",
+      "old_url": "https://runchengxie.github.io/quant-platform/guides/minute-execution/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/guides/minute-execution.zh-CN/",
+      "anchors": [
+        "_1",
+        "_2",
+        "_3"
+      ]
+    },
+    {
+      "source": "docs/backtest/execution-integrity.zh-CN.md",
+      "locale": "zh-CN",
+      "old_url": null,
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/execution-integrity.zh-CN/",
+      "anchors": []
+    },
+    {
+      "source": "docs/backtest/cost-evidence.zh-CN.md",
+      "locale": "zh-CN",
+      "old_url": null,
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/cost-evidence.zh-CN/",
+      "anchors": []
+    },
+    {
+      "source": "docs/backtest/capital-and-reconciliation.zh-CN.md",
+      "locale": "zh-CN",
+      "old_url": null,
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/capital-and-reconciliation.zh-CN/",
+      "anchors": []
+    },
+    {
+      "source": "docs/backtest/paper-account.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/backtest/paper-account/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/paper-account/",
+      "anchors": [
+        "signed-paper-account"
+      ]
+    },
+    {
+      "source": "docs/contracts/paper-account-events.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/contracts/paper-account-events/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/contracts/paper-account-events/",
+      "anchors": [
+        "paper-account-event-lifecycle",
+        "financial-state-and-clocks",
+        "supplied-projections-and-fills",
+        "orders-and-reservations",
+        "corporate-actions-reductions-and-settlement",
+        "checkpoints"
+      ]
+    },
+    {
+      "source": "docs/contracts/pending-allocation.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/contracts/pending-allocation/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/contracts/pending-allocation/",
+      "anchors": [
+        "pending-aware-paper-allocation",
+        "target-and-order-semantics",
+        "observations-and-clocks",
+        "exposure-envelope",
+        "cash-sales-and-locates",
+        "calling-and-interpreting-the-result"
+      ]
+    },
+    {
+      "source": "docs/concepts/discrete-inventory.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/concepts/discrete-inventory/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/concepts/discrete-inventory/",
+      "anchors": [
+        "finite-inventory-and-lot-comparison",
+        "prefunded-cash-is-the-optimization-domain",
+        "inputs-objective-and-quantities",
+        "search-results-and-certificates",
+        "independent-checks-and-execution-ownership"
+      ]
+    },
+    {
+      "source": "docs/concepts/discrete-inventory.zh-CN.md",
+      "locale": "zh-CN",
+      "old_url": "https://runchengxie.github.io/quant-platform/concepts/discrete-inventory.zh-CN/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/concepts/discrete-inventory.zh-CN/",
+      "anchors": [
+        "_1",
+        "_2",
+        "_3",
+        "_4",
+        "_5"
+      ]
+    },
+    {
+      "source": "docs/backtest/sleeve-allocation.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/backtest/sleeve-allocation/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/sleeve-allocation/",
+      "anchors": [
+        "shared-sleeve-allocation-and-unfinished-exits",
+        "declare-a-batch",
+        "internal-crossing-and-external-attribution",
+        "hand-cases-and-finite-horizons"
+      ]
+    },
+    {
+      "source": "docs/backtest/sleeve-allocation.zh-CN.md",
+      "locale": "zh-CN",
+      "old_url": "https://runchengxie.github.io/quant-platform/backtest/sleeve-allocation.zh-CN/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/sleeve-allocation.zh-CN/",
+      "anchors": [
+        "_1",
+        "_2",
+        "_3",
+        "_4"
+      ]
+    },
+    {
+      "source": "docs/microstructure/development-guide.en.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/microstructure/development-guide.en/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/microstructure/matching/",
+      "anchors": [
+        "microstructure-development-guide",
+        "code-layout",
+        "local-checks"
+      ]
+    },
+    {
+      "source": "docs/microstructure/development-guide.md",
+      "locale": "zh-CN",
+      "old_url": "https://runchengxie.github.io/quant-platform/microstructure/development-guide/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/microstructure/matching.zh-CN/",
+      "anchors": [
+        "_1",
+        "_2",
+        "_3"
+      ]
+    },
+    {
+      "source": "docs/development/microstructure-rust.en.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/development/microstructure-rust.en/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/development/microstructure-rust/",
+      "anchors": [
+        "rust-microstructure-kernel",
+        "build-and-use",
+        "correctness-and-measurement",
+        "fill-evidence-and-impact-estimation-limits"
+      ]
+    },
+    {
+      "source": "docs/development/microstructure-rust.md",
+      "locale": "zh-CN",
+      "old_url": "https://runchengxie.github.io/quant-platform/development/microstructure-rust/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/development/microstructure-rust.zh-CN/",
+      "anchors": [
+        "rust",
+        "_1",
+        "_2",
+        "_3"
+      ]
+    },
+    {
+      "source": "docs/backtest/paper-account.zh-CN.md",
+      "locale": "zh-CN",
+      "old_url": null,
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/paper-account.zh-CN/",
+      "anchors": []
+    },
+    {
+      "source": "docs/contracts/paper-account-events.zh-CN.md",
+      "locale": "zh-CN",
+      "old_url": null,
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/contracts/paper-account-events.zh-CN/",
+      "anchors": []
+    },
+    {
+      "source": "docs/contracts/pending-allocation.zh-CN.md",
+      "locale": "zh-CN",
+      "old_url": null,
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/contracts/pending-allocation.zh-CN/",
+      "anchors": []
+    }
+  ],
+  "versions": {
+    "platform": "0.2.0",
+    "core": "0.2.0",
+    "sdk": "0.3.0",
+    "native": "0.1.0"
+  },
+  "adapters": {
+    "quant_platform.portfolio.pending_allocation": {
+      "provider": "quant_backtest_core.planning.pending_allocation",
+      "value_aliases": [
+        "PendingOrder",
+        "PendingAllocationState",
+        "PendingAllocationEnvelope",
+        "PendingAllocationResult"
+      ],
+      "validation": "Original full sparse validator before both envelope and solve",
+      "optimizer": "quant_platform.portfolio.engine_pending_adapter.PlatformPendingOptimizer"
+    }
+  },
+  "source_closure": [
+    {
+      "legacy": "quant_platform.backtest.paper_account",
+      "provider": "quant_backtest_core.backtest.paper_account",
+      "provider_path": "core/src/quant_backtest_core/backtest/paper_account.py",
+      "provider_sha256": "244cb0e51d41aefb555adf106c3967ab731cac7f02911303bb460e5f0b7df4c9",
+      "legacy_base_sha256": "244cb0e51d41aefb555adf106c3967ab731cac7f02911303bb460e5f0b7df4c9"
+    },
+    {
+      "legacy": "quant_platform.backtest.account_events",
+      "provider": "quant_backtest_core.backtest.account_events",
+      "provider_path": "core/src/quant_backtest_core/backtest/account_events.py",
+      "provider_sha256": "1dd3d6bf5e31ea3093621e4c0296ed1f0d62c8a764f9f3b4c567387443e730d6",
+      "legacy_base_sha256": "806730fe7f9905842731dbd8d6f18cfec136b7bef5c42739851e7802e3a3e399"
+    },
+    {
+      "legacy": "quant_platform.backtest._account_event_types",
+      "provider": "quant_backtest_core.backtest._account_event_types",
+      "provider_path": "core/src/quant_backtest_core/backtest/_account_event_types.py",
+      "provider_sha256": "fdc4f4519bc900dcd08d5388d2f3d4ed3bdc5a42315079599f4e16f783093bf2",
+      "legacy_base_sha256": "fdc4f4519bc900dcd08d5388d2f3d4ed3bdc5a42315079599f4e16f783093bf2"
+    },
+    {
+      "legacy": "quant_platform.backtest.checkpoints",
+      "provider": "quant_backtest_core.backtest.checkpoints",
+      "provider_path": "core/src/quant_backtest_core/backtest/checkpoints.py",
+      "provider_sha256": "30cf8cb05b1c2030fa080a11ed65b3631545b04094c39d7e153ff1a264f29731",
+      "legacy_base_sha256": "f7ea03dd0d9e96e6348525bb9cc6c9f91eb0800fd65efa6a8b1da9553c424d2b"
+    },
+    {
+      "legacy": "quant_platform.backtest.reconciliation",
+      "provider": "quant_backtest_core.backtest.reconciliation",
+      "provider_path": "core/src/quant_backtest_core/backtest/reconciliation.py",
+      "provider_sha256": "0065757d0ca45de40836a787686daef413806689c00f49e21dd24280ddd038f8",
+      "legacy_base_sha256": "0065757d0ca45de40836a787686daef413806689c00f49e21dd24280ddd038f8"
+    },
+    {
+      "legacy": "quant_platform.portfolio.impact_planning",
+      "provider": "quant_backtest_core.planning.impact_planning",
+      "provider_path": "core/src/quant_backtest_core/planning/impact_planning.py",
+      "provider_sha256": "6763794976b4d6e4852b23231ca267dd1e981b534569ba71b0ae15de8d1a6857",
+      "legacy_base_sha256": "f7aaf8cd7b778fcd394ef08fb66e34245c78976543d7b9493f1c303eaa7e6359"
+    },
+    {
+      "legacy": "quant_platform.portfolio.multiperiod",
+      "provider": "quant_backtest_core.planning.multiperiod",
+      "provider_path": "core/src/quant_backtest_core/planning/multiperiod.py",
+      "provider_sha256": "375f99b496bf8e147b6d9070a4fe75e5bf9e402769fe21ed50739fe2f6b5f29d",
+      "legacy_base_sha256": "1ea34f11c9dbab02ea6560f983918ae1f418c5f40025f7faaafe14527ff94845"
+    },
+    {
+      "legacy": "quant_platform.portfolio.discrete_inventory",
+      "provider": "quant_backtest_core.planning.discrete_inventory",
+      "provider_path": "core/src/quant_backtest_core/planning/discrete_inventory.py",
+      "provider_sha256": "df31ad2bdd9283c05649c3d06feb2744b32c0715592535f3c1e431c8e3ea4a8c",
+      "legacy_base_sha256": "3238ecae91588ae6818f718af8938ecefc506ae2e357c5627644f07ed982bd58"
+    },
+    {
+      "legacy": "quant_platform.portfolio.discrete_oracle",
+      "provider": "quant_backtest_core.planning.discrete_oracle",
+      "provider_path": "core/src/quant_backtest_core/planning/discrete_oracle.py",
+      "provider_sha256": "5ff792b8387fcc40d8ab95d1c302bd2cd988fceac1e5f3aef7c06cc29656d6e8",
+      "legacy_base_sha256": "98aac895872f1f86536f7739852a02110c8ffd40532157d26009f81c3139a7b0"
+    },
+    {
+      "legacy": "quant_platform.portfolio.sleeve_allocation",
+      "provider": "quant_backtest_core.planning.sleeve_allocation",
+      "provider_path": "core/src/quant_backtest_core/planning/sleeve_allocation.py",
+      "provider_sha256": "b6c73dd88c1f2804e3f278df8ccb069daf1f2934bda94a70d8144120f882061f",
+      "legacy_base_sha256": "6916287aed000cc3a6d349c8ce83ae2c4ee6d43158333eddbf68b56eb7d83577"
+    },
+    {
+      "legacy": "ticknet.simulator.matching",
+      "provider": "quant_backtest_core.microstructure.matching",
+      "provider_path": "core/src/quant_backtest_core/microstructure/matching.py",
+      "provider_sha256": "920adb6b3f5196512cbf23692ab6dbfd7f980b5a80e965a2854d7cf60c216e2a",
+      "legacy_base_sha256": "920adb6b3f5196512cbf23692ab6dbfd7f980b5a80e965a2854d7cf60c216e2a"
+    },
+    {
+      "legacy": "ticknet.simulator.pack",
+      "provider": "quant_backtest_core.microstructure.pack",
+      "provider_path": "core/src/quant_backtest_core/microstructure/pack.py",
+      "provider_sha256": "d9b049c508d005fac34c0d70505de8932b8548eb44a570847f820c0435a01f2b",
+      "legacy_base_sha256": "d9b049c508d005fac34c0d70505de8932b8548eb44a570847f820c0435a01f2b"
+    },
+    {
+      "legacy": "ticknet.simulator.ordering",
+      "provider": "quant_backtest_core.microstructure.ordering",
+      "provider_path": "core/src/quant_backtest_core/microstructure/ordering.py",
+      "provider_sha256": "d5744eba37df981d3af9bd7fabc5dffb0d3afa095b2ca76eb109fe927f13db84",
+      "legacy_base_sha256": "d5744eba37df981d3af9bd7fabc5dffb0d3afa095b2ca76eb109fe927f13db84"
+    },
+    {
+      "legacy": "ticknet.simulator.replay",
+      "provider": "quant_backtest_core.microstructure.replay",
+      "provider_path": "core/src/quant_backtest_core/microstructure/replay.py",
+      "provider_sha256": "34c7022a8de6cd62b606b4a5c4bdaddc167022c21cda88d41d8320e16b4b6ef1",
+      "legacy_base_sha256": "10c4228a88dfca9d2962af4c7326bfc8cf2253866027da9ae3f787504694cc2b"
+    },
+    {
+      "legacy": "ticknet.simulator.correctness",
+      "provider": "quant_backtest_core.microstructure.correctness",
+      "provider_path": "core/src/quant_backtest_core/microstructure/correctness.py",
+      "provider_sha256": "70c08bb8301b212d66cb375ccac9237a5079a3f3e578ff02b5d202dda53be839",
+      "legacy_base_sha256": "a738a674124f82390d40e15c438092edd8c3c70ca3bfaf08f2192da7668d9a3d"
+    },
+    {
+      "legacy": "ticknet.simulator.impact",
+      "provider": "quant_backtest_core.microstructure.impact",
+      "provider_path": "core/src/quant_backtest_core/microstructure/impact.py",
+      "provider_sha256": "afce487bad76d2db22e8520c56f9589aab3621be860bc3c5283d4fe150551fdd",
+      "legacy_base_sha256": "afce487bad76d2db22e8520c56f9589aab3621be860bc3c5283d4fe150551fdd"
+    },
+    {
+      "legacy": "quant_platform.portfolio.pending_allocation",
+      "provider": "quant_backtest_core.planning.pending_allocation",
+      "provider_path": "core/src/quant_backtest_core/planning/pending_allocation.py",
+      "provider_sha256": "d968f4877f3eb872dfe4e93ff9231d977c618c409aa4022eea3f689f945e7d5b",
+      "legacy_base_sha256": "a3af30230f2b1d84681782d43faa5c2b061c4ec7941496bb164718843e8538a0",
+      "mode": "value aliases and full-validation/optimizer bridge"
+    }
+  ],
+  "retained_owners": [
+    "OSQP",
+    "research calibration",
+    "pool_sleeves",
+    "daily backtests",
+    "ticknet training",
+    "ticknet.simulator.generator",
+    "ticknet.simulator.sqrt_law"
+  ],
+  "artifact_hashes": {
+    "core": "aa11d6162f9337207cc6b3762a8beb7cef8917124c4cd3be235d59f22ff20beb",
+    "sdk": "4844ffe6850e5952a412cc7950c58c5181b107d1ae8c5d34883ccdd1c6e483e7",
+    "native": "cdb3825d5473f5abe6aa59e7ea03577c658932b1acbbc015bf04d24ed31d05d9"
+  },
+  "native_retired_sources": [
+    {
+      "path": "packages/microstructure/rust/Cargo.toml",
+      "sha256": "246398b0078d3cc84e58a5a6ddbb2ea8486bdbdf61b7d019deee998a93be0ef7",
+      "source_revision": "7b8ba856feaca0f74787365b03ed9050c6d30eec"
+    },
+    {
+      "path": "packages/microstructure/rust/Cargo.lock",
+      "sha256": "516515d8a829dcb944f301abb801577776d7576efde9326394687d11fc562088",
+      "source_revision": "7b8ba856feaca0f74787365b03ed9050c6d30eec"
+    },
+    {
+      "path": "packages/microstructure/rust/pyproject.toml",
+      "sha256": "e66843f433286cc5978434ca3c46005e92ed45631831ae8097954be13cb4e9be",
+      "source_revision": "7b8ba856feaca0f74787365b03ed9050c6d30eec"
+    },
+    {
+      "path": "packages/microstructure/rust/src/lib.rs",
+      "sha256": "40197850e671ba028457f9b8406270b7a70052e35dc75e04e8cdd15d41cb7417",
+      "source_revision": "7b8ba856feaca0f74787365b03ed9050c6d30eec"
+    },
+    {
+      "path": "packages/microstructure/rust/_microstructure_rs.pyi",
+      "sha256": "6dd493d8a8db4974b6ebffd90970ba8fba7e0cf012dfd46a95a1b053a1430e7e",
+      "source_revision": "7b8ba856feaca0f74787365b03ed9050c6d30eec"
+    }
+  ],
+  "historical_code_routes": [
+    {
+      "locale": "en",
+      "old_url": "https://github.com/runchengxie/quant-platform/blob/7a618bddd8fdeee5dbe37fe5b54a9698e0de5355/packages/microstructure/src/ticknet/simulator/impact.py",
+      "anchors": [],
+      "symbols": [
+        "ticknet.simulator.impact"
+      ],
+      "new_routes": [
+        {
+          "locale": "en",
+          "url": "https://runchengxie.github.io/quant-backtest-engine/microstructure/impact-estimation/",
+          "anchors": [
+            "execution-impact-estimation"
+          ]
+        },
+        {
+          "locale": "zh-CN",
+          "url": "https://runchengxie.github.io/quant-backtest-engine/microstructure/impact-estimation.zh-CN/",
+          "anchors": []
+        }
+      ]
+    }
+  ]
+}

@@ -2,47 +2,15 @@
 
 语言：简体中文 · [English](microstructure-rust.en.md)
 
-`packages/microstructure/rust` 是 `ticknet.simulator` 的可选 PyO3 wheel。Python 仍是参考实现和默认后端。wheel 提供价格优先、时间优先的订单簿，支持对生成的背景单和干预单做批量回放，也支持事件索引排序。研究编排、模型生成、冲击分析和执行引擎仍由 Python 负责。
+<span id="rust"></span>
+<span id="_1"></span>
+<span id="_2"></span>
+<span id="_3"></span>
 
-## 构建与使用
+本页保留原链接。当前实现、契约和限制见 [Engine 文档](https://runchengxie.github.io/quant-backtest-engine/development/microstructure-rust.zh-CN/)。
 
-先安装项目依赖，再在同一环境中构建并安装 wheel。`rust-toolchain.toml` 指定 Rust 1.99.1，根目录开发依赖组提供由 `uv.lock` 锁定版本的 Maturin：
+Platform 0.2.0 支持 Python 3.12 和 3.13，使用已合并提交 `51ab1e8cb2267d938a0681b81f2419d504ed91cc` 的 Engine Core 0.2.0 和 SDK 0.3.0。两者固定到同一 VCS 提交，无需发布到 PyPI。分钟执行、纸面账户、资源预留、执行规划及确定性撮合、回放和冲击估计由 Engine 维护。兼容模块导出相同的 Core 对象。待成交分配适配器保留 Platform 的完整稀疏风险校验和原优化结果。OSQP、统计风险、研究校准、`pool_sleeves`、日频回测和模型训练仍由 Platform 维护。别名至少保留两个次版本周期，并等待所有登记的受支持使用方迁移完成。
 
-```bash
-uv sync --locked --all-groups --extra microstructure
-uv run --locked maturin build --locked --release \
-  -m packages/microstructure/rust/Cargo.toml --out /tmp/microstructure-wheels
-uv pip install --python .venv/bin/python /tmp/microstructure-wheels/*.whl
-TICKNET_REQUIRE_RUST=1 .venv/bin/pytest tests/microstructure -q
-```
+可选原生发行包仅由 Engine 提供，安装 wheel 后必须显式选择 `backend="rust"`，没有静默回退。原生后端缺少逐笔成交证据，冲击估计会在状态修改前抛出 `NotImplementedError`。生成器和 `sqrt_law` 仍为 Platform 使用方。合成诊断斜率不代表已校准的市场规律。账户原始 schema 2 和 `execution-state.v2` 标识迁移后的状态所有者。旧检查点必须保留原先固定的完整 Platform、Runtime、Go 与依赖环境，不转换或重新绑定。
 
-使用 `MatchingEngine(backend="rust")` 选择原生订单簿。`ReplaySession` 会通过一次原生调用发送所有待处理订单，并在时间戳相同时保留干预单优先级及公开的 `Tick` 输出类型。使用 `sort_simulator_events(events, backend="rust")` 选择原生排序。普通源码安装不会自动要求 Rust 编译器，也不会静默切换后端。若请求 Rust 后端但未安装 wheel，Python 会抛出 `ModuleNotFoundError`。
-
-原生 wheel 通过 `abi3` 支持 Python 3.12 及以上版本。它独立于根 setuptools 包构建，部署时必须同时安装根包和该 wheel。订单 ID 在活动订单簿中必须唯一，这与模拟器事件契约一致。Rust 边界使用有符号 64 位整数表示价格和数量。本仓库不提交真实行情、凭证或基准输出。
-
-## 正确性与性能测量
-
-`tests/microstructure/test_rust_parity.py` 使用带固定种子的随机订单流、撤单、初始盘口、匿名档位缩量、事件排序和批量回放对比两个后端。CI Rust job 会构建 wheel，并设置 `TICKNET_REQUIRE_RUST=1` 运行这些测试。普通 Python job 在没有可选 wheel 时会跳过它们。
-
-基准脚本为两个后端生成相同的合成事件，检查所有 tick 和最终最优价格一致，并报告中位耗时：
-
-```bash
-.venv/bin/python scripts/benchmarks/microstructure_replay.py \
-  --events 100000 --seed 42 --repeats 5
-```
-
-2026-09-24 的开发工作树测量使用 CPython 3.13.14 和 Rust 1.98.1，处理 100,000 个背景单和 1,000 个干预单时，Python 用时 1.137 秒，Rust 用时 0.250 秒，中位速度为 4.54 倍，且输出一致。这是单进程合成回放结果，不代表交易所延迟、实盘表现或任意行情数据上的速度。
-
-## 成交证据与冲击估计边界
-
-`ImpactEstimator` 目前只支持 Python 后端。Rust 的聚合成交返回值仅包含最后一笔成交的价格和对手方 ID，批量回放只返回盘口 tick，无法恢复逐笔成交价量。请求 Rust 冲击估计会在修改会话前抛出 `NotImplementedError`，不会切换后端或用聚合价格伪造 VWAP。现有后端一致性测试不代表逐笔成交证据的一致性。
-
-Python 撮合的 `Trade.fills` 保存每笔实际成交的买卖订单 ID、价格和数量。原有 `Trade.price` 和对手方 ID 保持最后一笔成交的兼容含义。`ReplaySession.fills` 额外记录触发成交的时间和来源，包括背景单打到未成交子单的情况。`run()` 每次只消费新增队列，tick 和成交历史累积，空队列重跑不会重复成交。直接调用订单簿的成交不属于回放证据。
-
-回放时间必须是整数毫秒，且不早于已处理时钟，初值为盘口快照时间。较早事件和非整数时间会在入队前被拒绝。`run()` 在分配自动 ID 和撮合前再次检查可变的待处理订单，因此无效时间修改不会改变盘口、tick 或成交历史。调用方可修正待处理时间后重试。冲击估计器也会在保留子单 ID 前检查子单时间与现有队列。批次内可乱序加入未来事件。跨批次追加相同时间的事件按追加顺序处理，干预单优先规则仅作用于批次内部，不会追溯重排先前批次。
-
-`ImpactResult.filled_volume` 来自本次计划的唯一子单 ID 对应的实际成交，`unfilled_volume` 为计划量减去成交量，`execution_vwap` 为成交额除以成交量。没有成交时，VWAP 和 `execution_slippage_bps` 均为 `None`。执行滑点以执行前中间价为基准，按买卖方向调整，正值代表不利成交。原有 `slippage_bps` 仍表示方向调整后的中间价变化，不能当成成交滑点或扣除背景流后的因果冲击。
-
-子单仍是按提交计划时最优对手价构造的限价单，未成交量会留在订单簿上。结果仅统计本次 `run()` 覆盖的回放窗口，后续批次的成交不会追溯修改之前的结果。这些合成执行证据用于核对模拟器账本，不构成真实市场冲击校准。
-
-`estimate_sqrt_law` 仍是合成观测辅助工具：拟合横轴使用请求量而非真实成交量，纵轴使用中间价变化的绝对值并设 `1e-6` 下限。它的斜率不能作为真实成交冲击校准结果。需要独立设计成交量、对照背景流和样本筛选规则后才能作该解释。
+[历史源码](https://github.com/runchengxie/quant-platform/blob/7a618bddd8fdeee5dbe37fe5b54a9698e0de5355/docs/development/microstructure-rust.md)

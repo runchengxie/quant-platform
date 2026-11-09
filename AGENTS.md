@@ -6,7 +6,7 @@
 
 这是公开的可复用量化研究平台仓库。保留 `portfolio_backtester` Python 命名空间，直到完成兼容迁移。
 
-Platform 0.1.0 消费已合并的 Engine core 0.1.0：分钟执行、会话、事件、冲击及基础成本证据仅保留同对象薄别名。Python 3.12/3.13 与提供方支持范围一致。统计风险、通用组合优化、因子分析和后续阶段待迁移的执行集成继续维护在本仓库。独立 Rust 引擎入口、版本化订单意图契约和 NautilusTrader 薄适配维护在 `quant-backtest-engine`。移除旧回测接口前必须完成调用方迁移和语义对照。`quant-market-data-platform` 独立负责数据接入、标准化、质量治理、版本和已发布数据资产，本仓库只消费其发布资产。`research-workspace`、旧 `portfolio-backtester` 和旧 `quant-execution-engine` 仅用于历史复现和兼容核对。
+Platform 0.2.0 消费已合并的 Engine core 0.2.0：分钟执行、会话、账户、预留、规划、确定性撮合、事件、冲击及基础成本证据仅保留同对象薄别名。Python 3.12/3.13 与提供方支持范围一致。统计风险、通用组合优化、因子分析和后续阶段待迁移的执行集成继续维护在本仓库。独立 Rust 引擎入口、版本化订单意图契约和 NautilusTrader 薄适配维护在 `quant-backtest-engine`。移除旧回测接口前必须完成调用方迁移和语义对照。`quant-market-data-platform` 独立负责数据接入、标准化、质量治理、版本和已发布数据资产，本仓库只消费其发布资产。`research-workspace`、旧 `portfolio-backtester` 和旧 `quant-execution-engine` 仅用于历史复现和兼容核对。
 
 独立引擎的显式客户端位于 `quant_platform.backtest.engine_sessions`，只负责内容摘要固定的子进程调用、结果勾稽与规范化，不复制数量规划或撮合，不自动注册，也不代表完整统一执行结果包。
 
@@ -19,7 +19,7 @@ Platform 0.1.0 消费已合并的 Engine core 0.1.0：分钟执行、会话、�
 - 不要为了迁移方便复制策略实现。需要兼容时保留薄 adapter，并记录删除条件。
 - 历史边界见 `docs/migration/research-workspace-sunset.md`。
 
-`packages/microstructure/rust/` 是可选的 PyO3 原生扩展，提供订单簿撮合、批量回放和事件排序。Python 实现仍是默认后端和行为参考。Rust wheel 独立构建，不会随根 Python 包自动安装。只有明确选择 `backend="rust"` 时才需要安装它，详细步骤见 `docs/development/microstructure-rust.md`。
+可选原生源码与构建由 Engine 的 core-native/ 唯一维护。packages/microstructure/rust/ 只保留固定版本构建指引。显式选择 Rust 后端，并运行 TICKNET_REQUIRE_RUST=1 的旧接口集成测试。模型训练、generator 与 sqrt_law 仍属于 Platform。
 
 ## 并行开发流程
 
@@ -50,4 +50,6 @@ Run `uv sync --locked --all-groups`, `uv run ruff check .`, and `uv run pytest` 
 
 平台通用入口使用 `quant_platform.portfolio`、`quant_platform.analytics`、`quant_platform.backtest`。源码位于 `packages/platform/src`。`portfolio_backtester` 仅作兼容别名，生产代码不得新增直接导入。`quant_platform._portfolio` 是暂存的内部实现，不是公开 API。中立契约不得依赖执行模拟器。独立引擎原始字典 SDK 由 engine 仓库维护，平台仅保留标准分析结果转换。
 
-Provider A pins both core [minute,cost,scenario] and SDK to merged Engine revision `19a2ae714b567fc1a46cf996fa5a86a90138bc44`. Never recreate migrated financial implementations here. Retain aliases for at least two minor-release cycles AND until all recorded supported consumers migrate. Historical v2 checkpoints stay with their original full Runtime/Go/Python release closure; never rebind them to a new source. Kernel test provenance and exact locale routes are in `docs/migration/engine-provider-a*.json`.
+Provider B pins both core [minute,cost,scenario,planning] and SDK to merged Engine revision `51ab1e8cb2267d938a0681b81f2419d504ed91cc`. Never recreate migrated financial implementations here. Retain aliases for at least two minor-release cycles AND until all recorded supported consumers migrate. Historical v2 checkpoints stay with their original full Runtime/Go/Python release closure; never rebind them to a new source. Kernel test provenance and exact locale routes are in `docs/migration/engine-provider-a*.json`.
+
+Active B ownership is recorded in docs/migration/engine-provider-b.json. Preserve immutable provider A historical receipts. Pending standalone and solve entry points retain full sparse validation; daily/research tests remain required for future gates.

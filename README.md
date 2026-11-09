@@ -4,15 +4,8 @@
 
 [中文 README](README.zh-CN.md) · [English language policy](docs/LANGUAGE_POLICY.md) · [中文语言政策](docs/LANGUAGE_POLICY.zh-CN.md)
 
-Platform 0.1.0 supports Python 3.12 and 3.13 and depends on Engine core 0.1.0
-with the explicit minute, cost and scenario extras, plus SDK 0.3.0. Both packages
-resolve to merged Engine revision `19a2ae714b567fc1a46cf996fa5a86a90138bc44`
-through immutable Git subdirectory dependencies; this installation does not
-assume a PyPI release. Existing minute, action, impact and leaf evidence imports
-are aliases of the same Engine classes and functions. Statistical risk, generic
-QP optimization, factor workflows and remaining integrations stay in Platform.
-The SDK-only Rust session adapter remains explicitly selected; unsupported
-execution-aware evidence remains false.
+Platform 0.2.0 supports Python 3.12 and 3.13 with Engine Core 0.2.0 and SDK 0.3.0 at merged revision `51ab1e8cb2267d938a0681b81f2419d504ed91cc`. Core and SDK use the same exact VCS pin; no PyPI publication is required. Engine owns minute execution, paper accounts, reservations, execution planning and deterministic matching/replay/impact. Compatibility modules expose the identical Core objects; the pending adapter preserves Platform's full sparse validation and actual optimizer result. OSQP, statistical risk, research calibration, `pool_sleeves`, daily backtests and model training remain Platform responsibilities. Aliases stay for at least two minor-release cycles and until all recorded supported consumers migrate.
+
 
 
 [Online documentation](https://runchengxie.github.io/quant-platform/)

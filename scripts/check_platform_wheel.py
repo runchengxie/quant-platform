@@ -27,7 +27,7 @@ def _check_clean_imports() -> None:
     assert not any(name.startswith("portfolio_backtester") for name in sys.modules)
     assert "site-packages" in Path(quant_platform.__file__).parts
     assert importlib.util.find_spec("quant_backtest_engine") is not None
-    assert distribution("quant-backtest-core").version == "0.1.0"
+    assert distribution("quant-backtest-core").version == "0.2.0"
     assert distribution("quant-backtest-engine-client").version == "0.3.0"
 
 
@@ -54,6 +54,24 @@ def _check_provider_aliases(manifest: dict) -> None:
         for name, value in vars(provider).items():
             if isinstance(value, type):
                 assert getattr(facade, name) is value
+    for old, entry in manifest["adapters"].items():
+        facade = importlib.import_module(old)
+        provider = importlib.import_module(entry["provider"])
+        for name in entry["value_aliases"]:
+            assert getattr(facade, name) is getattr(provider, name)
+    import ticknet
+    from quant_backtest_core.microstructure import impact
+    from ticknet import simulator
+
+    for name in ("ExecutionSchedule", "ImpactResult", "ImpactEstimator"):
+        assert getattr(ticknet, name) is getattr(simulator, name) is getattr(impact, name)
+    assert not {
+        "torch",
+        "ticknet.dataset",
+        "ticknet.model",
+        "ticknet.simulator.generator",
+        "ticknet.simulator.sqrt_law",
+    } & set(sys.modules)
     for name in ("quant-platform", "quant-backtest-core", "quant-backtest-engine-client"):
         installed = distribution(name)
         direct_url = json.loads(installed.read_text("direct_url.json") or "{}")
@@ -71,12 +89,12 @@ def main() -> None:
     args = parser.parse_args()
     _check_clean_imports()
     _check_aliases(json.loads(args.module_map.read_text()))
-    manifest = args.module_map.with_name("engine-provider-a.json")
+    manifest = args.module_map.with_name("engine-provider-b.json")
     _check_provider_aliases(json.loads(manifest.read_text()))
     installed = distribution("quant-platform")
     forbidden = {"torch", "xgboost", "sklearn", "alpha_research.backends.qlib"}
     assert not forbidden & set(sys.modules)
-    assert installed.version == "0.1.0"
+    assert installed.version == "0.2.0"
     print("Regular wheel: neutral imports, owner aliases and mandatory provider boundary verified")
 
 

@@ -1,6 +1,6 @@
 # Signed paper portfolio optimization
 
-[简体中文](signed-paper-optimization.zh-CN.md)
+Language: English · [简体中文](signed-paper-optimization.zh-CN.md)
 
 Use `quant_platform.portfolio.signed_optimization` for synthetic or paper research
 with signed NAV weights. This API is separate from the existing long-only
@@ -56,3 +56,5 @@ execution requires separate evidence, risk checks and execution contracts.
 
 For factor-risk problems without a dense asset covariance, see the
 [sparse OSQP interface](sparse-signed-optimization.md).
+
+[Pending resource reservations](../contracts/pending-allocation.md): full risk validation and sparse optimization remain in Platform.
