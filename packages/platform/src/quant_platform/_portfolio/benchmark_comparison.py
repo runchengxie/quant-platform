@@ -51,14 +51,19 @@ def compare_portfolio_returns(
     benchmark_weights: pd.Series,
     previous_weights: pd.Series | None = None,
 ) -> dict[str, float | str]:
-    """Return comparable absolute and active portfolio metrics."""
+    """Return comparable metrics for aligned daily portfolio and benchmark returns.
+
+    Tracking error and information ratio use 252 trading days per year. The
+    information ratio divides annualized arithmetic mean active return by
+    annualized tracking error (sample standard deviation, ``ddof=1``).
+    """
 
     returns = _validated_returns(portfolio_returns, benchmark_returns)
     weight_frame = _validated_weights(weights, benchmark_weights)
     excess = returns["portfolio"] - returns["benchmark"]
     tracking_error = float(excess.std(ddof=1) * np.sqrt(252)) if len(excess) > 1 else 0.0
     information_ratio = (
-        float(excess.mean() * np.sqrt(252) / tracking_error) if tracking_error > 0 else float("nan")
+        float(excess.mean() * 252 / tracking_error) if tracking_error > 0 else float("nan")
     )
     if previous_weights is None:
         turnover = 0.0
