@@ -141,7 +141,9 @@
     "public_module": "quant_platform.backtest.legacy.valuation_events",
     "implementation_module": "quant_platform._portfolio.valuation_events",
     "owner": "backtest",
-    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+    "retirement": "Alias only; remove after caller migration and versioned deprecation.",
+    "provider_module": "quant_backtest_core._minute.valuation_events",
+    "provider_revision": "19a2ae714b567fc1a46cf996fa5a86a90138bc44"
   },
   "portfolio_backtester.volatility_exposure": {
     "public_module": "quant_platform.portfolio.volatility_exposure",
@@ -603,7 +605,9 @@
     "public_module": "quant_platform.backtest.legacy.corporate_actions",
     "implementation_module": "quant_platform._portfolio.corporate_actions",
     "owner": "backtest",
-    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+    "retirement": "Alias only; remove after caller migration and versioned deprecation.",
+    "provider_module": "quant_backtest_core._minute.corporate_actions",
+    "provider_revision": "19a2ae714b567fc1a46cf996fa5a86a90138bc44"
   },
   "portfolio_backtester.metrics": {
     "public_module": "quant_platform.analytics.metrics",
@@ -807,7 +811,9 @@
     "public_module": "quant_platform.backtest.legacy.minute_execution",
     "implementation_module": "quant_platform._portfolio.minute_execution",
     "owner": "backtest",
-    "retirement": "Alias only; remove after caller migration and versioned deprecation."
+    "retirement": "Alias only; remove after caller migration and versioned deprecation.",
+    "provider_module": "quant_backtest_core._minute.minute_execution",
+    "provider_revision": "19a2ae714b567fc1a46cf996fa5a86a90138bc44"
   },
   "portfolio_backtester.period_outputs": {
     "public_module": "quant_platform.backtest.legacy.period_outputs",

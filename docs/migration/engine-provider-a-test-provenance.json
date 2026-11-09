@@ -1,0 +1,122 @@
+{
+  "original_revision": "7a618bddd8fdeee5dbe37fe5b54a9698e0de5355",
+  "provider_revision": "19a2ae714b567fc1a46cf996fa5a86a90138bc44",
+  "transfers": [
+    {
+      "original": "tests/test_minute_execution.py",
+      "original_sha256": "80003f67914e5241ae4042b77718c7a59add2b0020e3bd330ac54fc40c83b079",
+      "provider": "core/tests/test_minute_execution.py",
+      "disposition": "kernel transferred; reusable synthetic fixtures retained"
+    },
+    {
+      "original": "tests/test_minute_execution_feedback.py",
+      "original_sha256": "c29dfdeafdbbab5a146d6736ef56ef1f5054d9ad99c70c6070aa8f8230e8820a",
+      "provider": "core/tests/test_minute_execution_feedback.py",
+      "disposition": "kernel transferred; reusable synthetic fixtures retained"
+    },
+    {
+      "original": "tests/test_minute_execution_hardening.py",
+      "original_sha256": "f839d3b07e84895f6ca0b736265fd7e2394bbed6370168c5856eaf4a5318ec6d",
+      "provider": "core/tests/test_minute_execution_hardening.py",
+      "disposition": "kernel transferred; reusable synthetic fixtures retained"
+    },
+    {
+      "original": "tests/test_minute_execution_mark_provenance.py",
+      "original_sha256": "2e750ff4d58aed1a1af993ee4ff16840d1cfaee36b256d3688f386c32707bef8",
+      "provider": "core/tests/test_minute_execution_mark_provenance.py",
+      "disposition": "kernel transferred; reusable synthetic fixtures retained"
+    },
+    {
+      "original": "tests/test_minute_execution_valuation_events.py",
+      "original_sha256": "bdd04d4193c2d7be2cbf21ebfd368759f8c8b78f137be253df235535dcbb0b09",
+      "provider": "core/tests/test_minute_execution_valuation_events.py",
+      "disposition": "kernel transferred; reusable synthetic fixtures retained"
+    },
+    {
+      "original": "tests/test_minute_session.py",
+      "original_sha256": "f56ecb2277a6a3af5c3f7b2be6fb88c6d9725fa9be02b8504dd8858d29cd8902",
+      "provider": "core/tests/test_minute_session.py",
+      "disposition": "kernel transferred; reusable synthetic fixtures retained"
+    },
+    {
+      "original": "tests/test_minute_session_actions.py",
+      "original_sha256": "3618fec4e41df5022f44d945623146bf9350dbe212efae519abd36d47618e6a9",
+      "provider": "core/tests/test_minute_session_actions.py",
+      "disposition": "kernel transferred; reusable synthetic fixtures retained"
+    },
+    {
+      "original": "tests/test_quantity_locks.py",
+      "original_sha256": "85ec40a4bb7c416fdaa6c158391df64da79c03edcecdff502152300a2eb0bdd1",
+      "provider": "core/tests/test_quantity_locks.py",
+      "disposition": "kernel transferred; reusable synthetic fixtures retained"
+    },
+    {
+      "original": "tests/test_market_paths.py",
+      "original_sha256": "354fd7bb0a3f0526815431ead2f9f8521cdebaf45e047eefa6f6136d1d0bac2c",
+      "provider": "core/tests/test_market_paths.py",
+      "disposition": "kernel transferred; reusable synthetic fixtures retained"
+    },
+    {
+      "original": "tests/test_joint_stress.py",
+      "original_sha256": "087e7a00305eb668c2e604c19cbafde041a368b56818d358a7e5b0425be53d17",
+      "provider": "core/tests/test_joint_stress.py",
+      "disposition": "kernel transferred; reusable synthetic fixtures retained"
+    },
+    {
+      "original": "tests/test_impact_state.py",
+      "original_sha256": "9399913097dc87e3b5b6c85ca1157d107f1d06f5139715b5321440ad36396090",
+      "provider": "core/tests/test_impact.py",
+      "disposition": "kernel transferred; reusable synthetic fixtures retained"
+    },
+    {
+      "original": "tests/test_cost_scope.py",
+      "original_sha256": "8a52cd82663c0157624fefc5bb308b5eba0cddd47ce3425c4dc04b50eb534847",
+      "provider": "core/tests/test_cost_scope.py",
+      "disposition": "kernel transferred; reusable synthetic fixtures retained"
+    },
+    {
+      "original": "tests/test_transaction_costs.py",
+      "original_sha256": "28f046033d00cf5dbf0481600a232022d31f89a9a464f2aa6026008b65e8f1b6",
+      "provider": "core/tests/test_transaction_costs.py",
+      "disposition": "kernel transferred; reusable synthetic fixtures retained"
+    },
+    {
+      "original": "tests/test_execution_integrity.py",
+      "original_sha256": "89ae31aea4e1fdc8619673b963bb791de889c906dafb7cedd3fae0db1a014836",
+      "provider": "core/tests/test_execution_integrity.py",
+      "transferred_tests": [
+        "test_prefix_detects_interior_difference_even_when_final_cash_and_shares_match",
+        "test_simultaneous_fills_compare_after_entire_clock_and_duplicate_ids_fail",
+        "test_invalid_fill_contract_is_rejected",
+        "test_unsold_inventory_is_never_reported_as_cash_and_stale_marks_are_unknown",
+        "test_accounting_ignores_ambient_precision_and_rejects_inexact_extremes",
+        "test_exit_report_retains_mark_prices_clocks_and_freshness_contract"
+      ],
+      "disposition": "mixed Platform/future-owner tests retained"
+    },
+    {
+      "original": "tests/test_impact_optimization_scenarios.py",
+      "original_sha256": "b5a970b71f410d735ee2a5b53f908d1442317a84f3519f5969866f49890fc586",
+      "provider": "core/tests/test_impact_scenarios.py",
+      "transferred_tests": [
+        "test_permanent_round_trip_conserves_quantity_without_manipulation_profit",
+        "test_splitting_preserves_linear_permanent_integral",
+        "test_impact_rejects_invalid_inputs",
+        "test_permanent_only_round_trips_have_zero_cash_change"
+      ],
+      "disposition": "mixed Platform/future-owner tests retained"
+    },
+    {
+      "original": "tests/test_capital_reconciliation.py",
+      "original_sha256": "0ee2ef19d4dea8513a648f974a02ddb97fefa6c10efaec4a282f67d58c32a31f",
+      "provider": "core/tests/test_capital_returns.py",
+      "transferred_tests": [
+        "test_external_money_cannot_become_alpha_and_fee_stays_a_loss",
+        "test_exact_linking_and_approximate_cash_weighting_are_distinct",
+        "test_capital_identity_has_no_absolute_money_floor"
+      ],
+      "disposition": "mixed Platform/future-owner tests retained"
+    }
+  ],
+  "retained": "CostEvidence/CostBreakdown daily integrations, pool_sleeves, generic QP, discrete oracle, reconciliation and future-owner tests remain Platform-owned until their provider gates."
+}

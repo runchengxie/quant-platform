@@ -229,7 +229,7 @@ def test_same_clock_slicing_preserves_cash_and_half_own_increment():
 
 def test_integer_first_action_executes_once_through_owner_and_restores_state():
     import pandas as pd
-    from test_minute_execution import bars, targets
+    from engine_core_fixtures import bars, targets
 
     from quant_platform.backtest.impact import LinearImpact
     from quant_platform.backtest.minute import MinuteExecutionConfig, simulate_minute_execution

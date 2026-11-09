@@ -6,9 +6,9 @@
 
 这是公开的可复用量化研究平台仓库。保留 `portfolio_backtester` Python 命名空间，直到完成兼容迁移。
 
-公共框架迁移已经完成。现有 Python 通用回测、组合构造、风险、执行模拟和公共契约继续维护在本仓库。独立 Rust 引擎入口、版本化订单意图契约和 NautilusTrader 薄适配维护在 `quant-backtest-engine`。移除旧回测接口前必须完成调用方迁移和语义对照。`quant-market-data-platform` 独立负责数据接入、标准化、质量治理、版本和已发布数据资产，本仓库只消费其发布资产。`research-workspace`、旧 `portfolio-backtester` 和旧 `quant-execution-engine` 仅用于历史复现和兼容核对。
+Platform 0.1.0 消费已合并的 Engine core 0.1.0：分钟执行、会话、事件、冲击及基础成本证据仅保留同对象薄别名。Python 3.12/3.13 与提供方支持范围一致。统计风险、通用组合优化、因子分析和后续阶段待迁移的执行集成继续维护在本仓库。独立 Rust 引擎入口、版本化订单意图契约和 NautilusTrader 薄适配维护在 `quant-backtest-engine`。移除旧回测接口前必须完成调用方迁移和语义对照。`quant-market-data-platform` 独立负责数据接入、标准化、质量治理、版本和已发布数据资产，本仓库只消费其发布资产。`research-workspace`、旧 `portfolio-backtester` 和旧 `quant-execution-engine` 仅用于历史复现和兼容核对。
 
-独立引擎的显式客户端位于 `portfolio_backtester.backends.engine_sessions`，只负责内容摘要固定的子进程调用、结果勾稽与规范化，不复制数量规划或撮合，不自动注册，也不代表完整统一执行结果包。
+独立引擎的显式客户端位于 `quant_platform.backtest.engine_sessions`，只负责内容摘要固定的子进程调用、结果勾稽与规范化，不复制数量规划或撮合，不自动注册，也不代表完整统一执行结果包。
 
 `portfolio_backtester` Python 命名空间暂时保持不变。本仓库只接收公开机制、合成数据、测试、契约和迁移证据，不接收数据供应商、凭证、真实数据、策略参数、任务编排、执行运行时或研究产物。
 
@@ -49,3 +49,5 @@ git push origin --delete feat/<任务名>
 Run `uv sync --locked --all-groups`, `uv run ruff check .`, and `uv run pytest` from this directory.
 
 平台通用入口使用 `quant_platform.portfolio`、`quant_platform.analytics`、`quant_platform.backtest`。源码位于 `packages/platform/src`。`portfolio_backtester` 仅作兼容别名，生产代码不得新增直接导入。`quant_platform._portfolio` 是暂存的内部实现，不是公开 API。中立契约不得依赖执行模拟器。独立引擎原始字典 SDK 由 engine 仓库维护，平台仅保留标准分析结果转换。
+
+Provider A pins both core [minute,cost,scenario] and SDK to merged Engine revision `19a2ae714b567fc1a46cf996fa5a86a90138bc44`. Never recreate migrated financial implementations here. Retain aliases for at least two minor-release cycles AND until all recorded supported consumers migrate. Historical v2 checkpoints stay with their original full Runtime/Go/Python release closure; never rebind them to a new source. Kernel test provenance and exact locale routes are in `docs/migration/engine-provider-a*.json`.

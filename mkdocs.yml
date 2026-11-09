@@ -81,6 +81,9 @@ nav:
           - Execution simulation: guides/execution-simulation.en.md
           - Dependent synthetic market paths: backtest/market-paths.md
           - Transaction cost evidence: backtest/transaction-cost-evidence.md
+          - Recorded-fill integrity: backtest/execution-integrity.md
+          - Neutral cost evidence: backtest/cost-evidence.md
+          - Capital and reconciliation: backtest/capital-and-reconciliation.md
           - Minute execution scenarios: guides/minute-execution.en.md
           - Recoverable minute sessions: backtest/minute-session.md
           - Shared sleeve allocation: backtest/sleeve-allocation.md
@@ -138,6 +141,9 @@ nav:
           - 常用入口: guides/entry-points.zh-CN.md
           - 保留共同时间块的合成市场路径: backtest/market-paths.zh-CN.md
           - 交易成本证据: backtest/transaction-cost-evidence.zh-CN.md
+          - 成交记录核对: backtest/execution-integrity.zh-CN.md
+          - 中立成本证据: backtest/cost-evidence.zh-CN.md
+          - 资金事件与核对: backtest/capital-and-reconciliation.zh-CN.md
           - 分钟执行情景: guides/minute-execution.md
           - 可恢复的分钟会话: backtest/minute-session.zh-CN.md
           - 共用账户策略分配: backtest/sleeve-allocation.zh-CN.md

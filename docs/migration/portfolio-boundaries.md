@@ -24,7 +24,8 @@ Public owner submodules preserve the familiar module names, for example
 compatibility aliases. Exported functions/classes share one implementation; regular
 module aliases preserve monkeypatch identity. Package proxies retain their own
 search path so old child imports resolve to the intended aliases. There is no global
-import hook or duplicate algorithm. Old serialized schema identifiers are unchanged.
+import hook or duplicate algorithm. Historical serialized identifiers retain their original meaning. New minute checkpoints use
+Engine v3 and reject historical v2 checkpoints.
 
 The coherent historical implementation is temporarily internal at
 `quant_platform._portfolio`. It is not a public API. Public facade imports are lazy;
@@ -34,10 +35,13 @@ rewriting hundreds of relative imports and financial algorithms.
 
 ## Caller changes
 
-Install the optional SDK adapter with `uv sync --locked --extra engine` from the
-platform checkout, or select the distribution's `engine` extra. Base analytics
-installations do not require this SDK or a Rust executable. Development groups
-include the pinned SDK so its regression tests remain mandatory.
+Platform 0.1.0 installs core 0.1.0 [minute,cost,scenario] and SDK 0.3.0 from
+merged Engine revision `19a2ae714b567fc1a46cf996fa5a86a90138bc44` on Python
+3.12/3.13. Run `uv sync --locked`; the `engine` extra remains a compatibility
+selection. A Rust executable is required only for explicitly selected Rust jobs.
+The SDK remains independently installable without Platform or the Python core.
+Minute execution, events, impact and leaf evidence APIs now alias Engine objects.
+Statistical risk and generic portfolio optimization remain Platform-owned.
 
 ```python
 # New analysis callers
@@ -83,9 +87,14 @@ Before retiring an individual Python calculation or its old import path:
    explain differences and verify complete evidence mapping where required.
 4. Merge provider versions before updating consumer pins; record tested revision pairs.
 5. Verify clean wheel installs, old-result reading and documented historical reproduction.
-6. Announce the breaking import removal in a versioned release after compatibility
+6. Keep aliases for at least two minor-release cycles and until all recorded supported
+   consumers have migrated. Announce the breaking import removal in a versioned release after compatibility
    obligations are retired. Removing an alias must not remove unrelated analytics.
 
 No live job, production release, dataset or scheduled path is switched by this source
 migration. Repository import inventories cannot establish that all external or deployed
 callers have disappeared. Their inventory is a separate retirement requirement.
+
+Historical minute v2 recovery requires the original pinned full Runtime/Go/Python
+release and dependency closure. Keep its source, binaries and bindings fixed.
+Installing an old Platform wheel alone does not establish operational recovery.

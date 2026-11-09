@@ -9,7 +9,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: runchengxie/quant-backtest-engine
-          ref: c65548a4ee1e938125cce1edbcc282c760c4c8f2
+          ref: 19a2ae714b567fc1a46cf996fa5a86a90138bc44
           path: session-engine-provider
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
@@ -63,17 +63,17 @@ jobs:
         run: >-
           uv pip install --python "$RUNNER_TEMP/platform-wheel-env/bin/python"
           "$GITHUB_WORKSPACE/packages/research-contracts"
-          "$RUNNER_TEMP/platform-wheels/quant_platform-0.0.1-py3-none-any.whl"
-      - name: Check base wheel without engine or machine learning extras
+          "$RUNNER_TEMP/platform-wheels/quant_platform-0.1.0-py3-none-any.whl"
+      - name: Check base wheel with mandatory provider and without machine learning extras
         run: >-
           "$RUNNER_TEMP/platform-wheel-env/bin/python" -I scripts/check_platform_wheel.py
           --module-map docs/migration/portfolio-module-map.json
-      - name: Install optional pinned engine SDK
+      - name: Verify compatibility engine extra
         working-directory: ${{ runner.temp }}
         run: >-
           uv pip install --python "$RUNNER_TEMP/platform-wheel-env/bin/python"
-          "$RUNNER_TEMP/platform-wheels/quant_platform-0.0.1-py3-none-any.whl[engine]"
-      - name: Check engine-enabled regular wheel
+          "$RUNNER_TEMP/platform-wheels/quant_platform-0.1.0-py3-none-any.whl[engine]"
+      - name: Check regular wheel with compatibility extra
         run: >-
           "$RUNNER_TEMP/platform-wheel-env/bin/python" -I scripts/check_platform_wheel.py
           --module-map docs/migration/portfolio-module-map.json --engine-enabled
@@ -126,4 +126,5 @@ jobs:
           --no-emit-package quant-platform
           --no-emit-package research-contracts
           --no-emit-package research-code-quality
-          --no-emit-package quant-backtest-engine-client)
+          --no-emit-package quant-backtest-engine-client
+          --no-emit-package quant-backtest-core)

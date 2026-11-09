@@ -1,5 +1,6 @@
 """Check representative language-specific sidebars in a built MkDocs site."""
 
+import argparse
 import re
 import runpy
 from html.parser import HTMLParser
@@ -41,6 +42,10 @@ def check_all_english_pages() -> None:
 
 
 def main() -> None:
+    global SITE
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--site-dir", type=Path, default=SITE)
+    SITE = parser.parse_args().site_dir
     english = primary_navigation("concepts/lean-differential-spike-2026-09")
     english_turnover = primary_navigation("concepts/turnover.en-US")
     english_benchmark_ladder = primary_navigation("concepts/benchmark-ladder.en-US")

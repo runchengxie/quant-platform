@@ -8,10 +8,15 @@ from packaging.markers import Marker
 from packaging.version import Version
 
 ROOT = Path(__file__).resolve().parents[1]
-SDK_REVISION = "c65548a4ee1e938125cce1edbcc282c760c4c8f2"
+SDK_REVISION = "19a2ae714b567fc1a46cf996fa5a86a90138bc44"
 SDK_REPOSITORY = "https://github.com/runchengxie/quant-backtest-engine.git"
 SDK_DEPENDENCY = (
     f"quant-backtest-engine-client @ git+{SDK_REPOSITORY}@{SDK_REVISION}#subdirectory=python"
+)
+
+CORE_DEPENDENCY = (
+    f"quant-backtest-core[minute,cost,scenario] @ git+{SDK_REPOSITORY}@{SDK_REVISION}"
+    "#subdirectory=core"
 )
 
 
@@ -29,20 +34,25 @@ def _assert_allowed_package_sources(lock: dict[str, object]) -> None:
             assert source["git"].startswith(
                 "https://github.com/runchengxie/research-code-quality.git"
             )
-        elif package["name"] == "quant-backtest-engine-client":
+        elif package["name"] in {"quant-backtest-engine-client", "quant-backtest-core"}:
+            subdir = "core" if package["name"] == "quant-backtest-core" else "python"
             assert source == {
-                "git": f"{SDK_REPOSITORY}?subdirectory=python&rev={SDK_REVISION}#{SDK_REVISION}"
+                "git": f"{SDK_REPOSITORY}?subdirectory={subdir}&rev={SDK_REVISION}#{SDK_REVISION}"
             }
         else:
             assert source == {"registry": "https://pypi.org/simple"}
 
 
-def test_distribution_declares_only_public_registry_dependencies() -> None:
+def test_distribution_declares_public_registry_and_immutable_provider_dependencies() -> None:
     project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     dependencies = project["project"]["dependencies"]
     dev_dependencies = project["dependency-groups"]["dev"]
 
+    assert project["project"]["version"] == "0.1.0"
+    assert project["project"]["requires-python"] == ">=3.12,<3.14"
     assert dependencies == [
+        CORE_DEPENDENCY,
+        SDK_DEPENDENCY,
         "duckdb>=1.2",
         "numpy>=1.23",
         "pandas>=2.0",

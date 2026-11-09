@@ -22,7 +22,8 @@
 `quant_platform.portfolio.optimization` 和 `quant_platform.backtest.legacy.execution_sim`。
 旧命名空间暂时作为明确的兼容别名保留。函数和类共用一份实现，普通模块别名保留对象身份，
 使已有测试补丁继续有效。包代理保留自身搜索路径，让旧子模块解析到对应别名。
-不引入全局导入钩子，不复制算法，也不修改已保存数据的 schema 标识符。
+不引入全局导入钩子，不复制算法。历史 schema 标识符保留原始语义。
+新的分钟检查点使用 Engine v3，并拒绝历史 v2 检查点。
 
 原有内部实现暂时整体放在 `quant_platform._portfolio`，它不是公开 API。
 公开入口按需加载。导入通用契约或数值指标时，不应加载旧执行模拟器。
@@ -30,9 +31,13 @@
 
 ## 调用方怎么改
 
-在 platform 检出目录运行 `uv sync --locked --extra engine`，安装可选的引擎 SDK
-适配器。只使用基础分析功能无需安装 SDK 或 Rust 可执行文件。开发依赖组包含固定
-版本的 SDK，确保适配器回归测试仍然执行。
+Platform 0.1.0 在 Python 3.12/3.13 上安装 core 0.1.0 [minute,cost,scenario] 和
+SDK 0.3.0，两者均固定到已合并的 Engine 提交
+`19a2ae714b567fc1a46cf996fa5a86a90138bc44`。运行 `uv sync --locked` 即可。
+`engine` 扩展保留为兼容选项，只有显式选择 Rust 任务才需要 Rust 可执行文件。
+SDK 仍可独立安装，无需 Platform 或 Python core。
+分钟执行、事件、冲击和基础证据接口现在直接导出 Engine 对象。
+统计风险和通用组合优化仍属于 Platform。
 
 ```python
 from quant_platform.analytics.metrics import summarize_ic
@@ -71,7 +76,10 @@ runtime 通过显式 `legacy` 可选依赖安装旧后端。只运行 Rust 任�
 3. 对照合成案例、现金、股份、成交及代表性工作流，解释差异，并在需要时验证完整证据映射。
 4. 先合并提供方，再更新调用方版本，记录联合测试的提交组合。
 5. 验证干净 wheel 安装、历史结果读取及历史版本复现。
-6. 兼容义务结束后，通过有版本记录的发布移除旧导入。不能连同无关分析功能一起删除。
+6. 别名至少保留两个次版本周期，并且所有已记录的受支持调用方都完成迁移后。兼容义务结束后，通过有版本记录的发布移除旧导入。不能连同无关分析功能一起删除。
 
 这次源码迁移不切换运行任务、生产发布、数据或定时路径。
 仓库导入扫描不能证明外部和已部署调用方都已消失，后者仍是独立的退役条件。
+
+历史分钟 v2 恢复必须使用原来固定的完整 Runtime/Go/Python 发布及依赖闭包，
+保持来源、二进制和绑定不变。仅安装旧 Platform wheel 不能证明运行环境已恢复。

@@ -1,27 +1,13 @@
-"""Immutable policy-visible minute account contract."""
+"""Compatibility module for the Engine-owned quant_backtest_core._minute._minute_state."""
 
-from collections.abc import Mapping
-from dataclasses import dataclass
+import sys
+from importlib import import_module
+from typing import TYPE_CHECKING
 
-import pandas as pd
+if TYPE_CHECKING:
+    from quant_backtest_core._minute._minute_state import Mapping as Mapping
+    from quant_backtest_core._minute._minute_state import MinuteDecisionState as MinuteDecisionState
+    from quant_backtest_core._minute._minute_state import dataclass as dataclass
+    from quant_backtest_core._minute._minute_state import pd as pd
 
-
-@dataclass(frozen=True)
-class MinuteDecisionState:
-    """Synchronous delivered account, strictly before the decision-clock bar.
-
-    No exchange-report delay is modeled. Raw marks may be stale: consumers must
-    inspect mark_times. Pending orders remain live until entry supersession.
-    """
-
-    time: pd.Timestamp
-    cash: float
-    nav: float
-    holdings: Mapping
-    marks: Mapping
-    mark_times: Mapping
-    pending_orders: tuple
-    cash_receivable: float
-    stock_receivable_value: float
-    locked_symbols: tuple[str, ...] = ()
-    quantity_locks: tuple = ()
+sys.modules[__name__] = import_module("quant_backtest_core._minute._minute_state")

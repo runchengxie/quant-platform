@@ -4,10 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quant-platform"
-version = "0.0.1"
+version = "0.1.0"
 description = "Public reusable quant research and portfolio platform"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.14"
 dependencies = [
+  "quant-backtest-core[minute,cost,scenario] @ git+https://github.com/runchengxie/quant-backtest-engine.git@19a2ae714b567fc1a46cf996fa5a86a90138bc44#subdirectory=core",
+  "quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@19a2ae714b567fc1a46cf996fa5a86a90138bc44#subdirectory=python",
   "duckdb>=1.2",
   "numpy>=1.23",
   "pandas>=2.0",
@@ -22,7 +24,7 @@ strategy-pipeline = "strategy_pipeline.cli:main"
 
 [project.optional-dependencies]
 sparse = ["osqp>=1.1,<2"]
-engine = ["quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@c65548a4ee1e938125cce1edbcc282c760c4c8f2#subdirectory=python"]
+engine = ["quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@19a2ae714b567fc1a46cf996fa5a86a90138bc44#subdirectory=python"]
 ml = [
   "pandas-ta>=0.3.14b0",
   "scikit-learn>=1.9.0",
@@ -45,7 +47,7 @@ microstructure = ["polars>=1.0", "torch>=2.0", "scikit-learn>=1.9.0"]
 [dependency-groups]
 test = ["pytest>=9.0.3", "osqp>=1.1,<2"]
 dev = [
-  "quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@c65548a4ee1e938125cce1edbcc282c760c4c8f2#subdirectory=python",
+  "quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@19a2ae714b567fc1a46cf996fa5a86a90138bc44#subdirectory=python",
   "maturin>=1,<2",
   "pandas-ta>=0.3.14b0",
   "scikit-learn>=1.9.0",
@@ -110,7 +112,7 @@ research-contracts = { path = "packages/research-contracts" }
 [tool.uv]
 override-dependencies = ["research-contracts>=0.1.0"]
 # Pandas 3.1 changes type contracts across the financial API; migrate that surface separately.
-# Keep pandas 3.0 on CI versions while newer Python retains its NumPy-compatible fallback.
+# Keep pandas 3.0 on the supported Python 3.12/3.13 provider matrix.
 constraint-dependencies = ["pandas>=3.0.5,<3.1; python_version < '3.14'"]
 
 [tool.pytest.ini_options]

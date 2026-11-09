@@ -11,7 +11,7 @@ from importlib.metadata import distribution
 from pathlib import Path
 
 
-def _check_clean_imports(engine_enabled: bool) -> None:
+def _check_clean_imports() -> None:
     import quant_platform
     from quant_platform.backtest.contracts import CanonicalBacktestResult
     from quant_platform.backtest.ledger import UnifiedLedger
@@ -26,24 +26,13 @@ def _check_clean_imports(engine_enabled: bool) -> None:
     )
     assert not any(name.startswith("portfolio_backtester") for name in sys.modules)
     assert "site-packages" in Path(quant_platform.__file__).parts
-    assert (
-        importlib.util.find_spec("quant_backtest_engine") is not None
-        if engine_enabled
-        else importlib.util.find_spec("quant_backtest_engine") is None
-    )
+    assert importlib.util.find_spec("quant_backtest_engine") is not None
+    assert distribution("quant-backtest-core").version == "0.1.0"
+    assert distribution("quant-backtest-engine-client").version == "0.3.0"
 
 
-def _check_aliases(mapping: dict, engine_enabled: bool) -> None:
+def _check_aliases(mapping: dict) -> None:
     for old, entry in mapping.items():
-        modern = entry["public_module"] == "quant_platform.backtest.engine_sessions"
-        if modern and not engine_enabled:
-            try:
-                importlib.import_module(old)
-            except ImportError as error:
-                assert "quant-platform[engine]" in str(error)
-            else:
-                raise AssertionError("Engine adapter must request its optional SDK")
-            continue
         old_module = importlib.import_module(old)
         implementation = importlib.import_module(entry["implementation_module"])
         public = importlib.import_module(entry["public_module"])
@@ -55,18 +44,40 @@ def _check_aliases(mapping: dict, engine_enabled: bool) -> None:
             assert public is implementation
 
 
+def _check_provider_aliases(manifest: dict) -> None:
+    for old, new in manifest["modules"].items():
+        facade = importlib.import_module(old)
+        provider = importlib.import_module(new)
+        assert facade is provider
+        assert provider.__file__ is not None
+        assert Path(provider.__file__).is_relative_to(Path(sys.prefix))
+        for name, value in vars(provider).items():
+            if isinstance(value, type):
+                assert getattr(facade, name) is value
+    for name in ("quant-platform", "quant-backtest-core", "quant-backtest-engine-client"):
+        installed = distribution(name)
+        direct_url = json.loads(installed.read_text("direct_url.json") or "{}")
+        assert not direct_url.get("dir_info", {}).get("editable", False)
+        if "vcs_info" in direct_url:
+            assert direct_url["vcs_info"]["commit_id"] == manifest["provider_revision"]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--module-map", type=Path, required=True)
-    parser.add_argument("--engine-enabled", action="store_true")
+    parser.add_argument(
+        "--engine-enabled", action="store_true", help="Compatibility flag; SDK is now mandatory."
+    )
     args = parser.parse_args()
-    _check_clean_imports(args.engine_enabled)
-    _check_aliases(json.loads(args.module_map.read_text()), args.engine_enabled)
+    _check_clean_imports()
+    _check_aliases(json.loads(args.module_map.read_text()))
+    manifest = args.module_map.with_name("engine-provider-a.json")
+    _check_provider_aliases(json.loads(manifest.read_text()))
     installed = distribution("quant-platform")
     forbidden = {"torch", "xgboost", "sklearn", "alpha_research.backends.qlib"}
     assert not forbidden & set(sys.modules)
-    assert installed.version == "0.0.1"
-    print("Regular wheel: neutral imports, owner aliases and optional engine boundary verified")
+    assert installed.version == "0.1.0"
+    print("Regular wheel: neutral imports, owner aliases and mandatory provider boundary verified")
 
 
 if __name__ == "__main__":

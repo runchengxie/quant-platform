@@ -1,0 +1,360 @@
+{
+  "schema": "minute-session.v2",
+  "tape_contract": "minute-financial-tapes.v1",
+  "tapes": {
+    "type": "dict",
+    "value": [
+      [
+        "corporate_actions",
+        {
+          "type": "tuple",
+          "value": []
+        }
+      ],
+      [
+        "valuation_events",
+        {
+          "type": "tuple",
+          "value": []
+        }
+      ],
+      [
+        "capital_flows",
+        {
+          "type": "tuple",
+          "value": []
+        }
+      ]
+    ]
+  },
+  "binding": "2a3300140649a9158efcd9af83416aa07cb3a1860667937e4949be2e038394d6",
+  "cursor": 1,
+  "delay": 0,
+  "quantity_locks": [],
+  "policy": [
+    {
+      "cash": 10000.0,
+      "holdings": {},
+      "pending": false
+    }
+  ],
+  "impact": null,
+  "state": {
+    "type": "dict",
+    "value": [
+      [
+        "rights",
+        {
+          "type": "dict",
+          "value": []
+        }
+      ],
+      [
+        "valuation_state",
+        {
+          "type": "dict",
+          "value": []
+        }
+      ],
+      [
+        "valuation_ledger",
+        []
+      ],
+      [
+        "capital_flow_ledger",
+        []
+      ],
+      [
+        "applied_capital_flow_ids",
+        {
+          "type": "set",
+          "value": []
+        }
+      ],
+      [
+        "cumulative_capital_flow",
+        0.0
+      ],
+      [
+        "return_factor",
+        1.0
+      ],
+      [
+        "return_anchor",
+        10000.0
+      ],
+      [
+        "cash",
+        10000.0
+      ],
+      [
+        "holdings",
+        {
+          "type": "dict",
+          "value": []
+        }
+      ],
+      [
+        "bought",
+        {
+          "type": "dict",
+          "value": []
+        }
+      ],
+      [
+        "marks",
+        {
+          "type": "dict",
+          "value": [
+            [
+              "A",
+              10.0
+            ]
+          ]
+        }
+      ],
+      [
+        "orders",
+        []
+      ],
+      [
+        "fills",
+        []
+      ],
+      [
+        "daily",
+        []
+      ],
+      [
+        "costs",
+        0.0
+      ],
+      [
+        "mark_days",
+        {
+          "type": "dict",
+          "value": [
+            [
+              "A",
+              {
+                "type": "date",
+                "value": "2026-01-05"
+              }
+            ]
+          ]
+        }
+      ],
+      [
+        "mark_times",
+        {
+          "type": "dict",
+          "value": [
+            [
+              "A",
+              {
+                "type": "timestamp",
+                "value": "2026-01-05T09:29:00+08:00",
+                "zone": "Asia/Shanghai"
+              }
+            ]
+          ]
+        }
+      ],
+      [
+        "mark_source_times",
+        {
+          "type": "dict",
+          "value": [
+            [
+              "A",
+              {
+                "type": "timestamp",
+                "value": "2026-01-05T09:29:00+08:00",
+                "zone": "Asia/Shanghai"
+              }
+            ]
+          ]
+        }
+      ],
+      [
+        "mark_basis",
+        {
+          "type": "dict",
+          "value": [
+            [
+              "A",
+              "raw"
+            ]
+          ]
+        }
+      ],
+      [
+        "adjusted_ex_dates",
+        {
+          "type": "set",
+          "value": []
+        }
+      ],
+      [
+        "holdings_ledger",
+        []
+      ],
+      [
+        "clipped_vwap_bars",
+        0
+      ],
+      [
+        "current_day",
+        {
+          "type": "date",
+          "value": "2026-01-05"
+        }
+      ],
+      [
+        "day_has_events",
+        true
+      ],
+      [
+        "current_time",
+        {
+          "type": "timestamp",
+          "value": "2026-01-05T09:29:00+08:00",
+          "zone": "Asia/Shanghai"
+        }
+      ],
+      [
+        "policy_snapshots",
+        {
+          "type": "dict",
+          "value": [
+            [
+              {
+                "type": "timestamp",
+                "value": "2026-01-05T09:30:00+08:00",
+                "zone": "Asia/Shanghai"
+              },
+              {
+                "type": "frame",
+                "value": {
+                  "type": "dict",
+                  "value": [
+                    [
+                      "decision_time",
+                      [
+                        {
+                          "type": "timestamp",
+                          "value": "2026-01-05T09:29:00+08:00",
+                          "zone": "Asia/Shanghai"
+                        }
+                      ]
+                    ],
+                    [
+                      "entry_time",
+                      [
+                        {
+                          "type": "timestamp",
+                          "value": "2026-01-05T09:30:00+08:00",
+                          "zone": "Asia/Shanghai"
+                        }
+                      ]
+                    ],
+                    [
+                      "symbol",
+                      [
+                        "A"
+                      ]
+                    ],
+                    [
+                      "weight",
+                      [
+                        1.0
+                      ]
+                    ]
+                  ]
+                }
+              }
+            ]
+          ]
+        }
+      ],
+      [
+        "execution_locked_symbols",
+        {
+          "type": "tuple",
+          "value": []
+        }
+      ],
+      [
+        "bar_execution_locked_symbols",
+        {
+          "type": "tuple",
+          "value": []
+        }
+      ]
+    ]
+  },
+  "delivery": [
+    {
+      "type": "dict",
+      "value": [
+        [
+          "cash",
+          10000.0
+        ],
+        [
+          "holdings",
+          {
+            "type": "dict",
+            "value": []
+          }
+        ],
+        [
+          "rights",
+          {
+            "type": "dict",
+            "value": []
+          }
+        ],
+        [
+          "pending_orders",
+          {
+            "type": "tuple",
+            "value": []
+          }
+        ]
+      ]
+    },
+    [],
+    [
+      {
+        "type": "dict",
+        "value": [
+          [
+            "time",
+            "2026-01-05T09:29:00+08:00"
+          ],
+          [
+            "visible_cash",
+            10000.0
+          ],
+          [
+            "visible_holdings",
+            {
+              "type": "dict",
+              "value": []
+            }
+          ],
+          [
+            "undelivered_reports",
+            0
+          ],
+          [
+            "action",
+            "policy"
+          ]
+        ]
+      }
+    ]
+  ],
+  "digest": "d8ad2d8c311404f4f6d5b9a767ca22cc0ab4d7c168ac37752bf7de9c7b0988c6"
+}

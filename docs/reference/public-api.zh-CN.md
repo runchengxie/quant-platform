@@ -2,6 +2,14 @@
 
 语言：简体中文 · [English](public-api.md)
 
+Platform 0.1.0 支持 Python 3.12 和 3.13，依赖 Engine core 0.1.0，并显式安装
+minute、cost、scenario 扩展及 SDK 0.3.0。两个包都通过固定 Git 子目录依赖解析到
+已合并的 Engine 提交 `19a2ae714b567fc1a46cf996fa5a86a90138bc44`，不要求 PyPI 发布。
+原有分钟、公司行动、冲击和基础证据接口直接导出同一个 Engine 类和函数。
+统计风险、通用 QP 优化、因子流程及尚未迁移的集成仍属于 Platform。
+仅使用 SDK 的 Rust 会话适配器仍需显式选择。不支持的 execution-aware 证据仍为 false。
+
+
 下面这些对象可以直接从 `portfolio_backtester` 导入：
 
 | 类别 | 入口 |

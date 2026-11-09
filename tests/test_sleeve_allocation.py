@@ -3,9 +3,7 @@ from decimal import Decimal, localcontext
 
 import pandas as pd
 import pytest
-from test_minute_execution import bars, targets
-from test_minute_session import Policy
-from test_quantity_locks import notice
+from engine_core_fixtures import Policy, bars, notice, targets
 
 from quant_platform.analytics.execution_integrity import exit_wealth
 from quant_platform.backtest.impact import LinearImpact

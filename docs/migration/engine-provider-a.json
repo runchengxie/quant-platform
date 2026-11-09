@@ -1,0 +1,198 @@
+{
+  "schema": "platform-engine-provider-a.v1",
+  "provider_revision": "19a2ae714b567fc1a46cf996fa5a86a90138bc44",
+  "platform_origin": "7a618bddd8fdeee5dbe37fe5b54a9698e0de5355",
+  "modules": {
+    "quant_platform.backtest.market_paths": "quant_backtest_core.backtest.market_paths",
+    "quant_platform.backtest.stress": "quant_backtest_core.backtest.stress",
+    "quant_platform.backtest.costs": "quant_backtest_core.backtest.costs",
+    "quant_platform.backtest.impact": "quant_backtest_core.backtest.impact",
+    "quant_platform.backtest.impact_scenarios": "quant_backtest_core.backtest.impact_scenarios",
+    "quant_platform.analytics.execution_integrity": "quant_backtest_core.evidence.execution_integrity",
+    "quant_platform.analytics.transaction_costs": "quant_backtest_core.evidence.transaction_costs",
+    "quant_platform.analytics.cost_scope": "quant_backtest_core.evidence.cost_scope",
+    "quant_platform.analytics.capital_returns": "quant_backtest_core.evidence.capital_returns",
+    "quant_platform.backtest.minute": "quant_backtest_core.backtest.minute",
+    "quant_platform.backtest.minute_session": "quant_backtest_core.backtest.minute_session",
+    "quant_platform.backtest._minute_checkpoint": "quant_backtest_core.backtest._minute_checkpoint",
+    "quant_platform.backtest.quantity_locks": "quant_backtest_core.backtest.quantity_locks",
+    "quant_platform._portfolio.minute_execution": "quant_backtest_core._minute.minute_execution",
+    "quant_platform._portfolio._minute_state": "quant_backtest_core._minute._minute_state",
+    "quant_platform._portfolio._minute_validation": "quant_backtest_core._minute._minute_validation",
+    "quant_platform._portfolio.capital_flows": "quant_backtest_core._minute.capital_flows",
+    "quant_platform._portfolio.corporate_actions": "quant_backtest_core._minute.corporate_actions",
+    "quant_platform._portfolio.valuation_events": "quant_backtest_core._minute.valuation_events"
+  },
+  "routes": [
+    {
+      "source": "docs/backtest/market-paths.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/backtest/market-paths/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/market-paths/",
+      "anchors": [
+        "dependent-synthetic-market-paths",
+        "input-and-fit-contract",
+        "generation-and-identities",
+        "execution-boundary"
+      ]
+    },
+    {
+      "source": "docs/backtest/market-paths.zh-CN.md",
+      "locale": "zh-CN",
+      "old_url": "https://runchengxie.github.io/quant-platform/backtest/market-paths.zh-CN/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/market-paths.zh-CN/",
+      "anchors": [
+        "_1",
+        "_2",
+        "_3",
+        "_4"
+      ]
+    },
+    {
+      "source": "docs/backtest/transaction-cost-evidence.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/backtest/transaction-cost-evidence/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/transaction-cost-evidence/",
+      "anchors": [
+        "transaction-cost-evidence",
+        "normalized-inputs",
+        "fees-and-attribution",
+        "existing-scope-fitting-and-clustered-uncertainty"
+      ]
+    },
+    {
+      "source": "docs/backtest/transaction-cost-evidence.zh-CN.md",
+      "locale": "zh-CN",
+      "old_url": "https://runchengxie.github.io/quant-platform/backtest/transaction-cost-evidence.zh-CN/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/transaction-cost-evidence.zh-CN/",
+      "anchors": [
+        "_1",
+        "_2",
+        "_3",
+        "_4"
+      ]
+    },
+    {
+      "source": "docs/concepts/impact-planning.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/concepts/impact-planning/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/concepts/impact-planning/",
+      "anchors": [
+        "impact-aware-rolling-planning",
+        "request-and-objective",
+        "affine-cash-envelope-and-execution-checks",
+        "reproduction-and-limits"
+      ]
+    },
+    {
+      "source": "docs/concepts/impact-planning.zh-CN.md",
+      "locale": "zh-CN",
+      "old_url": "https://runchengxie.github.io/quant-platform/concepts/impact-planning.zh-CN/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/concepts/impact-planning.zh-CN/",
+      "anchors": [
+        "_1",
+        "_2",
+        "_3",
+        "_4"
+      ]
+    },
+    {
+      "source": "docs/backtest/execution-integrity.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/backtest/execution-integrity/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/execution-integrity/",
+      "anchors": [
+        "recorded-fill-integrity-and-pooled-account-exploration"
+      ]
+    },
+    {
+      "source": "docs/backtest/cost-evidence.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/backtest/cost-evidence/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/cost-evidence/",
+      "anchors": [
+        "cost-evidence"
+      ]
+    },
+    {
+      "source": "docs/backtest/capital-and-reconciliation.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/backtest/capital-and-reconciliation/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/capital-and-reconciliation/",
+      "anchors": [
+        "capital-events-investment-returns-and-external-evidence"
+      ]
+    },
+    {
+      "source": "docs/backtest/minute-session.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/backtest/minute-session/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/minute-session/",
+      "anchors": [
+        "recoverable-minute-execution-sessions",
+        "construct-and-restore",
+        "financial-clocks-and-ordering",
+        "external-capital-and-returns",
+        "delayed-visibility-and-locks",
+        "checkpoint-version-and-failure-policy"
+      ]
+    },
+    {
+      "source": "docs/backtest/minute-session.zh-CN.md",
+      "locale": "zh-CN",
+      "old_url": "https://runchengxie.github.io/quant-platform/backtest/minute-session.zh-CN/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/minute-session.zh-CN/",
+      "anchors": [
+        "_1",
+        "_2",
+        "_3",
+        "_4",
+        "_5",
+        "_6"
+      ]
+    },
+    {
+      "source": "docs/guides/minute-execution.en.md",
+      "locale": "en",
+      "old_url": "https://runchengxie.github.io/quant-platform/guides/minute-execution.en/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/guides/minute-execution/",
+      "anchors": [
+        "minute-execution-scenarios",
+        "conditional-orders-and-declared-information-time",
+        "temporary-nontrading-mark-provenance"
+      ]
+    },
+    {
+      "source": "docs/guides/minute-execution.md",
+      "locale": "zh-CN",
+      "old_url": "https://runchengxie.github.io/quant-platform/guides/minute-execution/",
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/guides/minute-execution.zh-CN/",
+      "anchors": [
+        "_1",
+        "_2",
+        "_3"
+      ]
+    },
+    {
+      "source": "docs/backtest/execution-integrity.zh-CN.md",
+      "locale": "zh-CN",
+      "old_url": null,
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/execution-integrity.zh-CN/",
+      "anchors": []
+    },
+    {
+      "source": "docs/backtest/cost-evidence.zh-CN.md",
+      "locale": "zh-CN",
+      "old_url": null,
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/cost-evidence.zh-CN/",
+      "anchors": []
+    },
+    {
+      "source": "docs/backtest/capital-and-reconciliation.zh-CN.md",
+      "locale": "zh-CN",
+      "old_url": null,
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/backtest/capital-and-reconciliation.zh-CN/",
+      "anchors": []
+    }
+  ]
+}

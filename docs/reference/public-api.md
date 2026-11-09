@@ -2,6 +2,17 @@
 
 Language: English · [简体中文](public-api.zh-CN.md)
 
+Platform 0.1.0 supports Python 3.12 and 3.13 and depends on Engine core 0.1.0
+with the explicit minute, cost and scenario extras, plus SDK 0.3.0. Both packages
+resolve to merged Engine revision `19a2ae714b567fc1a46cf996fa5a86a90138bc44`
+through immutable Git subdirectory dependencies; this installation does not
+assume a PyPI release. Existing minute, action, impact and leaf evidence imports
+are aliases of the same Engine classes and functions. Statistical risk, generic
+QP optimization, factor workflows and remaining integrations stay in Platform.
+The SDK-only Rust session adapter remains explicitly selected; unsupported
+execution-aware evidence remains false.
+
+
 The following objects are exported directly from `portfolio_backtester`:
 
 | Category | Public exports |
