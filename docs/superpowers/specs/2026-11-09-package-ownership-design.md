@@ -56,6 +56,8 @@ Audit wheel RECORD files and console entry points, not just repository paths.
 - The new execution distribution owns both canonical quant_trade_execution and thin quant_execution_engine aliases. Platform stops shipping those legacy files and consumes the merged provider. Alias classes are identical objects, not copied definitions. Engine financial aliases keep the existing Engine plan's rules.
 - Preserve supported aliases for at least two minor cycles and until all recorded supported consumers migrate or have an explicit pinned legacy environment. A namespace file's provider may change while its public import path remains supported; that is not permission to retire the API early.
 
+Research currently also registers some canonical model CLI names. Migrate private-specific commands/callers to explicit research entry points and let Deep Learning exclusively provide canonical model commands. Do not move private model deviations into the public owner. Preserve a full pinned legacy installation for old customized commands; installation order cannot select their semantics.
+
 Never install two wheels that overwrite the same module or CLI. Full noneditable installed-profile tests must prove file ownership, import origin, class identity and dependency closure.
 
 ## Strategy pipelines and orchestration
@@ -81,6 +83,8 @@ Base imports must not import private Research, model training, Runtime or networ
 Old recordings/receipts keep original producer identity, including unknown values. Do not invent a historical source hash or promise hot restore across relocated providers. Test complete old/new offline lifecycle traces, serialized states, failure/restart boundaries and typed private-provider injection before consumer cutover.
 
 ## Documentation and public availability
+
+Every transfer preserves original license/copyright and per-file provenance, including model/coordination code moving into owners with a different default license. Ship original terms in the actual wheel and describe the real source-specific combination; do not silently relicense.
 
 Code, acceptance tests, paired EN/ZH installation/API/capability guides, source history links and migration maps move together. Preserve exact old locale routes and stable anchors with owner-correct stubs after the provider is merged. Do not label future provider/compatibility work as installed, released or deployed.
 
