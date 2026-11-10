@@ -103,6 +103,22 @@ def main() -> None:
     assert public_fees.DatedTradeFeeModel is owned_fees.DatedTradeFeeModel
     assert legacy_types.BacktestLegResult is BacktestLegResult
     assert legacy_types.BacktestPeriodResult is BacktestPeriodResult
+    owned_accounting = importlib.import_module("quant_backtest_core.daily.trade_accounting")
+    for module_name in (
+        "quant_platform._portfolio.backends.trade_accounting",
+        "quant_platform.backtest.legacy.backends.trade_accounting",
+        "portfolio_backtester.backends.trade_accounting",
+    ):
+        public_accounting = importlib.import_module(module_name)
+        for name in (
+            "TradeCostConfig",
+            "TradeAccounting",
+            "_clean_weights",
+            "drift_weights",
+            "compute_trade_accounting",
+            "compute_trade_accounting_frame",
+        ):
+            assert getattr(public_accounting, name) is getattr(owned_accounting, name)
     installed = distribution("quant-platform")
     forbidden = {"torch", "xgboost", "sklearn", "alpha_research.backends.qlib"}
     assert not forbidden & set(sys.modules)
