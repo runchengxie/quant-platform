@@ -31,14 +31,14 @@
 
 ## 调用方怎么改
 
-Platform 0.2.0 支持 Python 3.12 和 3.13，安装 Engine Core 0.2.0 的
-minute、cost、scenario、planning 扩展及 SDK 0.3.0。Core 和 SDK
+Platform 0.3.0 支持 Python 3.12 和 3.13，安装 Engine Core 0.3.0 的
+minute、cost、scenario、planning、daily 扩展及 SDK 0.3.0。Core 和 SDK
 通过固定 Git 子目录依赖使用同一已合并 Engine 提交
-`51ab1e8cb2267d938a0681b81f2419d504ed91cc`，无需发布到 PyPI。
+`ad0895f1c2015eb31bd364b40741b0f7cd6e0048`，无需发布到 PyPI。
 
-分钟执行、纸面账户、资源预留、执行规划、确定性撮合、回放、冲击和基础证据由 Engine 维护。
+日频执行、诊断腿和区间核算、分钟执行、纸面账户、资源预留、执行规划、确定性撮合、回放、冲击和基础证据由 Engine 维护。
 兼容导入指向相同的 Core 对象。待成交分配适配器保留 Platform 的完整稀疏风险校验及原优化结果。
-OSQP、统计风险、通用优化、研究校准、`pool_sleeves`、日频回测和可复用模型训练，
+OSQP、统计风险、通用优化、研究校准、`pool_sleeves`、目标构建、研究统计、发布和可复用模型训练，
 包括 `generator` 与 `sqrt_law`，仍由 Platform 维护。
 可选原生发行包仅由 Engine 构建。Rust 后端必须显式选择。
 仅使用 SDK 的 Rust 会话适配器仍将不支持的执行感知证据标记为 false。

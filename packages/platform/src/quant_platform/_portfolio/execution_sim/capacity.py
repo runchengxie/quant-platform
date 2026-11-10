@@ -1,243 +1,52 @@
-"""Price and liquidity capacity queries."""
+"""Engine alias: quant_backtest_core.daily.execution_sim.capacity."""
 
 from __future__ import annotations
 
-import numpy as np
-import pandas as pd
+import sys
+from importlib import import_module
+from typing import TYPE_CHECKING
 
-from ..execution import DetailedTradeFeeModel
-from .config import (
-    SELL_UNTIL_NEXT_REBALANCE,
-    ExecutionSimConfig,
-)
-
-TradeFeeModel = DetailedTradeFeeModel
-
-__all__ = [
-    "_capacity_notional",
-    "_capacity_weight",
-    "_execution_window_dates",
-    "_limit_down_at",
-    "_limit_up_at",
-    "_listing_status_at",
-    "_position_values_by_symbol",
-    "_positions_value",
-    "_price_at",
-    "_refresh_last_prices",
-    "_table_bool_at",
-    "_table_float_at",
-    "_valuation_price",
-]
-
-
-def _execution_window_dates(
-    entry_date: pd.Timestamp,
-    *,
-    max_days: int | str,
-    next_entry_date: pd.Timestamp | None,
-    trade_dates: list[pd.Timestamp],
-    date_to_idx: dict[pd.Timestamp, int],
-) -> list[pd.Timestamp]:
-    if entry_date not in date_to_idx:
-        return []
-    start_idx = date_to_idx[entry_date]
-    if max_days == SELL_UNTIL_NEXT_REBALANCE:
-        if next_entry_date is not None and next_entry_date in date_to_idx:
-            end_idx = max(start_idx + 1, date_to_idx[next_entry_date])
-        else:
-            end_idx = len(trade_dates)
-        return trade_dates[start_idx : min(end_idx, len(trade_dates))]
-
-    end_idx = min(start_idx + int(max_days), len(trade_dates))
-    return trade_dates[start_idx:end_idx]
-
-
-def _capacity_weight(
-    symbol: str,
-    trade_date: pd.Timestamp,
-    *,
-    config: ExecutionSimConfig,
-    price_table: pd.DataFrame,
-    tradable_table: pd.DataFrame | None,
-    liquidity_tables: dict[str, pd.DataFrame],
-) -> float:
-    price = _table_float_at(price_table, trade_date, symbol)
-    if not np.isfinite(price) or price <= 0:
-        return 0.0
-    if tradable_table is not None and not _table_bool_at(tradable_table, trade_date, symbol):
-        return 0.0
-
-    liquidity_values: list[float] = []
-    for column in config.liquidity_cols:
-        table = liquidity_tables.get(column)
-        if table is None:
-            return 0.0
-        value = _table_float_at(table, trade_date, symbol)
-        if not np.isfinite(value) or value <= 0:
-            return 0.0
-        liquidity_values.append(float(value))
-    if not liquidity_values:
-        return 0.0
-    liquidity = min(liquidity_values)
-    notional = (
-        float(config.participation_rate) * float(config.liquidity_notional_multiplier) * liquidity
+if TYPE_CHECKING:
+    from quant_backtest_core.daily.execution_sim.capacity import (
+        SELL_UNTIL_NEXT_REBALANCE as SELL_UNTIL_NEXT_REBALANCE,
     )
-    return max(notional / float(config.portfolio_value), 0.0)
+    from quant_backtest_core.daily.execution_sim.capacity import (
+        DetailedTradeFeeModel as DetailedTradeFeeModel,
+    )
+    from quant_backtest_core.daily.execution_sim.capacity import (
+        ExecutionSimConfig as ExecutionSimConfig,
+    )
+    from quant_backtest_core.daily.execution_sim.capacity import TradeFeeModel as TradeFeeModel
+    from quant_backtest_core.daily.execution_sim.capacity import (
+        _capacity_notional as _capacity_notional,
+    )
+    from quant_backtest_core.daily.execution_sim.capacity import (
+        _capacity_weight as _capacity_weight,
+    )
+    from quant_backtest_core.daily.execution_sim.capacity import (
+        _execution_window_dates as _execution_window_dates,
+    )
+    from quant_backtest_core.daily.execution_sim.capacity import _limit_down_at as _limit_down_at
+    from quant_backtest_core.daily.execution_sim.capacity import _limit_up_at as _limit_up_at
+    from quant_backtest_core.daily.execution_sim.capacity import (
+        _listing_status_at as _listing_status_at,
+    )
+    from quant_backtest_core.daily.execution_sim.capacity import (
+        _position_values_by_symbol as _position_values_by_symbol,
+    )
+    from quant_backtest_core.daily.execution_sim.capacity import (
+        _positions_value as _positions_value,
+    )
+    from quant_backtest_core.daily.execution_sim.capacity import _price_at as _price_at
+    from quant_backtest_core.daily.execution_sim.capacity import (
+        _refresh_last_prices as _refresh_last_prices,
+    )
+    from quant_backtest_core.daily.execution_sim.capacity import _table_bool_at as _table_bool_at
+    from quant_backtest_core.daily.execution_sim.capacity import _table_float_at as _table_float_at
+    from quant_backtest_core.daily.execution_sim.capacity import (
+        _valuation_price as _valuation_price,
+    )
+    from quant_backtest_core.daily.execution_sim.capacity import np as np
+    from quant_backtest_core.daily.execution_sim.capacity import pd as pd
 
-
-def _capacity_notional(
-    symbol: str,
-    trade_date: pd.Timestamp,
-    *,
-    config: ExecutionSimConfig,
-    price_table: pd.DataFrame,
-    tradable_table: pd.DataFrame | None,
-    liquidity_tables: dict[str, pd.DataFrame],
-) -> float:
-    return _capacity_weight(
-        symbol,
-        trade_date,
-        config=config,
-        price_table=price_table,
-        tradable_table=tradable_table,
-        liquidity_tables=liquidity_tables,
-    ) * float(config.portfolio_value)
-
-
-def _price_at(
-    symbol: str,
-    trade_date: pd.Timestamp,
-    price_table: pd.DataFrame,
-) -> float:
-    value = _table_float_at(price_table, trade_date, symbol)
-    if not np.isfinite(value) or value <= 0:
-        return np.nan
-    return float(value)
-
-
-def _table_float_at(table: pd.DataFrame, trade_date: pd.Timestamp, symbol: str) -> float:
-    if table.empty or trade_date not in table.index or symbol not in table.columns:
-        return np.nan
-    try:
-        value = table.at[trade_date, symbol]
-    except (KeyError, ValueError):
-        return np.nan
-    try:
-        result = float(value)
-    except (TypeError, ValueError):
-        return np.nan
-    return result if np.isfinite(result) else np.nan
-
-
-def _table_bool_at(table: pd.DataFrame, trade_date: pd.Timestamp, symbol: str) -> bool:
-    if table.empty or trade_date not in table.index or symbol not in table.columns:
-        return False
-    try:
-        return bool(table.at[trade_date, symbol])
-    except (KeyError, ValueError):
-        return False
-
-
-def _limit_up_at(
-    symbol: str,
-    trade_date: pd.Timestamp,
-    limit_up_table: pd.DataFrame | None,
-) -> bool:
-    """True when ``symbol`` is at the price-up limit on ``trade_date``.
-
-    A missing table is treated as "not at limit" so callers that do not enable
-    price-limit enforcement never consult this helper.
-    """
-    if limit_up_table is None:
-        return False
-    return _table_bool_at(limit_up_table, trade_date, symbol)
-
-
-def _limit_down_at(
-    symbol: str,
-    trade_date: pd.Timestamp,
-    limit_down_table: pd.DataFrame | None,
-) -> bool:
-    """True when ``symbol`` is at the price-down limit on ``trade_date``."""
-    if limit_down_table is None:
-        return False
-    return _table_bool_at(limit_down_table, trade_date, symbol)
-
-
-def _listing_status_at(
-    symbol: str,
-    trade_date: pd.Timestamp,
-    listing_status_table: pd.DataFrame | None,
-) -> str:
-    """Return the listing status string for ``symbol`` on ``trade_date``.
-
-    Returns ``"listed"`` when the table is missing or the cell is NaN/empty so
-    that unconfigured runs default to a tradable state.
-    """
-    if listing_status_table is None:
-        return "listed"
-    if (
-        listing_status_table.empty
-        or trade_date not in listing_status_table.index
-        or symbol not in listing_status_table.columns
-    ):
-        return "listed"
-    try:
-        value = listing_status_table.at[trade_date, symbol]
-    except (KeyError, ValueError):
-        return "listed"
-    if value is None or (isinstance(value, float) and np.isnan(value)):
-        return "listed"
-    text = str(value).strip().lower()
-    return text or "listed"
-
-
-def _valuation_price(
-    symbol: str,
-    trade_date: pd.Timestamp,
-    price_table: pd.DataFrame,
-    last_prices: dict[str, float],
-) -> float:
-    price = _price_at(symbol, trade_date, price_table)
-    if np.isfinite(price):
-        return float(price)
-    return float(last_prices.get(symbol, np.nan))
-
-
-def _refresh_last_prices(
-    last_prices: dict[str, float],
-    shares: dict[str, float],
-    trade_date: pd.Timestamp,
-    price_table: pd.DataFrame,
-) -> None:
-    for symbol in list(shares):
-        price = _price_at(symbol, trade_date, price_table)
-        if np.isfinite(price):
-            last_prices[symbol] = float(price)
-
-
-def _positions_value(
-    shares: dict[str, float],
-    trade_date: pd.Timestamp,
-    price_table: pd.DataFrame,
-    last_prices: dict[str, float],
-) -> float:
-    value = 0.0
-    for symbol, quantity in shares.items():
-        price = _valuation_price(symbol, trade_date, price_table, last_prices)
-        if np.isfinite(price):
-            value += float(quantity) * float(price)
-    return float(value)
-
-
-def _position_values_by_symbol(
-    shares: dict[str, float],
-    trade_date: pd.Timestamp,
-    price_table: pd.DataFrame,
-    last_prices: dict[str, float],
-) -> dict[str, float]:
-    values: dict[str, float] = {}
-    for symbol, quantity in shares.items():
-        price = _valuation_price(symbol, trade_date, price_table, last_prices)
-        values[symbol] = float(quantity) * float(price) if np.isfinite(price) else 0.0
-    return values
+sys.modules[__name__] = import_module("quant_backtest_core.daily.execution_sim.capacity")

@@ -9,7 +9,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: runchengxie/quant-backtest-engine
-          ref: 51ab1e8cb2267d938a0681b81f2419d504ed91cc
+          ref: ad0895f1c2015eb31bd364b40741b0f7cd6e0048
           path: session-engine-provider
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
@@ -24,7 +24,7 @@ jobs:
           export SESSION_ENGINE_BINARY="$GITHUB_WORKSPACE/session-engine-provider/target/release/quant-backtest-engine"
           export SESSION_ENGINE_SHA256="$(sha256sum "$SESSION_ENGINE_BINARY" | cut -d ' ' -f 1)"
           test -x "$SESSION_ENGINE_BINARY"
-          uv run --locked --no-default-groups --group test --extra engine pytest -q tests/test_engine_session_client.py tests/test_engine_ledger_comparison.py
+          uv run --locked --no-default-groups --group test --extra engine pytest -q tests/test_engine_session_client.py tests/test_engine_ledger_comparison.py tests/test_engine_daily_compatibility.py
   dependency-modes:
     runs-on: ubuntu-latest
     strategy:
@@ -63,7 +63,7 @@ jobs:
         run: >-
           uv pip install --python "$RUNNER_TEMP/platform-wheel-env/bin/python"
           "$GITHUB_WORKSPACE/packages/research-contracts"
-          "$RUNNER_TEMP/platform-wheels/quant_platform-0.2.0-py3-none-any.whl"
+          "$RUNNER_TEMP/platform-wheels/quant_platform-0.3.0-py3-none-any.whl"
       - name: Check base wheel with mandatory provider and without machine learning extras
         run: >-
           "$RUNNER_TEMP/platform-wheel-env/bin/python" -I scripts/check_platform_wheel.py
@@ -72,7 +72,7 @@ jobs:
         working-directory: ${{ runner.temp }}
         run: >-
           uv pip install --python "$RUNNER_TEMP/platform-wheel-env/bin/python"
-          "$RUNNER_TEMP/platform-wheels/quant_platform-0.2.0-py3-none-any.whl[engine]"
+          "$RUNNER_TEMP/platform-wheels/quant_platform-0.3.0-py3-none-any.whl[engine]"
       - name: Check regular wheel with compatibility extra
         run: >-
           "$RUNNER_TEMP/platform-wheel-env/bin/python" -I scripts/check_platform_wheel.py
@@ -101,7 +101,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: runchengxie/quant-backtest-engine
-          ref: 51ab1e8cb2267d938a0681b81f2419d504ed91cc
+          ref: ad0895f1c2015eb31bd364b40741b0f7cd6e0048
           path: native-engine-provider
       - run: uv run --locked maturin build --locked --release -m native-engine-provider/core-native/Cargo.toml --out "$RUNNER_TEMP/microstructure-wheels"
       - run: uv pip install --python .venv/bin/python "$RUNNER_TEMP"/microstructure-wheels/*.whl

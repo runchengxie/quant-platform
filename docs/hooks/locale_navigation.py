@@ -11,6 +11,8 @@ from copy import copy
 from mkdocs.structure.nav import Navigation
 
 ENGLISH_PAGES = {
+    "backtest/engine-daily.md",
+    "migration/provider-c-consumer.md",
     "concepts/signed-paper-optimization.md",
     "concepts/sparse-signed-optimization.md",
     "backtest/paper-account.md",

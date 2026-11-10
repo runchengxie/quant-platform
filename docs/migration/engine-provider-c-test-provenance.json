@@ -1,0 +1,1421 @@
+{
+  "schema": "platform-provider-c-test-provenance.v1",
+  "provider_revision": "ad0895f1c2015eb31bd364b40741b0f7cd6e0048",
+  "original_revision": "7a618bddd8fdeee5dbe37fe5b54a9698e0de5355",
+  "authority": "Engine owns kernel tests. Platform retains public forwarding integration tests and original financial assertions.",
+  "transfers": [
+    {
+      "original": "tests/test_execution_sim_sell_lots.py",
+      "original_sha256": "18bcc4700977d32681f3585d9d792e37f34c7d80e16cf076cef2d59a4f196992",
+      "provider": "core/tests/daily/test_execution_sim_sell_lots.py",
+      "retained_consumer": "tests/test_execution_sim_sell_lots.py",
+      "cases": [
+        {
+          "original": "test_sell_lots_respect_request_capacity_and_settlement",
+          "core": "test_sell_lots_respect_request_capacity_and_settlement",
+          "original_assertions": 4,
+          "core_assertions": 4,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_sell_lots.py::test_sell_lots_respect_request_capacity_and_settlement"
+        },
+        {
+          "original": "test_fractional_entitlements_fail_closed",
+          "core": "test_fractional_entitlements_fail_closed",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_sell_lots.py::test_fractional_entitlements_fail_closed"
+        },
+        {
+          "original": "test_default_retains_continuous_adjusted_share_sells",
+          "core": "test_default_retains_continuous_adjusted_share_sells",
+          "original_assertions": 3,
+          "core_assertions": 3,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_sell_lots.py::test_default_retains_continuous_adjusted_share_sells"
+        },
+        {
+          "original": "test_sell_lot_validation_matches_direct_and_mapping_construction",
+          "core": "test_sell_lot_validation_matches_direct_and_mapping_construction",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_sell_lots.py::test_sell_lot_validation_matches_direct_and_mapping_construction"
+        },
+        {
+          "original": "test_sell_lot_survives_config_description_roundtrip",
+          "core": "test_sell_lot_survives_config_description_roundtrip",
+          "original_assertions": 1,
+          "core_assertions": 1,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_sell_lots.py::test_sell_lot_survives_config_description_roundtrip"
+        },
+        {
+          "original": "test_weight_only_capacity_simulation_rejects_share_policy",
+          "core": "test_weight_only_capacity_simulation_rejects_share_policy",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_sell_lots.py::test_weight_only_capacity_simulation_rejects_share_policy"
+        },
+        {
+          "original": "test_public_ledger_sell_policy_and_default_continuous_compatibility",
+          "core": "test_public_ledger_sell_policy_and_default_continuous_compatibility",
+          "original_assertions": 6,
+          "core_assertions": 6,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_sell_lots.py::test_public_ledger_sell_policy_and_default_continuous_compatibility"
+        },
+        {
+          "original": "test_explicit_adjusted_basis_rejects_raw_share_sell_policy",
+          "core": "test_explicit_adjusted_basis_rejects_raw_share_sell_policy",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_sell_lots.py::test_explicit_adjusted_basis_rejects_raw_share_sell_policy"
+        },
+        {
+          "original": "test_lot_tolerance_does_not_accept_fractional_entitlements",
+          "core": "test_lot_tolerance_does_not_accept_fractional_entitlements",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_sell_lots.py::test_lot_tolerance_does_not_accept_fractional_entitlements"
+        },
+        {
+          "original": "test_numerical_share_residue_is_preserved_without_expanding_capacity",
+          "core": "test_numerical_share_residue_is_preserved_without_expanding_capacity",
+          "original_assertions": 6,
+          "core_assertions": 6,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_sell_lots.py::test_numerical_share_residue_is_preserved_without_expanding_capacity"
+        },
+        {
+          "original": "test_sell_lot_deadline_retains_residual_and_charges_actual_fill_fees",
+          "core": "test_sell_lot_deadline_retains_residual_and_charges_actual_fill_fees",
+          "original_assertions": 6,
+          "core_assertions": 6,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_sell_lots.py::test_sell_lot_deadline_retains_residual_and_charges_actual_fill_fees"
+        },
+        {
+          "original": "test_raw_sell_policy_rejects_invalid_direct_lot_tolerance",
+          "core": "test_raw_sell_policy_rejects_invalid_direct_lot_tolerance",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_sell_lots.py::test_raw_sell_policy_rejects_invalid_direct_lot_tolerance"
+        }
+      ]
+    },
+    {
+      "original": "tests/test_terminal_valuation.py",
+      "original_sha256": "73e57cd03a796a097a2e2ea46fd0d18b22cc489779688118b39c6fa5edae80ab",
+      "provider": "core/tests/daily/test_terminal_valuation.py",
+      "retained_consumer": "tests/test_terminal_valuation.py",
+      "cases": [
+        {
+          "original": "test_terminal_close_and_same_day_open_handoff_preserve_continuous_wealth",
+          "core": "test_terminal_close_and_same_day_open_handoff_preserve_continuous_wealth",
+          "original_assertions": 4,
+          "core_assertions": 4,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_terminal_valuation.py::test_terminal_close_and_same_day_open_handoff_preserve_continuous_wealth"
+        },
+        {
+          "original": "test_terminal_replacement_keeps_prior_cost_state_instead_of_reinitializing",
+          "core": "test_terminal_replacement_keeps_prior_cost_state_instead_of_reinitializing",
+          "original_assertions": 2,
+          "core_assertions": 2,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_terminal_valuation.py::test_terminal_replacement_keeps_prior_cost_state_instead_of_reinitializing"
+        },
+        {
+          "original": "test_default_none_is_identical_to_historical_uniform_exit_behavior",
+          "core": "test_default_none_is_identical_to_historical_uniform_exit_behavior",
+          "original_assertions": 2,
+          "core_assertions": 2,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_terminal_valuation.py::test_default_none_is_identical_to_historical_uniform_exit_behavior"
+        },
+        {
+          "original": "test_terminal_close_is_only_for_last_requested_period_even_if_it_is_skipped",
+          "core": "test_terminal_close_is_only_for_last_requested_period_even_if_it_is_skipped",
+          "original_assertions": 1,
+          "core_assertions": 1,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_terminal_valuation.py::test_terminal_close_is_only_for_last_requested_period_even_if_it_is_skipped"
+        },
+        {
+          "original": "test_missing_unused_close_and_missing_terminal_open_do_not_drop_valid_marks",
+          "core": "test_missing_unused_close_and_missing_terminal_open_do_not_drop_valid_marks",
+          "original_assertions": 1,
+          "core_assertions": 1,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_terminal_valuation.py::test_missing_unused_close_and_missing_terminal_open_do_not_drop_valid_marks"
+        },
+        {
+          "original": "test_missing_terminal_close_keeps_unavailable_weight_in_cash",
+          "core": "test_missing_terminal_close_keeps_unavailable_weight_in_cash",
+          "original_assertions": 3,
+          "core_assertions": 3,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_terminal_valuation.py::test_missing_terminal_close_keeps_unavailable_weight_in_cash"
+        },
+        {
+          "original": "test_missing_terminal_column_fails_explicitly",
+          "core": "test_missing_terminal_column_fails_explicitly",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_terminal_valuation.py::test_missing_terminal_column_fails_explicitly"
+        },
+        {
+          "original": "test_terminal_mark_does_not_silently_change_other_exit_policies",
+          "core": "test_terminal_mark_does_not_silently_change_other_exit_policies",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_terminal_valuation.py::test_terminal_mark_does_not_silently_change_other_exit_policies"
+        },
+        {
+          "original": "test_terminal_mark_is_exposed_through_public_native_replay",
+          "core": null,
+          "original_assertions": 1,
+          "core_assertions": 0,
+          "assertions_unchanged": false,
+          "platform15_retained": "tests/test_terminal_valuation.py::test_terminal_mark_is_exposed_through_public_native_replay"
+        },
+        {
+          "original": "test_terminal_mark_rejects_unsupported_secondary_execution_paths",
+          "core": null,
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_terminal_valuation.py::test_terminal_mark_rejects_unsupported_secondary_execution_paths"
+        }
+      ]
+    },
+    {
+      "original": "tests/test_execution_delisting_audit.py",
+      "original_sha256": "20818ad41c918ebc1292dd07419da7f3c5e62a8271cd1166d8acb03bdfa26d2a",
+      "provider": "core/tests/daily/test_execution_delisting_audit.py",
+      "retained_consumer": "tests/test_execution_delisting_audit.py",
+      "cases": [
+        {
+          "original": "test_delisting_exit_accepts_full_pre_delist_sale",
+          "core": "test_delisting_exit_accepts_full_pre_delist_sale",
+          "original_assertions": 1,
+          "core_assertions": 1,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_delisting_audit.py::test_delisting_exit_accepts_full_pre_delist_sale"
+        },
+        {
+          "original": "test_delisting_exit_blocks_residual_shares",
+          "core": "test_delisting_exit_blocks_residual_shares",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_delisting_audit.py::test_delisting_exit_blocks_residual_shares"
+        },
+        {
+          "original": "test_delisting_exit_blocks_late_trade_and_missing_mark",
+          "core": "test_delisting_exit_blocks_late_trade_and_missing_mark",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_delisting_audit.py::test_delisting_exit_blocks_late_trade_and_missing_mark"
+        },
+        {
+          "original": "test_delisting_exit_blocks_late_trade_with_mark",
+          "core": "test_delisting_exit_blocks_late_trade_with_mark",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_delisting_audit.py::test_delisting_exit_blocks_late_trade_with_mark"
+        },
+        {
+          "original": "test_delisting_exit_accepts_unowned_delisted_name",
+          "core": "test_delisting_exit_accepts_unowned_delisted_name",
+          "original_assertions": 2,
+          "core_assertions": 2,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_delisting_audit.py::test_delisting_exit_accepts_unowned_delisted_name"
+        }
+      ]
+    },
+    {
+      "original": "tests/test_execution_corporate_actions.py",
+      "original_sha256": "2175e8da6149893dd1ffcc545853b521a38fa708b5d373a4bd774887a41c216c",
+      "provider": "core/tests/daily/test_execution_corporate_actions.py",
+      "retained_consumer": "tests/test_execution_corporate_actions.py",
+      "cases": [
+        {
+          "original": "test_cash_right_recognized_at_ex_and_payment_transfers_without_return",
+          "core": "test_cash_right_recognized_at_ex_and_payment_transfers_without_return",
+          "original_assertions": 8,
+          "core_assertions": 8,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_cash_right_recognized_at_ex_and_payment_transfers_without_return"
+        },
+        {
+          "original": "test_new_target_sizes_on_rights_but_cannot_spend_unpaid_cash",
+          "core": "test_new_target_sizes_on_rights_but_cannot_spend_unpaid_cash",
+          "original_assertions": 5,
+          "core_assertions": 5,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_new_target_sizes_on_rights_but_cannot_spend_unpaid_cash"
+        },
+        {
+          "original": "test_selling_after_record_retains_cash_rights",
+          "core": "test_selling_after_record_retains_cash_rights",
+          "original_assertions": 2,
+          "core_assertions": 2,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_selling_after_record_retains_cash_rights"
+        },
+        {
+          "original": "test_record_date_sells_exclude_rights",
+          "core": "test_record_date_sells_exclude_rights",
+          "original_assertions": 2,
+          "core_assertions": 2,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_record_date_sells_exclude_rights"
+        },
+        {
+          "original": "test_buys_after_record_and_pre_run_record_get_no_rights",
+          "core": "test_buys_after_record_and_pre_run_record_get_no_rights",
+          "original_assertions": 2,
+          "core_assertions": 2,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_buys_after_record_and_pre_run_record_get_no_rights"
+        },
+        {
+          "original": "test_future_event_terms_do_not_change_pre_ex_daily_rows",
+          "core": "test_future_event_terms_do_not_change_pre_ex_daily_rows",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_future_event_terms_do_not_change_pre_ex_daily_rows"
+        },
+        {
+          "original": "test_explicit_withholding_recognizes_net_80_and_discloses_flat_rate",
+          "core": "test_explicit_withholding_recognizes_net_80_and_discloses_flat_rate",
+          "original_assertions": 5,
+          "core_assertions": 5,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_explicit_withholding_recognizes_net_80_and_discloses_flat_rate"
+        },
+        {
+          "original": "test_bonus_receivable_marks_at_current_raw_price_then_releases_once",
+          "core": "test_bonus_receivable_marks_at_current_raw_price_then_releases_once",
+          "original_assertions": 5,
+          "core_assertions": 5,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_bonus_receivable_marks_at_current_raw_price_then_releases_once"
+        },
+        {
+          "original": "test_bonus_only_original_shares_sell_before_release_across_holiday_sessions",
+          "core": "test_bonus_only_original_shares_sell_before_release_across_holiday_sessions",
+          "original_assertions": 5,
+          "core_assertions": 5,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_bonus_only_original_shares_sell_before_release_across_holiday_sessions"
+        },
+        {
+          "original": "test_bonus_counts_toward_target_exposure_without_duplicate_buy",
+          "core": "test_bonus_counts_toward_target_exposure_without_duplicate_buy",
+          "original_assertions": 2,
+          "core_assertions": 2,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_bonus_counts_toward_target_exposure_without_duplicate_buy"
+        },
+        {
+          "original": "test_fractional_bonus_is_retained_without_cash_in_lieu",
+          "core": "test_fractional_bonus_is_retained_without_cash_in_lieu",
+          "original_assertions": 2,
+          "core_assertions": 2,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_fractional_bonus_is_retained_without_cash_in_lieu"
+        },
+        {
+          "original": "test_settlement_outside_window_stays_receivable",
+          "core": "test_settlement_outside_window_stays_receivable",
+          "original_assertions": 4,
+          "core_assertions": 4,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_settlement_outside_window_stays_receivable"
+        },
+        {
+          "original": "test_same_ex_settlement_recognizes_and_transfers_before_orders",
+          "core": "test_same_ex_settlement_recognizes_and_transfers_before_orders",
+          "original_assertions": 3,
+          "core_assertions": 3,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_same_ex_settlement_recognizes_and_transfers_before_orders"
+        },
+        {
+          "original": "test_raw_basis_required_even_for_explicit_empty_events",
+          "core": "test_raw_basis_required_even_for_explicit_empty_events",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_raw_basis_required_even_for_explicit_empty_events"
+        },
+        {
+          "original": "test_duplicate_event_identity_rejected",
+          "core": "test_duplicate_event_identity_rejected",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_duplicate_event_identity_rejected"
+        },
+        {
+          "original": "test_invalid_events_rejected",
+          "core": "test_invalid_events_rejected",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_invalid_events_rejected"
+        },
+        {
+          "original": "test_event_is_immutable_and_dates_normalize",
+          "core": "test_event_is_immutable_and_dates_normalize",
+          "original_assertions": 1,
+          "core_assertions": 1,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_event_is_immutable_and_dates_normalize"
+        },
+        {
+          "original": "test_in_window_action_dates_require_exact_session_coverage",
+          "core": "test_in_window_action_dates_require_exact_session_coverage",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_in_window_action_dates_require_exact_session_coverage"
+        },
+        {
+          "original": "test_missing_or_invalid_ex_mark_fails_even_when_suspended",
+          "core": "test_missing_or_invalid_ex_mark_fails_even_when_suspended",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_missing_or_invalid_ex_mark_fails_even_when_suspended"
+        },
+        {
+          "original": "test_suspension_with_explicit_raw_mark_can_value_rights",
+          "core": "test_suspension_with_explicit_raw_mark_can_value_rights",
+          "original_assertions": 1,
+          "core_assertions": 1,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_suspension_with_explicit_raw_mark_can_value_rights"
+        },
+        {
+          "original": "test_missing_stock_receivable_mark_after_original_shares_sold_fails",
+          "core": "test_missing_stock_receivable_mark_after_original_shares_sold_fails",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_missing_stock_receivable_mark_after_original_shares_sold_fails"
+        },
+        {
+          "original": "test_ex_cancels_only_affected_outstanding_orders",
+          "core": "test_ex_cancels_only_affected_outstanding_orders",
+          "original_assertions": 4,
+          "core_assertions": 4,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_ex_cancels_only_affected_outstanding_orders"
+        },
+        {
+          "original": "test_no_action_calls_are_exactly_equivalent_and_opt_in_empty_adds_only_receipts",
+          "core": "test_no_action_calls_are_exactly_equivalent_and_opt_in_empty_adds_only_receipts",
+          "original_assertions": 4,
+          "core_assertions": 4,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_no_action_calls_are_exactly_equivalent_and_opt_in_empty_adds_only_receipts"
+        },
+        {
+          "original": "test_prepared_tables_use_same_run_calendar_and_accounting",
+          "core": "test_prepared_tables_use_same_run_calendar_and_accounting",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_corporate_actions.py::test_prepared_tables_use_same_run_calendar_and_accounting"
+        }
+      ]
+    },
+    {
+      "original": "tests/test_dated_execution_fees.py",
+      "original_sha256": "dea5e692269229db497c81c520000b42aa1da6bacbe4319c334fc9b44ebc071a",
+      "provider": "core/tests/daily/test_dated_execution_fees.py",
+      "retained_consumer": "tests/test_dated_execution_fees.py",
+      "cases": [
+        {
+          "original": "test_sell_quote_returns_hand_derived_components",
+          "core": "test_sell_quote_returns_hand_derived_components",
+          "original_assertions": 5,
+          "core_assertions": 5,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_sell_quote_returns_hand_derived_components"
+        },
+        {
+          "original": "test_commission_minimum_accrues_once_per_group",
+          "core": "test_commission_minimum_accrues_once_per_group",
+          "original_assertions": 4,
+          "core_assertions": 4,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_commission_minimum_accrues_once_per_group"
+        },
+        {
+          "original": "test_cumulative_notional_of_30000_has_total_commission_of_6",
+          "core": "test_cumulative_notional_of_30000_has_total_commission_of_6",
+          "original_assertions": 1,
+          "core_assertions": 1,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_cumulative_notional_of_30000_has_total_commission_of_6"
+        },
+        {
+          "original": "test_zero_fill_never_incurs_minimum_commission",
+          "core": "test_zero_fill_never_incurs_minimum_commission",
+          "original_assertions": 1,
+          "core_assertions": 1,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_zero_fill_never_incurs_minimum_commission"
+        },
+        {
+          "original": "test_schedule_uses_inclusive_start_and_exclusive_end_boundaries",
+          "core": "test_schedule_uses_inclusive_start_and_exclusive_end_boundaries",
+          "original_assertions": 4,
+          "core_assertions": 4,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_schedule_uses_inclusive_start_and_exclusive_end_boundaries"
+        },
+        {
+          "original": "test_missing_date_coverage_fails_closed",
+          "core": "test_missing_date_coverage_fails_closed",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_missing_date_coverage_fails_closed"
+        },
+        {
+          "original": "test_market_identity_must_match_symbol_mapping",
+          "core": "test_market_identity_must_match_symbol_mapping",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_market_identity_must_match_symbol_mapping"
+        },
+        {
+          "original": "test_missing_symbol_market_mapping_fails_closed",
+          "core": "test_missing_symbol_market_mapping_fails_closed",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_missing_symbol_market_mapping_fails_closed"
+        },
+        {
+          "original": "test_overlapping_periods_for_the_same_market_are_rejected",
+          "core": "test_overlapping_periods_for_the_same_market_are_rejected",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_overlapping_periods_for_the_same_market_are_rejected"
+        },
+        {
+          "original": "test_invalid_side_is_rejected",
+          "core": "test_invalid_side_is_rejected",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_invalid_side_is_rejected"
+        },
+        {
+          "original": "test_invalid_quote_amount_is_rejected",
+          "core": "test_invalid_quote_amount_is_rejected",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_invalid_quote_amount_is_rejected"
+        },
+        {
+          "original": "test_invalid_fee_rate_is_rejected",
+          "core": "test_invalid_fee_rate_is_rejected",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_invalid_fee_rate_is_rejected"
+        },
+        {
+          "original": "test_period_dates_and_market_are_validated",
+          "core": "test_period_dates_and_market_are_validated",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_period_dates_and_market_are_validated"
+        },
+        {
+          "original": "test_fee_configuration_is_immutable",
+          "core": "test_fee_configuration_is_immutable",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_fee_configuration_is_immutable"
+        },
+        {
+          "original": "test_continuous_ledger_uses_actual_delayed_fill_date_and_records_fee_context",
+          "core": "test_continuous_ledger_uses_actual_delayed_fill_date_and_records_fee_context",
+          "original_assertions": 10,
+          "core_assertions": 10,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_continuous_ledger_uses_actual_delayed_fill_date_and_records_fee_context"
+        },
+        {
+          "original": "test_dated_sell_defers_when_fee_exceeds_cash_and_proceeds_then_fills_later",
+          "core": "test_dated_sell_defers_when_fee_exceeds_cash_and_proceeds_then_fills_later",
+          "original_assertions": 8,
+          "core_assertions": 8,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_dated_sell_defers_when_fee_exceeds_cash_and_proceeds_then_fills_later"
+        },
+        {
+          "original": "test_one_order_split_across_days_gets_one_minimum_per_execution_day",
+          "core": "test_one_order_split_across_days_gets_one_minimum_per_execution_day",
+          "original_assertions": 3,
+          "core_assertions": 3,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_one_order_split_across_days_gets_one_minimum_per_execution_day"
+        },
+        {
+          "original": "test_reusing_one_dated_model_across_runs_does_not_leak_accrual_state",
+          "core": "test_reusing_one_dated_model_across_runs_does_not_leak_accrual_state",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_reusing_one_dated_model_across_runs_does_not_leak_accrual_state"
+        },
+        {
+          "original": "test_no_actual_fill_accrues_no_fee",
+          "core": "test_no_actual_fill_accrues_no_fee",
+          "original_assertions": 3,
+          "core_assertions": 3,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_no_actual_fill_accrues_no_fee"
+        },
+        {
+          "original": "test_minimum_commission_scales_with_cash_budget_and_round_lots",
+          "core": "test_minimum_commission_scales_with_cash_budget_and_round_lots",
+          "original_assertions": 5,
+          "core_assertions": 5,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_minimum_commission_scales_with_cash_budget_and_round_lots"
+        },
+        {
+          "original": "test_fill_components_reconcile_to_transaction_cost_and_nav_cash_change",
+          "core": "test_fill_components_reconcile_to_transaction_cost_and_nav_cash_change",
+          "original_assertions": 3,
+          "core_assertions": 3,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_fill_components_reconcile_to_transaction_cost_and_nav_cash_change"
+        },
+        {
+          "original": "test_run_description_serializes_complete_dated_schedule",
+          "core": "test_run_description_serializes_complete_dated_schedule",
+          "original_assertions": 1,
+          "core_assertions": 1,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_run_description_serializes_complete_dated_schedule"
+        },
+        {
+          "original": "test_dated_run_with_missing_market_mapping_fails_before_execution",
+          "core": "test_dated_run_with_missing_market_mapping_fails_before_execution",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_dated_run_with_missing_market_mapping_fails_before_execution"
+        },
+        {
+          "original": "test_unknown_fee_model_type_is_rejected_by_explicit_dispatch",
+          "core": "test_unknown_fee_model_type_is_rejected_by_explicit_dispatch",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_unknown_fee_model_type_is_rejected_by_explicit_dispatch"
+        },
+        {
+          "original": "test_dated_fee_types_are_available_from_the_public_execution_module",
+          "core": "test_dated_fee_types_are_available_from_the_public_execution_module",
+          "original_assertions": 5,
+          "core_assertions": 5,
+          "assertions_unchanged": false,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_dated_fee_types_are_available_from_the_public_execution_module"
+        },
+        {
+          "original": "test_ideal_nav_rejects_dated_model_before_any_legacy_or_empty_result_path",
+          "core": "test_ideal_nav_rejects_dated_model_before_any_legacy_or_empty_result_path",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_ideal_nav_rejects_dated_model_before_any_legacy_or_empty_result_path"
+        },
+        {
+          "original": "test_schedule_coverage_starts_at_first_executable_ledger_date",
+          "core": "test_schedule_coverage_starts_at_first_executable_ledger_date",
+          "original_assertions": 2,
+          "core_assertions": 2,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_dated_execution_fees.py::test_schedule_coverage_starts_at_first_executable_ledger_date"
+        }
+      ]
+    },
+    {
+      "original": "tests/test_turnover.py",
+      "original_sha256": "f4a64220623ad8c21df8ed30784a2a33b09268f8ca0772ddfad91f1b08266dc1",
+      "provider": "core/tests/daily/test_turnover.py",
+      "retained_consumer": "tests/test_turnover.py",
+      "cases": [
+        {
+          "original": "test_turnover_breakdown_preserves_initial_charge_convention",
+          "core": "test_turnover_breakdown_preserves_initial_charge_convention",
+          "original_assertions": 5,
+          "core_assertions": 5,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_turnover.py::test_turnover_breakdown_preserves_initial_charge_convention"
+        },
+        {
+          "original": "test_turnover_breakdown_exposes_buy_sell_and_gross_weights",
+          "core": "test_turnover_breakdown_exposes_buy_sell_and_gross_weights",
+          "original_assertions": 5,
+          "core_assertions": 5,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_turnover.py::test_turnover_breakdown_exposes_buy_sell_and_gross_weights"
+        },
+        {
+          "original": "test_turnover_breakdown_keeps_cash_change_visible",
+          "core": "test_turnover_breakdown_keeps_cash_change_visible",
+          "original_assertions": 4,
+          "core_assertions": 4,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_turnover.py::test_turnover_breakdown_keeps_cash_change_visible"
+        },
+        {
+          "original": "test_name_turnover_is_distinct_from_weight_turnover",
+          "core": "test_name_turnover_is_distinct_from_weight_turnover",
+          "original_assertions": 3,
+          "core_assertions": 3,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_turnover.py::test_name_turnover_is_distinct_from_weight_turnover"
+        },
+        {
+          "original": "test_annualize_turnover_is_linear",
+          "core": "test_annualize_turnover_is_linear",
+          "original_assertions": 1,
+          "core_assertions": 1,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_turnover.py::test_annualize_turnover_is_linear"
+        }
+      ]
+    },
+    {
+      "original": "tests/test_execution_sim_quote_safety.py",
+      "original_sha256": "43b4ada297c538b49f1e8eabb78bd678bd3c9535ccd377a9d30c632c0c150689",
+      "provider": "core/tests/daily/test_execution_sim_quote_safety.py",
+      "retained_consumer": "tests/test_execution_sim_quote_safety.py",
+      "cases": [
+        {
+          "original": "test_new_holding_keeps_last_observed_value_without_trading_missing_quote",
+          "core": "test_new_holding_keeps_last_observed_value_without_trading_missing_quote",
+          "original_assertions": 6,
+          "core_assertions": 6,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_quote_safety.py::test_new_holding_keeps_last_observed_value_without_trading_missing_quote"
+        },
+        {
+          "original": "test_explicit_missing_trading_control_blocks_execution",
+          "core": "test_explicit_missing_trading_control_blocks_execution",
+          "original_assertions": 3,
+          "core_assertions": 3,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_quote_safety.py::test_explicit_missing_trading_control_blocks_execution"
+        },
+        {
+          "original": "test_prepared_tables_reject_explicit_missing_side_control",
+          "core": "test_prepared_tables_reject_explicit_missing_side_control",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_quote_safety.py::test_prepared_tables_reject_explicit_missing_side_control"
+        },
+        {
+          "original": "test_ideal_new_holding_keeps_its_entry_valuation_on_missing_next_quote",
+          "core": "test_ideal_new_holding_keeps_its_entry_valuation_on_missing_next_quote",
+          "original_assertions": 1,
+          "core_assertions": 1,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_quote_safety.py::test_ideal_new_holding_keeps_its_entry_valuation_on_missing_next_quote"
+        }
+      ]
+    },
+    {
+      "original": "tests/test_position_backtest.py",
+      "original_sha256": "1acc558bf4ac13b895dd24c8a369b2a9ed98a51a8da46550aafbc2c3d1f52bfb",
+      "provider": "core/tests/daily/test_position_backtest.py",
+      "retained_consumer": "tests/test_position_backtest.py",
+      "cases": [
+        {
+          "original": "test_position_backtest_uses_explicit_unequal_weights_and_turnover_costs",
+          "core": "test_position_backtest_uses_explicit_unequal_weights_and_turnover_costs",
+          "original_assertions": 7,
+          "core_assertions": 7,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_position_backtest.py::test_position_backtest_uses_explicit_unequal_weights_and_turnover_costs"
+        },
+        {
+          "original": "test_position_backtest_drops_missing_price_symbols_and_renormalizes",
+          "core": "test_position_backtest_drops_missing_price_symbols_and_renormalizes",
+          "original_assertions": 2,
+          "core_assertions": 2,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_position_backtest.py::test_position_backtest_drops_missing_price_symbols_and_renormalizes"
+        },
+        {
+          "original": "test_position_backtest_preserves_cash_when_requested",
+          "core": "test_position_backtest_preserves_cash_when_requested",
+          "original_assertions": 8,
+          "core_assertions": 8,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_position_backtest.py::test_position_backtest_preserves_cash_when_requested"
+        },
+        {
+          "original": "test_position_backtest_delay_exit_resolves_prices_per_symbol",
+          "core": "test_position_backtest_delay_exit_resolves_prices_per_symbol",
+          "original_assertions": 5,
+          "core_assertions": 5,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_position_backtest.py::test_position_backtest_delay_exit_resolves_prices_per_symbol"
+        }
+      ]
+    },
+    {
+      "original": "tests/test_execution_sim_contract.py",
+      "original_sha256": "1525f29ed57bcd0195139634fba2667f60e4cc0e0912f5e1bb701cc8fa166f40",
+      "provider": "core/tests/daily/test_execution_sim_contract.py",
+      "retained_consumer": "tests/test_execution_sim_contract.py",
+      "cases": [
+        {
+          "original": "test_execution_sim_package_exports_are_stable",
+          "core": "test_execution_sim_package_exports_are_stable",
+          "original_assertions": 6,
+          "core_assertions": 6,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_contract.py::test_execution_sim_package_exports_are_stable"
+        },
+        {
+          "original": "test_adjusted_nav_accepts_reused_prepared_execution_tables",
+          "core": "test_adjusted_nav_accepts_reused_prepared_execution_tables",
+          "original_assertions": 1,
+          "core_assertions": 1,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_contract.py::test_adjusted_nav_accepts_reused_prepared_execution_tables"
+        }
+      ]
+    },
+    {
+      "original": "tests/test_portfolio_cost_accounting.py",
+      "original_sha256": "6fe9ce2b913c01e026e14ae2f3c81079be51243186a38cc7d0fec108a2984e3f",
+      "provider": "core/tests/daily/test_portfolio_cost_accounting.py",
+      "retained_consumer": "tests/test_portfolio_cost_accounting.py",
+      "cases": [
+        {
+          "original": "test_drift_weights_reflects_price_changes_before_rebalance",
+          "core": "test_drift_weights_reflects_price_changes_before_rebalance",
+          "original_assertions": 1,
+          "core_assertions": 1,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_portfolio_cost_accounting.py::test_drift_weights_reflects_price_changes_before_rebalance"
+        },
+        {
+          "original": "test_trade_accounting_calculates_turnover_and_side_specific_costs",
+          "core": "test_trade_accounting_calculates_turnover_and_side_specific_costs",
+          "original_assertions": 5,
+          "core_assertions": 5,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_portfolio_cost_accounting.py::test_trade_accounting_calculates_turnover_and_side_specific_costs"
+        },
+        {
+          "original": "test_untradable_trade_is_pending_and_has_no_cost",
+          "core": "test_untradable_trade_is_pending_and_has_no_cost",
+          "original_assertions": 4,
+          "core_assertions": 4,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_portfolio_cost_accounting.py::test_untradable_trade_is_pending_and_has_no_cost"
+        },
+        {
+          "original": "test_accounting_frame_matches_series_backend",
+          "core": "test_accounting_frame_matches_series_backend",
+          "original_assertions": 4,
+          "core_assertions": 4,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_portfolio_cost_accounting.py::test_accounting_frame_matches_series_backend"
+        }
+      ]
+    },
+    {
+      "original": "tests/test_ledger_stage2_contract.py",
+      "original_sha256": "2ed97f601582a33feb58fb06a2a80f8dc4e918873479a47a2dc3304001d2e77c",
+      "provider": "core/tests/daily/test_ledger_stage2_contract.py",
+      "retained_consumer": "tests/test_ledger_stage2_contract.py",
+      "cases": [
+        {
+          "original": "test_unified_ledger_has_eight_fields_and_conserves",
+          "core": "test_unified_ledger_has_eight_fields_and_conserves",
+          "original_assertions": 5,
+          "core_assertions": 5,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_ledger_stage2_contract.py::test_unified_ledger_has_eight_fields_and_conserves"
+        },
+        {
+          "original": "test_unified_ledger_cost_turnover_breakdown_by_side",
+          "core": "test_unified_ledger_cost_turnover_breakdown_by_side",
+          "original_assertions": 3,
+          "core_assertions": 3,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_ledger_stage2_contract.py::test_unified_ledger_cost_turnover_breakdown_by_side"
+        },
+        {
+          "original": "test_native_default_contract_unchanged",
+          "core": null,
+          "original_assertions": 7,
+          "core_assertions": 0,
+          "assertions_unchanged": false,
+          "platform15_retained": "tests/test_ledger_stage2_contract.py::test_native_default_contract_unchanged"
+        },
+        {
+          "original": "test_native_ledger_flips_capability_and_conserves",
+          "core": null,
+          "original_assertions": 10,
+          "core_assertions": 0,
+          "assertions_unchanged": false,
+          "platform15_retained": "tests/test_ledger_stage2_contract.py::test_native_ledger_flips_capability_and_conserves"
+        },
+        {
+          "original": "test_native_ledger_matches_adjusted_nav_directly",
+          "core": null,
+          "original_assertions": 1,
+          "core_assertions": 0,
+          "assertions_unchanged": false,
+          "platform15_retained": "tests/test_ledger_stage2_contract.py::test_native_ledger_matches_adjusted_nav_directly"
+        },
+        {
+          "original": "test_backtest_topk_default_bundle_unchanged",
+          "core": null,
+          "original_assertions": 1,
+          "core_assertions": 0,
+          "assertions_unchanged": false,
+          "platform15_retained": "tests/test_ledger_stage2_contract.py::test_backtest_topk_default_bundle_unchanged"
+        },
+        {
+          "original": "test_backtest_topk_ledger_appends_unified_ledger",
+          "core": null,
+          "original_assertions": 3,
+          "core_assertions": 0,
+          "assertions_unchanged": false,
+          "platform15_retained": "tests/test_ledger_stage2_contract.py::test_backtest_topk_ledger_appends_unified_ledger"
+        },
+        {
+          "original": "test_backtest_topk_ledger_equivalent_to_ideal_sim_of_targets",
+          "core": null,
+          "original_assertions": 1,
+          "core_assertions": 0,
+          "assertions_unchanged": false,
+          "platform15_retained": "tests/test_ledger_stage2_contract.py::test_backtest_topk_ledger_equivalent_to_ideal_sim_of_targets"
+        },
+        {
+          "original": "test_unified_ledger_respects_minimum_commission",
+          "core": "test_unified_ledger_respects_minimum_commission",
+          "original_assertions": 3,
+          "core_assertions": 3,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_ledger_stage2_contract.py::test_unified_ledger_respects_minimum_commission"
+        }
+      ]
+    },
+    {
+      "original": "tests/test_cost_breakdown.py",
+      "original_sha256": "2ac3054a6aec63d867e0661bfe1defa1782fbc5f36c933919e4c68e856a159c8",
+      "provider": "core/tests/daily/test_cost_breakdown.py",
+      "retained_consumer": "tests/test_cost_breakdown.py",
+      "cases": [
+        {
+          "original": "test_cost_breakdown_reports_components_and_total",
+          "core": "test_cost_breakdown_reports_components_and_total",
+          "original_assertions": 2,
+          "core_assertions": 2,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_cost_breakdown.py::test_cost_breakdown_reports_components_and_total"
+        },
+        {
+          "original": "test_cost_breakdown_from_components_aggregates_consistently",
+          "core": "test_cost_breakdown_from_components_aggregates_consistently",
+          "original_assertions": 5,
+          "core_assertions": 5,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_cost_breakdown.py::test_cost_breakdown_from_components_aggregates_consistently"
+        },
+        {
+          "original": "test_backtest_leg_result_exposes_net_cost_and_turnover_breakdown",
+          "core": "test_backtest_leg_result_exposes_net_cost_and_turnover_breakdown",
+          "original_assertions": 4,
+          "core_assertions": 4,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_cost_breakdown.py::test_backtest_leg_result_exposes_net_cost_and_turnover_breakdown"
+        },
+        {
+          "original": "test_rebalance_turnover_report_separates_target_demand_and_execution",
+          "core": "test_rebalance_turnover_report_separates_target_demand_and_execution",
+          "original_assertions": 20,
+          "core_assertions": 20,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_cost_breakdown.py::test_rebalance_turnover_report_separates_target_demand_and_execution"
+        },
+        {
+          "original": "test_rebalance_turnover_report_marks_initial_build_without_changing_l1_units",
+          "core": "test_rebalance_turnover_report_marks_initial_build_without_changing_l1_units",
+          "original_assertions": 11,
+          "core_assertions": 11,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_cost_breakdown.py::test_rebalance_turnover_report_marks_initial_build_without_changing_l1_units"
+        },
+        {
+          "original": "test_rebalance_turnover_report_reconciles_observed_execution",
+          "core": "test_rebalance_turnover_report_reconciles_observed_execution",
+          "original_assertions": 7,
+          "core_assertions": 7,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_cost_breakdown.py::test_rebalance_turnover_report_reconciles_observed_execution"
+        },
+        {
+          "original": "test_rebalance_turnover_report_rejects_cost_without_execution",
+          "core": "test_rebalance_turnover_report_rejects_cost_without_execution",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_cost_breakdown.py::test_rebalance_turnover_report_rejects_cost_without_execution"
+        },
+        {
+          "original": "test_stage3_cost_breakdown_subitems_nonzero_and_conserved",
+          "core": "test_stage3_cost_breakdown_subitems_nonzero_and_conserved",
+          "original_assertions": 11,
+          "core_assertions": 11,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_cost_breakdown.py::test_stage3_cost_breakdown_subitems_nonzero_and_conserved"
+        },
+        {
+          "original": "test_stage3_no_fee_model_keeps_single_cost_in_spread",
+          "core": "test_stage3_no_fee_model_keeps_single_cost_in_spread",
+          "original_assertions": 4,
+          "core_assertions": 4,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_cost_breakdown.py::test_stage3_no_fee_model_keeps_single_cost_in_spread"
+        }
+      ]
+    },
+    {
+      "original": "tests/test_sequenced_execution_backend.py",
+      "original_sha256": "3a2f07ef960c5b1d0143257507cb0587b1b88acff038855cd3297ddfd8507364",
+      "provider": "core/tests/daily/test_sequenced_execution_backend.py",
+      "retained_consumer": "tests/test_sequenced_execution_backend.py",
+      "cases": [
+        {
+          "original": "test_sequence_uses_one_clock_per_decision_and_shared_market_rules",
+          "core": "test_sequence_uses_one_clock_per_decision_and_shared_market_rules",
+          "original_assertions": 7,
+          "core_assertions": 5,
+          "assertions_unchanged": false,
+          "platform15_retained": "tests/test_sequenced_execution_backend.py::test_sequence_uses_one_clock_per_decision_and_shared_market_rules"
+        },
+        {
+          "original": "test_sequence_rejects_missing_clock_and_early_entry",
+          "core": "test_sequence_rejects_missing_clock_and_early_entry",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_sequenced_execution_backend.py::test_sequence_rejects_missing_clock_and_early_entry"
+        },
+        {
+          "original": "test_sequence_rejects_future_pricing_and_overweight_target",
+          "core": "test_sequence_rejects_future_pricing_and_overweight_target",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_sequenced_execution_backend.py::test_sequence_rejects_future_pricing_and_overweight_target"
+        },
+        {
+          "original": "test_single_clock_bundle_cannot_mislabel_a_sequence",
+          "core": null,
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_sequenced_execution_backend.py::test_single_clock_bundle_cannot_mislabel_a_sequence"
+        }
+      ]
+    },
+    {
+      "original": "tests/test_cost_evidence.py",
+      "original_sha256": "3e754d6a53557aec814ff63d51261575941bf23a5c9049c5d8a11742dd16bb0e",
+      "provider": "core/tests/daily/test_daily_cost_evidence.py",
+      "retained_consumer": "tests/test_cost_evidence.py",
+      "cases": [
+        {
+          "original": "test_aggregate_producer_keeps_unknown_components_and_original_buckets",
+          "core": "test_aggregate_producer_keeps_unknown_components_and_original_buckets",
+          "original_assertions": 8,
+          "core_assertions": 8,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_cost_evidence.py::test_aggregate_producer_keeps_unknown_components_and_original_buckets"
+        },
+        {
+          "original": "test_contract_rejects_unbalanced_and_nonfinite_evidence",
+          "core": "test_contract_rejects_unbalanced_and_nonfinite_evidence",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_cost_evidence.py::test_contract_rejects_unbalanced_and_nonfinite_evidence"
+        },
+        {
+          "original": "test_simulator_adopts_fill_components_and_dated_groups_without_repricing",
+          "core": "test_simulator_adopts_fill_components_and_dated_groups_without_repricing",
+          "original_assertions": 14,
+          "core_assertions": 14,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_cost_evidence.py::test_simulator_adopts_fill_components_and_dated_groups_without_repricing"
+        },
+        {
+          "original": "test_no_fills_produces_no_cost_claims",
+          "core": "test_no_fills_produces_no_cost_claims",
+          "original_assertions": 1,
+          "core_assertions": 1,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_cost_evidence.py::test_no_fills_produces_no_cost_claims"
+        },
+        {
+          "original": "test_group_rejects_unpaired_or_reversed_notionals",
+          "core": "test_group_rejects_unpaired_or_reversed_notionals",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_cost_evidence.py::test_group_rejects_unpaired_or_reversed_notionals"
+        },
+        {
+          "original": "test_opportunity_amount_requires_separate_accounting_owner",
+          "core": "test_opportunity_amount_requires_separate_accounting_owner",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_cost_evidence.py::test_opportunity_amount_requires_separate_accounting_owner"
+        },
+        {
+          "original": "test_adapter_preserves_partial_source_and_never_turns_null_into_zero",
+          "core": "test_adapter_preserves_partial_source_and_never_turns_null_into_zero",
+          "original_assertions": 4,
+          "core_assertions": 4,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_cost_evidence.py::test_adapter_preserves_partial_source_and_never_turns_null_into_zero"
+        },
+        {
+          "original": "test_fill_evidence_rejects_empty_locator_and_group_keeps_schedule_provenance",
+          "core": "test_fill_evidence_rejects_empty_locator_and_group_keeps_schedule_provenance",
+          "original_assertions": 3,
+          "core_assertions": 3,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_cost_evidence.py::test_fill_evidence_rejects_empty_locator_and_group_keeps_schedule_provenance"
+        },
+        {
+          "original": "test_adapter_rejects_incomplete_group_lineage",
+          "core": "test_adapter_rejects_incomplete_group_lineage",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_cost_evidence.py::test_adapter_rejects_incomplete_group_lineage"
+        }
+      ]
+    },
+    {
+      "original": "tests/test_execution_sim.py",
+      "original_sha256": "c80cd5810ebef8499e7746682bbe84c4a6216ddb12e4049531244f7f206ac72e",
+      "provider": "core/tests/daily/test_execution_sim.py",
+      "retained_consumer": "tests/test_execution_sim.py",
+      "cases": [
+        {
+          "original": "test_capacity_execution_uses_side_aware_buy_tradeability",
+          "core": "test_capacity_execution_uses_side_aware_buy_tradeability",
+          "original_assertions": 3,
+          "core_assertions": 3,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim.py::test_capacity_execution_uses_side_aware_buy_tradeability"
+        },
+        {
+          "original": "test_capacity_execution_uses_side_aware_sell_tradeability",
+          "core": "test_capacity_execution_uses_side_aware_sell_tradeability",
+          "original_assertions": 3,
+          "core_assertions": 3,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim.py::test_capacity_execution_uses_side_aware_sell_tradeability"
+        },
+        {
+          "original": "test_capacity_execution_partially_fills_buy_deadline",
+          "core": "test_capacity_execution_partially_fills_buy_deadline",
+          "original_assertions": 7,
+          "core_assertions": 7,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim.py::test_capacity_execution_partially_fills_buy_deadline"
+        },
+        {
+          "original": "test_capacity_execution_abandons_zero_fill_buy_after_threshold",
+          "core": "test_capacity_execution_abandons_zero_fill_buy_after_threshold",
+          "original_assertions": 5,
+          "core_assertions": 5,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim.py::test_capacity_execution_abandons_zero_fill_buy_after_threshold"
+        },
+        {
+          "original": "test_capacity_execution_keeps_unfilled_sell_as_delayed_exit",
+          "core": "test_capacity_execution_keeps_unfilled_sell_as_delayed_exit",
+          "original_assertions": 5,
+          "core_assertions": 5,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim.py::test_capacity_execution_keeps_unfilled_sell_as_delayed_exit"
+        },
+        {
+          "original": "test_build_execution_sim_config_defaults_to_daily_amount_cap",
+          "core": "test_build_execution_sim_config_defaults_to_daily_amount_cap",
+          "original_assertions": 4,
+          "core_assertions": 4,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim.py::test_build_execution_sim_config_defaults_to_daily_amount_cap"
+        },
+        {
+          "original": "test_required_columns_include_enabled_market_rule_inputs",
+          "core": "test_required_columns_include_enabled_market_rule_inputs",
+          "original_assertions": 1,
+          "core_assertions": 1,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim.py::test_required_columns_include_enabled_market_rule_inputs"
+        },
+        {
+          "original": "test_capacity_execution_applies_explicit_liquidity_notional_multiplier",
+          "core": "test_capacity_execution_applies_explicit_liquidity_notional_multiplier",
+          "original_assertions": 2,
+          "core_assertions": 2,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim.py::test_capacity_execution_applies_explicit_liquidity_notional_multiplier"
+        },
+        {
+          "original": "test_capacity_execution_skips_long_short_targets",
+          "core": "test_capacity_execution_skips_long_short_targets",
+          "original_assertions": 2,
+          "core_assertions": 2,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim.py::test_capacity_execution_skips_long_short_targets"
+        },
+        {
+          "original": "test_execution_adjusted_nav_tracks_fully_filled_position_return",
+          "core": "test_execution_adjusted_nav_tracks_fully_filled_position_return",
+          "original_assertions": 8,
+          "core_assertions": 8,
+          "assertions_unchanged": false,
+          "platform15_retained": "tests/test_execution_sim.py::test_execution_adjusted_nav_tracks_fully_filled_position_return"
+        },
+        {
+          "original": "test_execution_adjusted_nav_applies_participation_impact_to_fill_cost",
+          "core": "test_execution_adjusted_nav_applies_participation_impact_to_fill_cost",
+          "original_assertions": 3,
+          "core_assertions": 3,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim.py::test_execution_adjusted_nav_applies_participation_impact_to_fill_cost"
+        },
+        {
+          "original": "test_execution_adjusted_nav_delayed_sell_tracks_quantity_across_price_change",
+          "core": "test_execution_adjusted_nav_delayed_sell_tracks_quantity_across_price_change",
+          "original_assertions": 8,
+          "core_assertions": 8,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim.py::test_execution_adjusted_nav_delayed_sell_tracks_quantity_across_price_change"
+        },
+        {
+          "original": "test_ideal_daily_nav_tracks_fully_invested_position_return",
+          "core": "test_ideal_daily_nav_tracks_fully_invested_position_return",
+          "original_assertions": 9,
+          "core_assertions": 9,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim.py::test_ideal_daily_nav_tracks_fully_invested_position_return"
+        },
+        {
+          "original": "test_ideal_daily_nav_reserves_cash_for_transaction_costs",
+          "core": "test_ideal_daily_nav_reserves_cash_for_transaction_costs",
+          "original_assertions": 7,
+          "core_assertions": 7,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim.py::test_ideal_daily_nav_reserves_cash_for_transaction_costs"
+        },
+        {
+          "original": "test_ideal_daily_nav_uses_detailed_side_fee_model",
+          "core": "test_ideal_daily_nav_uses_detailed_side_fee_model",
+          "original_assertions": 3,
+          "core_assertions": 3,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim.py::test_ideal_daily_nav_uses_detailed_side_fee_model"
+        },
+        {
+          "original": "test_ideal_daily_nav_rebalances_at_entry_price_before_next_day_mark",
+          "core": "test_ideal_daily_nav_rebalances_at_entry_price_before_next_day_mark",
+          "original_assertions": 4,
+          "core_assertions": 4,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim.py::test_ideal_daily_nav_rebalances_at_entry_price_before_next_day_mark"
+        },
+        {
+          "original": "test_execution_adjusted_nav_keeps_cash_for_unfilled_buy",
+          "core": "test_execution_adjusted_nav_keeps_cash_for_unfilled_buy",
+          "original_assertions": 3,
+          "core_assertions": 3,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim.py::test_execution_adjusted_nav_keeps_cash_for_unfilled_buy"
+        },
+        {
+          "original": "test_execution_adjusted_nav_splits_target_and_shortfall_cash",
+          "core": "test_execution_adjusted_nav_splits_target_and_shortfall_cash",
+          "original_assertions": 5,
+          "core_assertions": 5,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim.py::test_execution_adjusted_nav_splits_target_and_shortfall_cash"
+        }
+      ]
+    },
+    {
+      "original": "tests/test_execution_sim_market_rules.py",
+      "original_sha256": "6159bad7a6cd48ad9b732e5403c8f97b59c2c85ff53b218e2d5a71e34551633a",
+      "provider": "core/tests/daily/test_execution_sim_market_rules.py",
+      "retained_consumer": "tests/test_execution_sim_market_rules.py",
+      "cases": [
+        {
+          "original": "test_warnings_recorded_when_market_rules_inactive",
+          "core": "test_warnings_recorded_when_market_rules_inactive",
+          "original_assertions": 1,
+          "core_assertions": 1,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_market_rules.py::test_warnings_recorded_when_market_rules_inactive"
+        },
+        {
+          "original": "test_no_warning_when_round_lot_active",
+          "core": "test_no_warning_when_round_lot_active",
+          "original_assertions": 1,
+          "core_assertions": 1,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_market_rules.py::test_no_warning_when_round_lot_active"
+        },
+        {
+          "original": "test_round_lot_buy_quantizes_to_whole_lots",
+          "core": "test_round_lot_buy_quantizes_to_whole_lots",
+          "original_assertions": 3,
+          "core_assertions": 3,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_market_rules.py::test_round_lot_buy_quantizes_to_whole_lots"
+        },
+        {
+          "original": "test_round_lot_buy_skips_sub_lot",
+          "core": "test_round_lot_buy_skips_sub_lot",
+          "original_assertions": 1,
+          "core_assertions": 1,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_market_rules.py::test_round_lot_buy_skips_sub_lot"
+        },
+        {
+          "original": "test_legacy_bps_cash_scaling_still_happens_before_round_lot_quantization",
+          "core": "test_legacy_bps_cash_scaling_still_happens_before_round_lot_quantization",
+          "original_assertions": 3,
+          "core_assertions": 3,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_market_rules.py::test_legacy_bps_cash_scaling_still_happens_before_round_lot_quantization"
+        },
+        {
+          "original": "test_odd_lot_sell_allowed",
+          "core": "test_odd_lot_sell_allowed",
+          "original_assertions": 3,
+          "core_assertions": 3,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_market_rules.py::test_odd_lot_sell_allowed"
+        },
+        {
+          "original": "test_t1_allows_next_day_sell_of_prior_holdings",
+          "core": "test_t1_allows_next_day_sell_of_prior_holdings",
+          "original_assertions": 3,
+          "core_assertions": 3,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_market_rules.py::test_t1_allows_next_day_sell_of_prior_holdings"
+        },
+        {
+          "original": "test_limit_up_blocks_buy",
+          "core": "test_limit_up_blocks_buy",
+          "original_assertions": 2,
+          "core_assertions": 2,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_market_rules.py::test_limit_up_blocks_buy"
+        },
+        {
+          "original": "test_limit_down_blocks_sell",
+          "core": "test_limit_down_blocks_sell",
+          "original_assertions": 1,
+          "core_assertions": 1,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_market_rules.py::test_limit_down_blocks_sell"
+        },
+        {
+          "original": "test_listing_status_halt_skips_trading",
+          "core": "test_listing_status_halt_skips_trading",
+          "original_assertions": 2,
+          "core_assertions": 2,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_market_rules.py::test_listing_status_halt_skips_trading"
+        },
+        {
+          "original": "test_enforce_price_limits_without_column_raises",
+          "core": "test_enforce_price_limits_without_column_raises",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_market_rules.py::test_enforce_price_limits_without_column_raises"
+        },
+        {
+          "original": "test_enforce_listing_status_without_column_raises",
+          "core": "test_enforce_listing_status_without_column_raises",
+          "original_assertions": 0,
+          "core_assertions": 0,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_market_rules.py::test_enforce_listing_status_without_column_raises"
+        },
+        {
+          "original": "test_audit_timestamps_present_with_timezone",
+          "core": "test_audit_timestamps_present_with_timezone",
+          "original_assertions": 5,
+          "core_assertions": 5,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_market_rules.py::test_audit_timestamps_present_with_timezone"
+        },
+        {
+          "original": "test_default_call_preserves_numeric_columns",
+          "core": "test_default_call_preserves_numeric_columns",
+          "original_assertions": 2,
+          "core_assertions": 2,
+          "assertions_unchanged": true,
+          "platform15_retained": "tests/test_execution_sim_market_rules.py::test_default_call_preserves_numeric_columns"
+        }
+      ]
+    }
+  ],
+  "identity_adaptation": {
+    "test": "tests/test_dated_execution_fees.py::test_dated_fee_types_are_available_from_the_public_execution_module",
+    "original": "Five __module__ assertions named quant_platform._portfolio.dated_fees",
+    "replacement": "The same five classes are identical to quant_backtest_core.daily.dated_fees classes and report the Core owner module. All financial assertions remain unchanged."
+  }
+}

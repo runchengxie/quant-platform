@@ -1,0 +1,475 @@
+{
+  "schema": "platform-engine-provider-c.v1",
+  "provider_revision": "ad0895f1c2015eb31bd364b40741b0f7cd6e0048",
+  "platform_base": "7ff3822675b6734a4e6a99a9491730bece386fa3",
+  "original_oracle": "7a618bddd8fdeee5dbe37fe5b54a9698e0de5355",
+  "core_version": "0.3.0",
+  "sdk_version": "0.3.0",
+  "rows": [
+    {
+      "symbol": "quant_platform._portfolio.execution_sim",
+      "old_module": "quant_platform._portfolio.execution_sim",
+      "new_module": "quant_backtest_core.daily.execution_sim",
+      "compatibility_path": "quant_platform._portfolio.execution_sim",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.execution_sim.adjusted_nav",
+      "old_module": "quant_platform._portfolio.execution_sim.adjusted_nav",
+      "new_module": "quant_backtest_core.daily.execution_sim.adjusted_nav",
+      "compatibility_path": "quant_platform._portfolio.execution_sim.adjusted_nav",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.execution_sim.capacity",
+      "old_module": "quant_platform._portfolio.execution_sim.capacity",
+      "new_module": "quant_backtest_core.daily.execution_sim.capacity",
+      "compatibility_path": "quant_platform._portfolio.execution_sim.capacity",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.execution_sim.capacity_simulation",
+      "old_module": "quant_platform._portfolio.execution_sim.capacity_simulation",
+      "new_module": "quant_backtest_core.daily.execution_sim.capacity_simulation",
+      "compatibility_path": "quant_platform._portfolio.execution_sim.capacity_simulation",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.execution_sim.config",
+      "old_module": "quant_platform._portfolio.execution_sim.config",
+      "new_module": "quant_backtest_core.daily.execution_sim.config",
+      "compatibility_path": "quant_platform._portfolio.execution_sim.config",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.execution_sim.core",
+      "old_module": "quant_platform._portfolio.execution_sim.core",
+      "new_module": "quant_backtest_core.daily.execution_sim.core",
+      "compatibility_path": "quant_platform._portfolio.execution_sim.core",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.execution_sim.corporate_actions",
+      "old_module": "quant_platform._portfolio.execution_sim.corporate_actions",
+      "new_module": "quant_backtest_core.daily.execution_sim.corporate_actions",
+      "compatibility_path": "quant_platform._portfolio.execution_sim.corporate_actions",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.execution_sim.cost_evidence",
+      "old_module": "quant_platform._portfolio.execution_sim.cost_evidence",
+      "new_module": "quant_backtest_core.daily.execution_sim.cost_evidence",
+      "compatibility_path": "quant_platform._portfolio.execution_sim.cost_evidence",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.execution_sim.delisting",
+      "old_module": "quant_platform._portfolio.execution_sim.delisting",
+      "new_module": "quant_backtest_core.daily.execution_sim.delisting",
+      "compatibility_path": "quant_platform._portfolio.execution_sim.delisting",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.execution_sim.ideal_nav",
+      "old_module": "quant_platform._portfolio.execution_sim.ideal_nav",
+      "new_module": "quant_backtest_core.daily.execution_sim.ideal_nav",
+      "compatibility_path": "quant_platform._portfolio.execution_sim.ideal_nav",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.execution_sim.models",
+      "old_module": "quant_platform._portfolio.execution_sim.models",
+      "new_module": "quant_backtest_core.daily.execution_sim.models",
+      "compatibility_path": "quant_platform._portfolio.execution_sim.models",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.execution_sim.orders",
+      "old_module": "quant_platform._portfolio.execution_sim.orders",
+      "new_module": "quant_backtest_core.daily.execution_sim.orders",
+      "compatibility_path": "quant_platform._portfolio.execution_sim.orders",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.execution_sim.orders_ideal",
+      "old_module": "quant_platform._portfolio.execution_sim.orders_ideal",
+      "new_module": "quant_backtest_core.daily.execution_sim.orders_ideal",
+      "compatibility_path": "quant_platform._portfolio.execution_sim.orders_ideal",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.execution_sim.orders_nav",
+      "old_module": "quant_platform._portfolio.execution_sim.orders_nav",
+      "new_module": "quant_backtest_core.daily.execution_sim.orders_nav",
+      "compatibility_path": "quant_platform._portfolio.execution_sim.orders_nav",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.execution_sim.orders_nav_fees",
+      "old_module": "quant_platform._portfolio.execution_sim.orders_nav_fees",
+      "new_module": "quant_backtest_core.daily.execution_sim.orders_nav_fees",
+      "compatibility_path": "quant_platform._portfolio.execution_sim.orders_nav_fees",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.execution_sim.orders_nav_quantities",
+      "old_module": "quant_platform._portfolio.execution_sim.orders_nav_quantities",
+      "new_module": "quant_backtest_core.daily.execution_sim.orders_nav_quantities",
+      "compatibility_path": "quant_platform._portfolio.execution_sim.orders_nav_quantities",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.execution_sim.orders_nav_states",
+      "old_module": "quant_platform._portfolio.execution_sim.orders_nav_states",
+      "new_module": "quant_backtest_core.daily.execution_sim.orders_nav_states",
+      "compatibility_path": "quant_platform._portfolio.execution_sim.orders_nav_states",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.execution_sim.orders_targets",
+      "old_module": "quant_platform._portfolio.execution_sim.orders_targets",
+      "new_module": "quant_backtest_core.daily.execution_sim.orders_targets",
+      "compatibility_path": "quant_platform._portfolio.execution_sim.orders_targets",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.execution_sim.reporting",
+      "old_module": "quant_platform._portfolio.execution_sim.reporting",
+      "new_module": "quant_backtest_core.daily.execution_sim.reporting",
+      "compatibility_path": "quant_platform._portfolio.execution_sim.reporting",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.execution_sim.results",
+      "old_module": "quant_platform._portfolio.execution_sim.results",
+      "new_module": "quant_backtest_core.daily.execution_sim.results",
+      "compatibility_path": "quant_platform._portfolio.execution_sim.results",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.execution_sim.table_preparation",
+      "old_module": "quant_platform._portfolio.execution_sim.table_preparation",
+      "new_module": "quant_backtest_core.daily.execution_sim.table_preparation",
+      "compatibility_path": "quant_platform._portfolio.execution_sim.table_preparation",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio._execution_models",
+      "old_module": "quant_platform._portfolio._execution_models",
+      "new_module": "quant_backtest_core.daily._execution_models",
+      "compatibility_path": "quant_platform._portfolio._execution_models",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio._execution_build",
+      "old_module": "quant_platform._portfolio._execution_build",
+      "new_module": "quant_backtest_core.daily._execution_build",
+      "compatibility_path": "quant_platform._portfolio._execution_build",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.dated_fees",
+      "old_module": "quant_platform._portfolio.dated_fees",
+      "new_module": "quant_backtest_core.daily.dated_fees",
+      "compatibility_path": "quant_platform._portfolio.dated_fees",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.turnover",
+      "old_module": "quant_platform._portfolio.turnover",
+      "new_module": "quant_backtest_core.daily.turnover",
+      "compatibility_path": "quant_platform._portfolio.turnover",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.types",
+      "old_module": "quant_platform._portfolio.types",
+      "new_module": "quant_backtest_core.daily.types",
+      "compatibility_path": "quant_platform._portfolio.types",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform.backtest.ledger",
+      "old_module": "quant_platform.backtest.ledger",
+      "new_module": "quant_backtest_core.backtest.ledger",
+      "compatibility_path": "quant_platform.backtest.ledger",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.execution",
+      "old_module": "quant_platform._portfolio.execution",
+      "new_module": "quant_backtest_core.daily.execution",
+      "compatibility_path": "quant_platform._portfolio.execution",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.backends.trade_accounting",
+      "old_module": "quant_platform._portfolio.backends.trade_accounting",
+      "new_module": "quant_backtest_core.daily.trade_accounting",
+      "compatibility_path": "quant_platform._portfolio.backends.trade_accounting",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio._position_backtest_config",
+      "old_module": "quant_platform._portfolio._position_backtest_config",
+      "new_module": "quant_backtest_core.daily._position_backtest_config",
+      "compatibility_path": "quant_platform._portfolio._position_backtest_config",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio._position_backtest_engine",
+      "old_module": "quant_platform._portfolio._position_backtest_engine",
+      "new_module": "quant_backtest_core.daily.position_backtest",
+      "compatibility_path": "quant_platform._portfolio._position_backtest_engine",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.contracts.positions_validation",
+      "old_module": "quant_platform._portfolio.contracts.positions_validation",
+      "new_module": "quant_backtest_core.daily._position_validation",
+      "compatibility_path": "quant_platform._portfolio.contracts.positions_validation",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.portfolio_weights.execution_helpers",
+      "old_module": "quant_platform._portfolio.portfolio_weights.execution_helpers",
+      "new_module": "quant_backtest_core.daily._period_helpers",
+      "compatibility_path": "quant_platform._portfolio.portfolio_weights.execution_helpers",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.execution_calendar.fee_values",
+      "old_module": "quant_platform._portfolio.execution_calendar.fee_values",
+      "new_module": "quant_backtest_core.daily._calendar_values",
+      "compatibility_path": "quant_platform._portfolio.execution_calendar.fee_values",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.backends.sequenced.SequencedExecutionBackend",
+      "old_module": "quant_platform._portfolio.backends.sequenced.SequencedExecutionBackend",
+      "new_module": "quant_backtest_core.daily.runner.run_daily",
+      "compatibility_path": "quant_platform._portfolio.backends.sequenced.SequencedExecutionBackend",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.leg_helpers._next_position_state",
+      "old_module": "quant_platform._portfolio.leg_helpers",
+      "new_module": "quant_backtest_core.daily.leg_financial",
+      "compatibility_path": "quant_platform._portfolio.leg_helpers._next_position_state",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.leg_helpers._build_leg_turnover_report",
+      "old_module": "quant_platform._portfolio.leg_helpers",
+      "new_module": "quant_backtest_core.daily.leg_financial",
+      "compatibility_path": "quant_platform._portfolio.leg_helpers._build_leg_turnover_report",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.leg_helpers._build_backtest_leg_result",
+      "old_module": "quant_platform._portfolio.leg_helpers",
+      "new_module": "quant_backtest_core.daily.leg_financial",
+      "compatibility_path": "quant_platform._portfolio.leg_helpers._build_backtest_leg_result",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.pricing.slippage_pricing_row",
+      "old_module": "quant_platform._portfolio.pricing",
+      "new_module": "quant_backtest_core.daily.pricing",
+      "compatibility_path": "quant_platform._portfolio.pricing.slippage_pricing_row",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.period_turnover._optional_sum",
+      "old_module": "quant_platform._portfolio.period_turnover",
+      "new_module": "quant_backtest_core.daily.period_turnover",
+      "compatibility_path": "quant_platform._portfolio.period_turnover._optional_sum",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.period_turnover._merged_names",
+      "old_module": "quant_platform._portfolio.period_turnover",
+      "new_module": "quant_backtest_core.daily.period_turnover",
+      "compatibility_path": "quant_platform._portfolio.period_turnover._merged_names",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.period_turnover.period_result_from_leg",
+      "old_module": "quant_platform._portfolio.period_turnover",
+      "new_module": "quant_backtest_core.daily.period_turnover",
+      "compatibility_path": "quant_platform._portfolio.period_turnover.period_result_from_leg",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.period_turnover.period_result_from_legs",
+      "old_module": "quant_platform._portfolio.period_turnover",
+      "new_module": "quant_backtest_core.daily.period_turnover",
+      "compatibility_path": "quant_platform._portfolio.period_turnover.period_result_from_legs",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.types.BacktestPeriodResult",
+      "old_module": "quant_platform._portfolio.types",
+      "new_module": "quant_backtest_core.daily.types",
+      "compatibility_path": "quant_platform._portfolio.types.BacktestPeriodResult",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.trade_accounting.compute_trade_summary",
+      "old_module": "quant_platform._portfolio.trade_accounting",
+      "new_module": "quant_backtest_core.daily.trade_accounting",
+      "compatibility_path": "quant_platform._portfolio.trade_accounting.compute_trade_summary",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.trade_accounting.drift_previous_weights",
+      "old_module": "quant_platform._portfolio.trade_accounting",
+      "new_module": "quant_backtest_core.daily.trade_accounting",
+      "compatibility_path": "quant_platform._portfolio.trade_accounting.drift_previous_weights",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.trade_accounting._compute_trade_summary",
+      "old_module": "quant_platform._portfolio.trade_accounting",
+      "new_module": "quant_backtest_core.daily.trade_accounting",
+      "compatibility_path": "quant_platform._portfolio.trade_accounting._compute_trade_summary",
+      "removal_gate": "two-minors-and-all-consumers"
+    },
+    {
+      "symbol": "quant_platform._portfolio.trade_accounting._drift_previous_weights",
+      "old_module": "quant_platform._portfolio.trade_accounting",
+      "new_module": "quant_backtest_core.daily.trade_accounting",
+      "compatibility_path": "quant_platform._portfolio.trade_accounting._drift_previous_weights",
+      "removal_gate": "two-minors-and-all-consumers"
+    }
+  ],
+  "routes": [
+    {
+      "old_url": "https://runchengxie.github.io/quant-platform/guides/execution-simulation.en/",
+      "locale": "en",
+      "anchors": [
+        "capacity-and-daily-nav-execution-simulation",
+        "public-api",
+        "configuration",
+        "inputs-and-outputs",
+        "delisting-audit",
+        "corporate-actions-and-price-units",
+        "interpreting-the-paths"
+      ],
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/guides/execution-simulation/",
+      "source": "docs/guides/execution-simulation.en.md"
+    },
+    {
+      "old_url": "https://runchengxie.github.io/quant-platform/guides/execution-simulation/",
+      "locale": "zh-CN",
+      "anchors": [
+        "_1",
+        "_2",
+        "_3",
+        "_4",
+        "_5"
+      ],
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/guides/execution-simulation.zh-CN/",
+      "source": "docs/guides/execution-simulation.md"
+    },
+    {
+      "old_url": "https://runchengxie.github.io/quant-platform/guides/sequenced-execution.en/",
+      "locale": "en",
+      "anchors": [
+        "sequenced-execution"
+      ],
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/guides/sequenced-execution/",
+      "source": "docs/guides/sequenced-execution.en.md"
+    },
+    {
+      "old_url": "https://runchengxie.github.io/quant-platform/guides/sequenced-execution/",
+      "locale": "zh-CN",
+      "anchors": [
+        "_1"
+      ],
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/guides/sequenced-execution.zh-CN/",
+      "source": "docs/guides/sequenced-execution.md"
+    },
+    {
+      "old_url": "https://runchengxie.github.io/quant-platform/dated-execution-fees/",
+      "locale": "en",
+      "anchors": [
+        "dated-execution-fees",
+        "public-contract",
+        "pure-quotation",
+        "continuous-ledger-integration",
+        "scope-and-limitations"
+      ],
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/dated-execution-fees/",
+      "source": "docs/dated-execution-fees.md"
+    },
+    {
+      "old_url": "https://runchengxie.github.io/quant-platform/dated-execution-fees.zh-CN/",
+      "locale": "zh-CN",
+      "anchors": [
+        "_1",
+        "_2",
+        "_3",
+        "_4",
+        "_5"
+      ],
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/dated-execution-fees.zh-CN/",
+      "source": "docs/dated-execution-fees.zh-CN.md"
+    },
+    {
+      "old_url": "https://runchengxie.github.io/quant-platform/reference/outputs/backtest-outputs.en/",
+      "locale": "en",
+      "anchors": [
+        "backtest-output-reference",
+        "construction-grid-comparison",
+        "benchmark-ladder",
+        "positions",
+        "execution-simulation-and-capacity"
+      ],
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/reference/outputs/backtest-outputs/",
+      "source": "docs/reference/outputs/backtest-outputs.en.md"
+    },
+    {
+      "old_url": "https://runchengxie.github.io/quant-platform/reference/outputs/backtest-outputs/",
+      "locale": "zh-CN",
+      "anchors": [
+        "_1",
+        "_2",
+        "benchmark",
+        "_3",
+        "_4"
+      ],
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/reference/outputs/backtest-outputs.zh-CN/",
+      "source": "docs/reference/outputs/backtest-outputs.md"
+    },
+    {
+      "old_url": "https://runchengxie.github.io/quant-platform/guides/diagnostic-close-replay.en/",
+      "locale": "en",
+      "anchors": [
+        "next-close-diagnostic-replay",
+        "inputs-and-execution-timing",
+        "exposure-changes",
+        "audit-helpers"
+      ],
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/guides/diagnostic-close-replay/",
+      "source": "docs/guides/diagnostic-close-replay.en.md"
+    },
+    {
+      "old_url": "https://runchengxie.github.io/quant-platform/guides/diagnostic-close-replay/",
+      "locale": "zh-CN",
+      "anchors": [
+        "_1"
+      ],
+      "destination": "https://runchengxie.github.io/quant-backtest-engine/guides/diagnostic-close-replay.zh-CN/",
+      "source": "docs/guides/diagnostic-close-replay.md"
+    }
+  ],
+  "retained": [
+    "target selection and construction",
+    "factor/selection/general research metrics",
+    "provider calendar lookup",
+    "canonical/bundle publication",
+    "period_turnover_fields projection"
+  ],
+  "retirement": "At least two minor cycles AND every recorded consumer migrated; neither is claimed here."
+}

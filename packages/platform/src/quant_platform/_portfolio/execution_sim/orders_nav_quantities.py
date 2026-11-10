@@ -1,22 +1,17 @@
-"""Raw-share sell quantization after request, capacity and settlement constraints."""
+"""Engine alias: quant_backtest_core.daily.execution_sim.orders_nav_quantities."""
 
-from .config import ExecutionSimConfig
+import sys
+from importlib import import_module
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from quant_backtest_core.daily.execution_sim.orders_nav_quantities import (
+        ExecutionSimConfig as ExecutionSimConfig,
+    )
+    from quant_backtest_core.daily.execution_sim.orders_nav_quantities import (
+        _quantize_nav_sell_quantity as _quantize_nav_sell_quantity,
+    )
 
-def _quantize_nav_sell_quantity(
-    quantity: float, *, held_quantity: float, config: ExecutionSimConfig
-) -> float:
-    if config.sell_round_lot is None:
-        return quantity
-    # Fractional entitlement settlement belongs to the caller. The bounded
-    # tolerance recognizes floating arithmetic only; it never expands a fill.
-    if abs(held_quantity - round(held_quantity)) > min(config.lot_tolerance, 1e-8):
-        raise ValueError(
-            "execution_sim.sell_round_lot requires integral share holdings; "
-            "resolve fractional corporate-action entitlements before selling."
-        )
-    # Only a fill covering the actual entire holding may use the odd-lot exception.
-    if quantity >= held_quantity:
-        return quantity
-    lot = float(config.sell_round_lot)
-    return (quantity // lot) * lot
+sys.modules[__name__] = import_module(
+    "quant_backtest_core.daily.execution_sim.orders_nav_quantities"
+)

@@ -37,6 +37,8 @@ def write_execution_aware_result_bundle(
     """
 
     result.validate()
+    if result.metadata.get("execution_aware") is False:
+        raise ValueError("Execution-aware bundle requires complete supported execution evidence")
     if int(result.metadata.get("decision_count", 1)) > 1:
         raise ValueError(
             "execution-aware bundle accepts one research clock; "

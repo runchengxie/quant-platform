@@ -4,6 +4,10 @@ from collections.abc import Iterable, Mapping
 from typing import Any, cast
 
 import pandas as pd
+from quant_backtest_core.daily._calendar_values import coerce_date_set as coerce_date_set
+from quant_backtest_core.daily._calendar_values import (
+    normalize_execution_calendar as normalize_execution_calendar,
+)
 
 MARKET_CALENDAR = "market"
 HK_CONNECT_CALENDAR = "hk_connect"
@@ -23,42 +27,6 @@ _HK_CONNECT_ALIASES = {
     "southbound_connect",
     "connect",
 }
-
-
-def normalize_execution_calendar(value: object | None) -> str:
-    text = str(value or MARKET_CALENDAR).strip().lower().replace("-", "_")
-    if text in _MARKET_ALIASES:
-        return MARKET_CALENDAR
-    if text in _HK_CONNECT_ALIASES:
-        return HK_CONNECT_CALENDAR
-    raise ValueError("execution.calendar must be one of: market, hk_connect.")
-
-
-def coerce_date_set(values: object | None) -> tuple[pd.Timestamp, ...]:
-    if values is None:
-        return ()
-    if isinstance(values, (str, pd.Timestamp)):
-        raw_values: Iterable[object] = [values]
-    elif isinstance(values, Iterable):
-        raw_values = values
-    else:
-        raw_values = [values]
-
-    dates: list[pd.Timestamp] = []
-    for value in raw_values:
-        text = str(value).strip()
-        if not text:
-            continue
-        compact = text.replace("-", "")
-        parsed = (
-            pd.to_datetime(compact, format="%Y%m%d", errors="coerce")
-            if compact.isdigit() and len(compact) == 8
-            else pd.to_datetime(text, errors="coerce")
-        )
-        if pd.isna(parsed):
-            raise ValueError(f"Invalid execution calendar date: {value}")
-        dates.append(parsed.normalize())
-    return tuple(sorted(set(dates)))
 
 
 def execution_calendar_from_config(cfg: Mapping[str, Any] | None) -> dict[str, Any]:

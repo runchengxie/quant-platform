@@ -1,5 +1,8 @@
 # 回测输出契约
 
+> 金融计算已由 Engine 0.3.0 统一维护，请参阅 [Engine 正式契约](https://runchengxie.github.io/quant-backtest-engine/reference/outputs/backtest-outputs.zh-CN/)。Platform 保留目标构建、研究统计和发布。旧接口及下方历史锚点继续可用。
+
+
 语言：简体中文 · [English](backtest-outputs.en.md)
 
 本页记录组合回测侧输出的报告文件与字段契约。运行编排和通用产物生命周期见

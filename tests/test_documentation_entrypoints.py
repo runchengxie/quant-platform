@@ -72,7 +72,7 @@ def test_turnover_reference_covers_bilingual_contract_fields() -> None:
         assert field in english
     assert "annualize_turnover" in english
     assert "English canonical page" in chinese
-    assert "def annualize_turnover" in turnover_source
+    assert "quant_backtest_core.daily.turnover" in turnover_source
     assert '"avg_rebalance_{field_name}"' in period_source
 
 

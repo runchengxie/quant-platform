@@ -2,6 +2,13 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+from quant_backtest_core.daily._period_helpers import _equal_weights as _equal_weights
+from quant_backtest_core.daily._period_helpers import (
+    clean_position_weights as clean_position_weights,
+)
+from quant_backtest_core.daily._period_helpers import (
+    normalize_position_weights as normalize_position_weights,
+)
 
 from .bet_sizing import SizingConfig, build_sized_weights
 from .selection_controls import TargetWeightPolicy, validate_target_weight_policy
@@ -32,43 +39,6 @@ def normalize_weighting_mode(weighting: str | None) -> str:
     if mode not in _WEIGHTING_MODES:
         raise ValueError("weighting must be one of: " + ", ".join(sorted(_WEIGHTING_MODES)) + ".")
     return mode
-
-
-def _equal_weights(holdings: list[str]) -> pd.Series:
-    if not holdings:
-        return pd.Series(dtype=float)
-    return pd.Series(np.repeat(1.0 / len(holdings), len(holdings)), index=holdings, dtype=float)
-
-
-def normalize_position_weights(weights: pd.Series) -> pd.Series:
-    if weights is None or weights.empty:
-        return pd.Series(dtype=float)
-    cleaned = pd.to_numeric(weights, errors="coerce").replace([np.inf, -np.inf], np.nan).dropna()
-    if cleaned.empty:
-        return pd.Series(dtype=float)
-    total = float(cleaned.sum())
-    if not np.isfinite(total) or total <= 0:
-        return _equal_weights(list(cleaned.index))
-    return cleaned / total
-
-
-def clean_position_weights(
-    weights: pd.Series,
-    *,
-    preserve_gross_exposure: bool,
-) -> pd.Series:
-    """Clean weights while optionally preserving an intentional cash allocation."""
-
-    if not preserve_gross_exposure:
-        return normalize_position_weights(weights)
-    if weights is None or weights.empty:
-        return pd.Series(dtype=float)
-    cleaned = pd.to_numeric(weights, errors="coerce").replace([np.inf, -np.inf], np.nan).dropna()
-    cleaned = cleaned.loc[cleaned.abs() > 1e-12].astype(float)
-    gross = float(cleaned.abs().sum())
-    if not np.isfinite(gross) or gross > 1.0 + 1e-12:
-        raise ValueError("Preserved target gross exposure must be finite and <= 1.0.")
-    return cleaned
 
 
 def _apply_target_weight_policy(

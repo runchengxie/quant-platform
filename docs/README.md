@@ -2,17 +2,17 @@
 
 Language: English · [简体中文](README.zh-CN.md)
 
-Platform 0.2.0 supports Python 3.12 and 3.13 and installs Engine Core 0.2.0
-with the minute, cost, scenario and planning extras, plus SDK 0.3.0. Core and SDK
+Platform 0.3.0 supports Python 3.12 and 3.13 and installs Engine Core 0.3.0
+with the minute, cost, scenario, planning and daily extras, plus SDK 0.3.0. Core and SDK
 use the same merged Engine revision
-`51ab1e8cb2267d938a0681b81f2419d504ed91cc` through immutable Git subdirectory
+`ad0895f1c2015eb31bd364b40741b0f7cd6e0048` through immutable Git subdirectory
 dependencies. No PyPI release is required.
 
-Engine owns minute execution, paper accounts, reservations, execution planning
+Engine owns daily execution, diagnostic leg/period accounting, minute execution, paper accounts, reservations, execution planning
 and deterministic matching, replay, impact and leaf evidence. Compatibility
 imports expose the same Core objects. The pending adapter retains Platform's full
 sparse-risk validation and original optimizer result. OSQP, statistical risk,
-generic optimization, research calibration, `pool_sleeves`, daily backtests and
+generic optimization, research calibration, `pool_sleeves`, target construction, research statistics, publication and
 reusable model training, including `generator` and `sqrt_law`, remain in Platform.
 The optional native distribution is built only by Engine. Rust backends require
 explicit selection. The SDK-only Rust session adapter still reports unsupported
@@ -106,7 +106,7 @@ Agents should start with the root README, this page, and the relevant category d
     | Test entry point | `scripts/dev/run_tests.sh` |
     | [Grid backtest helpers](grid-support.en.md) | `packages/platform/src/portfolio_backtester/grid_support.py` |
     | Microstructure simulation API | `packages/microstructure/src/ticknet/simulator/` |
-    | Rust simulation kernel | [Engine core-native/src/lib.rs](https://github.com/runchengxie/quant-backtest-engine/blob/51ab1e8cb2267d938a0681b81f2419d504ed91cc/core-native/src/lib.rs) |
+    | Rust simulation kernel | [Engine core-native/src/lib.rs](https://github.com/runchengxie/quant-backtest-engine/blob/ad0895f1c2015eb31bd364b40741b0f7cd6e0048/core-native/src/lib.rs) |
 
     When code, tests, and documentation disagree, verify the current implementation and correct the documentation in the same change.
 

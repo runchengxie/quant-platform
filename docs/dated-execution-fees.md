@@ -1,5 +1,8 @@
 # Dated execution fees
 
+> Engine 0.3.0 owns the financial implementation. Continue at the [canonical Engine contract](https://runchengxie.github.io/quant-backtest-engine/dated-execution-fees/). Platform retains target construction, research statistics and publication. Legacy interfaces and the historical anchors below remain available.
+
+
 Language: English · [简体中文](dated-execution-fees.zh-CN.md)
 
 `DatedTradeFeeModel` applies caller-supplied fee periods to actual fills in the

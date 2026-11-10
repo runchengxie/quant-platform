@@ -244,9 +244,6 @@ def _assert_roadmap_backend_contract(root: Path, roadmap: str) -> None:
     source_root = root / "packages/platform/src/quant_platform/_portfolio"
     native = (source_root / "backends/native.py").read_text(encoding="utf-8")
     api = (source_root / "api.py").read_text(encoding="utf-8")
-    ledger = (root / "packages/platform/src/quant_platform/backtest/ledger.py").read_text(
-        encoding="utf-8"
-    )
     lifecycle = (source_root / "execution_contracts.py").read_text(encoding="utf-8")
 
     assert "ledger: bool = False" in native
@@ -273,14 +270,21 @@ def _assert_roadmap_backend_contract(root: Path, roadmap: str) -> None:
         "cost_breakdown",
         "turnover_breakdown",
     ):
-        assert field in ledger
+        assert (
+            field
+            in __import__(
+                "quant_platform.backtest.ledger", fromlist=["UnifiedLedger"]
+            ).UnifiedLedger.__dataclass_fields__
+        )
         assert f"`{field}`" in roadmap
 
 
 def _assert_roadmap_cost_contract(root: Path, roadmap: str) -> None:
-    source_root = root / "packages/platform/src/quant_platform/_portfolio"
-    costs = (source_root / "types.py").read_text(encoding="utf-8")
-    fees = (source_root / "_execution_models.py").read_text(encoding="utf-8")
+    from quant_platform._portfolio.types import CostBreakdown
+
+    costs = CostBreakdown.__dataclass_fields__
+    from quant_platform._portfolio._execution_models import DetailedTradeFeeModel
+
     for component in (
         "commission",
         "stamp_tax",
@@ -293,13 +297,13 @@ def _assert_roadmap_cost_contract(root: Path, roadmap: str) -> None:
     ):
         assert component in costs
         assert component in roadmap
-    assert "notional_cost_breakdown" in fees
+    assert callable(DetailedTradeFeeModel.notional_cost_breakdown)
 
 
 def _assert_roadmap_market_rule_contract(root: Path, roadmap: str) -> None:
-    market_rules = (
-        root / "packages/platform/src/quant_platform/_portfolio/execution_sim/config.py"
-    ).read_text(encoding="utf-8")
+    from quant_platform._portfolio.execution_sim.config import ExecutionSimConfig
+
+    market_rules = ExecutionSimConfig.__dataclass_fields__
     for rule in (
         "round_lot",
         "enforce_t1",
@@ -445,8 +449,12 @@ def test_dated_execution_fee_translation_matches_public_contract() -> None:
         assert limitation in english
     for limitation in ("不内置市场费率", "不会回退", "不代表完整模拟"):
         assert limitation in chinese
-    assert "class DatedTradeFeeModel" in implementation
-    assert "class DatedFeeSchedule" in implementation
+    assert "quant_backtest_core.daily.dated_fees" in implementation
+    from quant_backtest_core.daily.dated_fees import DatedFeeSchedule as OwnedSchedule
+
+    from quant_platform._portfolio.dated_fees import DatedFeeSchedule
+
+    assert DatedFeeSchedule is OwnedSchedule
 
 
 def test_retired_style_factor_slice_is_not_described_as_a_current_api() -> None:

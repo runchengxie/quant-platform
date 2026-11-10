@@ -27,7 +27,7 @@ def _check_clean_imports() -> None:
     assert not any(name.startswith("portfolio_backtester") for name in sys.modules)
     assert "site-packages" in Path(quant_platform.__file__).parts
     assert importlib.util.find_spec("quant_backtest_engine") is not None
-    assert distribution("quant-backtest-core").version == "0.2.0"
+    assert distribution("quant-backtest-core").version == "0.3.0"
     assert distribution("quant-backtest-engine-client").version == "0.3.0"
 
 
@@ -90,11 +90,23 @@ def main() -> None:
     _check_clean_imports()
     _check_aliases(json.loads(args.module_map.read_text()))
     manifest = args.module_map.with_name("engine-provider-b.json")
-    _check_provider_aliases(json.loads(manifest.read_text()))
+    aliases = json.loads(manifest.read_text())
+    current = json.loads(manifest.with_name("engine-provider-c.json").read_text())
+    aliases["provider_revision"] = current["provider_revision"]
+    _check_provider_aliases(aliases)
+    from quant_backtest_core.daily import dated_fees as owned_fees
+    from quant_backtest_core.daily.types import BacktestLegResult, BacktestPeriodResult
+
+    from quant_platform._portfolio import types as legacy_types
+    from quant_platform.backtest.legacy import dated_fees as public_fees
+
+    assert public_fees.DatedTradeFeeModel is owned_fees.DatedTradeFeeModel
+    assert legacy_types.BacktestLegResult is BacktestLegResult
+    assert legacy_types.BacktestPeriodResult is BacktestPeriodResult
     installed = distribution("quant-platform")
     forbidden = {"torch", "xgboost", "sklearn", "alpha_research.backends.qlib"}
     assert not forbidden & set(sys.modules)
-    assert installed.version == "0.2.0"
+    assert installed.version == "0.3.0"
     print("Regular wheel: neutral imports, owner aliases and mandatory provider boundary verified")
 
 

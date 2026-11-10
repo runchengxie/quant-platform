@@ -47,8 +47,8 @@ def test_provider_module_and_class_identity(old, new):
 
 
 def test_provider_dependency_versions():
-    assert version("quant-platform") == "0.2.0"
-    assert version("quant-backtest-core") == "0.2.0"
+    assert version("quant-platform") == "0.3.0"
+    assert version("quant-backtest-core") == "0.3.0"
     assert version("quant-backtest-engine-client") == "0.3.0"
 
 

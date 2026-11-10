@@ -1,5 +1,8 @@
 # 执行容量与每日净值模拟
 
+> 金融计算已由 Engine 0.3.0 统一维护，请参阅 [Engine 正式契约](https://runchengxie.github.io/quant-backtest-engine/guides/execution-simulation.zh-CN/)。Platform 保留目标构建、研究统计和发布。旧接口及下方历史锚点继续可用。
+
+
 语言：简体中文 · [English](execution-simulation.en.md)
 
 `portfolio_backtester.execution_sim` 提供容量成交、执行后每日净值和理想每日净值三类模拟。该子包具有独立公开入口，当前没有从包根重新导出。

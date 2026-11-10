@@ -85,6 +85,7 @@ nav:
           - Neutral cost evidence: backtest/cost-evidence.md
           - Capital and reconciliation: backtest/capital-and-reconciliation.md
           - Minute execution scenarios: guides/minute-execution.en.md
+          - Daily execution consumers: backtest/engine-daily.md
           - Recoverable minute sessions: backtest/minute-session.md
           - Shared sleeve allocation: backtest/sleeve-allocation.md
           - Point-in-time research data: guides/point-in-time-data.en.md
@@ -148,6 +149,7 @@ nav:
           - 中立成本证据: backtest/cost-evidence.zh-CN.md
           - 资金事件与核对: backtest/capital-and-reconciliation.zh-CN.md
           - 分钟执行情景: guides/minute-execution.md
+          - 日频执行消费层: backtest/engine-daily.zh-CN.md
           - 可恢复的分钟会话: backtest/minute-session.zh-CN.md
           - 共用账户策略分配: backtest/sleeve-allocation.zh-CN.md
   - Guides (Chinese originals; translation in progress):

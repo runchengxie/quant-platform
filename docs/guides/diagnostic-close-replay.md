@@ -1,5 +1,8 @@
 # 收盘成交诊断回放
 
+> 金融计算已由 Engine 0.3.0 统一维护，请参阅 [Engine 正式契约](https://runchengxie.github.io/quant-backtest-engine/guides/diagnostic-close-replay.zh-CN/)。Platform 保留目标构建、研究统计和发布。旧接口及下方历史锚点继续可用。
+
+
 语言：简体中文 · [English](diagnostic-close-replay.en.md)
 
 `portfolio_backtester.target_close_replay.replay_close_targets` 用于在明确的

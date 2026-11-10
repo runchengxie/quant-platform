@@ -1,5 +1,8 @@
 # Next-close diagnostic replay
 
+> Engine 0.3.0 owns the financial implementation. Continue at the [canonical Engine contract](https://runchengxie.github.io/quant-backtest-engine/guides/diagnostic-close-replay/). Platform retains target construction, research statistics and publication. Legacy interfaces and the historical anchors below remain available.
+
+
 Language: English · [简体中文](diagnostic-close-replay.md)
 
 `portfolio_backtester.target_close_replay.replay_close_targets` compares target portfolios on an explicit trading calendar. It uses fractional adjusted units. It is not a broker-fill simulator or a cash-dividend ledger.

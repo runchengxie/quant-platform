@@ -2,7 +2,7 @@
 
 语言：简体中文 · [English](public-api.md)
 
-Platform 0.2.0 支持 Python 3.12 和 3.13，使用已合并提交 `51ab1e8cb2267d938a0681b81f2419d504ed91cc` 的 Engine Core 0.2.0 和 SDK 0.3.0。两者固定到同一 VCS 提交，无需发布到 PyPI。分钟执行、纸面账户、资源预留、执行规划及确定性撮合、回放和冲击估计由 Engine 维护。兼容模块导出相同的 Core 对象。待成交分配适配器保留 Platform 的完整稀疏风险校验和原优化结果。OSQP、统计风险、研究校准、`pool_sleeves`、日频回测和模型训练仍由 Platform 维护。别名至少保留两个次版本周期，并等待所有登记的受支持使用方迁移完成。
+Platform 0.3.0 支持 Python 3.12 和 3.13，使用已合并提交 `ad0895f1c2015eb31bd364b40741b0f7cd6e0048` 的 Engine Core 0.3.0 和 SDK 0.3.0。两者固定到同一 VCS 提交，无需发布到 PyPI。日频执行、诊断腿和区间核算、分钟执行、纸面账户、资源预留、执行规划及确定性撮合、回放和冲击估计由 Engine 维护。兼容模块导出相同的 Core 对象。待成交分配适配器保留 Platform 的完整稀疏风险校验和原优化结果。OSQP、统计风险、研究校准、`pool_sleeves`、目标构建、研究统计、发布和模型训练仍由 Platform 维护。别名至少保留两个次版本周期，并等待所有登记的受支持使用方迁移完成。
 
 
 
@@ -82,3 +82,5 @@ realized return、MFE、MAE、peak giveback 和 holding period，返回收益分
 未列在顶层导出中的模块仍可供仓库内部使用，其接口稳定性低于上表中的公开入口。
 
 完整导出列表见 `packages/platform/src/portfolio_backtester/__init__.py`。
+
+[日频请求、精确时钟和规范化产品适配器](../backtest/engine-daily.zh-CN.md): `build_daily_request`, `to_execution_clocks`, `to_canonical_result(result, *, artifact_root=None)`.

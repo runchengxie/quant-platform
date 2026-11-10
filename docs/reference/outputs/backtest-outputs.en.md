@@ -1,5 +1,8 @@
 # Backtest output reference
 
+> Engine 0.3.0 owns the financial implementation. Continue at the [canonical Engine contract](https://runchengxie.github.io/quant-backtest-engine/reference/outputs/backtest-outputs/). Platform retains target construction, research statistics and publication. Legacy interfaces and the historical anchors below remain available.
+
+
 Language: English · [简体中文](backtest-outputs.md)
 
 This page documents report files and fields produced by portfolio-backtest workflows. For orchestration and the general artifact lifecycle, see [Output summaries](../../orchestration/output-summary.md). For `summary.json` and file handoff contracts, see the [Public API and artifact contract](../../reference/public-api.md).

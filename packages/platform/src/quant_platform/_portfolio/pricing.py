@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Literal, cast
 
 import pandas as pd
+from quant_backtest_core.daily.pricing import slippage_pricing_row as slippage_pricing_row
 
 from quant_platform._portfolio._symbol_utils import canonicalize_symbol_columns
 
@@ -137,14 +138,3 @@ def prepare_backtest_pricing_context(
         tradable_table=tradable_table,
         amount_tables=amount_tables,
     )
-
-
-def slippage_pricing_row(
-    *,
-    slippage_model: SlippageModel,
-    amount_tables: dict[str, pd.DataFrame],
-    entry_date: pd.Timestamp,
-) -> pd.Series | None:
-    if not isinstance(slippage_model, ParticipationSlippageModel):
-        return None
-    return amount_tables[slippage_model.amount_col].loc[entry_date]

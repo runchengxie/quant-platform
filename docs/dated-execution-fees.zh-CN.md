@@ -1,5 +1,8 @@
 # 分期执行费率
 
+> 金融计算已由 Engine 0.3.0 统一维护，请参阅 [Engine 正式契约](https://runchengxie.github.io/quant-backtest-engine/dated-execution-fees.zh-CN/)。Platform 保留目标构建、研究统计和发布。旧接口及下方历史锚点继续可用。
+
+
 语言：简体中文 · [English](dated-execution-fees.md)
 
 `DatedTradeFeeModel` 根据调用方提供的费率时段，为实际成交计算费用，并接入连续执行调整 NAV 账本。模型不内置市场费率、供应商数据、凭证或策略设置。未传入分期费率模型的现有调用继续沿用原交易成本行为。

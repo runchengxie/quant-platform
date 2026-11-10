@@ -1,3 +1,4 @@
+# Platform target orchestration; financial leg and period accounting belongs to Engine.
 """Backtest engine: leg context, holding selection, and leg evaluation."""
 
 from __future__ import annotations

@@ -457,6 +457,8 @@ def test_unknown_fee_model_type_is_rejected_by_explicit_dispatch():
 
 
 def test_dated_fee_types_are_available_from_the_public_execution_module():
+    from quant_backtest_core.daily import dated_fees as owned
+
     from portfolio_backtester.execution import (
         DatedFeeQuote,
         DatedFeeSchedule,
@@ -465,11 +467,19 @@ def test_dated_fee_types_are_available_from_the_public_execution_module():
         FeeSchedulePeriod,
     )
 
-    assert DatedFeeQuote.__module__ == "quant_platform._portfolio.dated_fees"
-    assert DatedFeeSchedule.__module__ == "quant_platform._portfolio.dated_fees"
-    assert DatedTradeFeeModel.__module__ == "quant_platform._portfolio.dated_fees"
-    assert FeeQuoteContext.__module__ == "quant_platform._portfolio.dated_fees"
-    assert FeeSchedulePeriod.__module__ == "quant_platform._portfolio.dated_fees"
+    for public in (
+        DatedFeeQuote,
+        DatedFeeSchedule,
+        DatedTradeFeeModel,
+        FeeQuoteContext,
+        FeeSchedulePeriod,
+    ):
+        assert public is getattr(owned, public.__name__)
+    assert DatedFeeQuote.__module__ == "quant_backtest_core.daily.dated_fees"
+    assert DatedFeeSchedule.__module__ == "quant_backtest_core.daily.dated_fees"
+    assert DatedTradeFeeModel.__module__ == "quant_backtest_core.daily.dated_fees"
+    assert FeeQuoteContext.__module__ == "quant_backtest_core.daily.dated_fees"
+    assert FeeSchedulePeriod.__module__ == "quant_backtest_core.daily.dated_fees"
 
 
 def test_ideal_nav_rejects_dated_model_before_any_legacy_or_empty_result_path():

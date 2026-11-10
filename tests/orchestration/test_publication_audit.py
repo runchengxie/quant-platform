@@ -42,9 +42,9 @@ def test_clean_root_metadata_declares_runtime_import_dependencies() -> None:
 
     assert {"numpy", "pandas", "pyarrow", "pyyaml"} <= names
     provider = "https://github.com/runchengxie/quant-backtest-engine.git"
-    revision = "51ab1e8cb2267d938a0681b81f2419d504ed91cc"
+    revision = "ad0895f1c2015eb31bd364b40741b0f7cd6e0048"
     expected_vcs = {
-        f"quant-backtest-core[minute,cost,scenario,planning] @ git+{provider}@{revision}"
+        f"quant-backtest-core[minute,cost,scenario,planning,daily] @ git+{provider}@{revision}"
         "#subdirectory=core",
         f"quant-backtest-engine-client @ git+{provider}@{revision}#subdirectory=python",
     }

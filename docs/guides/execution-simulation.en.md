@@ -1,5 +1,8 @@
 # Capacity and Daily NAV Execution Simulation
 
+> Engine 0.3.0 owns the financial implementation. Continue at the [canonical Engine contract](https://runchengxie.github.io/quant-backtest-engine/guides/execution-simulation/). Platform retains target construction, research statistics and publication. Legacy interfaces and the historical anchors below remain available.
+
+
 Language: English · [简体中文](execution-simulation.md)
 
 `portfolio_backtester.execution_sim` provides capacity-limited fills, execution-adjusted daily NAV, and an ideal daily NAV baseline. It is a public subpackage; these objects are not re-exported from the package root.

@@ -1,5 +1,8 @@
 # Sequenced execution
 
+> Engine 0.3.0 owns the financial implementation. Continue at the [canonical Engine contract](https://runchengxie.github.io/quant-backtest-engine/guides/sequenced-execution/). Platform retains target construction, research statistics and publication. Legacy interfaces and the historical anchors below remain available.
+
+
 Language: English · [简体中文](sequenced-execution.md)
 
 `SequencedExecutionBackend` sends targets for multiple rebalance decisions through the shared daily execution simulator. It returns a `CanonicalBacktestResult` with orders, fills, and a daily ledger. Provide one `research.clock.v1` clock per `rebalance_date`; each `entry_date` must fall within that decision's execution window.
