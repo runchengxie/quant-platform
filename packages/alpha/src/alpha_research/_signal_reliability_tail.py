@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -70,7 +70,7 @@ def compute_tail(
         start = 0
         for k in widths:
             common = {
-                "date": date.strftime("%Y-%m-%d"),
+                "date": cast(pd.Timestamp, date).strftime("%Y-%m-%d"),
                 "k": k,
                 "n_universe": len(original),
                 "n_scores": len(group),

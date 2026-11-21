@@ -7,7 +7,7 @@ import json
 from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass
 from numbers import Integral, Number
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -163,7 +163,8 @@ def finish(
     details = pd.DataFrame(rows)
     dates = pd.Index(frame[date_col].drop_duplicates().dt.strftime("%Y-%m-%d"))
     profiles = []
-    for (group, metric), part in details.groupby(["group", "metric"], sort=False):
+    for key, part in details.groupby(["group", "metric"], sort=False):
+        group, metric = cast(tuple[str, str], key)
         series = part.set_index("date")["value"].reindex(dates)
         profiles.append(
             dict(group=group, metric=metric, **interval(series.to_numpy(dtype=float), settings))

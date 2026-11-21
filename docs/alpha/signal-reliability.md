@@ -11,22 +11,37 @@ portfolio results, causal attribution or an automatic choice of holding count.
 
 ```python
 from alpha_research.signal_reliability import (
-    BlockStatistics, tail_return_profile, marginal_alpha_profile,
+    BlockStatistics,
+    tail_return_profile,
+    marginal_alpha_profile,
     conditional_factor_profile,
 )
 
 stats = BlockStatistics(block_length=5, repetitions=1000, min_dates=20, seed=7)
 # panel: one row per trade_date/symbol, with caller-defined numeric columns.
 tail = tail_return_profile(
-    panel, score_col="score", target_col="future_return", ks=(10, 20, 50), statistics=stats,
+    panel,
+    score_col="score",
+    target_col="future_return",
+    ks=(10, 20, 50),
+    statistics=stats,
 )
 marginal = marginal_alpha_profile(
-    panel, score_col="score", target_col="future_return", ks=(10, 20, 50), statistics=stats,
+    panel,
+    score_col="score",
+    target_col="future_return",
+    ks=(10, 20, 50),
+    statistics=stats,
 )
 conditional = conditional_factor_profile(
-    panel, factor_cols=("factor",), control_cols=("size", "value"),
-    industry_col="industry", min_obs=30, target_col="future_return",
-    ks=(10, 20, 50), statistics=stats,
+    panel,
+    factor_cols=("factor",),
+    control_cols=("size", "value"),
+    industry_col="industry",
+    min_obs=30,
+    target_col="future_return",
+    ks=(10, 20, 50),
+    statistics=stats,
 )
 ```
 
@@ -99,8 +114,12 @@ design's column count.
 Optionally pass `baseline_col`, `augmented_col` and `paired_provenance`:
 
 ```python
-identity = dict(label_id="label-v1", universe_id="universe-v1", split_id="oos-v1",
-                prediction_availability="before_label_start")
+identity = dict(
+    label_id="label-v1",
+    universe_id="universe-v1",
+    split_id="oos-v1",
+    prediction_availability="before_label_start",
+)
 paired = dict(
     baseline=identity | {"run_id": "baseline-run"},
     augmented=identity | {"run_id": "factor-added-run"},

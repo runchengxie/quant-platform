@@ -13,21 +13,36 @@
 
 ```python
 from alpha_research.signal_reliability import (
-    BlockStatistics, tail_return_profile, marginal_alpha_profile,
+    BlockStatistics,
+    tail_return_profile,
+    marginal_alpha_profile,
     conditional_factor_profile,
 )
 
 stats = BlockStatistics(block_length=5, repetitions=1000, min_dates=20, seed=7)
 tail = tail_return_profile(
-    panel, score_col="score", target_col="future_return", ks=(10, 20, 50), statistics=stats,
+    panel,
+    score_col="score",
+    target_col="future_return",
+    ks=(10, 20, 50),
+    statistics=stats,
 )
 marginal = marginal_alpha_profile(
-    panel, score_col="score", target_col="future_return", ks=(10, 20, 50), statistics=stats,
+    panel,
+    score_col="score",
+    target_col="future_return",
+    ks=(10, 20, 50),
+    statistics=stats,
 )
 conditional = conditional_factor_profile(
-    panel, factor_cols=("factor",), control_cols=("size", "value"),
-    industry_col="industry", min_obs=30, target_col="future_return",
-    ks=(10, 20, 50), statistics=stats,
+    panel,
+    factor_cols=("factor",),
+    control_cols=("size", "value"),
+    industry_col="industry",
+    min_obs=30,
+    target_col="future_return",
+    ks=(10, 20, 50),
+    statistics=stats,
 )
 ```
 

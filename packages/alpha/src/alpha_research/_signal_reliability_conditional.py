@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from numbers import Integral
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -38,7 +38,7 @@ def _paired_identity(
             not isinstance(item.get(key), str) or not item[key].strip() for key in keys
         ):
             raise ValueError("incomplete paired research identity")
-    base, aug = pairs
+    base, aug = (cast(Mapping[str, Any], item) for item in pairs)
     if any(base[key] != aug[key] for key in keys[1:]):
         raise ValueError("incompatible paired research identities")
     if base["prediction_availability"] != "before_label_start":
@@ -263,7 +263,7 @@ def conditional_factor_profile(
     paired = _paired_identity(baseline_col, augmented_col, paired_provenance)
     numeric = [*factor_cols, target_col, *control_cols]
     if paired:
-        numeric.extend([baseline_col, augmented_col])
+        numeric.extend([cast(str, baseline_col), cast(str, augmented_col)])
     frame = prepare_panel(
         panel,
         date_col=date_col,
@@ -274,7 +274,7 @@ def conditional_factor_profile(
     )
     rows = []
     for date, group in frame.groupby(date_col, sort=True):
-        day = date.strftime("%Y-%m-%d")
+        day = cast(pd.Timestamp, date).strftime("%Y-%m-%d")
         for factor in factor_cols:
             rows.extend(
                 _factor_rows(
@@ -292,8 +292,8 @@ def conditional_factor_profile(
                 _incremental_rows(
                     group,
                     date=day,
-                    baseline=baseline_col,
-                    augmented=augmented_col,
+                    baseline=cast(str, baseline_col),
+                    augmented=cast(str, augmented_col),
                     target=target_col,
                     symbol=symbol_col,
                     ks=widths,
