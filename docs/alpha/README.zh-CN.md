@@ -53,3 +53,5 @@
 通用组合回测、交易成本、容量分析、运行编排、CLI、配置合成、运行目录和目标文件导出都由本仓库维护。对应的 Python 包和命令仍分别使用 `portfolio_backtester` 与 `strategy_pipeline` 名称。
 
 从其他仓库迁入文档时，应同时更新旧页面的跳转说明，避免出现多个活跃版本。编码代理默认只读取本页、相关分类入口和目标页面。
+
+[Signal reliability / 截面信号可靠性](signal-reliability.md) · [简体中文](signal-reliability.zh-CN.md)

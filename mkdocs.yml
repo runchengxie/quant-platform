@@ -106,6 +106,8 @@ nav:
           - Pending reservations: contracts/pending-allocation.md
       - Alpha and research:
           - Alpha and research overview: alpha/README.md
+          - Signal reliability: alpha/signal-reliability.md
+          - 截面信号可靠性: alpha/signal-reliability.zh-CN.md
           - Alpha research outputs: alpha/reference/research-outputs.en-US.md
           - Signal artifact contract: alpha/reference/signal-artifacts.en-US.md
           - Overfitting controls: alpha/concepts/overfitting-controls.en-US.md

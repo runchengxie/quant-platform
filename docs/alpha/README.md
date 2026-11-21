@@ -37,3 +37,5 @@ This section documents reusable alpha-research interfaces and model-related meth
 This repository documents reusable mechanisms such as feature-evidence interfaces, model evaluation methods, and signal-artifact contracts. General portfolio backtesting, trading costs, capacity analysis, orchestration, CLI behavior, configuration composition, run directories, and target-file export are maintained here; the Python namespaces remain `portfolio_backtester` and `strategy_pipeline`.
 
 Keep strategy hypotheses, proprietary features, model-specific portfolio rules, and promotion decisions in the owning research project. When migrating a document, update the old page with a redirect or status note so readers do not encounter multiple active copies.
+
+[Signal reliability / 截面信号可靠性](signal-reliability.md) · [简体中文](signal-reliability.zh-CN.md)
