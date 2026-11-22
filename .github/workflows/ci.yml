@@ -9,7 +9,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: runchengxie/quant-backtest-engine
-          ref: ad0895f1c2015eb31bd364b40741b0f7cd6e0048
+          ref: d13ffd45158b003fe6c6874da73d3ab6065388f2
           path: session-engine-provider
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
@@ -101,9 +101,9 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: runchengxie/quant-backtest-engine
-          ref: ad0895f1c2015eb31bd364b40741b0f7cd6e0048
+          ref: d13ffd45158b003fe6c6874da73d3ab6065388f2
           path: native-engine-provider
-      - run: uv run --locked maturin build --locked --release -m native-engine-provider/core-native/Cargo.toml --out "$RUNNER_TEMP/microstructure-wheels"
+      - run: uv run --locked maturin build --locked --release -m native-engine-provider/packages/microstructure-native/Cargo.toml --out "$RUNNER_TEMP/microstructure-wheels"
       - run: uv pip install --python .venv/bin/python "$RUNNER_TEMP"/microstructure-wheels/*.whl
       - run: TICKNET_REQUIRE_RUST=1 .venv/bin/pytest tests/microstructure tests/test_engine_microstructure_compatibility.py -q
 

@@ -182,12 +182,42 @@ def test_replay_generated_ids_follow_sorted_background_position():
         assert rust_book.best_bid() == python_engine.lob.best_bid()
 
 
-def test_native_impact_estimation_rejects_missing_fill_evidence():
+def test_native_impact_estimation_rejects_missing_fill_evidence(monkeypatch):
     _native()
+    from types import SimpleNamespace
+
     from ticknet.simulator.impact import ExecutionSchedule, ImpactEstimator
 
     session = ReplaySession(MatchingEngine(backend="rust"), (100, 50), (101, 40))
+    book = session.engine.lob
+    # A deliberately unsupported capability keeps the historical failure guard
+    # meaningful after the current native owner gained per-fill replay evidence.
+    monkeypatch.setattr(
+        session.engine, "lob", SimpleNamespace(best_ask=book.best_ask, best_bid=book.best_bid)
+    )
     with pytest.raises(NotImplementedError, match="per-fill execution evidence"):
         ImpactEstimator(session).estimate(ExecutionSchedule(1, 10))
     assert session.engine.lob.best_ask() == (101, 40)
     assert len(session.ticks) == 1
+
+
+def test_current_native_impact_preserves_per_fill_evidence_without_python_fallback():
+    native = _native()
+    from ticknet.simulator.impact import ExecutionSchedule, ImpactEstimator
+
+    python = ReplaySession(MatchingEngine(backend="python"), (100, 50), (101, 40))
+    rust = ReplaySession(MatchingEngine(backend="rust"), (100, 50), (101, 40))
+    book = rust.engine.lob
+    assert isinstance(book, native.OrderBook)
+    assert callable(book.replay_with_fills)
+    schedule = ExecutionSchedule(1, 60, n_child=3)
+    expected = ImpactEstimator(python).estimate(schedule)
+    actual = ImpactEstimator(rust).estimate(schedule)
+    assert actual == expected
+    assert actual.filled_volume == 40
+    assert actual.unfilled_volume == 20
+    assert actual.execution_vwap == 101
+    assert sum(fill.volume for fill in actual.fills) == 40
+    assert actual.fills == tuple(rust.fills)
+    assert rust.engine.backend == "rust" and rust.engine.lob is book
+    assert rust.ticks == python.ticks

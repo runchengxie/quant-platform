@@ -19,7 +19,7 @@ Platform 0.3.0 消费已合并的 Engine core 0.3.0：分钟执行、会话、�
 - 不要为了迁移方便复制策略实现。需要兼容时保留薄 adapter，并记录删除条件。
 - 历史边界见 `docs/migration/research-workspace-sunset.md`。
 
-可选原生源码与构建由 Engine 的 core-native/ 唯一维护。packages/microstructure/rust/ 只保留固定版本构建指引。显式选择 Rust 后端，并运行 TICKNET_REQUIRE_RUST=1 的旧接口集成测试。模型训练、generator 与 sqrt_law 仍属于 Platform。
+可选原生源码与构建由 Engine 的 packages/microstructure-native/ 唯一维护。packages/microstructure/rust/ 只保留固定版本构建指引。显式选择 Rust 后端，并运行 TICKNET_REQUIRE_RUST=1 的旧接口集成测试。模型训练、generator 与 sqrt_law 仍属于 Platform。
 
 ## 并行开发流程
 
@@ -50,7 +50,7 @@ Run `uv sync --locked --all-groups`, `uv run ruff check .`, and `uv run pytest` 
 
 平台通用入口使用 `quant_platform.portfolio`、`quant_platform.analytics`、`quant_platform.backtest`。源码位于 `packages/platform/src`。`portfolio_backtester` 仅作兼容别名，生产代码不得新增直接导入。`quant_platform._portfolio` 是暂存的内部实现，不是公开 API。中立契约不得依赖执行模拟器。独立引擎原始字典 SDK 由 engine 仓库维护，平台仅保留标准分析结果转换。
 
-Provider C pins both core [minute,cost,scenario,planning,daily] and SDK to merged Engine revision `ad0895f1c2015eb31bd364b40741b0f7cd6e0048`. Never recreate migrated financial implementations here. Retain aliases for at least two minor-release cycles AND until all recorded supported consumers migrate. Historical v2 checkpoints stay with their original full Runtime/Go/Python release closure; never rebind them to a new source. Kernel test provenance and exact locale routes are in `docs/migration/engine-provider-c*.json`; A/B receipts remain historical.
+Provider C pins both core [minute,cost,scenario,planning,daily] and SDK to merged Engine revision `d13ffd45158b003fe6c6874da73d3ab6065388f2`. Never recreate migrated financial implementations here. Retain aliases for at least two minor-release cycles AND until all recorded supported consumers migrate. Historical v2 checkpoints stay with their original full Runtime/Go/Python release closure; never rebind them to a new source. Kernel test provenance and exact locale routes are in `docs/migration/engine-provider-c*.json`; A/B receipts remain historical.
 
 Active C ownership is recorded in docs/migration/engine-provider-c.json. Preserve the A/B historical receipts. Preserve immutable provider A historical receipts. Pending standalone and solve entry points retain full sparse validation; daily/research tests remain required for future gates.
 

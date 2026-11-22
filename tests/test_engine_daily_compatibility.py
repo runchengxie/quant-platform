@@ -48,6 +48,62 @@ def fixture_frames():
     return positions, pricing
 
 
+def test_public_daily_adapter_preserves_actual_held_mark_certificate():
+    from quant_backtest_core.daily.contracts import ExecutionCalendar
+    from quant_backtest_core.daily.execution_sim import ExecutionSimConfig
+
+    from quant_platform.backtest.engine_daily import build_daily_request, run_daily
+
+    dates = ["2025-01-03", "2025-01-06", "2025-01-07", "2025-01-08"]
+    targets = pd.DataFrame(
+        {
+            "rebalance_date": ["2025-01-02", "2025-01-06"],
+            "entry_date": [dates[0], dates[2]],
+            "symbol": ["A", "B"],
+            "weight": [1.0, 1.0],
+            "side": ["long", "long"],
+        }
+    )
+    prices = pd.DataFrame(
+        [
+            {"trade_date": day, "symbol": symbol, "close": 10.0, "amount": 1e6}
+            for i, day in enumerate(dates)
+            for symbol in ("A", "B")
+            if symbol == "A" or i >= 2
+        ]
+    )
+    clocks = {}
+    for decision, entry in zip(targets.rebalance_date, targets.entry_date, strict=True):
+        clocks[decision] = {
+            "schema_version": "research.clock.v1",
+            "timezone": "Asia/Shanghai",
+            "information_cutoff_at": f"{decision}T15:00:00+08:00",
+            "signal_at": f"{decision}T15:00:01+08:00",
+            "decision_at": f"{decision}T15:00:02+08:00",
+            "earliest_order_at": f"{entry}T09:30:00+08:00",
+            "execution_window_start_at": f"{entry}T09:30:00+08:00",
+            "execution_window_end_at": f"{entry}T15:00:00+08:00",
+            "valuation_at": f"{dates[-1]}T15:00:00+08:00",
+            "timing_policy_id": "synthetic",
+            "trading_calendar_ref": "synthetic",
+        }
+    result = run_daily(
+        build_daily_request(
+            positions=targets,
+            pricing=prices,
+            calendar=ExecutionCalendar.from_dates("Asia/Shanghai", dates),
+            decision_clocks=clocks,
+            config=ExecutionSimConfig(
+                enabled=True, portfolio_value=1000, participation_rate=1, liquidity_cols=("amount",)
+            ),
+        )
+    )
+    assert result.valuation_marks.endpoint_complete.tolist() == [True] * 4
+    assert result.valuation_marks.held_symbols.iloc[0] == ("A",)
+    assert result.summary["execution_summary"]["valuation_complete"] is True
+    assert all(x is not None for x in result.summary["execution_summary"]["daily_return"])
+
+
 @pytest.mark.parametrize(
     "entrypoint", ["simulate_ideal_daily_nav", "simulate_execution_adjusted_nav"]
 )
