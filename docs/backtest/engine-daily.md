@@ -2,7 +2,7 @@
 
 [简体中文](engine-daily.zh-CN.md)
 
-Platform 0.3.0 consumes Core 0.3.0 and SDK 0.3.0 from the same merged Engine revision `ad0895f1c2015eb31bd364b40741b0f7cd6e0048`. The daily financial owner, diagnostic leg/period accounting, legacy trade accounting, fee models and result classes live in Engine. Platform selects targets, resolves provider calendars at its existing consumer boundary, calculates research statistics and publishes bundles.
+Platform 0.3.0 consumes Core 0.3.0 and SDK 0.3.0 from the same merged Engine revision `d13ffd45158b003fe6c6874da73d3ab6065388f2`. The daily financial owner, diagnostic leg/period accounting, legacy trade accounting, fee models and result classes live in Engine. Platform selects targets, resolves provider calendars at its existing consumer boundary, calculates research statistics and publishes bundles.
 
 ## Legacy research workflows
 
@@ -15,6 +15,29 @@ These historical statistics describe historical owner returns. A carried mark ma
 `quant_platform.backtest.engine_daily.build_daily_request` accepts already selected positions, pricing, an explicit `ExecutionCalendar`, research clocks and an owned `ExecutionSimConfig`. It translates dates and exact selectors without fetching calendars, generating targets or adding a default liquidity column. `run_daily` dispatches Engine and adds the separately scoped research statistics.
 
 `quant_platform.backtest.engine_clocks.to_execution_clocks(value: ResearchClock | Mapping[str, Any]) -> ClockSet` uses exact string UTC nanoseconds. Entry is the later supplied eligibility bound. Available/effective/report times remain unknown when the research contract supplies no observation. Original native v1/v2 integer-clock contracts are unchanged.
+
+## Held-position mark evidence
+
+The current Core result adds optional `valuation_marks` endpoint evidence without
+changing the daily/orders/fills financial tables or the eight-field unified
+ledger. The Platform adapter preserves that exact owner field. Engine records
+actual held shares and outstanding stock rights at valuation, current versus
+required marks, missing symbols, cash/receivable completeness and
+`endpoint_complete`. A future target or fully exited symbol does not require a
+quote merely because it appears elsewhere in the target history.
+
+Missing current marks on actual holdings or stock rights remain incomplete even
+when legacy NAV carries a prior price. Both interval endpoints must be complete;
+the first recovery interval stays unknown. Cash receivables require finite owner
+values but do not require an unrelated unheld share price. Missing owner endpoint
+evidence fails closed. No target-derived reconstruction or alternative NAV is
+computed by Platform.
+
+The additive table survives raw product transport and verified artifact decoding.
+It is not a normalized valuation-event ledger, full market-admission certificate
+or proof of historical data availability. Existing receivable representation and
+bundle-publication restrictions below continue to apply. Historical result
+objects lacking the new field retain their original evidence scope.
 
 ## Canonical product results
 

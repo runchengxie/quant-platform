@@ -2,7 +2,7 @@
 
 [English](engine-daily.md)
 
-Platform 0.3.0 使用同一已合并 Engine 提交 `ad0895f1c2015eb31bd364b40741b0f7cd6e0048` 的 Core 0.3.0 和 SDK 0.3.0。日频金融计算、诊断腿与区间核算、旧交易核算、费用模型及结果类由 Engine 统一维护。Platform 负责目标选择、在原消费边界获取供应方日历、研究统计和结果包发布。
+Platform 0.3.0 使用同一已合并 Engine 提交 `d13ffd45158b003fe6c6874da73d3ab6065388f2` 的 Core 0.3.0 和 SDK 0.3.0。日频金融计算、诊断腿与区间核算、旧交易核算、费用模型及结果类由 Engine 统一维护。Platform 负责目标选择、在原消费边界获取供应方日历、研究统计和结果包发布。
 
 ## 旧研究工作流
 
@@ -15,6 +15,23 @@ native、sequenced、position 和 top-k 的既有参数继续可用。日频和�
 `quant_platform.backtest.engine_daily.build_daily_request` 接收已经选定的持仓、价格、显式 `ExecutionCalendar`、研究时钟和 Engine 的 `ExecutionSimConfig`。它转换日期并保留明确指定的列，不获取日历、不构造目标，也不额外加入默认流动性列。`run_daily` 调用 Engine，再添加作用范围明确的研究统计。
 
 `quant_platform.backtest.engine_clocks.to_execution_clocks(value: ResearchClock | Mapping[str, Any]) -> ClockSet` 使用精确的 UTC 纳秒字符串。entry 取已提供资格边界中的较晚时间。研究契约没有提供观测证据时，available/effective/report 保持未知。原 native v1/v2 整数时钟契约不变。
+
+## 实际持仓的报价证据
+
+当前 Core 结果新增可选的 `valuation_marks` 期末证据表，不改变 daily/orders/fills
+金融表或八字段统一账本。Platform 原样保留该字段。Engine 在实际估值时记录持仓
+与股票应收权益、所需和已获得报价数、缺失股票、现金及应收项目完整性，以及
+`endpoint_complete`。尚未持有的未来目标或已经退出的股票，不会仅因曾进入目标
+列表就被要求每天都有报价。
+
+实际持仓或股票应收权益缺少当前报价时，即使旧净值沿用前价，证据仍不完整。
+收益区间的两个端点都必须完整，价格恢复后的第一个区间继续为未知。
+现金应收项目必须有有限的所有者数值，但不要求无持仓股票的报价。
+缺少所有者端点证据时不会推定完整。Platform 不从目标重建持仓，也不另算净值。
+
+新增表可通过原始产品产物传输并在校验后解码。它不等于规范化估值事件账本、
+完整市场交易准入证明或历史数据可得性证明。下述应收权益表示和发布限制仍然
+适用。没有新字段的历史结果继续保留其原证据范围。
 
 ## 规范化产品结果
 

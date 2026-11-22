@@ -8,8 +8,8 @@ version = "0.3.0"
 description = "Public reusable quant research and portfolio platform"
 requires-python = ">=3.12,<3.14"
 dependencies = [
-  "quant-backtest-core[minute,cost,scenario,planning,daily] @ git+https://github.com/runchengxie/quant-backtest-engine.git@ad0895f1c2015eb31bd364b40741b0f7cd6e0048#subdirectory=core",
-  "quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@ad0895f1c2015eb31bd364b40741b0f7cd6e0048#subdirectory=python",
+  "quant-backtest-core[minute,cost,scenario,planning,daily] @ git+https://github.com/runchengxie/quant-backtest-engine.git@d13ffd45158b003fe6c6874da73d3ab6065388f2#subdirectory=packages/core",
+  "quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@d13ffd45158b003fe6c6874da73d3ab6065388f2#subdirectory=packages/python-sdk",
   "duckdb>=1.2",
   "numpy>=1.23",
   "pandas>=2.0",
@@ -24,7 +24,7 @@ strategy-pipeline = "strategy_pipeline.cli:main"
 
 [project.optional-dependencies]
 sparse = ["osqp>=1.1,<2"]
-engine = ["quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@ad0895f1c2015eb31bd364b40741b0f7cd6e0048#subdirectory=python"]
+engine = ["quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@d13ffd45158b003fe6c6874da73d3ab6065388f2#subdirectory=packages/python-sdk"]
 ml = [
   "pandas-ta>=0.3.14b0",
   "scikit-learn>=1.9.0",
@@ -47,7 +47,7 @@ microstructure = ["polars>=1.0", "torch>=2.0", "scikit-learn>=1.9.0"]
 [dependency-groups]
 test = ["pytest>=9.0.3", "osqp>=1.1,<2"]
 dev = [
-  "quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@ad0895f1c2015eb31bd364b40741b0f7cd6e0048#subdirectory=python",
+  "quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@d13ffd45158b003fe6c6874da73d3ab6065388f2#subdirectory=packages/python-sdk",
   "maturin>=1,<2",
   "pandas-ta>=0.3.14b0",
   "scikit-learn>=1.9.0",

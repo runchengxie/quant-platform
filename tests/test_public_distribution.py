@@ -8,16 +8,17 @@ from packaging.markers import Marker
 from packaging.version import Version
 
 ROOT = Path(__file__).resolve().parents[1]
-SDK_REVISION = "ad0895f1c2015eb31bd364b40741b0f7cd6e0048"
+SDK_REVISION = "d13ffd45158b003fe6c6874da73d3ab6065388f2"
 SDK_REPOSITORY = "https://github.com/runchengxie/quant-backtest-engine.git"
 SDK_DEPENDENCY = (
-    f"quant-backtest-engine-client @ git+{SDK_REPOSITORY}@{SDK_REVISION}#subdirectory=python"
+    f"quant-backtest-engine-client @ git+{SDK_REPOSITORY}@{SDK_REVISION}"
+    "#subdirectory=packages/python-sdk"
 )
 
 CORE_DEPENDENCY = (
     "quant-backtest-core[minute,cost,scenario,planning,daily] @ "
     f"git+{SDK_REPOSITORY}@{SDK_REVISION}"
-    "#subdirectory=core"
+    "#subdirectory=packages/core"
 )
 
 
@@ -36,7 +37,11 @@ def _assert_allowed_package_sources(lock: dict[str, object]) -> None:
                 "https://github.com/runchengxie/research-code-quality.git"
             )
         elif package["name"] in {"quant-backtest-engine-client", "quant-backtest-core"}:
-            subdir = "core" if package["name"] == "quant-backtest-core" else "python"
+            subdir = (
+                "packages%2Fcore"
+                if package["name"] == "quant-backtest-core"
+                else "packages%2Fpython-sdk"
+            )
             assert source == {
                 "git": f"{SDK_REPOSITORY}?subdirectory={subdir}&rev={SDK_REVISION}#{SDK_REVISION}"
             }
