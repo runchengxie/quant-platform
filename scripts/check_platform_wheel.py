@@ -6,9 +6,77 @@ import argparse
 import importlib
 import importlib.util
 import json
+import re
 import sys
+import tomllib
 from importlib.metadata import distribution
 from pathlib import Path
+
+_PROVIDER_SUBDIRECTORIES = {
+    "quant-backtest-core": "packages/core",
+    "quant-backtest-engine-client": "packages/python-sdk",
+}
+_PROVIDER_GIT_URL = "git+https://github.com/runchengxie/quant-backtest-engine.git@"
+
+
+def _provider_pin(requirement: str) -> tuple[str, str] | None:
+    match = re.match(
+        r"^(quant-backtest-core|quant-backtest-engine-client)(?=$|\[|\s|[<>=!~])",
+        requirement,
+    )
+    if match is None:
+        return None
+    name = match.group(1)
+    _, separator, url = requirement.partition(" @ ")
+    if not separator or not url.startswith(_PROVIDER_GIT_URL):
+        raise ValueError(f"{name} must pin the Git provider with a 40-character SHA")
+    revision, _, subdirectory = url.removeprefix(_PROVIDER_GIT_URL).partition("#subdirectory=")
+    if re.fullmatch(r"[0-9a-fA-F]{40}", revision) is None:
+        raise ValueError(f"{name} must pin a 40-character Git SHA")
+    if subdirectory != _PROVIDER_SUBDIRECTORIES[name]:
+        raise ValueError(f"{name} has an incompatible provider subdirectory")
+    return name, revision.lower()
+
+
+def active_provider_revision(pyproject: dict) -> str:
+    """Resolve coherent active pins without reading or mutating historical receipts."""
+    project = pyproject["project"]
+    mandatory = [
+        pin
+        for requirement in project["dependencies"]
+        if (pin := _provider_pin(requirement)) is not None
+    ]
+    if {name for name, _ in mandatory} != set(_PROVIDER_SUBDIRECTORIES):
+        raise ValueError("both Engine distributions require mandatory Git pins")
+    pins = list(mandatory)
+    groups = [
+        *project.get("optional-dependencies", {}).values(),
+        *pyproject.get("dependency-groups", {}).values(),
+    ]
+    for requirements in groups:
+        pins.extend(
+            pin
+            for requirement in requirements
+            if isinstance(requirement, str) and (pin := _provider_pin(requirement)) is not None
+        )
+    revisions = {revision for _, revision in pins}
+    if len(revisions) != 1:
+        raise ValueError("Engine core and SDK pins must be coherent across dependency groups")
+    return revisions.pop()
+
+
+def source_provider_revision(module_map: Path) -> str:
+    """The explicitly supplied migration map identifies the source checkout root."""
+    with (module_map.resolve().parents[2] / "pyproject.toml").open("rb") as stream:
+        return active_provider_revision(tomllib.load(stream))
+
+
+def check_provider_metadata(revision: str, direct_urls: dict) -> None:
+    """Both installed owners must attest the active immutable source revision."""
+    for name in _PROVIDER_SUBDIRECTORIES:
+        commit = direct_urls.get(name, {}).get("vcs_info", {}).get("commit_id")
+        if commit != revision:
+            raise ValueError(f"installed {name} source revision differs from active Git pin")
 
 
 def _check_clean_imports() -> None:
@@ -44,7 +112,7 @@ def _check_aliases(mapping: dict) -> None:
             assert public is implementation
 
 
-def _check_provider_aliases(manifest: dict) -> None:
+def _check_provider_aliases(manifest: dict, revision: str) -> None:
     for old, new in manifest["modules"].items():
         facade = importlib.import_module(old)
         provider = importlib.import_module(new)
@@ -72,12 +140,13 @@ def _check_provider_aliases(manifest: dict) -> None:
         "ticknet.simulator.generator",
         "ticknet.simulator.sqrt_law",
     } & set(sys.modules)
+    direct_urls = {}
     for name in ("quant-platform", "quant-backtest-core", "quant-backtest-engine-client"):
         installed = distribution(name)
         direct_url = json.loads(installed.read_text("direct_url.json") or "{}")
         assert not direct_url.get("dir_info", {}).get("editable", False)
-        if "vcs_info" in direct_url:
-            assert direct_url["vcs_info"]["commit_id"] == manifest["provider_revision"]
+        direct_urls[name] = direct_url
+    check_provider_metadata(revision, direct_urls)
 
 
 def main() -> None:
@@ -91,9 +160,7 @@ def main() -> None:
     _check_aliases(json.loads(args.module_map.read_text()))
     manifest = args.module_map.with_name("engine-provider-b.json")
     aliases = json.loads(manifest.read_text())
-    current = json.loads(manifest.with_name("engine-provider-c.json").read_text())
-    aliases["provider_revision"] = current["provider_revision"]
-    _check_provider_aliases(aliases)
+    _check_provider_aliases(aliases, source_provider_revision(args.module_map))
     from quant_backtest_core.daily import dated_fees as owned_fees
     from quant_backtest_core.daily.types import BacktestLegResult, BacktestPeriodResult
 
