@@ -3240,6 +3240,10 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+composition-ml = [
+    { name = "lightgbm" },
+    { name = "scikit-learn" },
+]
 dev = [
     { name = "jsonschema" },
     { name = "pandas-ta" },
@@ -3274,6 +3278,7 @@ sparse = [
 [package.dev-dependencies]
 dev = [
     { name = "jsonschema" },
+    { name = "lightgbm" },
     { name = "maturin" },
     { name = "pandas-ta" },
     { name = "polars" },
@@ -3300,6 +3305,7 @@ test = [
 requires-dist = [
     { name = "duckdb", specifier = ">=1.2" },
     { name = "jsonschema", marker = "extra == 'dev'", specifier = ">=4.25" },
+    { name = "lightgbm", marker = "extra == 'composition-ml'", specifier = ">=4.6,<5" },
     { name = "numpy", specifier = ">=1.23" },
     { name = "osqp", marker = "extra == 'sparse'", specifier = ">=1.1,<2" },
     { name = "pandas", specifier = ">=2.0" },
@@ -3316,6 +3322,7 @@ requires-dist = [
     { name = "research-code-quality", marker = "extra == 'dev'", git = "https://github.com/runchengxie/research-code-quality.git?rev=76a869e4f7982a456e4807f454815d6aa027d712" },
     { name = "research-contracts", directory = "packages/research-contracts" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8" },
+    { name = "scikit-learn", marker = "extra == 'composition-ml'", specifier = ">=1.9.0" },
     { name = "scikit-learn", marker = "extra == 'dev'", specifier = ">=1.9.0" },
     { name = "scikit-learn", marker = "extra == 'microstructure'", specifier = ">=1.9.0" },
     { name = "scikit-learn", marker = "extra == 'ml'", specifier = ">=1.9.0" },
@@ -3326,11 +3333,12 @@ requires-dist = [
     { name = "xgboost", marker = "extra == 'dev'", specifier = ">=1.7" },
     { name = "xgboost", marker = "extra == 'ml'", specifier = ">=1.7" },
 ]
-provides-extras = ["sparse", "engine", "ml", "dev", "qlib", "microstructure"]
+provides-extras = ["sparse", "engine", "composition-ml", "ml", "dev", "qlib", "microstructure"]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "jsonschema", specifier = ">=4.25" },
+    { name = "lightgbm", specifier = ">=4.6,<5" },
     { name = "maturin", specifier = ">=1,<2" },
     { name = "pandas-ta", specifier = ">=0.3.14b0" },
     { name = "polars", specifier = ">=1.0" },

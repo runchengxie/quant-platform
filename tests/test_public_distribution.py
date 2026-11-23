@@ -75,6 +75,7 @@ def test_distribution_declares_public_registry_and_immutable_provider_dependenci
     ]
     assert project["project"]["optional-dependencies"]["engine"] == [SDK_DEPENDENCY]
     assert dev_dependencies == [
+        "lightgbm>=4.6,<5",
         SDK_DEPENDENCY,
         "maturin>=1,<2",
         "pandas-ta>=0.3.14b0",

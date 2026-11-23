@@ -14,6 +14,12 @@ from .contextual import (
     contextual_feature_set_id,
     default_context_exposure_specs,
 )
+from .factor_composition import (
+    FactorCompositionResult,
+    FactorCompositionSpec,
+    FactorInput,
+    compose_factors,
+)
 from .factor_expression import FactorExpression, OperatorRegistry, parse_factor
 from .freshness_overlay import apply_freshness_overlay
 from .risk_model import FACTOR_RISK_MODEL_SCHEMA, FactorRiskModelEstimate, build_factor_risk_model
@@ -24,7 +30,10 @@ __all__ = [
     "ContextTransformSpec",
     "ContextualFeatureEvidence",
     "ExposureSpec",
+    "FactorCompositionResult",
+    "FactorCompositionSpec",
     "FactorExpression",
+    "FactorInput",
     "FactorRiskModelEstimate",
     "FundamentalModifier",
     "OperatorRegistry",
@@ -41,6 +50,7 @@ __all__ = [
     "build_contextual_feature_evidence",
     "build_factor_risk_model",
     "compat",
+    "compose_factors",
     "contextual",
     "contextual_feature_set_id",
     "cpcv",

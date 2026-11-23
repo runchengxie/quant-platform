@@ -11,6 +11,7 @@ This section documents reusable alpha-research interfaces and model-related meth
 | Project scope and installation | [Repository README](https://github.com/runchengxie/quant-platform/blob/main/README.md) |
 | Model selection | [English canonical](concepts/model-selection.en-US.md) · [Chinese companion](concepts/model-selection.md) |
 | Model landscape | [English canonical](concepts/model-landscape.en-US.md) · [Chinese companion](concepts/model-landscape.md) |
+| Factor composition | [API, methods and leakage boundaries](concepts/factor-composition.md) |
 | Factor catalog | [English canonical](concepts/factor-catalog.en-US.md) · [Chinese companion](concepts/factor-catalog.md) |
 | Factor risk model | [English canonical](concepts/factor-risk-model.en-US.md) · [Chinese companion](concepts/factor-risk-model.md) |
 | Signal drift | [English canonical](concepts/signal-drift.en-US.md) · [Chinese companion](concepts/signal-drift.md) |
