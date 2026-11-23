@@ -22,3 +22,13 @@ def test_double_sort_difference_in_differences_is_one_percentage_point():
         factors.iloc[:1], labels.iloc[:1], quality="Q", value="V", bins=2, min_cell=2
     )
     assert pd.isna(sparse.by_date.interaction_spread.iloc[0])
+
+
+def test_double_sort_rejects_complex_outcomes():
+    index = pd.MultiIndex.from_product(
+        [[pd.Timestamp("2026-01-01")], list("ABCD")], names=["date", "symbol"]
+    )
+    frame = pd.DataFrame({"Q": [0.0, 0.0, 1.0, 1.0], "V": [0.0, 1.0, 0.0, 1.0]}, index=index)
+    labels = pd.Series([0.1 + 1j, 0.2 + 2j, 0.3 + 3j, 0.4 + 5j], index=index)
+    with pytest.raises(ValueError, match="real"):
+        double_sort_profile(frame, labels, quality="Q", value="V", bins=2, min_cell=1)

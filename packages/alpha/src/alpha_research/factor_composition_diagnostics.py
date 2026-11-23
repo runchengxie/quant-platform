@@ -38,6 +38,8 @@ def double_sort_profile(
         raise ValueError("bins must be an integer >= 2")
     if isinstance(min_cell, bool) or not isinstance(min_cell, int) or min_cell < 1:
         raise ValueError("min_cell must be a positive integer")
+    if pd.api.types.is_complex_dtype(labels.dtype):
+        raise ValueError("labels must be real")
     if (
         not pd.api.types.is_numeric_dtype(labels.dtype)
         or np.isinf(labels.to_numpy(dtype=float)).any()
