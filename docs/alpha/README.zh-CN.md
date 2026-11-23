@@ -55,3 +55,5 @@
 从其他仓库迁入文档时，应同时更新旧页面的跳转说明，避免出现多个活跃版本。编码代理默认只读取本页、相关分类入口和目标页面。
 
 [Signal reliability / 截面信号可靠性](signal-reliability.md) · [简体中文](signal-reliability.zh-CN.md)
+
+因子合成接口、支持的方法及时点约束见 [Factor composition（英文）](concepts/factor-composition.md)。

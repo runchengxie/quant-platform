@@ -25,6 +25,7 @@ strategy-pipeline = "strategy_pipeline.cli:main"
 [project.optional-dependencies]
 sparse = ["osqp>=1.1,<2"]
 engine = ["quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@d13ffd45158b003fe6c6874da73d3ab6065388f2#subdirectory=packages/python-sdk"]
+composition-ml = ["scikit-learn>=1.9.0", "lightgbm>=4.6,<5"]
 ml = [
   "pandas-ta>=0.3.14b0",
   "scikit-learn>=1.9.0",
@@ -47,6 +48,7 @@ microstructure = ["polars>=1.0", "torch>=2.0", "scikit-learn>=1.9.0"]
 [dependency-groups]
 test = ["pytest>=9.0.3", "osqp>=1.1,<2"]
 dev = [
+  "lightgbm>=4.6,<5",
   "quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@d13ffd45158b003fe6c6874da73d3ab6065388f2#subdirectory=packages/python-sdk",
   "maturin>=1,<2",
   "pandas-ta>=0.3.14b0",
