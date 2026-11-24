@@ -11,6 +11,7 @@ from urllib.parse import urljoin
 import yaml
 
 PAIRS = (
+    ("backtest/suspension-valuation.md", "backtest/suspension-valuation.zh-CN.md"),
     ("backtest/market-paths.md", "backtest/market-paths.zh-CN.md"),
     ("backtest/transaction-cost-evidence.md", "backtest/transaction-cost-evidence.zh-CN.md"),
     ("backtest/sleeve-allocation.md", "backtest/sleeve-allocation.zh-CN.md"),

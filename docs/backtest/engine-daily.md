@@ -2,7 +2,7 @@
 
 [简体中文](engine-daily.zh-CN.md)
 
-Platform 0.3.0 consumes Core 0.3.0 and SDK 0.3.0 from the same merged Engine revision `d13ffd45158b003fe6c6874da73d3ab6065388f2`. The daily financial owner, diagnostic leg/period accounting, legacy trade accounting, fee models and result classes live in Engine. Platform selects targets, resolves provider calendars at its existing consumer boundary, calculates research statistics and publishes bundles.
+Platform 0.3.0 consumes Core 0.3.0 and SDK 0.3.0 from the same merged Engine revision `3e0514ee127fbf00ad4f627d72f91349df4a121f`. The daily financial owner, diagnostic leg/period accounting, legacy trade accounting, fee models and result classes live in Engine. Platform selects targets, resolves provider calendars at its existing consumer boundary, calculates research statistics and publishes bundles.
 
 ## Legacy research workflows
 
@@ -65,3 +65,5 @@ Aliases remain for at least two minor releases and until every recorded supporte
 When owner daily rows contain unpaid cash or stock receivables, the historical eight-table representation cannot express their complete wealth. The converter retains the verified raw daily/actions/holdings and all eight tables in `metadata.owner_result`, but leaves canonical daily/unified ledgers unavailable and sets `execution_aware=False`. `canonical_ledger_limitation` distinguishes unpaid from unknown receivables. Unknown or nonfinite receivables never become zero. Payment transfers remain exactly as reported by the owner; conversion adds no balancing cash and changes no performance or summary. This is a representation limit, not a newly inferred loss or financial failure.
 
 The [consumer migration contract](../migration/provider-c-consumer.md) records the implementation and acceptance scope.
+
+See [explicit suspension valuation](suspension-valuation.md) for opt-in policy-valued endpoints.

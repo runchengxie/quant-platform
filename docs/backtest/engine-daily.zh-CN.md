@@ -2,7 +2,7 @@
 
 [English](engine-daily.md)
 
-Platform 0.3.0 使用同一已合并 Engine 提交 `d13ffd45158b003fe6c6874da73d3ab6065388f2` 的 Core 0.3.0 和 SDK 0.3.0。日频金融计算、诊断腿与区间核算、旧交易核算、费用模型及结果类由 Engine 统一维护。Platform 负责目标选择、在原消费边界获取供应方日历、研究统计和结果包发布。
+Platform 0.3.0 使用同一已合并 Engine 提交 `3e0514ee127fbf00ad4f627d72f91349df4a121f` 的 Core 0.3.0 和 SDK 0.3.0。日频金融计算、诊断腿与区间核算、旧交易核算、费用模型及结果类由 Engine 统一维护。Platform 负责目标选择、在原消费边界获取供应方日历、研究统计和结果包发布。
 
 ## 旧研究工作流
 
@@ -59,3 +59,5 @@ full_view = to_canonical_result(product_result, artifact_root=owned_output_direc
 当所有者日表含未支付现金或股票应收权益时，历史八表无法表示其完整财富。转换器在 `metadata.owner_result` 保留已验证的原始 daily/actions/holdings 和全部八表，但将 canonical 日账本及统一账本标为不可用，并设置 `execution_aware=False`。`canonical_ledger_limitation` 区分未支付与未知应收权益。未知或非有限数值绝不按零处理。实际支付转移完全保留所有者输出，不补造现金、不修改绩效或摘要。这是表示范围限制，不是新增的市场损失或金融失败。
 
 [消费层迁移契约](../migration/provider-c-consumer.zh-CN.md) 记录实现与验收范围。
+
+选择按声明政策认定估值端点时，参阅[显式停牌估值](suspension-valuation.zh-CN.md)。

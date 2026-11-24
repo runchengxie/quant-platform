@@ -8,8 +8,8 @@ version = "0.3.0"
 description = "Public reusable quant research and portfolio platform"
 requires-python = ">=3.12,<3.14"
 dependencies = [
-  "quant-backtest-core[minute,cost,scenario,planning,daily] @ git+https://github.com/runchengxie/quant-backtest-engine.git@d13ffd45158b003fe6c6874da73d3ab6065388f2#subdirectory=packages/core",
-  "quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@d13ffd45158b003fe6c6874da73d3ab6065388f2#subdirectory=packages/python-sdk",
+  "quant-backtest-core[minute,cost,scenario,planning,daily] @ git+https://github.com/runchengxie/quant-backtest-engine.git@3e0514ee127fbf00ad4f627d72f91349df4a121f#subdirectory=packages/core",
+  "quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@3e0514ee127fbf00ad4f627d72f91349df4a121f#subdirectory=packages/python-sdk",
   "duckdb>=1.2",
   "numpy>=1.23",
   "pandas>=2.0",
@@ -24,7 +24,7 @@ strategy-pipeline = "strategy_pipeline.cli:main"
 
 [project.optional-dependencies]
 sparse = ["osqp>=1.1,<2"]
-engine = ["quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@d13ffd45158b003fe6c6874da73d3ab6065388f2#subdirectory=packages/python-sdk"]
+engine = ["quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@3e0514ee127fbf00ad4f627d72f91349df4a121f#subdirectory=packages/python-sdk"]
 composition-ml = ["scikit-learn>=1.9.0", "lightgbm>=4.6,<5"]
 ml = [
   "pandas-ta>=0.3.14b0",
@@ -49,7 +49,7 @@ microstructure = ["polars>=1.0", "torch>=2.0", "scikit-learn>=1.9.0"]
 test = ["pytest>=9.0.3", "osqp>=1.1,<2"]
 dev = [
   "lightgbm>=4.6,<5",
-  "quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@d13ffd45158b003fe6c6874da73d3ab6065388f2#subdirectory=packages/python-sdk",
+  "quant-backtest-engine-client @ git+https://github.com/runchengxie/quant-backtest-engine.git@3e0514ee127fbf00ad4f627d72f91349df4a121f#subdirectory=packages/python-sdk",
   "maturin>=1,<2",
   "pandas-ta>=0.3.14b0",
   "scikit-learn>=1.9.0",

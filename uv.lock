@@ -3190,7 +3190,7 @@ wheels = [
 [[package]]
 name = "quant-backtest-core"
 version = "0.3.0"
-source = { git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=packages%2Fcore&rev=d13ffd45158b003fe6c6874da73d3ab6065388f2#d13ffd45158b003fe6c6874da73d3ab6065388f2" }
+source = { git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=packages%2Fcore&rev=3e0514ee127fbf00ad4f627d72f91349df4a121f#3e0514ee127fbf00ad4f627d72f91349df4a121f" }
 dependencies = [
     { name = "quant-backtest-engine-client" },
 ]
@@ -3221,7 +3221,7 @@ scenario = [
 [[package]]
 name = "quant-backtest-engine-client"
 version = "0.3.0"
-source = { git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=packages%2Fpython-sdk&rev=d13ffd45158b003fe6c6874da73d3ab6065388f2#d13ffd45158b003fe6c6874da73d3ab6065388f2" }
+source = { git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=packages%2Fpython-sdk&rev=3e0514ee127fbf00ad4f627d72f91349df4a121f#3e0514ee127fbf00ad4f627d72f91349df4a121f" }
 
 [[package]]
 name = "quant-platform"
@@ -3316,9 +3316,9 @@ requires-dist = [
     { name = "pyqlib", marker = "extra == 'qlib'", specifier = ">=0.9.5" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.3" },
     { name = "pyyaml", specifier = ">=6.0" },
-    { name = "quant-backtest-core", extras = ["minute", "cost", "scenario", "planning", "daily"], git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=packages%2Fcore&rev=d13ffd45158b003fe6c6874da73d3ab6065388f2" },
-    { name = "quant-backtest-engine-client", git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=packages%2Fpython-sdk&rev=d13ffd45158b003fe6c6874da73d3ab6065388f2" },
-    { name = "quant-backtest-engine-client", marker = "extra == 'engine'", git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=packages%2Fpython-sdk&rev=d13ffd45158b003fe6c6874da73d3ab6065388f2" },
+    { name = "quant-backtest-core", extras = ["minute", "cost", "scenario", "planning", "daily"], git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=packages%2Fcore&rev=3e0514ee127fbf00ad4f627d72f91349df4a121f" },
+    { name = "quant-backtest-engine-client", git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=packages%2Fpython-sdk&rev=3e0514ee127fbf00ad4f627d72f91349df4a121f" },
+    { name = "quant-backtest-engine-client", marker = "extra == 'engine'", git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=packages%2Fpython-sdk&rev=3e0514ee127fbf00ad4f627d72f91349df4a121f" },
     { name = "research-code-quality", marker = "extra == 'dev'", git = "https://github.com/runchengxie/research-code-quality.git?rev=76a869e4f7982a456e4807f454815d6aa027d712" },
     { name = "research-contracts", directory = "packages/research-contracts" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8" },
@@ -3344,7 +3344,7 @@ dev = [
     { name = "polars", specifier = ">=1.0" },
     { name = "pytest", specifier = ">=9.0.3" },
     { name = "pytest-cov", specifier = ">=6.0" },
-    { name = "quant-backtest-engine-client", git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=packages%2Fpython-sdk&rev=d13ffd45158b003fe6c6874da73d3ab6065388f2" },
+    { name = "quant-backtest-engine-client", git = "https://github.com/runchengxie/quant-backtest-engine.git?subdirectory=packages%2Fpython-sdk&rev=3e0514ee127fbf00ad4f627d72f91349df4a121f" },
     { name = "research-code-quality", git = "https://github.com/runchengxie/research-code-quality.git?rev=76a869e4f7982a456e4807f454815d6aa027d712" },
     { name = "ruff", specifier = ">=0.8" },
     { name = "scikit-learn", specifier = ">=1.9.0" },
