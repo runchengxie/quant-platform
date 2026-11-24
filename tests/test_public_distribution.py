@@ -8,7 +8,7 @@ from packaging.markers import Marker
 from packaging.version import Version
 
 ROOT = Path(__file__).resolve().parents[1]
-SDK_REVISION = "d13ffd45158b003fe6c6874da73d3ab6065388f2"
+SDK_REVISION = "3e0514ee127fbf00ad4f627d72f91349df4a121f"
 SDK_REPOSITORY = "https://github.com/runchengxie/quant-backtest-engine.git"
 SDK_DEPENDENCY = (
     f"quant-backtest-engine-client @ git+{SDK_REPOSITORY}@{SDK_REVISION}"

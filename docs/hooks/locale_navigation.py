@@ -13,6 +13,7 @@ from mkdocs.structure.nav import Navigation
 ENGLISH_PAGES = {
     "alpha/signal-reliability.md",
     "backtest/engine-daily.md",
+    "backtest/suspension-valuation.md",
     "migration/provider-c-consumer.md",
     "concepts/signed-paper-optimization.md",
     "concepts/sparse-signed-optimization.md",

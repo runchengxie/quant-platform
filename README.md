@@ -4,7 +4,7 @@
 
 [中文 README](README.zh-CN.md) · [English language policy](docs/LANGUAGE_POLICY.md) · [中文语言政策](docs/LANGUAGE_POLICY.zh-CN.md)
 
-Platform 0.3.0 supports Python 3.12 and 3.13 with Engine Core 0.3.0 and SDK 0.3.0 at merged revision `d13ffd45158b003fe6c6874da73d3ab6065388f2`. Core and SDK use the same exact VCS pin; no PyPI publication is required. Engine owns daily execution, diagnostic leg/period accounting, minute execution, paper accounts, reservations, execution planning and deterministic matching/replay/impact. Compatibility modules expose the identical Core objects; the pending adapter preserves Platform's full sparse validation and actual optimizer result. OSQP, statistical risk, research calibration, `pool_sleeves`, target construction, research statistics, publication and model training remain Platform responsibilities. Aliases stay for at least two minor-release cycles and until all recorded supported consumers migrate.
+Platform 0.3.0 supports Python 3.12 and 3.13 with Engine Core 0.3.0 and SDK 0.3.0 at merged revision `3e0514ee127fbf00ad4f627d72f91349df4a121f`. Core and SDK use the same exact VCS pin; no PyPI publication is required. Engine owns daily execution, diagnostic leg/period accounting, minute execution, paper accounts, reservations, execution planning and deterministic matching/replay/impact. Compatibility modules expose the identical Core objects; the pending adapter preserves Platform's full sparse validation and actual optimizer result. OSQP, statistical risk, research calibration, `pool_sleeves`, target construction, research statistics, publication and model training remain Platform responsibilities. Aliases stay for at least two minor-release cycles and until all recorded supported consumers migrate.
 
 
 
