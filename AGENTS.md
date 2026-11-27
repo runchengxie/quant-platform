@@ -23,7 +23,7 @@ Platform 0.3.0 消费已合并的 Engine core 0.3.0：分钟执行、会话、�
 
 ## 并行开发流程
 
-多个 agent 同时工作时，每项改动都必须使用独立 worktree 和功能分支。先从工作区明确指定的机器配置或环境变量解析 `CODE_ROOT`。以下 Bash 示例假定已导出该变量，任务目录使用仓库名前缀以避免跨仓重名。推荐流程如下：
+每个独立任务必须使用独立 worktree 和功能分支，以任务而非 agent 数量作为隔离单位。同一任务的多个 agent 可以共用任务 worktree，但必须先约定文件所有权并协调 Git 操作。先从工作区明确指定的机器配置或环境变量解析 `CODE_ROOT`。以下 Bash 示例假定已导出该变量，任务目录使用仓库名前缀以避免跨仓重名。推荐流程如下：
 
 ```bash
 git fetch origin
@@ -44,7 +44,7 @@ git push origin --delete feat/<任务名>
 
 清理前确认 PR 已合并到 `main`，且任务 worktree 没有唯一未保存内容。只清理本任务资源。发现未提交或未合并改动时保留 worktree 和分支并报告。
 
-不要让多个 agent 直接修改同一个工作树，也不要在 `main` 上直接提交。
+不同任务不得共用工作树。同一任务协作时避免同时编辑同一文件，Git 写操作须串行执行。不要在 `main` 上直接提交。
 
 Run `uv sync --locked --all-groups`, `uv run ruff check .`, and `uv run pytest` from this directory.
 
