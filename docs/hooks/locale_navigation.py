@@ -124,6 +124,7 @@ ENGLISH_PAGES = {
     "reference/public-api.md",
     "reference/allocation-reference.md",
     "data/README.md",
+    "price-windows.md",
     "reference/outputs/positions.md",
     "testing.md",
     "namespace-migration.en.md",
