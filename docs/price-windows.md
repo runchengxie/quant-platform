@@ -74,7 +74,7 @@ Known nonprice fields cannot be selected as `price_columns`.
 `anchors`. PIT anchors expose `symbol`, `trade_date`, `adj_factor`, `available_at`;
 RAW/HFQ expose an empty anchor frame with the same columns. Source frames are
 not mutated. The wrapper is frozen, but its independent DataFrames remain
-mutable; it is not an immutable artifact or an execution request.
+mutable; it is not an immutable artifact or an execution request. As with pandas deep copies, nested Python objects in extra columns remain shared and must not be mutated through the result if source isolation is required.
 
 ## Use with research and accounts
 
