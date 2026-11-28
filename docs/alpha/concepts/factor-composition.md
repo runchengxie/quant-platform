@@ -68,3 +68,5 @@ Use `result.to_factor_spec(...)` to register the output in the existing FactorCa
 `alpha_research.factor_composition_diagnostics.double_sort_profile` provides independent rank buckets, cell mean forward returns and the extreme-cell difference in differences. Ties stay together; missing or undersized extreme cells yield missing spreads. Restrict labels to the intended evaluation window and availability cutoff before calling it. This descriptive statistic is not causal evidence or a significance test.
 
 Use the existing [factor diagnostics](../README.md), [feature evidence protocol](feature-research-protocol.en-US.md) and [overfitting controls](overfitting-controls.en-US.md) for marginal contribution, ablation and temporal validation. Scores can enter the existing signal artifact contract through a Research-owned adapter; composition does not allocate holdings or publish evidence.
+
+For same-date pair overlap and common-sample rank, see [factor redundancy](factor-redundancy.en-US.md).
