@@ -10,16 +10,22 @@ Core owns fills, shares, fees, corporate actions and cash accounting.
 import pandas as pd
 from quant_platform.prices import convert_price_window
 
-quotes = pd.DataFrame({
-    "symbol": ["AAA", "AAA", "AAA"],
-    "trade_date": ["2024-01-02", "2024-01-03", "2024-01-04"],
-    "available_at": ["2024-01-02T08:00Z", "2024-01-03T08:00Z", "2024-01-04T08:00Z"],
-    "close": [100.0, 50.0, 60.0],
-})
+quotes = pd.DataFrame(
+    {
+        "symbol": ["AAA", "AAA", "AAA"],
+        "trade_date": ["2024-01-02", "2024-01-03", "2024-01-04"],
+        "available_at": ["2024-01-02T08:00Z", "2024-01-03T08:00Z", "2024-01-04T08:00Z"],
+        "close": [100.0, 50.0, 60.0],
+    }
+)
 factors = quotes[["symbol", "trade_date", "available_at"]].assign(adj_factor=[1, 2, 2])
 window = convert_price_window(
-    quotes, factors=factors, basis="pit_qfq", as_of="2024-01-04T08:00Z",
-    source_ref="synthetic:quotes-v1", factor_source_ref="synthetic:factors-v1",
+    quotes,
+    factors=factors,
+    basis="pit_qfq",
+    as_of="2024-01-04T08:00Z",
+    source_ref="synthetic:quotes-v1",
+    factor_source_ref="synthetic:factors-v1",
     price_columns=("close",),
 )
 assert window.prices.close.tolist() == [50, 50, 60]
