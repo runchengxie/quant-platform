@@ -112,6 +112,11 @@ def test_nonstring_role_is_a_structured_json_rejection():
     json.dumps(result, allow_nan=False)
 
 
+def test_overflow_in_scalar_subexpressions_cannot_enter_a_signal():
+    pytest.importorskip("qlib")
+    assert run("$close + " + "*".join(["1e12"] * 26))["status"] == "rejected"
+
+
 def test_reused_qlib_operators_match_a_synthetic_numeric_reference(monkeypatch):
     import ast
 

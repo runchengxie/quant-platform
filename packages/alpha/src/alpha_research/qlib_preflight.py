@@ -105,10 +105,13 @@ def _construct(node, runtime, fields, dependencies):
     if isinstance(node, ast.Call):
         return _call(node, runtime, fields, dependencies)
     if isinstance(node, ast.BinOp) and type(node.op) in ARITHMETIC:
-        return ARITHMETIC[type(node.op)](
+        value = ARITHMETIC[type(node.op)](
             _construct(node.left, runtime, fields, dependencies),
             _construct(node.right, runtime, fields, dependencies),
         )
+        if isinstance(value, (int, float)) and not math.isfinite(value):
+            raise ValueError("nonfinite scalar arithmetic")
+        return value
     if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.UAdd, ast.USub)):
         value = _construct(node.operand, runtime, fields, dependencies)
         return value if isinstance(node.op, ast.UAdd) else -value

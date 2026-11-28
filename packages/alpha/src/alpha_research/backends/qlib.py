@@ -147,8 +147,8 @@ class QlibTrainerBackend:
 class QlibDatasetBackend:
     """Build a locally normalized compatibility frame.
 
-    Reuses Qlib's DataHandlerLP processors (RobustZScoreNorm + Fillna +
-    CSZScoreNorm) that produced the IC advantage measured in qlib_pilot.
+    Performs local cross-sectional normalization and missing-value fill.
+    This does not instantiate Qlib DataHandlerLP processors.
     """
 
     backend_id = "qlib"
@@ -158,12 +158,12 @@ class QlibDatasetBackend:
         self._handler_config = dict(handler_config or {})
 
     def build(self, request: DatasetBuildRequest) -> Any:
-        """Return a prepared pandas panel via qlib-style preprocessing.
+        """Return a pandas panel through local compatibility preprocessing.
 
         The DatasetBackend protocol expects a ResearchDataset; this adapter
         returns the processed frame so callers can wrap it. Preprocessing is
-        applied cross-sectionally per trade_date, matching the RobustZScoreNorm
-        + Fillna math that produced qlib_pilot's IC advantage.
+        applied cross-sectionally per trade_date. This is not a parity claim
+        for Qlib processor fitting, data views or the historical pilot.
         """
         frame = request.raw_panel.copy()
         if request.target not in frame.columns:
