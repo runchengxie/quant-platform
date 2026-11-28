@@ -1,8 +1,8 @@
 """Qlib backend adapters for alpha_research.
 
 Implements the framework-neutral ``TrainerBackend`` / ``DatasetBackend`` protocols
-using Qlib's preprocessing pipeline (cross-sectional standardization, missing-value
-fill, label normalization) and ``XGBModel`` training.
+with compatibility preprocessing and direct ``xgboost.train`` training.
+This is not a complete Qlib DataHandlerLP/XGBModel implementation.
 
 ADR-0005 governs this adapter. Qlib is an optional dependency installed via the
 ``qlib`` extra. When pyqlib is not installed:
@@ -41,7 +41,7 @@ def _require_qlib() -> Any:
 
 
 class QlibTrainerBackend:
-    """Train and predict with Qlib's XGBModel on a prepared pandas frame."""
+    """Compatibility trainer using xgboost.train after requiring optional Qlib."""
 
     backend_id = "qlib"
 
@@ -145,7 +145,7 @@ class QlibTrainerBackend:
 
 
 class QlibDatasetBackend:
-    """Build a dataset through Qlib's preprocessing pipeline.
+    """Build a locally normalized compatibility frame.
 
     Reuses Qlib's DataHandlerLP processors (RobustZScoreNorm + Fillna +
     CSZScoreNorm) that produced the IC advantage measured in qlib_pilot.
