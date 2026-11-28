@@ -69,7 +69,7 @@ def factor_redundancy(
                     lt, rt = (_tail(pair[c], top_fraction, upper=True) for c in (left, right))
                     lb, rb = (_tail(pair[c], top_fraction, upper=False) for c in (left, right))
                     row.update(
-                        spearman=pair[left].corr(pair[right], method="spearman"),
+                        spearman=pair[left].rank().corr(pair[right].rank()),
                         top_jaccard=_jaccard(lt, rt),
                         bottom_jaccard=_jaccard(lb, rb),
                         top_bottom_jaccard=_jaccard(lt, rb),
@@ -92,7 +92,9 @@ def factor_redundancy(
             if common.nunique().min() < 2:
                 rank["status"] = "constant_signal"
             else:
-                eigenvalues = np.linalg.eigvalsh(common.corr(method="spearman").to_numpy())
+                eigenvalues = np.linalg.eigvalsh(
+                    pd.DataFrame({c: common[c].rank() for c in common}).corr().to_numpy()
+                )
                 if eigenvalues.min() < -1e-10:
                     rank["status"] = "non_psd"
                 else:
@@ -137,9 +139,12 @@ def _validated_scores(scores, top_fraction, min_cross_section):
         raise ValueError("top_fraction must lie in (0, 0.5]")
     if type(min_cross_section) is not int or min_cross_section < 3:
         raise ValueError("min_cross_section must be an integer at least three")
-    if any(not pd.api.types.is_numeric_dtype(scores[c]) for c in scores):
-        raise ValueError("numeric scores required")
-    data = scores.astype(float)
-    if np.isinf(data.to_numpy()).any():
+    if any(
+        not pd.api.types.is_numeric_dtype(scores[c]) or pd.api.types.is_complex_dtype(scores[c])
+        for c in scores
+    ):
+        raise ValueError("real numeric scores required")
+    data = scores.copy()
+    if np.isinf(data.to_numpy(dtype=float, na_value=np.nan)).any():
         raise ValueError("infinite scores are invalid")
     return data

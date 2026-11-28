@@ -70,6 +70,41 @@ def test_future_dates_do_not_change_past_statistics():
         )
 
 
+def test_complex_scores_are_rejected_instead_of_silently_projected_to_real():
+    frame = panel()
+    frame["a"] = [1 + 1j, 1 + 2j, 1 + 3j, 1 + 4j]
+    with pytest.raises(ValueError, match="real"):
+        run(frame)
+
+
+def test_large_integer_order_and_tail_ties_are_preserved_exactly():
+    frame = panel()
+    frame["a"] = np.arange(4, dtype=np.int64) + 2**53
+    row = run(frame)["pairs"].iloc[0]
+    assert row.spearman == pytest.approx(1)
+    assert row.bottom_jaccard == 1
+
+
+def test_indefinite_pairwise_matrix_is_never_used_for_participation_ratio():
+    index = pd.MultiIndex.from_product(
+        [pd.to_datetime(["2020-01-01"]), range(9)], names=["date", "symbol"]
+    )
+    frame = pd.DataFrame(
+        {
+            "a": [1, 2, 3, 1, 2, 3, np.nan, np.nan, np.nan],
+            "b": [1, 2, 3, np.nan, np.nan, np.nan, 1, 2, 3],
+            "c": [np.nan, np.nan, np.nan, 1, 2, 3, 3, 2, 1],
+        },
+        index=index,
+    )
+    assert np.linalg.eigvalsh(frame.corr(method="spearman")).min() < 0
+    result = run(frame)
+    assert result["pairs"].observations.tolist() == [3, 3, 3]
+    assert result["pairs"].spearman.tolist() == pytest.approx([1, 1, -1])
+    assert result["rank"].iloc[0].common_observations == 0
+    assert pd.isna(result["rank"].iloc[0].participation_ratio)
+
+
 @pytest.mark.parametrize(
     "case", ["duplicate", "infinite", "index", "fraction", "boolean", "columns"]
 )
