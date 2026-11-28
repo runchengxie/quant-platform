@@ -9,6 +9,9 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
+from decimal import Decimal
+from numbers import Real
+from re import fullmatch
 from typing import Literal
 
 import numpy as np
@@ -32,6 +35,11 @@ class PriceWindow:
 
 
 def _clock(value: object) -> pd.Timestamp:
+    if isinstance(value, str) and not fullmatch(
+        r"\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d{1,9})?)?(?:Z|[+-]\d{2}:?\d{2})",
+        value,
+    ):
+        raise ValueError("timestamps require a complete ISO calendar date, time and offset")
     if not isinstance(value, (str, datetime, pd.Timestamp)):
         raise ValueError("observation clocks and as_of must be timezone-aware timestamps")
     try:
@@ -44,13 +52,15 @@ def _clock(value: object) -> pd.Timestamp:
 
 
 def _session(value: object) -> pd.Timestamp:
+    if isinstance(value, str) and not fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+        raise ValueError("trade_date strings must use complete ISO YYYY-MM-DD dates")
     if not isinstance(value, (str, date, pd.Timestamp)):
         raise ValueError("trade_date must be a timezone-naive calendar date")
     try:
         day = pd.Timestamp(value)
     except (TypeError, ValueError) as exc:
         raise ValueError("invalid trade_date") from exc
-    if pd.isna(day) or day.tzinfo is not None or day != day.normalize():
+    if not isinstance(day, pd.Timestamp) or day.tzinfo is not None or day != day.normalize():
         raise ValueError("trade_date must be a timezone-naive calendar date")
     return day
 
@@ -86,8 +96,13 @@ def _vintage(frame: pd.DataFrame, cutoff: pd.Timestamp, required: Sequence[str])
 
 
 def _positive(values: pd.Series, *, allow_missing: bool, label: str) -> np.ndarray:
-    converted = pd.to_numeric(values, errors="coerce").to_numpy(dtype=float)
     missing = values.isna().to_numpy()
+    valid_types = values.loc[~missing].map(
+        lambda v: isinstance(v, (Real, Decimal, str)) and not isinstance(v, (bool, np.bool_))
+    )
+    if not valid_types.all():
+        raise ValueError(f"{label} requires real numeric values")
+    converted = pd.to_numeric(values, errors="coerce").to_numpy(dtype=float, na_value=np.nan)
     invalid = ~np.isfinite(converted) | (converted <= 0)
     if allow_missing:
         invalid &= ~missing
@@ -111,7 +126,8 @@ def _adjust(
     anchors = pd.DataFrame(columns=_ANCHORS)
     if basis == "pit_qfq":
         anchors = (
-            factors.sort_values("trade_date", kind="stable")
+            factors.reset_index(drop=True)
+            .sort_values("trade_date", kind="stable")
             .drop_duplicates("symbol", keep="last")
             .loc[:, _ANCHORS]
             .sort_values("symbol", kind="stable")

@@ -200,3 +200,43 @@ def test_hfq_overflow_rejects_and_pit_ratio_avoids_intermediate_overflow():
     with pytest.raises(ValueError, match="finite"):
         convert(source, fact, basis="hfq")
     assert convert(source, fact).prices.close.tolist() == [1e200]
+
+
+@pytest.mark.parametrize(
+    ("basis", "target"),
+    [
+        ("raw", "quote"),
+        ("hfq", "quote"),
+        ("pit_qfq", "quote"),
+        ("hfq", "factor"),
+        ("pit_qfq", "factor"),
+    ],
+)
+@pytest.mark.parametrize("value", [True, 1 + 5j, pd.Timestamp("2024-01-01"), pd.Timedelta(1)])
+def test_nonnumeric_semantic_types_cannot_become_prices_or_factors(basis, target, value):
+    frame = quotes() if target == "quote" else factors()
+    column = "close" if target == "quote" else "adj_factor"
+    frame[column] = frame[column].astype(object)
+    frame.loc[frame.index[0], column] = value
+    with pytest.raises(ValueError):
+        convert(prices=frame, basis=basis) if target == "quote" else convert(
+            factor_rows=frame, basis=basis
+        )
+
+
+@pytest.mark.parametrize("value", ["12:00+08:00", "2024", "2024-01", "01/02/2024"])
+def test_cutoff_requires_complete_unambiguous_calendar_timestamp(value):
+    with pytest.raises(ValueError):
+        convert(as_of=value)
+
+
+@pytest.mark.parametrize("value", ["00:00", "2024", "2024-01", "01/02/2024"])
+def test_market_dates_cannot_depend_on_run_date_or_locale(value):
+    with pytest.raises(ValueError):
+        convert(prices=quotes().assign(trade_date=value))
+
+
+@pytest.mark.parametrize("level", ["symbol", "trade_date", "available_at"])
+def test_named_factor_index_cannot_interfere_with_anchor_selection(level):
+    result = convert(factor_rows=factors().set_index(level, drop=False))
+    assert result.prices.close.tolist() == [50, 50, 60]

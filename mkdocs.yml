@@ -296,11 +296,13 @@ nav:
       - USD price ledger: reference/usd-price-ledger.md
       - Allocation reference: reference/allocation-reference.md
       - Data boundary: data/README.md
+      - Price windows: price-windows.md
       - Position output contract: reference/outputs/positions.md
       - 简体中文:
           - 公开入口: reference/public-api.zh-CN.md
           - 执行分配参考资产: reference/allocation-reference.zh-CN.md
           - 市场数据消费边界: data/README.zh-CN.md
+          - 价格窗口: price-windows.zh-CN.md
       - Chinese originals (translation in progress):
           - 回测输出: reference/outputs/backtest-outputs.md
       - 简体中文:
