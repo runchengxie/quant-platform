@@ -9,8 +9,8 @@
 
 | 接口 | 当前实现 | 用途 |
 | --- | --- | --- |
-| `DatasetBackend` | `NativeDatasetBackend` / `QlibDatasetBackend` | 使用现有建模状态构建 `ResearchDataset`。Qlib 版本复用横截面标准化预处理 |
-| `TrainerBackend` | `NativeTrainerBackend` / `QlibTrainerBackend` | 训练、预测和特征重要性计算。Qlib 版本用 XGBModel |
+| `DatasetBackend` | `NativeDatasetBackend` / `QlibDatasetBackend` | 使用现有建模状态构建 `ResearchDataset`。兼容适配器执行本地横截面预处理 |
+| `TrainerBackend` | `NativeTrainerBackend` / `QlibTrainerBackend` | 训练、预测和特征重要性计算。兼容适配器当前直接调用 xgboost.train，并未使用 Qlib XGBModel |
 | `ExperimentRecorder` | `NullExperimentRecorder` | 返回可序列化回执，不连接外部实验服务 |
 
 Qlib 适配器（ADR-0005）位于 `alpha_research.backends.qlib`。`pyqlib` 通过 `qlib` extra
@@ -36,3 +36,5 @@ uv run --locked --extra dev python -m pytest tests/alpha/test_research_backends.
 ```
 
 该测试验证当前接口和原生实现。标准 `dev` 门禁不包含 Qlib 运行时验证。
+
+独立的 [Qlib 表达式预检](qlib-preflight.zh-CN.md) 使用真实上游算子，不代表训练和数据后端已完成全面对齐。

@@ -8,8 +8,8 @@ Language: English · [简体中文](framework-backends.md)
 
 | Interface | Current implementation | Purpose |
 | --- | --- | --- |
-| `DatasetBackend` | `NativeDatasetBackend` / `QlibDatasetBackend` | Build a `ResearchDataset` from the existing modeling state; the Qlib adapter reuses cross-sectional normalization preprocessing |
-| `TrainerBackend` | `NativeTrainerBackend` / `QlibTrainerBackend` | Train, predict, and calculate feature importance; the Qlib adapter uses `XGBModel` |
+| `DatasetBackend` | `NativeDatasetBackend` / `QlibDatasetBackend` | Build a `ResearchDataset` from the existing modeling state; the compatibility adapter performs local cross-sectional normalization |
+| `TrainerBackend` | `NativeTrainerBackend` / `QlibTrainerBackend` | Train, predict, and calculate feature importance; the compatibility adapter currently calls `xgboost.train`, not Qlib `XGBModel` |
 | `ExperimentRecorder` | `NullExperimentRecorder` | Return a serializable receipt without connecting to an external experiment service |
 
 The Qlib adapter governed by ADR-0005 lives in `alpha_research.backends.qlib`. Install `pyqlib` separately through the `qlib` extra. Without it, the native path remains importable and can pass the standard gates. Qlib objects are not written to cross-repository artifacts.
@@ -33,3 +33,5 @@ uv run --locked --extra dev python -m pytest tests/alpha/test_research_backends.
 ```
 
 This test covers the current interfaces and native implementation. The standard `dev` gate does not validate the Qlib runtime.
+
+The separate [Qlib expression preflight](qlib-preflight.en-US.md) reuses actual upstream operator objects. It does not establish full trainer/dataset parity.

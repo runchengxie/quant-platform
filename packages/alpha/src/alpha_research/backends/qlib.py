@@ -1,8 +1,8 @@
 """Qlib backend adapters for alpha_research.
 
 Implements the framework-neutral ``TrainerBackend`` / ``DatasetBackend`` protocols
-using Qlib's preprocessing pipeline (cross-sectional standardization, missing-value
-fill, label normalization) and ``XGBModel`` training.
+with compatibility preprocessing and direct ``xgboost.train`` training.
+This is not a complete Qlib DataHandlerLP/XGBModel implementation.
 
 ADR-0005 governs this adapter. Qlib is an optional dependency installed via the
 ``qlib`` extra. When pyqlib is not installed:
@@ -41,7 +41,7 @@ def _require_qlib() -> Any:
 
 
 class QlibTrainerBackend:
-    """Train and predict with Qlib's XGBModel on a prepared pandas frame."""
+    """Compatibility trainer using xgboost.train after requiring optional Qlib."""
 
     backend_id = "qlib"
 
@@ -145,10 +145,10 @@ class QlibTrainerBackend:
 
 
 class QlibDatasetBackend:
-    """Build a dataset through Qlib's preprocessing pipeline.
+    """Build a locally normalized compatibility frame.
 
-    Reuses Qlib's DataHandlerLP processors (RobustZScoreNorm + Fillna +
-    CSZScoreNorm) that produced the IC advantage measured in qlib_pilot.
+    Performs local cross-sectional normalization and missing-value fill.
+    This does not instantiate Qlib DataHandlerLP processors.
     """
 
     backend_id = "qlib"
@@ -158,12 +158,12 @@ class QlibDatasetBackend:
         self._handler_config = dict(handler_config or {})
 
     def build(self, request: DatasetBuildRequest) -> Any:
-        """Return a prepared pandas panel via qlib-style preprocessing.
+        """Return a pandas panel through local compatibility preprocessing.
 
         The DatasetBackend protocol expects a ResearchDataset; this adapter
         returns the processed frame so callers can wrap it. Preprocessing is
-        applied cross-sectionally per trade_date, matching the RobustZScoreNorm
-        + Fillna math that produced qlib_pilot's IC advantage.
+        applied cross-sectionally per trade_date. This is not a parity claim
+        for Qlib processor fitting, data views or the historical pilot.
         """
         frame = request.raw_panel.copy()
         if request.target not in frame.columns:
